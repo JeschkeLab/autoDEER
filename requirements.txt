@@ -1,0 +1,6 @@
+##### These are non Version specific requirements
+numpy
+scipy
+matplotlib
+deerlab
+pytest
