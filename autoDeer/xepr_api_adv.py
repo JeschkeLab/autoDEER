@@ -6,7 +6,7 @@ import XeprAPI
 
 def acquire_scan():
     """
-    This script detects the end of the scan and acquires the data set
+    This script detects the end of the scan and acquires the data set. Currently only 1D
     """
     current_scan = cur_exp.getParam("NbScansDone").value
     time_per_point = cur_exp.getParam("ShotRepTime").value *1e-6*cur_exp.getParam("ShotsPLoop").value*2
@@ -15,7 +15,8 @@ def acquire_scan():
         time.sleep(time_per_point)
     time.sleep(time_per_point)
     trace = Xepr.XeprDataset().O
-    return trace
+    trace = Xepr.XeprDataset().X
+    return time,trace
 def acquire_scan_at(scan_num:int):
     """
     This script acquires the scan after a spacific number of scans
