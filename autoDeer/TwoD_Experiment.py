@@ -33,6 +33,7 @@ class TwoD_Experiment:
         
         if file_ext == '.DSC':
             self.time,self.data,self.params = dl.deerload(file,full_output=True)
+            self.data = self.data.T
             self.scans = int(self.params.get('DSL').get('recorder').get('NbScansDone'))
             self.shots = int(self.params.get('DSL')['ftEpr']['ShotsPLoop'])
             self.shrt = float(self.params.get('DSL')['ftEpr']['ShotRepTime'].split()[0]) # in us
@@ -298,6 +299,8 @@ class TwoD_Experiment:
         axs.plot([min(self.time[0]),max(self.time[0])],[min(self.time[0]),max(self.time[0])],color='k',linestyle='--',alpha=0.9,zorder=6)
         axs.set_xlabel(r'$\tau_1 / (us)$')
         axs.set_ylabel(r'$\tau_2 / (us)$')
+        axs.set_xlim(min(self.time[0]),max(self.time[0]))
+        axs.set_ylim(min(self.time[1]),max(self.time[1]))
         axs.set_aspect('equal')
         if optimal:
             axs.scatter(self.time_4p[0],self.time_4p[1],c='b',s=15,label='4-pulse',zorder=10)
@@ -381,3 +384,10 @@ class TwoD_Experiment:
             print('Please load data')
 
             
+    def _data_transpose(self):
+        """
+        This is an internal method that flips the data along the diagnal.
+        
+        """
+        
+        self.data  = self.data.T
