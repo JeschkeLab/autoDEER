@@ -11,6 +11,7 @@ from scipy.interpolate import RBFInterpolator
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as colors
+from .TwoD_Experiment import TwoD_Experiment
 
 def carr_purcell_run(cur_exp,ps_length,d0):
     
@@ -39,14 +40,14 @@ def carr_purcell_run(cur_exp,ps_length,d0):
     api.set_PulseSpel_var(cur_exp,"d1",200) # Starting pulse delay
 
     # Set Pulse Steps
-    api.set_PulseSpel_var(cur_exp,"d30",100) # Set pulse delay steps
+    api.set_PulseSpel_var(cur_exp,"d12",100) # Set pulse delay steps
 
     # Set Averaging loops
     api.set_PulseSpel_var(cur_exp,"h",4) # Shots per points
     api.set_PulseSpel_var(cur_exp,"n",2) # Sweeps
 
     # Selecting the experiment
-    api.set_PulseSpel_experiment(cur_exp,"carr_purcell")
+    api.set_PulseSpel_experiment(cur_exp,"Carr Purcell exp")
     api.set_PulseSpel_phase_cycling(cur_exp,"16_Step")
 
     api.set_Acquistion_mode(cur_exp,1) # Run from Pulse Spel
@@ -135,22 +136,61 @@ def tau2_scan_run(cur_exp,tau1):
     api.set_PulseSpel_var(cur_exp,"d2",200) # Starting pulse delay
 
     # Set Pulse Steps
-    api.set_PulseSpel_var(cur_exp,"d30",100) # Set pulse delay steps
+    api.set_PulseSpel_var(cur_exp,"d12",100) # Set pulse delay steps
 
     # Set Averaging loops
     api.set_PulseSpel_var(cur_exp,"h",4) # Shots per points
     api.set_PulseSpel_var(cur_exp,"n",2) # Sweeps
 
     # Selecting the experiment
-    api.set_PulseSpel_experiment(cur_exp,"tau_2 scan")
+    api.set_PulseSpel_experiment(cur_exp,"tau 2 scan")
     api.set_PulseSpel_phase_cycling(cur_exp,"16_Step")
 
     api.set_Acquistion_mode(cur_exp,1) # Run from Pulse Spel
-    return 0
+    return 1
 
-def twoD_scan(cur_exp):
+def twoD_scan(cur_exp,ps_length,delays,steps,loops):
+    # Setting the location of the pulse_spel
+    def_name = 'param_opt.def'
+    exp_name = 'param_opt.exp'
+    
     api.set_ReplaceMode(cur_exp,False) #Turn replace mode off
-    return 0
+    
+    # Check that what pulse spel scripts are loaded and compile
+    if api.get_PulseSpel_def_name() != def_name:
+        api.set_PulseSpel_def_name(cur_exp,def_name)
+    if api.get_PulseSpel_exp_name() != exp_name:
+        api.set_PulseSpel_def_name(cur_exp,exp_name)
+
+    api.compile_PulseSpel_prg()
+    api.compile_PulseSpel_def() 
+
+    # Set pulse lengths
+    api.set_PulseSpel_var(cur_exp,"p0",ps_length)
+    api.set_PulseSpel_var(cur_exp,"p1",ps_length)
+    api.set_PulseSpel_var(cur_exp,"p2",ps_length)
+
+    # Set Pulse Delays
+    api.set_PulseSpel_var(cur_exp,"d0",delays[0])
+    api.set_PulseSpel_var(cur_exp,"d1",delays[1]) # Starting pulse delay
+    api.set_PulseSpel_var(cur_exp,"d2",delays[2]) # Starting pulse delay
+
+    # Set Pulse Steps
+    api.set_PulseSpel_var(cur_exp,"d12",steps[0]) # tau 1 step
+    api.set_PulseSpel_var(cur_exp,"d14",steps[0]) # tau 2 step
+
+
+    # Set Averaging loops
+    api.set_PulseSpel_var(cur_exp,"h",loops[0]) # Shots per points
+    api.set_PulseSpel_var(cur_exp,"n",loops[1]) # Sweeps
+
+    # Selecting the experiment
+    api.set_PulseSpel_experiment(cur_exp,"2D Dec. 64")
+    api.set_PulseSpel_phase_cycling(cur_exp,"16_Step")
+
+    api.set_Acquistion_mode(cur_exp,1) # Run from Pulse Spel    
+    
+    return 1
 
 def main_run(ps_length,d0):
 
@@ -168,7 +208,7 @@ def main_run(ps_length,d0):
     # Save complete data set using bruker formats
 
     # Identify the max time
-    carr_purcell_analysis(cp_t,cp_data)
+    cp_max = carr_purcell_analysis(cp_t,cp_data)
     cp_fig = carr_purcell_plot(cp_t,cp_data)
     cp_fig.show()
 
@@ -178,7 +218,39 @@ def main_run(ps_length,d0):
     # Run the tau2_scan
     tau1 = 400 #ns
     tau2_scan_run(cur_exp,ps_length,d0,tau1)
+    # Wait until tau2 scan finishes
     while api.is_exp_running() == True:
         time.sleep(1)
-    return 0
 
+    # Acquire complete data set
+    tau2_t,tau2_data = api.acquire_dataset()
+    # Save complete data set using bruker formats
+    # Identify the max time
+    tau2_max = carr_purcell_analysis(tau2_t,tau2_data)
+    tau2_fig = carr_purcell_plot(tau2_t,tau2_data)
+    tau2_fig.show()
+
+    # Now that the two maxes have been found take the largest one of these to be the max trace.
+    max_tau = max([cp_max,tau2_max])
+
+    tau_step = np.floor((max_tau - 200)/64)
+    tau_step = (tau_step//2)*2 # make sure this is a multiple of 2 for c-floor
+    delays = [d0,200,200]
+    steps = [tau_step,tau_step]
+    loops = [4,4]
+    twoD_scan(cur_exp,ps_length,delays,steps,loops)
+    
+    # We need to find a way to extract full 2D traces. This is likely to be more complex than the 1D case
+    #TODO: extract traces after each scan
+
+    last_scan = TwoD_Experiment()
+    last_scan.import_data(t,O,1,4,6000)
+    last_scan.calculate_optimal()
+    print(f'The optimal pulse delays are: {last_scan.time_4p}')
+
+    # TODO: ADD uncertainty estimation to 2D plot
+    # Once more than one scan has been collected look into how the uncertainty can be estimated
+    # This is significantly harder 
+    
+    
+    return 1

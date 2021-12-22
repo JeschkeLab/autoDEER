@@ -2,6 +2,7 @@
 # all code assoicated with processing these experiments are included in
 # this file.
 
+from _typeshed import Self
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -40,6 +41,22 @@ class TwoD_Experiment:
         else:
             self.time,self.data= dl.deerload(file,full_output=False)
             self.params = None
+            
+    def import_data(self,time,data,scans:int,shots:int,shrt:int):
+        """
+        The loads all the import infomation directly from python variables and arrays
+        Parameters:
+        time - [timex,timey]
+        data - numpy 2d array
+        scans(int)
+        shots(int)
+        shrt(int)
+        """
+        self.time = time
+        self.data = data
+        self.scan = scans
+        self.shots = shots
+        self.shrt = shrt
         
     def create_bahrenberg_plots(self):
         """
