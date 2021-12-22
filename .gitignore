@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+~$xepr_api_options.xlsx
+.DS_Store
+.DS_Store

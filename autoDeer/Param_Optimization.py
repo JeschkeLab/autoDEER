@@ -8,6 +8,10 @@ import xepr_api_adv as api
 import time
 import numpy as np
 from scipy.interpolate import RBFInterpolator
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import matplotlib.colors as colors
+
 def carr_purcell_run(cur_exp,ps_length,d0):
     
     # Setting the location of the pulse_spel
@@ -92,7 +96,16 @@ def carr_purcell_plot(time,trace):
     """
     This function plots the carr purcell trace, with 1/e and the calculated max time. 
     """
-    return 0 
+    fig = plt.figure(figsize=(6,6),dpi=150)
+    axs = fig.subplots(1,1)
+
+    axs.plot(time,trace,'r')
+    axs.plot([np.min(time),np.max(time)],[1/np.e,1/np.e],'k')
+    axs.set_xlabel(r'$\tau_1 = \tau_2 / (us)$')
+    axs.set_ylabel('Normalized Amplitude')
+    axs.set_title('Carr Purcell Experiment')
+
+    return fig
 
 def tau2_scan(cur_exp,tau1):
     api.set_ReplaceMode(cur_exp,False) #Turn replace mode off
