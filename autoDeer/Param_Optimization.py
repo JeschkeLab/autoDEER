@@ -56,7 +56,7 @@ def carr_purcell_run(cur_exp,ps_length,d0):
 
     return 1
 
-def carr_purcell_analysis(time,trace):
+def carr_purcell_analysis(t,trace):
     """
     This function loads a carr_purcell analysis and finds decay constant
     """
@@ -64,8 +64,8 @@ def carr_purcell_analysis(time,trace):
     trace = trace - np.min(trace)
     trace = trace / np.max(trace)
 
-    rbf = RBFInterpolator(time,trace)
-    xi = np.arange(np.min(time),np.max(time),50)
+    rbf = RBFInterpolator(t,trace)
+    xi = np.arange(np.min(t),np.max(t),50)
     yi = rbf(xi)
 
     cp_decay = xi[np.argmin(abs(yi-(1/np.e)))]
@@ -81,7 +81,7 @@ def carr_purcell_analysis(time,trace):
             return xmax
         else:
             raise ValueError("xmax is too low")
-    elif xmax > 0.8*np.max(time):
+    elif xmax > 0.8*np.max(t):
         print('Carr_purcell_xmax very high: please check!')
         print(f'xmax estimate is:{xmax}ns')
         check = input('Type Y to confirm:')
@@ -92,23 +92,60 @@ def carr_purcell_analysis(time,trace):
         
     return xmax
 
-def carr_purcell_plot(time,trace):
+def carr_purcell_plot(t,trace):
     """
     This function plots the carr purcell trace, with 1/e and the calculated max time. 
     """
     fig = plt.figure(figsize=(6,6),dpi=150)
     axs = fig.subplots(1,1)
 
-    axs.plot(time,trace,'r')
-    axs.plot([np.min(time),np.max(time)],[1/np.e,1/np.e],'k')
+    axs.plot(t,trace,'r')
+    axs.plot([np.min(t),np.max(t)],[1/np.e,1/np.e],'k')
     axs.set_xlabel(r'$\tau_1 = \tau_2 / (us)$')
     axs.set_ylabel('Normalized Amplitude')
     axs.set_title('Carr Purcell Experiment')
 
     return fig
 
-def tau2_scan(cur_exp,tau1):
+def tau2_scan_run(cur_exp,tau1):
+    
+    # Setting the location of the pulse_spel
+    def_name = 'param_opt.def'
+    exp_name = 'param_opt.exp'
+    
     api.set_ReplaceMode(cur_exp,False) #Turn replace mode off
+    
+    # Check that what pulse spel scripts are loaded and compile
+    if api.get_PulseSpel_def_name() != def_name:
+        api.set_PulseSpel_def_name(cur_exp,def_name)
+    if api.get_PulseSpel_exp_name() != exp_name:
+        api.set_PulseSpel_def_name(cur_exp,exp_name)
+
+    api.compile_PulseSpel_prg()
+    api.compile_PulseSpel_def() 
+    
+    # Set pulse lengths
+    api.set_PulseSpel_var(cur_exp,"p0",ps_length)
+    api.set_PulseSpel_var(cur_exp,"p1",ps_length)
+    api.set_PulseSpel_var(cur_exp,"p2",ps_length)
+
+    # Set Pulse Delays
+    api.set_PulseSpel_var(cur_exp,"d0",d0)
+    api.set_PulseSpel_var(cur_exp,"d1",tau1) # Starting pulse delay
+    api.set_PulseSpel_var(cur_exp,"d2",200) # Starting pulse delay
+
+    # Set Pulse Steps
+    api.set_PulseSpel_var(cur_exp,"d30",100) # Set pulse delay steps
+
+    # Set Averaging loops
+    api.set_PulseSpel_var(cur_exp,"h",4) # Shots per points
+    api.set_PulseSpel_var(cur_exp,"n",2) # Sweeps
+
+    # Selecting the experiment
+    api.set_PulseSpel_experiment(cur_exp,"tau_2 scan")
+    api.set_PulseSpel_phase_cycling(cur_exp,"16_Step")
+
+    api.set_Acquistion_mode(cur_exp,1) # Run from Pulse Spel
     return 0
 
 def twoD_scan(cur_exp):
@@ -131,9 +168,16 @@ def main_run(ps_length,d0):
     # Save complete data set using bruker formats
 
     # Identify the max time
+    carr_purcell_analysis(cp_t,cp_data)
+    cp_fig = carr_purcell_plot(cp_t,cp_data)
+    cp_fig.show()
 
+    # Now that the cp max time has been caclulcated we need to repeat this along
+    # the vertical axis. This might be unesessary, but they will likely be differnt.
 
     # Run the tau2_scan
+    tau1 = 400 #ns
+    tau2_scan_run(cur_exp,ps_length,d0,tau1)
     while api.is_exp_running() == True:
         time.sleep(1)
     return 0
