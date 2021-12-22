@@ -1,3 +1,4 @@
+from posixpath import expanduser
 import numpy as np
 import time
 import os,sys;
@@ -9,14 +10,51 @@ import deerlab as dl
 #     try:
 #         Xepr = XeprAPI.Xepr()
 #         return Xepr
-        
-def set_XEPR_global(Xepr_inst):
+Xepr = None
+cur_exp = None
+
+def set_XEPR_global(Xepr_inst): 
     global Xepr
     Xepr = Xepr_inst
+
+def get_XEPR_global():
+    if Xepr != None:
+        return Xepr
+    else:
+        raise RuntimeError("Can't find XEPR instance")
+
 
 def set_cur_exp_global(cur_exp_inst):
     global cur_exp
     cur_exp = cur_exp_inst
+
+def get_cur_exp_global():
+    if cur_exp != None:
+        return cur_exp
+    else:
+        raise RuntimeError("Can't find current experiment")
+
+def is_exp_running(): # Untested
+    return Xepr.AQ_EXP_RUNNING()
+
+def acquire_dataset(): # Untested
+    """
+    This function acquire the dataset
+    """
+    dataset = cur_exp.XeprDataset()
+    size = dataset.size() # This needs to be checked to see what form this precisely comes as
+    dataset_dim = len(size)
+    data = dataset.O
+    if dataset_dim == 1:
+        # We have a 1D dataset
+        t = dataset.X
+        return t,data
+    elif dataset_dim == 2:
+        # we have a 2D dataset
+        t1 = dataset.X
+        t2 = dataset.Y
+        return t1,t2,data
+
     
 def acquire_scan():
     """
