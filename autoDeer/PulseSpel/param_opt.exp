@@ -1,0 +1,176 @@
+; This is the pulse spel script for parameter optimization for 4p/5p DEER
+; Included here are experiments and phase cycling
+;
+; Hugo Karas 2021/2022
+
+begin defs
+
+dim s[256]          ; Carr Purcell exp
+
+dim1 s[256]         ; tau 2 scan
+
+dim2 s[64,64]       ; 2D Dec. 64
+
+dim3 s[128,128]     ; 2D Dec. 128
+
+end defs
+
+begin lists "16 pulse"
+ph1 +x -x
+ph2 +x +x +y +y -x -x -y -y
+ph3 +x +x +x +x +x +x +x +x -x -x -x -x -x -x -x -x 
+asg1 +a -a -a +a +a -a -a +a +a -a -a +a +a -a -a +a
+bsg1 +b -b -b +b +b -b -b +b +b -b -b +b +b -b -b +b
+end lists
+
+begin exp "Carr Purcell exp" [INT QUAD]
+
+dx = d1
+dy = d2
+
+totscans(n)
+
+pg = p0
+
+for k=1 to n
+d11 = d1
+d13 = d2
+
+sweep x=1 to sx
+
+shot i=1 to h
+d9
+p1[ph1]
+d11
+p0[ph2]
+d11
+d11
+p0[ph2]
+d11
+d0
+acq[sg1]
+next i
+dx = dx + d12
+d11 = d11 + d12
+next x
+
+scansdone(k)
+next k
+
+end exp
+
+begin exp1 "tau 2 scan"[INT QUAD]
+
+dx = d1
+dy = d2
+
+totscans(n)
+
+pg = p0
+
+for k=1 to n
+d11 = d1
+d13 = d2
+
+sweep x=1 to sx
+
+shot i=1 to h
+d9
+p1[ph1]
+d11
+p0[ph2]
+d11
+d13
+p0[ph2]
+d13
+d0
+acq[sg1]
+next i
+dx = dx + d14
+d13 = d13 + d14
+next x
+
+scansdone(k)
+next k
+
+end exp 1
+
+begin exp2 "2D Dec. 64" [INTG QUAD]
+
+dx = d1
+dy = d2
+
+totscans(n)
+
+pg = p0
+
+for k=1 to n
+d13 = d2
+
+for y=1 to sy
+d11 = d1
+sweep x=1 to sx
+
+shot i=1 to h
+d9
+p1[ph1]
+d11
+p0[ph2]
+d11
+d13
+p0[ph2]
+d13
+d0
+acq[sg1]
+next i
+dx = dx + d12
+d11 = d11 + d12
+next x
+
+dy = dy + d14
+d13 = d13 + d14
+next y
+
+scansdone(k)
+next k
+end exp2
+
+begin exp2 "2D Dec. 128" [INTG QUAD]
+
+dx = d1
+dy = d2
+
+totscans(n)
+
+pg = p0
+
+for k=1 to n
+d13 = d2
+
+for y=1 to sy
+d11 = d1
+sweep x=1 to sx
+
+shot i=1 to h
+d9
+p1[ph1]
+d11
+p0[ph2]
+d11
+d13
+p0[ph2]
+d13
+d0
+acq[sg1]
+next i
+dx = dx + d12
+d11 = d11 + d12
+next x
+
+dy = dy + d14
+d13 = d13 + d14
+next y
+
+scansdone(k)
+next k
+end exp2
