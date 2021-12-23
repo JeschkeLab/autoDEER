@@ -22,10 +22,10 @@ def carr_purcell_run(cur_exp,ps_length,d0):
     api.set_ReplaceMode(cur_exp,False) #Turn replace mode off
     
     # Check that what pulse spel scripts are loaded and compile
-    if api.get_PulseSpel_def_name() != def_name:
-        api.set_PulseSpel_def_name(cur_exp,def_name)
-    if api.get_PulseSpel_exp_name() != exp_name:
-        api.set_PulseSpel_def_name(cur_exp,exp_name)
+    if api.get_PulseSpel_def_filename() != def_name:
+        api.set_PulseSpel_def_filepath(cur_exp,def_name)
+    if api.get_PulseSpel_exp_filename() != exp_name:
+        api.set_PulseSpel_def_filepath(cur_exp,exp_name)
 
     api.compile_PulseSpel_prg()
     api.compile_PulseSpel_def() 
@@ -117,10 +117,10 @@ def tau2_scan_run(cur_exp,tau1):
     api.set_ReplaceMode(cur_exp,False) #Turn replace mode off
     
     # Check that what pulse spel scripts are loaded and compile
-    if api.get_PulseSpel_def_name() != def_name:
-        api.set_PulseSpel_def_name(cur_exp,def_name)
-    if api.get_PulseSpel_exp_name() != exp_name:
-        api.set_PulseSpel_def_name(cur_exp,exp_name)
+    if api.get_PulseSpel_def_filename() != def_name:
+        api.set_PulseSpel_def_filepath(cur_exp,def_name)
+    if api.get_PulseSpel_exp_filename() != exp_name:
+        api.set_PulseSpel_def_filepath(cur_exp,exp_name)
 
     api.compile_PulseSpel_prg()
     api.compile_PulseSpel_def() 
@@ -157,10 +157,10 @@ def twoD_scan(cur_exp,ps_length,delays,steps,loops):
     api.set_ReplaceMode(cur_exp,False) #Turn replace mode off
     
     # Check that what pulse spel scripts are loaded and compile
-    if api.get_PulseSpel_def_name() != def_name:
-        api.set_PulseSpel_def_name(cur_exp,def_name)
-    if api.get_PulseSpel_exp_name() != exp_name:
-        api.set_PulseSpel_def_name(cur_exp,exp_name)
+    if api.get_PulseSpel_def_filename() != def_name:
+        api.set_PulseSpel_def_filepath(cur_exp,def_name)
+    if api.get_PulseSpel_exp_filename() != exp_name:
+        api.set_PulseSpel_def_filepath(cur_exp,exp_name)
 
     api.compile_PulseSpel_prg()
     api.compile_PulseSpel_def() 

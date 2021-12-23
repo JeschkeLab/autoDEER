@@ -80,8 +80,6 @@ def acquire_scan_at(scan_num:int):
         time.sleep(time_per_point*x_length/2)
     return acquire_scan()
 
-  
-
 def set_PulseSpel_var(cur_exp,variable:str,value:int):
     """
     This can be used to change any pulse spel variable whilst the experiment is running. These changes take effect at the begining of the next scan
@@ -96,16 +94,22 @@ def set_ReplaceMode(cur_exp,state=False):
         value = 'Off'
     cur_exp["ftEpr.ReplaceMode"].value = value
     
-def get_PulseSpel_exp_name(cur_exp):
+def get_PulseSpel_exp_filename(cur_exp):
     return os.path.basename(cur_exp["ftEPR.PlsSPELPrgPaF"].value)
 
-def set_PulseSpel_exp_name(cur_exp,fullpath):
+def get_PulseSpel_exp_filepath(cur_exp):
+    return cur_exp["ftEPR.PlsSPELPrgPaF"].value
+
+def set_PulseSpel_exp_filepath(cur_exp,fullpath):
     Xepr.XeprCmds.aqPgLoad(fullpath)
 
-def get_PulseSpel_def_name(cur_exp):
+def get_PulseSpel_def_filename(cur_exp):
     return os.path.basename(cur_exp["ftEPR.PlsSPELGlbPaF"].value) 
 
-def set_PulseSpel_def_name(cur_exp,fullpath):
+def get_PulseSpel_def_filenpath(cur_exp):
+    return cur_exp["ftEPR.PlsSPELGlbPaF"].value
+
+def set_PulseSpel_def_filepath(cur_exp,fullpath):
     Xepr.XeprCmds.aqPgDefLoad(fullpath)
 
 def get_PulseSpel_phase_cycling(cur_exp):

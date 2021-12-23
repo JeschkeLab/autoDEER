@@ -42,8 +42,8 @@ def run_4pDeer(cur_exp,pulse_lengths,delays,steps,avgs):
     change_DEER_length(cur_exp,exp_file,num_points)
     
 
-    api.set_PulseSpel_exp_name(cur_exp,exp_file)
-    api.set_PulseSpel_def_name(cur_exp,def_file)
+    api.set_PulseSpel_exp_filepath(cur_exp,exp_file)
+    api.set_PulseSpel_def_filepath(cur_exp,def_file)
     api.compile_PulseSpel_prg()
     api.compile_PulseSpel_def()         
     

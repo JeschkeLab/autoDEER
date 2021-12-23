@@ -2,7 +2,6 @@
 # all code assoicated with processing these experiments are included in
 # this file.
 
-from _typeshed import Self
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -408,3 +407,37 @@ class TwoD_Experiment:
         """
         
         self.data  = self.data.T
+
+    def value_at_pos(self,pos:tuple,norm=None):
+        """
+        Function that finds the value in this 2D experiment at specified coordinates
+        Parameters:
+        pos(tuple): (tau1 pos, tau2 pos)
+        norm=Nome: Can be used to select the normalisation. Options are: None, 'SNRpShot','SNR'  
+        """
+
+        if norm == None:
+            return self.data(pos[0],pos[1])
+        elif norm == 'SNRpShot':
+            return self.data_snrpshot(pos[0],pos[1])
+        elif norm == 'SNR':
+            data = self.snr_normalize(shots=None)
+            return data(pos[0],pos[1])
+        else:
+            raise ValueError('Normalization option value error')
+
+    def value_at_time(self,pos:tuple,norma=None):
+        """
+        Function that finds the closest value in this 2D experiment for specified delay times
+        Parameters:
+        pos(tuple): (tau1 time, tau2 time)
+        norm=Nome: Can be used to select the normalisation. Options are: None, 'SNRpShot','SNR'  
+        """
+        # First we need to find the closest posible values
+        tau1_pos = np.argmin(abs(self.time[0]-pos[0]))
+        tau1_time = self.time[0][tau1_pos]
+        tau2_pos = np.argmin(abs(self.time[1]-pos[1]))
+        tau2_time = self.time[1][tau2_pos]
+        print(f'Closest times: \u03C41 ={tau1_time} & \u03C42 ={tau2_time}')
+
+        return self.value_at_pos((tau1_pos,tau2_pos),norm=norma)
