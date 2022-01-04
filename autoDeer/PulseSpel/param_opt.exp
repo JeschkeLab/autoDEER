@@ -133,9 +133,9 @@ next x
 
 dy = dy + d14
 d13 = d13 + d14
+scansdone(k * y)
 next y
 
-scansdone(k)
 next k
 end exp2
 
@@ -173,9 +173,9 @@ next x
 
 dy = dy + d14
 d13 = d13 + d14
+scansdone(k*y)
 next y
 
-scansdone(k)
 next k
 end exp2
 

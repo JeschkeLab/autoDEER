@@ -1,7 +1,8 @@
 from posixpath import expanduser
 import numpy as np
 import time
-import os,sys;
+import os,sys
+from numpy.core.fromnumeric import cumprod;
 import XeprAPI
 import deerlab as dl
 
@@ -67,9 +68,10 @@ def acquire_scan():
     while cur_exp.getParam("NbScansDone").value == current_scan:
         time.sleep(time_per_point)
     time.sleep(time_per_point)
-    trace = Xepr.XeprDataset().O
-    time_axis = Xepr.XeprDataset().X
-    return time_axis,trace
+    # trace = Xepr.XeprDataset().O
+    # time_axis = Xepr.XeprDataset().X
+    # return time_axis,trace
+    return acquire_dataset()
 def acquire_scan_at(scan_num:int):
     """
     This script acquires the scan after a spacific number of scans
@@ -79,6 +81,25 @@ def acquire_scan_at(scan_num:int):
     while cur_exp.getParam("NbScansDone").value != scan_num:
         time.sleep(time_per_point*x_length/2)
     return acquire_scan()
+
+def acquire_scan_2d():
+    """
+    This function acquries the dataset after a full 2D scan.
+    This is done by identfying the number of scansteps per sweep and acquring the data on that scan.
+    """
+    total_num_scan = cur_exp.getParam("NbScansToDo").value
+    total_num_sweeps = cur_exp.getParam("SweepsPExp").value
+    scans_per_sweep = total_num_scan/total_num_sweeps
+
+    if not scans_per_sweep.is_integer():
+        raise RuntimeError('There is a non integer number of scans per sweep')
+    
+    current_scan = cur_exp.getParam("NbScansDone").value
+    current_sweep = np.floor(current_scan/scans_per_sweep)
+    next_scan_target = (current_sweep + 1) * scans_per_sweep
+
+    return acquire_scan_at(next_scan_target)
+
 
 def set_PulseSpel_var(cur_exp,variable:str,value:int):
     """

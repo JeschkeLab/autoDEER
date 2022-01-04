@@ -240,11 +240,10 @@ def main_run(ps_length,d0):
     loops = [4,4]
     twoD_scan(cur_exp,ps_length,delays,steps,loops)
     
-    # We need to find a way to extract full 2D traces. This is likely to be more complex than the 1D case
-    #TODO: extract traces after each scan
+    t1,t2,data = api.acquire_scan_2d()
 
     last_scan = TwoD_Experiment()
-    last_scan.import_data(t,O,1,4,6000)
+    last_scan.import_data((t1,t2),data,1,4,6000)
     last_scan.calculate_optimal()
     print(f'The optimal pulse delays are: {last_scan.time_4p}')
 
