@@ -8,7 +8,7 @@ A python package designed for the running of automated and optimised DEER/PELDOR
 3) DeerLab (https://jeschkelab.github.io/DeerLab/)
 
 ## Acknowledgements 
-In developing the Bruker spectrometer control, insipration and help was gained from:
-- Spinach by Ilya Kuprov
+In developing the Bruker spectrometer control, insipration and help was gained from previous work by:
+- Spinach by Ilya Kuprov et. al.
 - CustomXepr by San Schott
 
