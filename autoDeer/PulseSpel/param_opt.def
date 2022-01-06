@@ -18,14 +18,14 @@ pg = 16             ; Integrator Gate Width
 ; Pulse Delays
 d0 = 652
 
-d1 = 300
-d2 = 600
+d1 = 200
+d2 = 300
 
 ; Time increments
-d12 = 100
-d14 = 100
+d12 = 30
+d14 = 30
 
 h = 4       ; number of shots/loop
-n = 4       ; number of sweeps to accumulate  
+n = 10       ; number of sweeps to accumulate  
 end defs
 

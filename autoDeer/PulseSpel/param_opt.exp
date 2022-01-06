@@ -49,7 +49,7 @@ d11
 p0[ph2]
 d11
 d11
-p0[ph2]
+p0[ph3]
 d11
 d0
 acq[sg1]
@@ -85,7 +85,7 @@ d11
 p0[ph2]
 d11
 d13
-p0[ph2]
+p0[ph3]
 d13
 d0
 acq[sg1]
@@ -122,7 +122,7 @@ d11
 p0[ph2]
 d11
 d13
-p0[ph2]
+p0[ph3]
 d13
 d0
 acq[sg1]
@@ -163,7 +163,7 @@ d11
 p0[ph2]
 d11
 d13
-p0[ph2]
+p0[ph3]
 d13
 d0
 acq[sg1]
@@ -202,7 +202,7 @@ d11
 p0[ph2]
 d11
 d13
-p0[ph2]
+p0[ph3]
 d13
 d0
 acq[sg1]
