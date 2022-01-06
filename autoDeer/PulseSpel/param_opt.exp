@@ -27,7 +27,7 @@ asg1 +a -a -a +a +a -a -a +a +a -a -a +a +a -a -a +a
 bsg1 +b -b -b +b +b -b -b +b +b -b -b +b +b -b -b +b
 end lists
 
-begin exp "Carr Purcell exp" [INT QUAD]
+begin exp "Carr Purcell exp" [INTG QUAD]
 
 dx = d1
 dy = d2
@@ -63,7 +63,7 @@ next k
 
 end exp
 
-begin exp1 "tau 2 scan"[INT QUAD]
+begin exp1 "tau 2 scan" [INTG QUAD]
 
 dx = d1
 dy = d2
@@ -97,7 +97,7 @@ next x
 scansdone(k)
 next k
 
-end exp 1
+end exp1
 
 begin exp2 "2D Dec. 64" [INTG QUAD]
 
@@ -133,13 +133,14 @@ next x
 
 dy = dy + d14
 d13 = d13 + d14
-scansdone(k * y)
+m = k *y
+scansdone(m)
 next y
 
 next k
 end exp2
 
-begin exp2 "2D Dec. 128" [INTG QUAD]
+begin exp3 "2D Dec. 128" [INTG QUAD]
 
 dx = d1
 dy = d2
@@ -173,13 +174,14 @@ next x
 
 dy = dy + d14
 d13 = d13 + d14
-scansdone(k*y)
+m = k*y
+scansdone(m)
 next y
 
 next k
-end exp2
+end exp3
 
-begin exp3 "Constant tau1+tau2" [INTG QUAD]
+begin exp4 "Constant tau1+tau2" [INTG QUAD]
 
 dx = d1 - d2
 
@@ -213,4 +215,4 @@ next x
 scansdone(k)
 next k
 
-end exp3
+end exp4
