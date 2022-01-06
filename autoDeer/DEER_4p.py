@@ -1,11 +1,10 @@
 import XeprAPI
 import deerlab as dl
-from . import xepr_api_adv as api
+import xepr_api_adv as api
 import numpy as np
 import os,sys;
 
 
-# These are ETH DEER Specific function. Will be moved to a seperate file at a later data
 def change_DEER_length(cur_exp,path,new_length:int):
     """This is a HIGHLY specific function to change  a line in a specific pulse spel file. This will break your pulse spel script if applied to any other file."""
     with open(path, 'r') as file:

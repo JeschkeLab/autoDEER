@@ -42,8 +42,8 @@ def acquire_dataset(): # Untested
     """
     This function acquire the dataset
     """
-    dataset = cur_exp.XeprDataset()
-    size = dataset.size() # This needs to be checked to see what form this precisely comes as
+    dataset = Xepr.XeprDataset()
+    size = dataset.size # This needs to be checked to see what form this precisely comes as
     dataset_dim = len(size)
     data = dataset.O
     if dataset_dim == 1:
@@ -68,7 +68,7 @@ def acquire_scan():
     while cur_exp.getParam("NbScansDone").value == current_scan:
         time.sleep(time_per_point)
     time.sleep(time_per_point)
-    # trace = Xepr.XeprDataset().O
+    # trace = Xepr.().O
     # time_axis = Xepr.XeprDataset().X
     # return time_axis,trace
     return acquire_dataset()

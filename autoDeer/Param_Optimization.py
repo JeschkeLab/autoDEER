@@ -11,7 +11,7 @@ from scipy.interpolate import RBFInterpolator
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-from .TwoD_Experiment import TwoD_Experiment
+from TwoD_Experiment import TwoD_Experiment
 
 def carr_purcell_run(cur_exp,ps_length,d0):
     
