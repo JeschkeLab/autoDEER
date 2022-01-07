@@ -36,13 +36,13 @@ def get_cur_exp_global():
         raise RuntimeError("Can't find current experiment")
 
 def is_exp_running(): # Untested
-    return Xepr.AQ_EXP_RUNNING()
+    return cur_exp.isRunning
 
-def acquire_dataset(): # Untested
+def acquire_dataset(): 
     """
-    This function acquire the dataset
+    This function acquire the dataset, this work both for a running experiment or once it has finished.
     """
-    dataset = Xepr.XeprDataset()
+    dataset = Xepr.XeprDataset() # This function returns the currently view dataset
     size = dataset.size # This needs to be checked to see what form this precisely comes as
     dataset_dim = len(size)
     data = dataset.O
@@ -59,7 +59,7 @@ def acquire_dataset(): # Untested
     
 def acquire_scan():
     """
-    This script detects the end of the scan and acquires the data set. Currently only 1D
+    This script detects the end of the scan and acquires the data set. This requries that the experiment is still running, or recently finished. Once it has been saved this will no longer work.
     """
     current_scan = cur_exp.getParam("NbScansDone").value
     x_length = int(cur_exp.getParam("XSpecRes").value)
@@ -86,6 +86,7 @@ def acquire_scan_2d():
     """
     This function acquries the dataset after a full 2D scan.
     This is done by identfying the number of scansteps per sweep and acquring the data on that scan.
+    This requires that the experiment has not been saved. 
     """
     total_num_scan = cur_exp.getParam("NbScansToDo").value
     total_num_sweeps = cur_exp.getParam("SweepsPExp").value
@@ -115,25 +116,25 @@ def set_ReplaceMode(cur_exp,state=False):
         value = 'Off'
     cur_exp["ftEpr.ReplaceMode"].value = value
     
-def get_PulseSpel_exp_filename(cur_exp):
+def get_PulseSpel_exp_filename():
     return os.path.basename(cur_exp["ftEPR.PlsSPELPrgPaF"].value)
 
-def get_PulseSpel_exp_filepath(cur_exp):
+def get_PulseSpel_exp_filepath():
     return cur_exp["ftEPR.PlsSPELPrgPaF"].value
 
-def set_PulseSpel_exp_filepath(cur_exp,fullpath):
+def set_PulseSpel_exp_filepath(fullpath):
     Xepr.XeprCmds.aqPgLoad(fullpath)
 
-def get_PulseSpel_def_filename(cur_exp):
+def get_PulseSpel_def_filename():
     return os.path.basename(cur_exp["ftEPR.PlsSPELGlbPaF"].value) 
 
-def get_PulseSpel_def_filenpath(cur_exp):
+def get_PulseSpel_def_filenpath():
     return cur_exp["ftEPR.PlsSPELGlbPaF"].value
 
-def set_PulseSpel_def_filepath(cur_exp,fullpath):
+def set_PulseSpel_def_filepath(fullpath):
     Xepr.XeprCmds.aqPgDefLoad(fullpath)
 
-def get_PulseSpel_phase_cycling(cur_exp):
+def get_PulseSpel_phase_cycling():
     return cur_exp["ftEPR.PlsSPELLISTSlct"].value
 
 def set_PulseSpel_phase_cycling(cur_exp,name):
