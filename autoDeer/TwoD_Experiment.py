@@ -151,8 +151,7 @@ class TwoD_Experiment:
         This function calculates and finds the optimal timing pairs for both 4 pulse and 5 pulse DEER.
         """
 
-        v_snr_bool = self._stability_check()
-        time = self.time
+
 
         if hasattr(self, 'data_snrpshot'):
             norm_signal = self.data_snrpshot
@@ -161,7 +160,10 @@ class TwoD_Experiment:
                 self.snr_normalize()
             except RuntimeError:
                 print("Could not auto SNR normlaize the data, please do so manual with the snr_normalize method")
-
+        
+        v_snr_bool = self._stability_check()
+        time = self.time
+        
         # Calculate optimal for 4-pulse
         tau2_index = np.any(v_snr_bool,axis=0).shape[0] - np.flip(np.any(v_snr_bool,axis=0)).argmax() -1
         tau1_index = norm_signal[:,tau2_index].argmax()
