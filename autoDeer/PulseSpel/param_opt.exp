@@ -5,9 +5,9 @@
 
 begin defs
 
-dim s[256]          ; Carr Purcell exp
+dim s[150]          ; Carr Purcell exp
 
-dim1 s[256]         ; tau 2 scan
+dim1 s[150]         ; tau 2 scan
 
 dim2 s[64,64]       ; 2D Dec. 64
 
@@ -40,7 +40,26 @@ for k=1 to n
 d11 = d1
 d13 = d2
 
-sweep x=1 to sx
+sweep x=1 to w
+
+shot i=1 to h
+d9
+p1[ph1]
+d11
+p0[ph2]
+d11
+d11
+p0[ph3]
+d11
+d0
+acq[sg1]
+next i
+dx = dx + d12
+d11 = d11 + d12
+next x
+
+w  = w +1
+sweep x=w to sx 
 
 shot i=1 to h
 d9
@@ -76,8 +95,26 @@ for k=1 to n
 d11 = d1
 d13 = d2
 
-sweep x=1 to sx
+sweep x=1 to w
 
+shot i=1 to h
+d9
+p1[ph1]
+d11
+p0[ph2]
+d11
+d13
+p0[ph3]
+d13
+d0
+acq[sg1]
+next i
+dx = dx + d14
+d13 = d13 + d14
+next x
+
+w = w + 1
+sweep x=w to sx
 shot i=1 to h
 d9
 p1[ph1]
@@ -104,7 +141,8 @@ begin exp2 "2D Dec. 64" [INTG QUAD]
 dx = d1
 dy = d2
 
-totscans(n)
+c= n * sy
+totscans(c)
 
 pg = p0
 
@@ -113,7 +151,27 @@ d13 = d2
 
 for y=1 to sy
 d11 = d1
-sweep x=1 to sx
+b=w
+sweep x=1 to b
+
+shot i=1 to h
+d9
+p1[ph1]
+d11
+p0[ph2]
+d11
+d13
+p0[ph3]
+d13
+d0
+acq[sg1]
+next i
+dx = dx + d12
+d11 = d11 + d12
+next x
+
+b = b + 1
+sweep x = b to sx
 
 shot i=1 to h
 d9
@@ -133,7 +191,9 @@ next x
 
 dy = dy + d14
 d13 = d13 + d14
-m = k *y
+m = k -1
+m = m * sy
+m = m + y
 scansdone(m)
 next y
 
@@ -145,7 +205,8 @@ begin exp3 "2D Dec. 128" [INTG QUAD]
 dx = d1
 dy = d2
 
-totscans(n)
+c = n * sy
+totscans(c)
 
 pg = p0
 
@@ -174,7 +235,8 @@ next x
 
 dy = dy + d14
 d13 = d13 + d14
-m = k*y
+m = k*sy
+m = m +y
 scansdone(m)
 next y
 
