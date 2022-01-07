@@ -109,6 +109,10 @@ def carr_purcell_plot(t,trace):
     """
     fig = plt.figure(figsize=(6,6),dpi=150)
     axs = fig.subplots(1,1)
+    
+    trace = np.real(trace)
+    trace = trace - np.min(trace)
+    trace = trace / np.max(trace)
 
     axs.plot(t,trace,'r')
     axs.plot([np.min(t),np.max(t)],[1/np.e,1/np.e],'k')

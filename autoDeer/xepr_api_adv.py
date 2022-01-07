@@ -13,6 +13,7 @@ import deerlab as dl
 #         return Xepr
 Xepr = None
 cur_exp = None
+hidden = None
 
 def set_Xepr_global(Xepr_inst): 
     global Xepr
@@ -64,6 +65,11 @@ def find_cur_exp():
             print("Experiment found")
     set_cur_exp_global(cur_exp)
     return cur_exp
+
+def find_hidden():
+    global hidden
+    if Xepr != None:
+        hidden = Xepr.XeprExperiment("AcqHidden")
 
 def is_exp_running(): # Untested
     return cur_exp.isRunning
@@ -213,6 +219,32 @@ def compile_PulseSpel_def():
     Xepr.XeprCmds.aqPgShowDef()
     Xepr.XeprCmds.aqPgCompile()
     time.sleep(0.5)
-              
 
-              
+
+## Section on phase control
+
+class phase():
+    """
+    A class for the control of phases.
+    Options: "cwBridge.SignalPhase", "ftBridge.BrXPhase", "ftBridge.BrYPhase", "ftBridge.BrMinXPhase", "ftBridge.BrMinYPhase"
+    """
+    def __init__(name:str):
+        self.name = name
+        self.max = hidden[self.name].aqGetParMaxValue
+        self.min = hidden[self.name].aqGetParMinValue
+        self.course_step = hidden[self.name].aqGetParCoarseSteps
+        self.fine_step = hidden[self.name].aqGetParFineSteps
+    
+    def get_value(self):
+        return hidden[self.name].value
+    
+    def set_value(self,new_value):
+        hidden[self.name.value] = new_value
+        return hidden[self.name].value
+
+class attenuator():
+    """
+    A class for the control of both stepped and variable attenuators
+    """
+               
+               
