@@ -14,17 +14,26 @@ import deerlab as dl
 Xepr = None
 cur_exp = None
 
-def set_XEPR_global(Xepr_inst): 
+def set_Xepr_global(Xepr_inst): 
     global Xepr
     Xepr = Xepr_inst
 
-def get_XEPR_global():
+def get_Xepr_global():
     if Xepr != None:
         return Xepr
     else:
         raise RuntimeError("Can't find XEPR instance")
 
-
+def find_Xepr():
+    try:
+        Xepr_local = XeprAPI.Xepr()
+    except OSError:
+        print('Xepr already connected')
+    except:
+        RuntimeError("Can't connect to Xepr: Please check Xepr is running and open to API")
+    else:
+        set_Xepr_global(Xepr_local)
+        
 def set_cur_exp_global(cur_exp_inst):
     global cur_exp
     cur_exp = cur_exp_inst
@@ -34,6 +43,27 @@ def get_cur_exp_global():
         return cur_exp
     else:
         raise RuntimeError("Can't find current experiment")
+        
+def find_cur_exp():
+    """
+    Trys and finds the current experiment
+    """
+    if Xepr == None:
+        raise RuntimeError("Please connect API to Xepr")
+    
+    try:
+        cur_exp = Xepr.XeprExperiment()
+    except:
+        print("Can't find the current experiment. Attempting to load it")
+        Xepr.XeprCmds.aqExpSelect("Experiment")
+        try:
+            cur_exp = Xepr.XeprExperiment()
+        except:
+            RuntimeError("Can't find the current experiment. Please create an experiment with name 'Experiment'")
+        else:
+            print("Experiment found")
+    set_cur_exp_global(cur_exp)
+    return cur_exp
 
 def is_exp_running(): # Untested
     return cur_exp.isRunning
