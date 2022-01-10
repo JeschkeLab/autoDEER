@@ -223,12 +223,12 @@ def compile_PulseSpel_def():
 
 ## Section on phase control
 
-class phase():
+class phase:
     """
     A class for the control of phases.
     Options: "cwBridge.SignalPhase", "ftBridge.BrXPhase", "ftBridge.BrYPhase", "ftBridge.BrMinXPhase", "ftBridge.BrMinYPhase"
     """
-    def __init__(name:str):
+    def __init__(self,name:str):
         self.name = name
         self.max = hidden[self.name].aqGetParMaxValue
         self.min = hidden[self.name].aqGetParMinValue
@@ -242,9 +242,22 @@ class phase():
         hidden[self.name.value] = new_value
         return hidden[self.name].value
 
-class attenuator():
+class attenuator:
     """
     A class for the control of both stepped and variable attenuators
+    Name(str) - The Xepr code for the attenuator. Options: "ftBridge.BrXAmp", "ftBridge.BrYAmp", "ftBridge.BrMinXAmp", "ftBridge.BrMinYAmp"
     """
-               
+    def __init__(self,name:str):
+        self.name = name
+        self.max = hidden[self.name].aqGetParMaxValue
+        self.min = hidden[self.name].aqGetParMinValue
+        self.course_step = hidden[self.name].aqGetParCoarseSteps
+        self.fine_step = hidden[self.name].aqGetParFineSteps
+    
+    def get_value(self):
+        return hidden[self.name].value
+    
+    def set_value(self,new_value):
+        hidden[self.name.value] = new_value
+        return hidden[self.name].value         
                
