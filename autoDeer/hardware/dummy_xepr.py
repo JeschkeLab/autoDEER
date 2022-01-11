@@ -43,6 +43,7 @@ def find_cur_exp(experiment:str):
 
     # These are just general random settings
 
+
 class dummy_cur_exp:
     
     def __init__(self):
@@ -154,13 +155,35 @@ class dummy_xepr:
             K = dl.dipolarkernel(t,r,mod=lam,bg=B)    # kernel matrix
             Vexp = K@P + dl.whitegaussnoise(t,0.01,seed=0)  # DEER signal with added noise
             return t, Vexp
+
+        def generateCarrPurcell(num_points,max_time):
+            t = np.linspace(0,4000,256)
+            V = np.exp(-((t*3e-3)/(4.2))**4)
+            noise = np.random.normal(0, .05, V.shape) *np.array([1+1j]) 
+            Vexp = V + noise
+            return t, Vexp
+
+        def generate2D(numpoints,max_time):
+            t = np.linspace(0,max_time,numpoints)
+            X, Y = np.meshgrid(t, t)
+            def fun_2d(x,y):
+                return (np.exp(-((x*2.8e-3)/(4.2))**4) + np.exp(-((y*2.8e-3)/(4.2))**4))
+            Z = fun_2d(X,Y)
+            noise = np.random.normal(0, .05, Z.shape) *np.array([1+1j])
+            return [t,t],Z+noise
         
         if cur_exp.PlsSPELEXPSlct.value == 'DEER':
             t,V = generateDEER(250,4000)
             return dummy_dataset(t,V)
         elif cur_exp.PlsSPELEXPSlct.value =='2D Dec. 64':
-            print("Can't simulate this yet")
-            return 0
+            t,V = generate2D(64,4000)
+            return dummy_dataset(t,V)
+        elif cur_exp.PlsSPELEXPSlct.value =='Carr Purcell exp':
+            t,V = generateCarrPurcell(250,4000)
+            return dummy_dataset(t,V)
+        elif cur_exp.PlsSPELEXPSlct.value =='tau 2 scan':
+            t,V = generateCarrPurcell(250,4000)
+            return dummy_dataset(t,V)
         else:
             print("Can't simulate this yet")
             return 0           
