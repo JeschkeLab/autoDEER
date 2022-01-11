@@ -4,7 +4,7 @@
 #
 # Hugo Karas 2021
 
-import xepr_api_adv as api
+from hardware.xepr_api_adv import xepr_api 
 import time
 import numpy as np
 #from scipy.interpolate import RBFInterpolator
@@ -14,7 +14,7 @@ import matplotlib.cm as cm
 import matplotlib.colors as colors
 from TwoD_Experiment import TwoD_Experiment
 
-def carr_purcell_run(cur_exp,ps_length,d0):
+def carr_purcell_run(api,cur_exp,ps_length,d0):
     
     # Setting the location of the pulse_spel
     def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
@@ -122,7 +122,7 @@ def carr_purcell_plot(t,trace):
 
     return fig
 
-def tau2_scan_run(cur_exp,ps_length,d0,tau1):
+def tau2_scan_run(api,cur_exp,ps_length,d0,tau1):
     
     # Setting the location of the pulse_spel
     def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
@@ -168,7 +168,7 @@ def tau2_scan_run(cur_exp,ps_length,d0,tau1):
 
     return 1
 
-def twoD_scan(cur_exp,ps_length,delays,steps,loops):
+def twoD_scan(api,cur_exp,ps_length,delays,steps,loops):
     # Setting the location of the pulse_spel
     def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
     exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
@@ -216,12 +216,12 @@ def twoD_scan(cur_exp,ps_length,delays,steps,loops):
     
     return 1
 
-def main_run(ps_length,d0):
+def main_run(api,ps_length,d0):
 
     cur_exp = api.get_cur_exp_global()
 
     # Start the carr_purcell_run
-    carr_purcell_run(cur_exp,ps_length,d0)
+    carr_purcell_run(api,cur_exp,ps_length,d0)
 
     # Detect when experiments is finished and save data
     while api.is_exp_running() == True:
@@ -241,7 +241,7 @@ def main_run(ps_length,d0):
 
     # Run the tau2_scan
     tau1 = 400 #ns
-    tau2_scan_run(cur_exp,ps_length,d0,tau1)
+    tau2_scan_run(api,cur_exp,ps_length,d0,tau1)
     # Wait until tau2 scan finishes
     while api.is_exp_running() == True:
         time.sleep(1)
@@ -262,7 +262,7 @@ def main_run(ps_length,d0):
     delays = [d0,200,200]
     steps = [tau_step,tau_step]
     loops = [4,4]
-    twoD_scan(cur_exp,ps_length,delays,steps,loops)
+    twoD_scan(api,cur_exp,ps_length,delays,steps,loops)
     
     t1,t2,data = api.acquire_scan_2d()
 

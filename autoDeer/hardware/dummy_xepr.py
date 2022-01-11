@@ -7,42 +7,44 @@ Model: DUMMY
 Features: The most relibable Bruker EPR spectromter in the world (possibly?)
 """
 
+import re
 import numpy as np
 import deerlab as dl
 import time
 import os
 import random as rand
+from .xepr_api_adv import xepr_api
 
 rand.seed(1212)
 
-cur_exp = None
+class dummy_api(xepr_api):
 
-def get_Xepr_global():
-    """This function gets the Xepr class
+    def find_Xepr(self):
+        self.Xepr = dummy_xepr()
+        pass
 
-    :raises RuntimeError: This error is raised if the spectometer has not been started
-    :return: The current Xepr instance 
-    :rtype: [type]
-    """
-    if Xepr != None:
-        return Xepr
-    else:
-        raise RuntimeError("Please intialize the dummy spectrometer")
+    def is_exp_running(self):
+        # Since all experiments are instantaneous this has to be always false
+        return False
 
-
-def find_cur_exp(experiment:str):
-
-    if experiment == "DEER_quick":
-        print("Experiment set to: DEER_quick")
+    def acquire_scan(self):
+        return self.acquire_dataset()
     
-    elif experiment == "DEER_std":
-        print("Experiment set to: DEER_std")
+    def acquire_scan_at(self, scan_num: int):
+        return self.acquire_dataset()
     
-    elif experiment == "2D_DEC":
-        print("Experiment set to 2D Dec")
+    def acquire_scan_2d(self):
+        return self.acquire_dataset()
 
-    # These are just general random settings
+    def compile_PulseSpel_def(self):
+        pass
 
+    def compile_PulseSpel_prg(self):
+        pass
+
+    def set_PulseSpel_var(self, cur_exp, variable: str, value: int):
+        # This should be expanded into a dictionary that can then effect the simulation. In an ideal world
+        pass
 
 class dummy_cur_exp:
     
@@ -105,7 +107,7 @@ class dummy_cur_exp:
         """
         return getattr(self,name)
 
-    def aqExpRun():
+    def aqExpRun(self):
         #Dummy function, for running the experiment
         print('Dummy Experiment running')
         pass
@@ -130,15 +132,21 @@ class dummy_param:
 
 class dummy_xepr:
 
+    def __init__(self) -> None:
+        self.cur_exp = dummy_cur_exp()
+        self.hidden = dummy_hidden()
+        pass
+
     def XeprExperiment(self,hidden=None):
         if hidden == None:
-            return dummy_cur_exp("DEER_quick")
+            # return dummy_cur_exp("DEER_quick")
+            return self.cur_exp
         elif hidden == "AcqHidden":
-            return dummy_hidden
+            return self.hidden
     
     def XeprDataset(self): # Returns the current dataset
         
-        from .xepr_api_adv import cur_exp
+        cur_exp = self.cur_exp
         # Generates simulated DEER data
         def generateDEER(num_points,max_time):
             """
@@ -185,8 +193,10 @@ class dummy_xepr:
             t,V = generateCarrPurcell(250,4000)
             return dummy_dataset(t,V)
         else:
-            print("Can't simulate this yet")
-            return 0           
+            print("Sorry, This cannae be simulated yet, returning white noise")
+            t = np.linspace(0,2500,250)
+            noise = np.random.normal(0, .1, t.shape) *np.array([1+1j])
+            return dummy_dataset(t,noise)        
         
     class XeprCmds:
 
