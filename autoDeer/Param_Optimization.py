@@ -14,13 +14,13 @@ import matplotlib.cm as cm
 import matplotlib.colors as colors
 from TwoD_Experiment import TwoD_Experiment
 
-def carr_purcell_run(api,cur_exp,ps_length,d0):
+def carr_purcell_run(api,ps_length,d0,sweeps=4,steps=100,nuc_mod=[1,1]):
     
     # Setting the location of the pulse_spel
     def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
     exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
     
-    api.set_ReplaceMode(cur_exp,False) #Turn replace mode off
+    api.set_ReplaceMode(False) #Turn replace mode off
     
     # Check that what pulse spel scripts are loaded and compile
     if api.get_PulseSpel_def_filename() != def_name:
@@ -34,29 +34,32 @@ def carr_purcell_run(api,cur_exp,ps_length,d0):
     api.compile_PulseSpel_def() 
 
     # Set pulse lengths
-    api.set_PulseSpel_var(cur_exp,"p0",ps_length[0])
-    api.set_PulseSpel_var(cur_exp,"p1",ps_length[1])
-    api.set_PulseSpel_var(cur_exp,"p2",ps_length[1])
+    api.set_PulseSpel_var("p0",ps_length[0])
+    api.set_PulseSpel_var("p1",ps_length[1])
+    api.set_PulseSpel_var("p2",ps_length[1])
 
     # Set Pulse Delays
-    api.set_PulseSpel_var(cur_exp,"d0",d0)
-    api.set_PulseSpel_var(cur_exp,"d1",200) # Starting pulse delay
+    api.set_PulseSpel_var("d0",d0)
+    api.set_PulseSpel_var("d1",200) # Starting pulse delay
 
     # Set Pulse Steps
-    api.set_PulseSpel_var(cur_exp,"d12",100) # Set pulse delay steps
+    api.set_PulseSpel_var("d12",steps) # Set pulse delay steps
+    api.set_PulseSpel_var("d16",nuc_mod[0]) # Nuclear Modulation steps
 
     # Set Averaging loops
-    api.set_PulseSpel_var(cur_exp,"h",4) # Shots per points
-    api.set_PulseSpel_var(cur_exp,"n",4) # Sweeps
+    api.set_PulseSpel_var("h",4) # Shots per points
+    api.set_PulseSpel_var("n",sweeps) # Sweeps
+    api.set_PulseSpel_var("m",nuc_mod[1]) # Nuclear Modulation sweeps
+
 
     # Selecting the experiment
-    api.set_PulseSpel_experiment(cur_exp,"Carr Purcell exp")
-    api.set_PulseSpel_phase_cycling(cur_exp,"16_Step")
+    api.set_PulseSpel_experiment("Carr Purcell exp")
+    api.set_PulseSpel_phase_cycling("16_Step")
 
-    api.set_Acquistion_mode(cur_exp,1) # Run from Pulse Spel
+    api.set_Acquistion_mode(1) # Run from Pulse Spel
 
     # Run Experiment
-    cur_exp.aqExpRun()
+    api.run_exp()
     time.sleep(1)
 
     return 1
@@ -128,7 +131,7 @@ def tau2_scan_run(api,cur_exp,ps_length,d0,tau1):
     def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
     exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
     
-    api.set_ReplaceMode(cur_exp,False) #Turn replace mode off
+    api.set_ReplaceMode(False) #Turn replace mode off
     
     # Check that what pulse spel scripts are loaded and compile
     if api.get_PulseSpel_def_filename() != def_name:
@@ -140,40 +143,40 @@ def tau2_scan_run(api,cur_exp,ps_length,d0,tau1):
     api.compile_PulseSpel_def() 
     
     # Set pulse lengths
-    api.set_PulseSpel_var(cur_exp,"p0",ps_length[0])
-    api.set_PulseSpel_var(cur_exp,"p1",ps_length[1])
-    api.set_PulseSpel_var(cur_exp,"p2",ps_length[1])
+    api.set_PulseSpel_var("p0",ps_length[0])
+    api.set_PulseSpel_var("p1",ps_length[1])
+    api.set_PulseSpel_var("p2",ps_length[1])
 
     # Set Pulse Delays
-    api.set_PulseSpel_var(cur_exp,"d0",d0)
-    api.set_PulseSpel_var(cur_exp,"d1",tau1) # Starting pulse delay
-    api.set_PulseSpel_var(cur_exp,"d2",200) # Starting pulse delay
+    api.set_PulseSpel_var("d0",d0)
+    api.set_PulseSpel_var("d1",tau1) # Starting pulse delay
+    api.set_PulseSpel_var("d2",200) # Starting pulse delay
 
     # Set Pulse Steps
-    api.set_PulseSpel_var(cur_exp,"d14",100) # Set pulse delay steps
+    api.set_PulseSpel_var("d14",100) # Set pulse delay steps
 
     # Set Averaging loops
-    api.set_PulseSpel_var(cur_exp,"h",4) # Shots per points
-    api.set_PulseSpel_var(cur_exp,"n",4)
+    api.set_PulseSpel_var("h",4) # Shots per points
+    api.set_PulseSpel_var("n",4)
 
     # Selecting the experiment
-    api.set_PulseSpel_experiment(cur_exp,"tau 2 scan")
-    api.set_PulseSpel_phase_cycling(cur_exp,"16_Step")
+    api.set_PulseSpel_experiment("tau 2 scan")
+    api.set_PulseSpel_phase_cycling("16_Step")
 
-    api.set_Acquistion_mode(cur_exp,1) # Run from Pulse Spel
+    api.set_Acquistion_mode(1) # Run from Pulse Spel
     
     # Run Experiment
-    cur_exp.aqExpRun()
+    api.run_exp()
     time.sleep(1)
 
     return 1
 
-def twoD_scan(api,cur_exp,ps_length,delays,steps,loops):
+def twoD_scan(api,ps_length,delays,steps,loops):
     # Setting the location of the pulse_spel
     def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
     exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
     
-    api.set_ReplaceMode(cur_exp,False) #Turn replace mode off
+    api.set_ReplaceMode(False) #Turn replace mode off
     
     # Check that what pulse spel scripts are loaded and compile
     if api.get_PulseSpel_def_filename() != def_name:
@@ -185,32 +188,32 @@ def twoD_scan(api,cur_exp,ps_length,delays,steps,loops):
     api.compile_PulseSpel_def() 
 
     # Set pulse lengths
-    api.set_PulseSpel_var(cur_exp,"p0",ps_length[0])
-    api.set_PulseSpel_var(cur_exp,"p1",ps_length[1])
-    api.set_PulseSpel_var(cur_exp,"p2",ps_length[1])
+    api.set_PulseSpel_var("p0",ps_length[0])
+    api.set_PulseSpel_var("p1",ps_length[1])
+    api.set_PulseSpel_var("p2",ps_length[1])
 
     # Set Pulse Delays
-    api.set_PulseSpel_var(cur_exp,"d0",delays[0])
-    api.set_PulseSpel_var(cur_exp,"d1",delays[1]) # Starting pulse delay
-    api.set_PulseSpel_var(cur_exp,"d2",delays[2]) # Starting pulse delay
+    api.set_PulseSpel_var("d0",delays[0])
+    api.set_PulseSpel_var("d1",delays[1]) # Starting pulse delay
+    api.set_PulseSpel_var("d2",delays[2]) # Starting pulse delay
 
     # Set Pulse Steps
-    api.set_PulseSpel_var(cur_exp,"d12",steps[0]) # tau 1 step
-    api.set_PulseSpel_var(cur_exp,"d14",steps[1]) # tau 2 step
+    api.set_PulseSpel_var("d12",steps[0]) # tau 1 step
+    api.set_PulseSpel_var("d14",steps[1]) # tau 2 step
 
 
     # Set Averaging loops
-    api.set_PulseSpel_var(cur_exp,"h",loops[0]) # Shots per points
-    api.set_PulseSpel_var(cur_exp,"n",loops[1]) # Sweeps
+    api.set_PulseSpel_var("h",loops[0]) # Shots per points
+    api.set_PulseSpel_var("n",loops[1]) # Sweeps
 
     # Selecting the experiment
-    api.set_PulseSpel_experiment(cur_exp,"2D Dec. 64")
-    api.set_PulseSpel_phase_cycling(cur_exp,"16_Step")
+    api.set_PulseSpel_experiment("2D Dec. 64")
+    api.set_PulseSpel_phase_cycling("16_Step")
 
-    api.set_Acquistion_mode(cur_exp,1) # Run from Pulse Spel
+    api.set_Acquistion_mode(1) # Run from Pulse Spel
     
     # Run Experiment
-    cur_exp.aqExpRun()
+    api.run_exp()
     time.sleep(1)
 
     
@@ -218,10 +221,8 @@ def twoD_scan(api,cur_exp,ps_length,delays,steps,loops):
 
 def main_run(api,ps_length,d0):
 
-    cur_exp = api.get_cur_exp_global()
-
     # Start the carr_purcell_run
-    carr_purcell_run(api,cur_exp,ps_length,d0)
+    carr_purcell_run(api,ps_length,d0)
 
     # Detect when experiments is finished and save data
     while api.is_exp_running() == True:
@@ -241,7 +242,7 @@ def main_run(api,ps_length,d0):
 
     # Run the tau2_scan
     tau1 = 400 #ns
-    tau2_scan_run(api,cur_exp,ps_length,d0,tau1)
+    tau2_scan_run(api,ps_length,d0,tau1)
     # Wait until tau2 scan finishes
     while api.is_exp_running() == True:
         time.sleep(1)
@@ -262,7 +263,7 @@ def main_run(api,ps_length,d0):
     delays = [d0,200,200]
     steps = [tau_step,tau_step]
     loops = [4,4]
-    twoD_scan(api,cur_exp,ps_length,delays,steps,loops)
+    twoD_scan(api,ps_length,delays,steps,loops)
     
     t1,t2,data = api.acquire_scan_2d()
 

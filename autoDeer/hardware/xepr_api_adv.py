@@ -1,4 +1,5 @@
 from posixpath import expanduser
+from tempfile import TemporaryFile
 import numpy as np
 import time
 import os,sys
@@ -15,6 +16,7 @@ class xepr_api:
         self.Xepr = None
         self.cur_exp = None
         self.hidden = None
+        self._tmp_dir = None
         pass
 
     def set_Xepr_global(self,Xepr_inst): 
@@ -27,14 +29,26 @@ class xepr_api:
             raise RuntimeError("Can't find XEPR instance")
 
     def find_Xepr(self):
-        try:
-            self.Xepr_local = XeprAPI.Xepr()
-        except OSError:
-            print('Xepr already connected')
-        except:
-            RuntimeError("Can't connect to Xepr: Please check Xepr is running and open to API")
+        open_xepr_instances = XeprAPI.getXeprInstances()
+
+        if len(open_xepr_instances) < 1:
+            raise RuntimeError("No Open Xepr API Instances, please open one by:\n"+\
+                "\"processing\" -> \"XeprAPI\" -> \"Enable Xepr API\"")
+
+        if self.Xepr == None:
+            try:
+                self.Xepr_local = XeprAPI.Xepr()
+            except OSError:
+                print('Xepr API: Could not connect to any Xepr instance.')
+            except RuntimeError:
+                raise RuntimeError("There is already a connection from Xepr to this python Kernal.\n" \
+                    "Please use the correct python object or restart the kernal ")
+            except:
+                RuntimeError("Can't connect to Xepr: Please check Xepr is running and open to API")
+            else:
+                self.set_Xepr_global(self.Xepr_local)
         else:
-            self.set_Xepr_global(self.Xepr_local)
+            print('Already Connected to Xepr!')
             
     def set_cur_exp_global(self,cur_exp_inst):
         self.cur_exp = cur_exp_inst
@@ -137,30 +151,32 @@ class xepr_api:
         return self.acquire_scan_at(next_scan_target)
 
 
-    def set_PulseSpel_var(self,cur_exp,variable:str,value:int):
+    def set_PulseSpel_var(self,variable:str,value:int):
         """
         This can be used to change any pulse spel variable whilst the experiment is running. These changes take effect at the begining of the next scan
         """
-        cur_exp["ftEpr.PlsSPELSetVar"].value = str(variable) + " = "+ str(int(value))
+        self.cur_exp["ftEpr.PlsSPELSetVar"].value = str(variable) + " = "+ str(int(value))
     
-    def set_ReplaceMode(self,cur_exp,state=False):
+    def set_ReplaceMode(self,state=False):
         if state:
             value = 'On'
             print('DANGER: Replace Mode turned ON!')
         else:
             value = 'Off'
-        cur_exp["ftEpr.ReplaceMode"].value = value
+        self.cur_exp["ftEpr.ReplaceMode"].value = value
     
     def get_PulseSpel_exp_filename(self):
         return os.path.basename(self.cur_exp["ftEPR.PlsSPELPrgPaF"].value)
 
     def get_PulseSpel_exp_filepath(self):
+        self.save_PulseSpel_exp()
         return self.cur_exp["ftEPR.PlsSPELPrgPaF"].value
 
     def set_PulseSpel_exp_filepath(self,fullpath):
         self.Xepr.XeprCmds.aqPgLoad(fullpath)
 
     def get_PulseSpel_def_filename(self):
+        self.save_PulseSpel_def()
         return os.path.basename(self.cur_exp["ftEPR.PlsSPELGlbPaF"].value) 
 
     def get_PulseSpel_def_filenpath(self):
@@ -172,7 +188,7 @@ class xepr_api:
     def get_PulseSpel_phase_cycling(self):
         return self.cur_exp["ftEPR.PlsSPELLISTSlct"].value
 
-    def set_PulseSpel_phase_cycling(self,cur_exp,name):
+    def set_PulseSpel_phase_cycling(self,name):
         self.cur_exp["ftEPR.PlsSPELLISTSlct"].value = name
         
         if self.cur_exp["ftEPR.PlsSPELLISTSlct"].value != name:
@@ -181,31 +197,66 @@ class xepr_api:
         else:
             return 1
 
-    def get_PulseSpel_experiment(self,cur_exp):
-        return cur_exp["ftEPR.PlsSPELEXPSlct"].value
+    def get_PulseSpel_experiment(self):
+        return self.cur_exp["ftEPR.PlsSPELEXPSlct"].value
     
-    def set_PulseSpel_experiment(self,cur_exp,name):
-        cur_exp["ftEPR.PlsSPELEXPSlct"].value = name
+    def set_PulseSpel_experiment(self,name):
+        self.cur_exp["ftEPR.PlsSPELEXPSlct"].value = name
         
-        if cur_exp["ftEPR.PlsSPELEXPSlct"].value != name:
+        if self.cur_exp["ftEPR.PlsSPELEXPSlct"].value != name:
             print("WARNING: Pulse Spel Experiment did not change")
             return 0
         else:
             return 1
-
-    def get_Acquistion_mode(self,cur_exp):
-        return cur_exp["ftEPR.FTAcqModeSlct"].value    
     
-    def set_Acquistion_mode(self,cur_exp, mode:int):
+
+    def save_PulseSpel_exp(self,name=None):
+        if name==None:
+            # Save as a temp file
+            if self._tmp_dir == None:
+                try:
+                    os.mkdir('/tmp/autoDeer/')
+                    self._tmp_dir = '/tmp/autoDeer/'
+                except:
+                    self._tmp_dir = '/tmp/autoDeer/'
+                    print("temp directory already exists")
+            timestr = time.strftime("%Y%m%d-%H%M%S")
+            path = self._tmp_dir + "pulsespel_" + timestr + ".exp"
+        else:
+            path = name
+        self.Xepr.XeprCmds.aqPgSaveAs(path)
+
+    def save_PulseSpel_def(self,name=None):
+        if name == None:
+            # Save as a temp file
+            if self._tmp_dir == None:
+                try:
+                    os.mkdir('/tmp/autoDeer/')
+                    self._tmp_dir = '/tmp/autoDeer/'
+                except:
+                    self._tmp_dir = '/tmp/autoDeer/'
+                    print("temp directory already exists")
+            timestr = time.strftime("%Y%m%d-%H%M%S")
+            path = self._tmp_dir + "pulsespel_" + timestr + ".def"
+        else:
+            path = name
+        self.Xepr.XeprCmds.aqPgDefSaveAs(path)
+
+
+
+    def get_Acquistion_mode(self):
+        return self.cur_exp["ftEPR.FTAcqModeSlct"].value    
+    
+    def set_Acquistion_mode(self, mode:int):
         """mode=0: Run from tabels, mode=1: Run from Pulse Spel, mode=2:Read transient, mode=3:Start Transient"""
         if mode == 0:
-            cur_exp["ftEPR.FTAcqModeSlct"].value = 'Run from Tabels'
+            self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Run from Tabels'
         elif mode == 1:
-            cur_exp["ftEPR.FTAcqModeSlct"].value = 'Run from PulseSPEL'
+            self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Run from PulseSPEL'
         elif mode == 2:
-            cur_exp["ftEPR.FTAcqModeSlct"].value = 'Read Transient'
+            self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Read Transient'
         elif mode == 3:
-            cur_exp["ftEPR.FTAcqModeSlct"].value = 'Start Transient'
+            self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Start Transient'
         else:
             print('Acqusiton Mode not changed. Input error.')
             return 0
@@ -214,11 +265,17 @@ class xepr_api:
         self.Xepr.XeprCmds.aqPgShowPrg()
         self.Xepr.XeprCmds.aqPgCompile()
         time.sleep(0.5)
+        pass
 
     def compile_PulseSpel_def(self):
         self.Xepr.XeprCmds.aqPgShowDef()
         self.Xepr.XeprCmds.aqPgCompile()
         time.sleep(0.5)
+        pass
+
+    def run_exp(self):
+        self.cur_exp.aqExpRun()
+        pass
 
 
 ## Section on phase control

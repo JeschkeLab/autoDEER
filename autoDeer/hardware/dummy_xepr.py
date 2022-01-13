@@ -45,6 +45,8 @@ class dummy_api(xepr_api):
     def set_PulseSpel_var(self, cur_exp, variable: str, value: int):
         # This should be expanded into a dictionary that can then effect the simulation. In an ideal world
         pass
+    def run_exp(self):
+        pass
 
 class dummy_cur_exp:
     
