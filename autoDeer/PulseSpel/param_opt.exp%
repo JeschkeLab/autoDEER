@@ -84,7 +84,8 @@ for j=1 to m
     next x
 
 next j
-scansdone(k)
+s
+cansdone(k)
 next k
 
 end exp
