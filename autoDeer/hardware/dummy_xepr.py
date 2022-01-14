@@ -48,6 +48,13 @@ class dummy_api(xepr_api):
     def run_exp(self):
         pass
 
+    def stop_exp(self):
+        pass
+    
+    def abort_exp(self):
+        pass
+    
+
 class dummy_cur_exp:
     
     def __init__(self):

@@ -125,7 +125,7 @@ def carr_purcell_plot(t,trace):
 
     return fig
 
-def tau2_scan_run(api,cur_exp,ps_length,d0,tau1):
+def tau2_scan_run(api,ps_length,d0,tau1):
     
     # Setting the location of the pulse_spel
     def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
@@ -219,7 +219,7 @@ def twoD_scan(api,ps_length,delays,steps,loops):
     
     return 1
 
-def main_run(api,ps_length,d0):
+def main_run(api,ps_length:int,d0:int,filename:str,path:str):
 
     # Start the carr_purcell_run
     carr_purcell_run(api,ps_length,d0)
@@ -230,6 +230,7 @@ def main_run(api,ps_length,d0):
     
     # Acquire complete data set
     cp_t,cp_data = api.acquire_dataset()
+    api.xepr_save( path+ 'cp_q_' + filename)
     # Save complete data set using bruker formats
 
     # Identify the max time
@@ -249,7 +250,9 @@ def main_run(api,ps_length,d0):
 
     # Acquire complete data set
     tau2_t,tau2_data = api.acquire_dataset()
-    # Save complete data set using bruker formats
+    api.xepr_save( path+ 'tau2_' + filename)
+
+    
     # Identify the max time
     tau2_max = carr_purcell_analysis(tau2_t,tau2_data)
     tau2_fig = carr_purcell_plot(tau2_t,tau2_data)
@@ -265,7 +268,11 @@ def main_run(api,ps_length,d0):
     loops = [4,4]
     twoD_scan(api,ps_length,delays,steps,loops)
     
+    while api.is_exp_running() == True:
+        time.sleep(1)
+
     t1,t2,data = api.acquire_scan_2d()
+    api.xepr_save( path+ '2D_dec_' + filename)
 
     last_scan = TwoD_Experiment()
     last_scan.import_data((t1,t2),data,1,4,6000)

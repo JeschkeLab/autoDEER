@@ -17,10 +17,12 @@ class xepr_api:
         self.cur_exp = None
         self.hidden = None
         self._tmp_dir = None
+        self.XeprCmds = None
         pass
 
     def set_Xepr_global(self,Xepr_inst): 
         self.Xepr = Xepr_inst
+        self.XeprCmds = self.Xepr.XeprCmds
 
     def get_Xepr_global(self):
         if self.Xepr != None:
@@ -275,6 +277,32 @@ class xepr_api:
 
     def run_exp(self):
         self.cur_exp.aqExpRun()
+        pass
+
+    def stop_exp(self):
+        self.cur_exp.aqExpStop()
+        pass
+
+    def abort_exp(self):
+        self.cur_exp.aqExpAbort()
+        pass
+
+    def xepr_save(self,path,title=None):
+        # Saves the current viewpoint to either the specified file in the working directory or to the filepath.
+        # This is a bruker save function
+        # Taken from Custom Xepr
+        directory, basename = os.path.split(path)
+        if not title:
+            title = os.path.splitext(path)[0]
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        self.Xepr.XeprCmds.vpSave("Current Primary", title, path)
+        time.sleep(0.5)
+        self.Xepr.XeprCmds.aqExpSelect("Experiment")
+        time.sleep(0.5)
+        pass
+
+    def dataset_save(self):
         pass
 
 
