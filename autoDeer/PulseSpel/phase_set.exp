@@ -1,0 +1,32 @@
+; This is a PulseSpel Script for automatic tuning
+;
+;
+; Hugo Karas 2022
+
+begin defs
+
+dim s[400]          ; Phase control
+
+end defs
+
+begin lists "None"
+ph1 +x
+ph2 +x
+ph3 +x
+asg1 +a
+bsg1 +b
+end lists
+
+begin exp "Phase Control" [TRANS QUAD]
+
+shot i=1 to h              ; accumulation loop
+    d9
+    p0[ph1]
+    d1
+    p1[ph1]
+    d1
+    d0
+    dig [sg1]
+next i
+
+end exp
