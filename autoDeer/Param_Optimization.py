@@ -64,10 +64,13 @@ def carr_purcell_run(api,ps_length,d0,sweeps=4,steps=100,nuc_mod=[1,1]):
 
     return 1
 
-def carr_purcell_analysis(t,trace):
+def carr_purcell_analysis(dataset):
     """
     This function loads a carr_purcell analysis and finds decay constant
     """
+    t = dataset.time
+    trace = dataset.trace
+
     trace = np.real(trace)
     trace = trace - np.min(trace)
     trace = trace / np.max(trace)
@@ -106,10 +109,13 @@ def carr_purcell_analysis(t,trace):
         
     return xmax
 
-def carr_purcell_plot(t,trace):
+def carr_purcell_plot(dataset):
     """
     This function plots the carr purcell trace, with 1/e and the calculated max time. 
     """
+    t = dataset.time
+    trace = dataset.trace
+    
     fig = plt.figure(figsize=(6,6),dpi=150)
     axs = fig.subplots(1,1)
     
@@ -229,13 +235,15 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
         time.sleep(1)
     
     # Acquire complete data set
-    cp_t,cp_data = api.acquire_dataset()
+        ##cp_t,cp_data = api.acquire_dataset()
+    cp_dataset = api.acquire_dataset()
+
     api.xepr_save( path+ 'cp_q_' + filename)
     # Save complete data set using bruker formats
 
     # Identify the max time
-    cp_max = carr_purcell_analysis(cp_t,cp_data)
-    cp_fig = carr_purcell_plot(cp_t,cp_data)
+    cp_max = carr_purcell_analysis(cp_dataset)
+    cp_fig = carr_purcell_plot(cp_dataset)
     cp_fig.show()
 
     # Now that the cp max time has been caclulcated we need to repeat this along
@@ -249,13 +257,15 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
         time.sleep(1)
 
     # Acquire complete data set
-    tau2_t,tau2_data = api.acquire_dataset()
+    # tau2_t,tau2_data = api.acquire_dataset()
+    tau2_dataset = api.acquire_dataset()
+
     api.xepr_save( path+ 'tau2_' + filename)
 
     
     # Identify the max time
-    tau2_max = carr_purcell_analysis(tau2_t,tau2_data)
-    tau2_fig = carr_purcell_plot(tau2_t,tau2_data)
+    tau2_max = carr_purcell_analysis(tau2_dataset)
+    tau2_fig = carr_purcell_plot(tau2_dataset)
     tau2_fig.show()
 
     # Now that the two maxes have been found take the largest one of these to be the max trace.
@@ -271,11 +281,11 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     while api.is_exp_running() == True:
         time.sleep(1)
 
-    t1,t2,data = api.acquire_scan_2d()
+    twoD_dataset = api.acquire_scan_2d()
     api.xepr_save( path+ '2D_dec_' + filename)
 
     last_scan = TwoD_Experiment()
-    last_scan.import_data((t1,t2),data,1,4,6000)
+    last_scan.import_dataset(twoD_dataset)
     last_scan.snr_normalize(loops[0]*loops[1]*16)
     last_scan.calculate_optimal()
     print(f'The optimal pulse delays are: {last_scan.time_4p}')

@@ -56,7 +56,14 @@ class TwoD_Experiment:
         self.scan = scans
         self.shots = shots
         self.shrt = shrt
-        
+
+    def import_dataset(self,dataset):
+        self.time = dataset.time
+        self.data = dataset.data
+        self.scan = dataset.scans_done
+        self.shots = dataset.shot_p_point
+        self.shrt = dataset.shrt
+
     def create_bahrenberg_plots(self):
         """
         Returns a matplotlib figure object for the standard bahrenberg figure.

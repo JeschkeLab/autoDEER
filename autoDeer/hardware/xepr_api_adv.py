@@ -1,4 +1,5 @@
 from posixpath import expanduser
+import re
 from tempfile import TemporaryFile
 import numpy as np
 import time
@@ -11,6 +12,19 @@ import XeprAPI
 #     try:
 #         Xepr = XeprAPI.Xepr()
 #         return Xepr
+
+hardware_meta = {# This dictionary should be moved into a config file eventually
+    "Type":             "Complete Spectrometer",
+    "Manufactuer":      "Bruker",
+    "Model":            "E600",
+    "Local name":       "C_Floor",
+    "Acq. Resolution":  2,
+    "Pulse Resolution": 2,
+    "AWG":              False,
+    "Min Freq":         33,
+    "Max Freq":         35,
+ } 
+
 class xepr_api:
     def __init__(self) -> None:
         self.Xepr = None
@@ -18,6 +32,7 @@ class xepr_api:
         self.hidden = None
         self._tmp_dir = None
         self.XeprCmds = None
+        self.meta = hardware_meta # This will become more neuanced eventually. Currentlty this is sufficent.
         pass
 
     def set_Xepr_global(self,Xepr_inst): 
@@ -100,12 +115,12 @@ class xepr_api:
         if dataset_dim == 1:
             # We have a 1D dataset
             t = dataset.X
-            return t,data
+            return dataset(t,data)
         elif dataset_dim == 2:
             # we have a 2D dataset
             t1 = dataset.X
             t2 = dataset.Y
-            return t1,t2,data
+            return dataset([t1,t2],data,self.cur_exp)
 
     def acquire_scan(self):
         """
@@ -348,3 +363,20 @@ class attenuator:
         self.hidden[self.name.value] = new_value
         return self.hidden[self.name].value         
                
+class dataset:
+    """ 
+    This is the dataset object for openEPR, it not only contains the raw data but also some 
+    dataset specific metadata such as current number of scans
+    """
+
+    def __init__(self,time,data,cur_exp=None) -> None:
+        self.time = time
+        self.data = data
+        if not cur_exp:
+            self.scans_done = cur_exp.getParam("NbScansDone").value
+            self.scans_todo = cur_exp.getParam("NbScansToDo").value
+            self.shrt = cur_exp.getParam("ShotRepTime").value
+            self.shot_p_point = cur_exp.getParam("ShotsPLoop").value
+        pass
+
+

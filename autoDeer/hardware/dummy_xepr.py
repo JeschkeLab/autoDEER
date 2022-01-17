@@ -1,4 +1,5 @@
-""""
+# -*- coding: utf-8 -*-
+"""
 This is a set of scripts that pretend to be an xepr spectromter, this allows for the further development of 
 this code without having to be sat in front of an actual spectrometer:
 
@@ -13,11 +14,28 @@ import deerlab as dl
 import time
 import os
 import random as rand
-from .xepr_api_adv import xepr_api
+from .xepr_api_adv import xepr_api,dataset
 
 rand.seed(1212)
 
+hardware_meta = {# This dictionary should be moved into a config file eventually
+    "Type":             "Complete Spectrometer",
+    "Manufactuer":      "Hugo Karas",
+    "Model":            "Dummy",
+    "Local name":       "Dummy",
+    "Acq. Resolution":  2,
+    "Pulse Resolution": 2,
+    "AWG":              False,
+    "Min Freq":         33,
+    "Max Freq":         35,
+ } 
+
 class dummy_api(xepr_api):
+
+    def __init__(self) -> None:
+        self._tmp_dir = None
+        self.meta = hardware_meta # This will become more neuanced eventually. Currentlty this is sufficent.
+        pass
 
     def find_Xepr(self):
         self.Xepr = dummy_xepr()
