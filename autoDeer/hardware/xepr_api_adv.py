@@ -108,18 +108,18 @@ class xepr_api:
         """
         This function acquire the dataset, this work both for a running experiment or once it has finished.
         """
-        dataset = self.Xepr.XeprDataset() # This function returns the currently view dataset
-        size = dataset.size # This needs to be checked to see what form this precisely comes as
-        dataset_dim = len(size)
-        data = dataset.O
-        if dataset_dim == 1:
+        dataclass = self.Xepr.XeprDataset() # This function returns the currently view dataset
+        size = dataclass.size # This needs to be checked to see what form this precisely comes as
+        data_dim = len(size)
+        data = dataclass.O
+        if data_dim == 1:
             # We have a 1D dataset
-            t = dataset.X
-            return dataset(t,data)
-        elif dataset_dim == 2:
+            t = dataclass.X
+            return dataset(t,data,self.cur_exp)
+        elif data_dim == 2:
             # we have a 2D dataset
-            t1 = dataset.X
-            t2 = dataset.Y
+            t1 = dataclass.X
+            t2 = dataclass.Y
             return dataset([t1,t2],data,self.cur_exp)
 
     def acquire_scan(self):
@@ -372,7 +372,7 @@ class dataset:
     def __init__(self,time,data,cur_exp=None) -> None:
         self.time = time
         self.data = data
-        if not cur_exp:
+        if cur_exp != None:
             self.scans_done = cur_exp.getParam("NbScansDone").value
             self.scans_todo = cur_exp.getParam("NbScansToDo").value
             self.shrt = cur_exp.getParam("ShotRepTime").value

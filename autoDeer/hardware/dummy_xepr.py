@@ -60,7 +60,7 @@ class dummy_api(xepr_api):
     def compile_PulseSpel_prg(self):
         pass
 
-    def set_PulseSpel_var(self, cur_exp, variable: str, value: int):
+    def set_PulseSpel_var(self, variable: str, value: int):
         # This should be expanded into a dictionary that can then effect the simulation. In an ideal world
         pass
     def run_exp(self):
@@ -244,6 +244,15 @@ class dummy_xepr:
         
         def aqPgDefLoad(filepath):
             # Loas the pulse spel definitions file, does nothing
+            pass
+
+        def aqPgDefSaveAs(path):
+            pass
+
+        def aqPgSaveAs(path):
+            pass
+        
+        def vpSave(viewpoint:str,title:str,path:str):
             pass
 
 class dummy_hidden:
