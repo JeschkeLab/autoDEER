@@ -4,6 +4,7 @@
 #
 # Hugo Karas 2021
 
+import imp
 from hardware.xepr_api_adv import xepr_api 
 import time
 import numpy as np
@@ -13,6 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as colors
 from TwoD_Experiment import TwoD_Experiment
+from File_Saving import save_file
 
 def carr_purcell_run(api,ps_length,d0,sweeps=4,steps=100,nuc_mod=[1,1]):
     
@@ -69,7 +71,7 @@ def carr_purcell_analysis(dataset):
     This function loads a carr_purcell analysis and finds decay constant
     """
     t = dataset.time
-    trace = dataset.trace
+    trace = dataset.data
 
     trace = np.real(trace)
     trace = trace - np.min(trace)
@@ -114,7 +116,7 @@ def carr_purcell_plot(dataset):
     This function plots the carr purcell trace, with 1/e and the calculated max time. 
     """
     t = dataset.time
-    trace = dataset.trace
+    trace = dataset.data
     
     fig = plt.figure(figsize=(6,6),dpi=150)
     axs = fig.subplots(1,1)
@@ -227,6 +229,8 @@ def twoD_scan(api,ps_length,delays,steps,loops):
 
 def main_run(api,ps_length:int,d0:int,filename:str,path:str):
 
+    file = save_file()
+    file.create_file(path + filename + ".h5")
     # Start the carr_purcell_run
     carr_purcell_run(api,ps_length,d0)
 
@@ -237,6 +241,7 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     # Acquire complete data set
         ##cp_t,cp_data = api.acquire_dataset()
     cp_dataset = api.acquire_dataset()
+    file.save_experimental_data(cp_dataset,"carr_purcell")
 
     api.xepr_save( path+ 'cp_q_' + filename)
     # Save complete data set using bruker formats
@@ -260,6 +265,7 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     # tau2_t,tau2_data = api.acquire_dataset()
     tau2_dataset = api.acquire_dataset()
 
+    file.save_experimental_data(tau2_dataset,"tau2_scan")
     api.xepr_save( path+ 'tau2_' + filename)
 
     
@@ -282,6 +288,7 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
         time.sleep(1)
 
     twoD_dataset = api.acquire_scan_2d()
+    file.save_experimental_data(twoD_dataset,"2D_exp")
     api.xepr_save( path+ '2D_dec_' + filename)
 
     last_scan = TwoD_Experiment()
