@@ -36,9 +36,9 @@ def carr_purcell_run(api,ps_length,d0,sweeps=4,steps=100,nuc_mod=[1,1]):
     api.compile_PulseSpel_def() 
 
     # Set pulse lengths
-    api.set_PulseSpel_var("p0",ps_length[0])
-    api.set_PulseSpel_var("p1",ps_length[1])
-    api.set_PulseSpel_var("p2",ps_length[1])
+    api.set_PulseSpel_var("p0",ps_length[1])
+    api.set_PulseSpel_var("p1",ps_length[0])
+    api.set_PulseSpel_var("p2",ps_length[0])
 
     # Set Pulse Delays
     api.set_PulseSpel_var("d0",d0)
@@ -151,9 +151,9 @@ def tau2_scan_run(api,ps_length,d0,tau1):
     api.compile_PulseSpel_def() 
     
     # Set pulse lengths
-    api.set_PulseSpel_var("p0",ps_length[0])
-    api.set_PulseSpel_var("p1",ps_length[1])
-    api.set_PulseSpel_var("p2",ps_length[1])
+    api.set_PulseSpel_var("p0",ps_length[1])
+    api.set_PulseSpel_var("p1",ps_length[0])
+    api.set_PulseSpel_var("p2",ps_length[0])
 
     # Set Pulse Delays
     api.set_PulseSpel_var("d0",d0)
@@ -196,9 +196,9 @@ def twoD_scan(api,ps_length,delays,steps,loops):
     api.compile_PulseSpel_def() 
 
     # Set pulse lengths
-    api.set_PulseSpel_var("p0",ps_length[0])
-    api.set_PulseSpel_var("p1",ps_length[1])
-    api.set_PulseSpel_var("p2",ps_length[1])
+    api.set_PulseSpel_var("p0",ps_length[1])
+    api.set_PulseSpel_var("p1",ps_length[0])
+    api.set_PulseSpel_var("p2",ps_length[0])
 
     # Set Pulse Delays
     api.set_PulseSpel_var("d0",delays[0])
