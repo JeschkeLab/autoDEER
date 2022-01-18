@@ -82,7 +82,7 @@ def carr_purcell_analysis(dataset):
     yi = rbf(xi)
 
     cp_decay = xi[np.argmin(abs(yi-(1/np.e)))]
-    xmax = 3 * cp_decay
+    xmax = 2.5 * cp_decay
 
     # Perform sanity checks on calculated value,
     if xmax < 300:
