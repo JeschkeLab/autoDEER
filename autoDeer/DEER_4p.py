@@ -1,6 +1,4 @@
-import XeprAPI
 import deerlab as dl
-import hardware.xepr_api_adv as api
 import numpy as np
 import os,sys;
 
@@ -20,7 +18,7 @@ def change_DEER_length(path,new_length:int):
     else:
         print("ERROR: Can't update the DEER Length. Check pulse Spel Experiment file")
         
-def deerlab_next_scan():
+def deerlab_next_scan(api):
     t,Vexp = api.acquire_scan()
     t = t/1000
     Vexp = dl.correctphase(Vexp)
