@@ -32,6 +32,25 @@ class save_file:
             self.file = h.File(file_path.encode(encoding="ascii"),'w')
             return self.file
 
+    def open_file(self,file_name):
+        if not os.path.isabs(file_name): # path is not an absolute path
+            if self.data_dir == None:
+                raise RuntimeError("Data directory must be set unless an absolute path is given")
+            else:
+                split_name = os.path.split(file_name)
+                if split_name[1] == []:
+                    raise RuntimeError("A file must be given not a directory")
+                else:
+                    split_name_no_ext = os.path.splitext(split_name[1])[0]
+                    file_path = self.data_dir + split_name_no_ext
+                    self.file = h.File(file_path.encode(encoding="ascii"),'r+')
+                    return self.file
+
+        else:
+            file_path = file_name
+            self.file = h.File(file_path.encode(encoding="ascii"),'r+')
+            return self.file
+
     def set_data_directory(self,directory):
 
         if  not os.path.isdir(directory):
@@ -77,7 +96,7 @@ class save_file:
             cur_grp = file.create_group(exp.type)
         
 
-    def save_experimental_data(self,data,grp_name)->None:
+    def save_experimental_data(self,data,grp_name:str,dset_name:str=None) -> h.Dataset:
 
         file = self.file
         list_grps = file.keys()
@@ -86,13 +105,16 @@ class save_file:
             cur_grp = file.create_group(grp_name)
         else:
             cur_grp = file[grp_name]
-        
-        cur_grp.create_dataset('time',data=data.time)
-        cur_grp.create_dataset('data',data=data.data)
 
+        if dset_name == None:
+            dset_name = "raw_data"
+        
+        dset = cur_grp.create_dataset(dset_name,data=[data.time,data.data]) # This attempts to place it all in one dataset
+#        cur_grp.create_dataset('data',data=data.data)
+        return dset
         
 
-    def autosave_experiment_data(self,exp):
+    def autosave_experiment_data(self,exp) -> None:
         # This does not work yet
         file = self.file
         list_grps = file.keys()
@@ -105,3 +127,14 @@ class save_file:
             cur_grp.create_group("autosave")
 
         pass
+
+    def save_attribute(self,data,name,grp_name) -> None:
+        file = self.file
+        list_grps = file.keys()
+
+        if grp_name not in list_grps:
+            cur_grp = file.create_group(grp_name)
+        else:
+            cur_grp = file[grp_name]
+        
+        cur_grp.attrs.create(name,data)

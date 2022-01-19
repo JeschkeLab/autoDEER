@@ -126,17 +126,18 @@ class xepr_api:
         """
         This script detects the end of the scan and acquires the data set. This requries that the experiment is still running, or recently finished. Once it has been saved this will no longer work.
         """
-        current_scan = self.cur_exp.getParam("NbScansDone").value
-        x_length = int(self.cur_exp.getParam("XSpecRes").value)
-        time_per_point = self.cur_exp.getParam("ShotRepTime").value *1e-6*self.cur_exp.getParam("ShotsPLoop").value*2
-        trace = np.zeros(x_length, dtype = np.complex64)
-        while self.cur_exp.getParam("NbScansDone").value == current_scan:
+        if self.is_exp_running():
+        
+            current_scan = self.cur_exp.getParam("NbScansDone").value
+            x_length = int(self.cur_exp.getParam("XSpecRes").value)
+            time_per_point = self.cur_exp.getParam("ShotRepTime").value *1e-6*self.cur_exp.getParam("ShotsPLoop").value*2
+            trace = np.zeros(x_length, dtype = np.complex64)
+            while self.cur_exp.getParam("NbScansDone").value == current_scan:
+                time.sleep(time_per_point)
             time.sleep(time_per_point)
-        time.sleep(time_per_point)
-        # trace = Xepr.().O
-        # time_axis = Xepr.XeprDataset().X
-        # return time_axis,trace
-        return self.acquire_dataset()
+            return self.acquire_dataset()
+        else:
+            return self.acquire_dataset()
 
     def acquire_scan_at(self,scan_num:int):
         """

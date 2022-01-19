@@ -4,6 +4,9 @@ import hardware.xepr_api_adv as api
 import numpy as np
 import os,sys;
 
+from File_Saving import save_file
+import time
+
 
 def change_DEER_length(path,new_length:int):
     """This is a HIGHLY specific function to change  a line in a specific pulse spel file. This will break your pulse spel script if applied to any other file."""
@@ -19,6 +22,16 @@ def change_DEER_length(path,new_length:int):
         
 def deerlab_next_scan():
     t,Vexp = api.acquire_scan()
+    t = t/1000
+    Vexp = dl.correctphase(Vexp)
+    t = dl.correctzerotime(Vexp,t)
+    r = dl.time2dist(t)          # distance axis, nm
+    fit = dl.fitmodel(Vexp,t,r,'P',dl.bg_hom3d,dl.ex_4pdeer,verbose=False)
+    sigma = dl.noiselevel(Vexp,'der')
+    #print(dl.time2dist(t))
+    return [fit, sigma]  
+
+def std_deerlab(t,Vexp):
     t = t/1000
     Vexp = dl.correctphase(Vexp)
     t = dl.correctzerotime(Vexp,t)
@@ -80,17 +93,24 @@ def run_4pDeer(api,pulse_lengths,delays,steps,avgs):
 
 def main_run(api,ps_length:int,delays,filename:str,path:str): # This follows the same structure as the main run in Paramter Optimization
     file = save_file()
-    file.create_file(path + filename + ".h5")
+    file.open_file(path + filename + ".h5")
     
-    run_4pDeer(api,ps_length,delays,steps,avgs)
+    run_4pDeer(api,ps_length,delays,[12,2,2],[10,2000,1])
     
+    time.sleep(2*60*60) # This implements the time limit
+    api.stop_exp()
+
     while api.is_exp_running() == True:
         time.sleep(1)
         
     DEER1_dataset = api.acquire_dataset()
     
-    file.save_experimental_data(cp_dataset,"DEER quick")
+    dset_raw = file.save_experimental_data(DEER1_dataset,"DEER quick")
 
     api.xepr_save( path+ 'DEER_quick' + filename)
     
-    
+    [fit, sigma] = std_deerlab(DEER1_dataset.time,DEER1_dataset.data)
+
+    dset_deer = file.save_experimental_data(DEER1_dataset,"DEER quick")
+
+    return fit, sigma
