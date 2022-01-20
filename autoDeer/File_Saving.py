@@ -7,9 +7,13 @@ This is a class designed to make the saving of data and meta data as simple as p
 
 
 import os
+import time
 import h5py as h
+import logging
 
 data_dir = None
+
+log = logging.getLogger('core.Saving')
 
 class save_file:
 
@@ -108,6 +112,12 @@ class save_file:
 
         if dset_name == None:
             dset_name = "raw_data"
+
+        dset_name = self._find_unique_name(cur_grp,dset_name) # Check if dset name already exists, add a suffix if needed
+
+        if dset_name == 1: #ERROR: We are no unique group can be found.
+            return 0
+
         dset_grp = cur_grp.create_group(dset_name)
         # dset = cur_grp.create_dataset(dset_name,data=[data.time,data.data]) # This attempts to place it all in one dataset
         dset_grp.create_dataset('time',data=data.time)
@@ -144,3 +154,20 @@ class save_file:
             cur_grp = file[grp_name]
         
         cur_grp.attrs.create(name,data)
+
+    def _find_unique_name(self,cur_grp,dset_name):
+
+        if dset_name in cur_grp.keys():
+            i=1
+            tmp_dset_name = dset_name
+            while (tmp_dset_name in cur_grp.keys()) and i <10:
+                tmp_dset_name = dset_name +f'({i})'
+            
+            if i<10:
+                log.warning(f'Can\'t find a unique group, using {tmp_dset_name} instead')
+                return tmp_dset_name
+            else:
+                log.error('Can\'t find a unique group')
+                return 1 
+        else:
+            return dset_name
