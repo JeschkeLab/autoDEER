@@ -162,6 +162,7 @@ class save_file:
             tmp_dset_name = dset_name
             while (tmp_dset_name in cur_grp.keys()) and i <10:
                 tmp_dset_name = dset_name +f'({i})'
+                i = i + 1
             
             if i<10:
                 log.warning(f'Can\'t find a unique group, using {tmp_dset_name} instead')

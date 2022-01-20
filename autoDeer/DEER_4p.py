@@ -5,6 +5,7 @@ import os,sys;
 from File_Saving import save_file
 import time
 
+file_dir = os.path.dirname(__file__)
 
 def change_DEER_length(path,new_length:int):
     """This is a HIGHLY specific function to change  a line in a specific pulse spel file. This will break your pulse spel script if applied to any other file."""
@@ -41,8 +42,11 @@ def std_deerlab(t,Vexp):
 
 def run_4pDeer(api,pulse_lengths,delays,steps,avgs):
     
-    exp_file = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/autoDEER_4p.exp'
-    def_file = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/autoDEER_4p.def'
+    # exp_file = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/autoDEER_4p.exp'
+    exp_file = file_dir+"/PulseSpel/autoDEER_4p.exp"
+    # def_file = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/autoDEER_4p.def'
+    def_file = file_dir+"/PulseSpel/autoDEER_4p.exp"
+
     # 
     api.set_ReplaceMode(False) #Turn replace mode off
     
@@ -89,13 +93,13 @@ def run_4pDeer(api,pulse_lengths,delays,steps,avgs):
     time.sleep(1)
     return 1
 
-def main_run(api,ps_length:int,delays,filename:str,path:str): # This follows the same structure as the main run in Paramter Optimization
+def main_run(api,ps_length:int,delays,filename:str,path:str,exp_time=2): # This follows the same structure as the main run in Paramter Optimization
     file = save_file()
     file.open_file(path + filename + ".h5")
     
     run_4pDeer(api,ps_length,delays,[12,2,2],[10,2000,1])
     
-    time.sleep(2*60*60) # This implements the time limit
+    time.sleep(exp_time*60*60) # This implements the time limit
     api.stop_exp()
 
     while api.is_exp_running() == True:
