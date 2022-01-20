@@ -1,5 +1,10 @@
 # autoDeer
-A python package designed for the running of automated and optimised DEER/PELDOR experiments for pulsed EPR. 
+A python package designed for the running of automated and optimised DEER/PELDOR experiments for pulsed EPR. Currently this is built as a python extension to Bruker's Xepr software. 
+
+## Features
+- Automated Parameter optimization
+- Automated Running of a 2hr DEER experiment with plotting
+- Saving all experiments to a .h5 file
 
 ## Dependencies
 1) Numpy
