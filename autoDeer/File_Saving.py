@@ -96,7 +96,7 @@ class save_file:
             cur_grp = file.create_group(exp.type)
         
 
-    def save_experimental_data(self,data,grp_name:str,dset_name:str=None) -> h.Dataset:
+    def save_experimental_data(self,data,grp_name:str,dset_name:str=None,meta:dict=None) -> h.Dataset:
 
         file = self.file
         list_grps = file.keys()
@@ -108,10 +108,16 @@ class save_file:
 
         if dset_name == None:
             dset_name = "raw_data"
-        
-        dset = cur_grp.create_dataset(dset_name,data=[data.time,data.data]) # This attempts to place it all in one dataset
-#        cur_grp.create_dataset('data',data=data.data)
-        return dset
+        dset_grp = cur_grp.create_group(dset_name)
+        # dset = cur_grp.create_dataset(dset_name,data=[data.time,data.data]) # This attempts to place it all in one dataset
+        dset_grp.create_dataset('time',data=data.time)
+        dset_grp.create_dataset('data',data=data.data)
+
+        if meta != None:
+            for key in meta:
+                cur_grp.attrs.create(key,meta[key])
+
+        return dset_grp
         
 
     def autosave_experiment_data(self,exp) -> None:

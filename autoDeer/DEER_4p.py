@@ -109,6 +109,6 @@ def main_run(api,ps_length:int,delays,filename:str,path:str): # This follows the
     
     [fit, sigma] = std_deerlab(DEER1_dataset.time,DEER1_dataset.data)
 
-    dset_deer = file.save_experimental_data(DEER1_dataset,"DEER quick")
+    dset_deer = file.save_experimental_data(DEER1_dataset,"DEER quick",dset_name="Distance Distribution")
 
     return fit, sigma
