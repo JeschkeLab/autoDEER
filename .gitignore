@@ -140,3 +140,7 @@ dmypy.json
 /dataSources/
 /dataSources.local.xml
 .idea/
+
+# Weird pulse spel save files
+.def%
+.exp%
