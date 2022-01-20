@@ -15,6 +15,10 @@ import matplotlib.cm as cm
 import matplotlib.colors as colors
 from TwoD_Experiment import TwoD_Experiment
 from File_Saving import save_file
+import logging
+
+po_log = logging.getLogger('core.Param_Opt')
+
 
 def carr_purcell_run(api,ps_length,d0,sweeps=4,steps=100,nuc_mod=[1,1]):
     
@@ -233,7 +237,7 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     file.create_file(path + filename + ".h5")
     # Start the carr_purcell_run
     carr_purcell_run(api,ps_length,d0)
-
+    cp_meta = {'Pulse Lengths':ps_length,'d0':d0}
     # Detect when experiments is finished and save data
     while api.is_exp_running() == True:
         time.sleep(1)
@@ -241,7 +245,7 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     # Acquire complete data set
         ##cp_t,cp_data = api.acquire_dataset()
     cp_dataset = api.acquire_dataset()
-    file.save_experimental_data(cp_dataset,"carr_purcell")
+    file.save_experimental_data(cp_dataset,"carr_purcell",meta=cp_meta)
 
     api.xepr_save( path+ 'cp_q_' + filename)
     # Save complete data set using bruker formats
@@ -250,6 +254,7 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     cp_max = carr_purcell_analysis(cp_dataset)
     cp_fig = carr_purcell_plot(cp_dataset)
     cp_fig.show()
+    po_log.info(f'Carr-Purcell decay maximum of {cp_max}ns')
 
     # Now that the cp max time has been caclulcated we need to repeat this along
     # the vertical axis. This might be unesessary, but they will likely be differnt.
@@ -257,6 +262,8 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     # Run the tau2_scan
     tau1 = 400 #ns
     tau2_scan_run(api,ps_length,d0,tau1)
+    tau2_meta = {'Pulse Lengths':ps_length,'d0':d0,'tau1':tau1}
+
     # Wait until tau2 scan finishes
     while api.is_exp_running() == True:
         time.sleep(1)
@@ -265,7 +272,7 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     # tau2_t,tau2_data = api.acquire_dataset()
     tau2_dataset = api.acquire_dataset()
 
-    file.save_experimental_data(tau2_dataset,"tau2_scan")
+    file.save_experimental_data(tau2_dataset,"tau2_scan",meta=tau2_meta)
     api.xepr_save( path+ 'tau2_' + filename)
 
     
@@ -273,29 +280,35 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     tau2_max = carr_purcell_analysis(tau2_dataset)
     tau2_fig = carr_purcell_plot(tau2_dataset)
     tau2_fig.show()
+    po_log.info(f'Tau2 decay maximum of {tau2_max}ns')
 
     # Now that the two maxes have been found take the largest one of these to be the max trace.
     max_tau = max([cp_max,tau2_max])
     print(f" Maximum tau2 set to {int(max_tau)} ns")
+    po_log.info(f'Overall decay maximum of {max_tau}ns')
+    
     tau_step = np.floor((max_tau - 200)/64)
     tau_step = (tau_step//2)*2 # make sure this is a multiple of 2 for c-floor
     delays = [d0,200,200]
     steps = [tau_step,tau_step]
     loops = [4,4]
     twoD_scan(api,ps_length,delays,steps,loops)
+    twoD_meta = {'Pulse Lengths':ps_length,'delays':delays,'steps':steps,'loops':loops}
+
     
     while api.is_exp_running() == True:
         time.sleep(1)
 
     twoD_dataset = api.acquire_scan_2d()
-    file.save_experimental_data(twoD_dataset,"2D_exp")
+    file.save_experimental_data(twoD_dataset,"2D_exp",meta=twoD_meta)
     api.xepr_save( path+ '2D_dec_' + filename)
 
     last_scan = TwoD_Experiment()
     last_scan.import_dataset(twoD_dataset)
     last_scan.snr_normalize(loops[0]*loops[1]*16)
     last_scan.calculate_optimal()
-    print(f'The optimal pulse delays are: {last_scan.time_4p}')
+    print(f'The optimal pulse delays for 4p DEER are: {last_scan.time_4p}')
+    po_log.info(f'Optimal pulse delays for 4p DEER are: {last_scan.time_4p} ns')
 
     # TODO: ADD uncertainty estimation to 2D plot
     # Once more than one scan has been collected look into how the uncertainty can be estimated

@@ -15,9 +15,9 @@ class TwoD_Experiment:
     """
 
     def __init__(self) -> None:
-        self.snr_target = 20
-        self.time_target = 2
-        self.trace_length = 512
+        self.snr_target = 20 #normal units not db
+        self.time_target = 2 #hrs
+        self.trace_length = 512 #this is wrong, and is likely to be a function of the optimal time. 
         self.noise_frac = 0.75
 
 

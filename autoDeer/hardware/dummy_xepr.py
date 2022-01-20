@@ -16,6 +16,10 @@ import os
 import random as rand
 from .xepr_api_adv import xepr_api,dataset
 
+import logging
+
+hw_log = logging.getLogger('hardware.dummy')
+
 rand.seed(1212)
 
 hardware_meta = {# This dictionary should be moved into a config file eventually
@@ -64,12 +68,15 @@ class dummy_api(xepr_api):
         # This should be expanded into a dictionary that can then effect the simulation. In an ideal world
         pass
     def run_exp(self):
+        hw_log.info('Experiment started')
         pass
 
     def stop_exp(self):
+        hw_log.info('Experiment stopped')
         pass
     
     def abort_exp(self):
+        hw_log.info('Experiment aborted')
         pass
     
 

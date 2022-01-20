@@ -14,11 +14,35 @@ One of the main features of the python logging modules is the accessibility of m
 ## Logs
 There will be two logs. A core _log_ and a _hardware_ log. These will both be saved in the appropriate tmp folder. On unix systems this /tmp/autoDEER. All logs will be encoded in "UTF-8" per the standards for this program with exception of file names that will be encoded with "ASCII". Since experiments and software are often run for longer than a day even weeks, both the date and time will be recorded for each log.
 
-Logs are created with these two commands, in the main script that runs the whole core.:
+Logs are created in a separate function that is run when scripts are setup. Each  individual module should 
+
+### Rollover
+To prevent logs from becoming never ending, a degree of rollover is required. Initially, we will use weekly logs with a four week back up, these logs might be too big and we need to move to daily. Equally we might find that 4 weeks of logs, info levels logs are unnecessary. This should be discussed at a later point, or earlier if any issues arise.
+
+### Calling a Logger
 ```python
 import logging
 
-logging.basicConfig(filename="core.log",format='%(levelname)s: %(asctime)s %(message)s', encoding="utf-8",level.logging.DEBUG)
-logging.basicConfig(filename="hardware.log",format='%(levelname)s: %(asctime)s %(message)s', encoding="utf-8",level.logging.DEBUG)
+# To get the basic loggers:
+core_logger = logging.getLogger('core')
+hard_logger = logging.getLogger('hardware')
+
+# It is much better if a sublogger is called, this means that the log message is easier to identify
+mag_logger = logging.getLogger('harware.magnet')
+```
+### Posting a log message
+```python
+
+mag_logger.DEBUG('Hello magnet. How are you feeling today?')
+mag_logger.INFO('The magnetic field has been changed to 12220G')
+mag_logger.WARNING('The magentic field didn\'t change')
+mag_logger.ERROR('Can\'t connect to magnet')
+mag_logger.CRITICAL('The magnet has teleported to another dimension')
+```
+### Starting the logger
+```python
+from Logging import setup_logs
+
+setup_logs()
 
 ```

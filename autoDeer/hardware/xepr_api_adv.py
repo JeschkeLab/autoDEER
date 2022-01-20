@@ -8,6 +8,10 @@ from numpy.core.fromnumeric import cumprod;
 import XeprAPI
 
 
+import logging
+
+hw_log = logging.getLogger('hardware.Xepr')
+
 # def connect_Xepr():
 #     try:
 #         Xepr = XeprAPI.Xepr()
@@ -115,11 +119,13 @@ class xepr_api:
         if data_dim == 1:
             # We have a 1D dataset
             t = dataclass.X
+            hw_log.debug('Acquired Dataset')
             return dataset(t,data,self.cur_exp)
         elif data_dim == 2:
             # we have a 2D dataset
             t1 = dataclass.X
             t2 = dataclass.Y
+            hw_log.debug('Acquired Dataset')
             return dataset([t1,t2],data,self.cur_exp)
 
     def acquire_scan(self):
@@ -173,14 +179,18 @@ class xepr_api:
         """
         This can be used to change any pulse spel variable whilst the experiment is running. These changes take effect at the begining of the next scan
         """
+        hw_log.debug(f'Set pulse spel var {str(variable)} to {int(value)}')
         self.cur_exp["ftEpr.PlsSPELSetVar"].value = str(variable) + " = "+ str(int(value))
     
     def set_ReplaceMode(self,state=False):
         if state:
             value = 'On'
+            hw_log.warning('Replace mode turned on')
             print('DANGER: Replace Mode turned ON!')
         else:
             value = 'Off'
+            hw_log.info('Replace mode turned off')
+
         self.cur_exp["ftEpr.ReplaceMode"].value = value
     
     def get_PulseSpel_exp_filename(self):
@@ -242,6 +252,7 @@ class xepr_api:
             path = self._tmp_dir + "pulsespel_" + timestr + ".exp"
         else:
             path = name
+        hw_log.debug(f'Saved Pulse Spel experiment to: {path}')
         self.Xepr.XeprCmds.aqPgSaveAs(path)
 
     def save_PulseSpel_def(self,name=None):
@@ -258,6 +269,7 @@ class xepr_api:
             path = self._tmp_dir + "pulsespel_" + timestr + ".def"
         else:
             path = name
+        hw_log.debug(f'Saved Pulse Spel defintion to: {path}')
         self.Xepr.XeprCmds.aqPgDefSaveAs(path)
 
 
@@ -293,14 +305,17 @@ class xepr_api:
 
     def run_exp(self):
         self.cur_exp.aqExpRun()
+        hw_log.info('Experiment started')
         pass
 
     def stop_exp(self):
         self.cur_exp.aqExpStop()
+        hw_log.info('Experiment stopped')
         pass
 
     def abort_exp(self):
         self.cur_exp.aqExpAbort()
+        hw_log.info('Experiment aborted')
         pass
 
     def xepr_save(self,path,title=None):
@@ -309,10 +324,11 @@ class xepr_api:
         # Taken from Custom Xepr
         directory, basename = os.path.split(path)
         if not title:
-            title = os.path.splitext(path)[0]
+            title = basename
         if not os.path.exists(directory):
             os.makedirs(directory)
         self.Xepr.XeprCmds.vpSave("Current Primary", title, path)
+        hw_log.info(f'Saved data to: {path}')
         time.sleep(0.5)
         self.Xepr.XeprCmds.aqExpSelect("Experiment")
         time.sleep(0.5)
@@ -373,6 +389,8 @@ class dataset:
     def __init__(self,time,data,cur_exp=None) -> None:
         self.time = time
         self.data = data
+        self.dim:int = int(len(time))
+        self.size = np.shape(data)
         if cur_exp != None:
             self.scans_done = cur_exp.getParam("NbScansDone").value
             self.scans_todo = cur_exp.getParam("NbScansToDo").value
