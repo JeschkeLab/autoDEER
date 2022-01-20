@@ -237,11 +237,11 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     file.create_file(path + filename + ".h5")
     # Start the carr_purcell_run
     carr_purcell_run(api,ps_length,d0)
-    cp_meta = {'Pulse Lengths':ps_length,'d0':d0}
+    cp_meta = {'Pulse Lengths':ps_length,'d0':d0,'start time':time.strftime("%Y/%m/%d - %H:%M")}
     # Detect when experiments is finished and save data
     while api.is_exp_running() == True:
         time.sleep(1)
-    
+    cp_meta.update({'end time':time.strftime("%Y/%m/%d - %H:%M")})
     # Acquire complete data set
         ##cp_t,cp_data = api.acquire_dataset()
     cp_dataset = api.acquire_dataset()
@@ -262,11 +262,12 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     # Run the tau2_scan
     tau1 = 400 #ns
     tau2_scan_run(api,ps_length,d0,tau1)
-    tau2_meta = {'Pulse Lengths':ps_length,'d0':d0,'tau1':tau1}
+    tau2_meta = {'Pulse Lengths':ps_length,'d0':d0,'tau1':tau1,'start time':time.strftime("%Y/%m/%d - %H:%M")}
 
     # Wait until tau2 scan finishes
     while api.is_exp_running() == True:
         time.sleep(1)
+    tau2_meta.update({'end time':time.strftime("%Y/%m/%d - %H:%M")})
 
     # Acquire complete data set
     # tau2_t,tau2_data = api.acquire_dataset()
@@ -293,11 +294,14 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     steps = [tau_step,tau_step]
     loops = [4,4]
     twoD_scan(api,ps_length,delays,steps,loops)
-    twoD_meta = {'Pulse Lengths':ps_length,'delays':delays,'steps':steps,'loops':loops}
+    twoD_meta = {'Pulse Lengths':ps_length,'delays':delays,'steps':steps,'loops':loops,'start time':time.strftime("%Y/%m/%d - %H:%M")}
 
     
     while api.is_exp_running() == True:
         time.sleep(1)
+    twoD_meta.update({'end time':time.strftime("%Y/%m/%d - %H:%M")})
+
+
 
     twoD_dataset = api.acquire_scan_2d()
     file.save_experimental_data(twoD_dataset,"2D_exp",meta=twoD_meta)

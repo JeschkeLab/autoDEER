@@ -93,26 +93,29 @@ def run_4pDeer(api,pulse_lengths,delays,steps,avgs):
     time.sleep(1)
     return 1
 
-def main_run(api,ps_length:int,delays,filename:str,path:str,exp_time=2): # This follows the same structure as the main run in Paramter Optimization
+def main_run(api,ps_length:int,delays,filename:str,path:str,steps = [12,2,2], exp_time=2): # This follows the same structure as the main run in Paramter Optimization
     file = save_file()
     file.open_file(path + filename + ".h5")
-    
-    run_4pDeer(api,ps_length,delays,[12,2,2],[10,2000,1])
+
+    meta_4pDeer = {'Pulse Lengths':ps_length,'d0':delays,'steps':steps,'start time':time.strftime("%Y/%m/%d - %H:%M")}
+    run_4pDeer(api,ps_length,delays,steps,[10,2000,1])
     
     time.sleep(exp_time*60*60) # This implements the time limit
     api.stop_exp()
 
     while api.is_exp_running() == True:
         time.sleep(1)
-        
+    meta_4pDeer.update({'end time':time.strftime("%Y/%m/%d - %H:%M")})
+
+
     DEER1_dataset = api.acquire_dataset()
     
-    dset_raw = file.save_experimental_data(DEER1_dataset,"DEER quick")
+    dset_raw = file.save_experimental_data(DEER1_dataset,"DEER quick",meta=meta_4pDeer)
 
     api.xepr_save( path+ 'DEER_quick' + filename)
     
     [fit, sigma] = std_deerlab(DEER1_dataset.time,DEER1_dataset.data)
-
-    dset_deer = file.save_experimental_data(DEER1_dataset,"DEER quick",dset_name="Distance Distribution")
+    dl_meta = {'sigma':sigma,'ddparam':fit.ddparam,'bgparam':fit.bgparam,'exparam':fit.exparam}
+    dset_deer = file.save_experimental_data(DEER1_dataset,"DEER quick",dset_name="Distance Distribution",meta=dl_meta)
 
     return fit, sigma
