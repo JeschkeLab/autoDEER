@@ -14,7 +14,7 @@ begin defs
  dim1 s[512]              ;     dimension [sx] for setup
  dim2 s[512]              ;     dimension [sx] for set-up
  dim3 s[1024]             ;     dimension [sx] for field sweep
- dim4 s[6]              ;     dimension [sx] for DEER
+ dim4 s[398]              ;     dimension [sx] for DEER
 ;                               ### must be adapted to delays!
 ;                               sx =(d1+d2-2*d3)/d30
  dim5 s[193]              ;     dimension for standing DEER

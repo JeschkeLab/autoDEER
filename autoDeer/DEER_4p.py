@@ -43,9 +43,9 @@ def std_deerlab(t,Vexp):
 def run_4pDeer(api,pulse_lengths,delays,steps,avgs):
     
     # exp_file = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/autoDEER_4p.exp'
-    exp_file = file_dir+"/PulseSpel/autoDEER_4p.exp"
+    exp_file = file_dir + "/PulseSpel/autoDEER_4p.exp"
     # def_file = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/autoDEER_4p.def'
-    def_file = file_dir+"/PulseSpel/autoDEER_4p.exp"
+    def_file = file_dir+"/PulseSpel/autoDEER_4p.def"
 
     # 
     api.set_ReplaceMode(False) #Turn replace mode off
