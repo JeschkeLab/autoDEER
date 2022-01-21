@@ -1,0 +1,72 @@
+;     PulseSPEL variables for DEER experiments
+;
+begin defs
+;                                               
+;
+;optimized for home-made Q band F238, May2010, attention! pulse lengths can be different
+;Gunnar Jeschke 2002, Polyhach-Bordignon 2010, Bordignon for Qband commercial TWT ser. number 17 2011
+; Repetition time
+;
+srt  = 6000 * srtu ; shot repetition time, srtu= 1 �s
+;                 ; usual values for nitroxides: 1000 * srtu at 80 K
+                   ; 4000 * srtu at 50 K
+;                  ; 10000...40000 * srtu at 15 K
+;
+; Pulse lengths
+;                        
+p0   = 16      ; observer pi pulse length (frq1), 12 ns for hard pulses
+p1   = 16      ; observer pi/2 pulse length (frq1), 12 ns for hard pulses
+p2   = 16      ; pump pi pulse length (frq2), 12 ns for hard pulses
+;
+; Variable delays
+; 
+d0   = 572     ; optimized for commercial Q band TWT ser.nr. 17 20 Mhz bandwidth
+
+d1   = 1000     ; tau1 (initial value)
+d2   = 2400     ; tau2
+d3   = 880     ; deadtime delay during which no data are acquired
+               ; d3 >= 360, if TWT window must be split (single gate time exceeded)
+;
+; Time increments
+;
+d30  = 6      ; t time scale increment of dipolar time evolution
+d31  = 2       ; time scale increment for nuclear modulation averaging
+d29  = 2       ; time increment for pulse length in nutation
+;
+; Counters
+;
+h    = 10      ; number of shots/loop                     ( counter: I )
+n    = 2000    ; number of sweeps to accumulate           ( counter: K )
+m    = 1       ; number of tau1 averages for nuclear modulation
+;                suppression
+;
+; ### Block of additional variables (Bruker definitions) ###
+p3   = 40      ;
+p7   = 80      ; LeCroy trigger
+p9   = 1000    
+pg   = 32      ; Integrator Gate Width (is superseeded by DEER pulse program)
+;
+;
+d4   = 2000    ;
+d5   = 400     ;
+                        ;
+dx   = 0       ; t time scale starting value
+dy   = 0       ; t1 time scale starting value
+               ;
+
+d20  = 0       ; Initial value of dx
+d21  = 0       ; Initial value of dy
+                        ;
+s    = 300     ; Sweep length (n. of data really taken)   ( counter: X )
+t    = 1       ; second time axsis sweep length           ( counter: Y )
+              ;
+r    = 1       ;
+c    = 1       ;
+b    = 1       ;
+             ;
+w    = 180     ; Split point of sweeps (ns) ,i.e. pulse separation where
+             ; TWT gate pulse can be split.
+;
+d6   = 100 us  
+d25  = 200 ns  
+end defs
