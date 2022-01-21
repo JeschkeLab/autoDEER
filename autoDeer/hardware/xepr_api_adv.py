@@ -161,18 +161,21 @@ class xepr_api:
         This is done by identfying the number of scansteps per sweep and acquring the data on that scan.
         This requires that the experiment has not been saved. 
         """
-        total_num_scan = self.cur_exp.getParam("NbScansToDo").value
-        total_num_sweeps = self.cur_exp.getParam("SweepsPExp").value
-        scans_per_sweep = total_num_scan/total_num_sweeps
+        if self.is_exp_running():
+            total_num_scan = self.cur_exp.getParam("NbScansToDo").value
+            total_num_sweeps = self.cur_exp.getParam("SweepsPExp").value
+            scans_per_sweep = total_num_scan/total_num_sweeps
 
-        if not scans_per_sweep.is_integer():
-            raise RuntimeError('There is a non integer number of scans per sweep')
-        
-        current_scan = self.cur_exp.getParam("NbScansDone").value
-        current_sweep = np.floor(current_scan/scans_per_sweep)
-        next_scan_target = (current_sweep + 1) * scans_per_sweep
+            if not scans_per_sweep.is_integer():
+                raise RuntimeError('There is a non integer number of scans per sweep')
 
-        return self.acquire_scan_at(next_scan_target)
+            current_scan = self.cur_exp.getParam("NbScansDone").value
+            current_sweep = np.floor(current_scan/scans_per_sweep)
+            next_scan_target = (current_sweep + 1) * scans_per_sweep
+
+            return self.acquire_scan_at(next_scan_target)
+        else:
+            return self.acquire_scan()
 
 
     def set_PulseSpel_var(self,variable:str,value:int):
