@@ -14,6 +14,13 @@ class TwoD_Experiment:
     TwoD_Experiment: This is a class for loading and processing 2D Decoherence experiments
     """
 
+    def __init__(self) -> None:
+        self.snr_target = 20 #normal units not db
+        self.time_target = 2 #hrs
+        self.trace_length = 512 #this is wrong, and is likely to be a function of the optimal time. 
+        self.noise_frac = 0.75
+
+
     def load(self,file):
         """
         Using deerlab the file is loaded. If the file is a bruker .DSC file then extra paremeters are loaded. 
@@ -26,14 +33,37 @@ class TwoD_Experiment:
         
         if file_ext == '.DSC':
             self.time,self.data,self.params = dl.deerload(file,full_output=True)
+            self.data = self.data.T
             self.scans = int(self.params.get('DSL').get('recorder').get('NbScansDone'))
             self.shots = int(self.params.get('DSL')['ftEpr']['ShotsPLoop'])
             self.shrt = float(self.params.get('DSL')['ftEpr']['ShotRepTime'].split()[0]) # in us
-            self.trace_length = 512 #TODO: This needs to be moved into an input parameter during initialization of this class.
         else:
             self.time,self.data= dl.deerload(file,full_output=False)
             self.params = None
-        
+            
+    def import_data(self,time,data,scans:int,shots:int,shrt:int):
+        """
+        The loads all the import infomation directly from python variables and arrays
+        Parameters:
+        time - [timex,timey]
+        data - numpy 2d array
+        scans(int)
+        shots(int)
+        shrt(int)
+        """
+        self.time = time
+        self.data = data
+        self.scan = scans
+        self.shots = shots
+        self.shrt = shrt
+
+    def import_dataset(self,dataset):
+        self.time = dataset.time
+        self.data = dataset.data
+        self.scan = dataset.scans_done
+        self.shots = dataset.shot_p_point
+        self.shrt = dataset.shrt
+
     def create_bahrenberg_plots(self):
         """
         Returns a matplotlib figure object for the standard bahrenberg figure.
@@ -128,8 +158,6 @@ class TwoD_Experiment:
         This function calculates and finds the optimal timing pairs for both 4 pulse and 5 pulse DEER.
         """
 
-        v_snr_bool = self._stability_check()
-        time = self.time
 
         if hasattr(self, 'data_snrpshot'):
             norm_signal = self.data_snrpshot
@@ -138,7 +166,10 @@ class TwoD_Experiment:
                 self.snr_normalize()
             except RuntimeError:
                 print("Could not auto SNR normlaize the data, please do so manual with the snr_normalize method")
-
+        
+        v_snr_bool = self._stability_check()
+        time = self.time
+        
         # Calculate optimal for 4-pulse
         tau2_index = np.any(v_snr_bool,axis=0).shape[0] - np.flip(np.any(v_snr_bool,axis=0)).argmax() -1
         tau1_index = norm_signal[:,tau2_index].argmax()
@@ -162,13 +193,26 @@ class TwoD_Experiment:
 
     def calculate_snr_threshold(self):
         """Quick script to calculate the SNR threshold from imported values"""
-        num_of_acq = 2*3600 /(self.shrt * 1e-6) 
-        self.snr_threshold = 20 / np.sqrt(num_of_acq / (self.trace_length))
+        num_of_acq = self.time_target*3600 /(self.shrt * 1e-6) 
+        self.snr_threshold = self.snr_target / np.sqrt(num_of_acq / (self.trace_length))
         return self.snr_threshold 
 
     def set_snr_threshold(self,value):
         """Sets the SNR_threshold"""
         self.snr_threshold = value
+
+    def set_snr_target(self,value):
+        self.snr_target = value
+
+    def set_time_target(self,value):
+        self.time_target = value
+
+    def estimated_snr(self,exp):
+        num_of_acq = self.time_target*3600 /(self.shrt * 1e-6) 
+        if exp == '4-pulse':
+            return self.data_snrpshot[self.index_4p] * np.sqrt(num_of_acq / (self.trace_length))
+        elif exp == '5-pulse':
+            return self.data_snrpshot[self.index_5p] * np.sqrt(num_of_acq / (self.trace_length))
     
     def snr_normalize(self,shots='auto'):
         """
@@ -200,7 +244,7 @@ class TwoD_Experiment:
         #TODO: Add warning and noise level checking
         signal = np.real(self.data)
         width,height = signal.shape
-        start_frac = 0.75 # This needs to be generated and checked for each data set to make sure it is valid
+        start_frac = self.noise_frac # This needs to be generated and checked for each data set to make sure it is valid
         self.noise = np.std(signal[int(np.floor(width*start_frac)):,int(np.floor(height*start_frac)):])
 
 
@@ -216,6 +260,8 @@ class TwoD_Experiment:
 
         Keywords:
         cmap: To set a particular colormap
+        axis: To return a subplot
+        title: A plot title
         """
 
 
@@ -224,14 +270,22 @@ class TwoD_Experiment:
 
         if contour == 'SNRpShot':
             contour_scale = np.logspace(np.log10(self.snr_threshold),np.log10(self.snr_threshold*64),7,base=10)
+            contour_norm = None  
         elif contour == 'Auto':
-            contour_scale = 10
+            contour_scale = 15
+            contour_norm = colors.PowerNorm(gamma=0.5)
+
+
         
         if norm == 'Tau2':
-          signal = np.real(self.data) / np.real(self.data).max(axis=1)[:,None]
-          cbar_label = None  
+            signal = np.real(self.data) / np.real(self.data).max(axis=1)[:,None]
+            cbar_label = None
+            contour_scale = 15
+            contour_norm = None
+            grid_norm = None
         elif norm == 'SNR':
             signal = self.snr_normalize(shots=None)
+            grid_norm = colors.PowerNorm(gamma=0.5)
             cbar_label = 'SNR'
             
         elif norm =='SNRpShot':
@@ -239,8 +293,10 @@ class TwoD_Experiment:
                 self.snr_normalize()
             signal = self.data_snrpshot
             cbar_label = r'SNR /$n^{-1/2}$'
+            grid_norm = colors.PowerNorm(gamma=0.5)
         else: #No Normalization
             signal = np.real(self.data)
+            grid_norm = None
             cbar_label = None
         
         if optimal:
@@ -254,21 +310,142 @@ class TwoD_Experiment:
             cmap = cm.get_cmap(name='Reds', lut=None)
         cmap2 = cm.get_cmap(name='gist_gray', lut=None) #Cmap for the contours
         scale = [min(self.time[0]),max(self.time[0]),min(self.time[1]),max(self.time[1])]
-
-        fig = plt.figure(figsize=(6,6),dpi=150)
-        axs = fig.subplots(1,1)
-        axs.contour(signal,extent=scale,levels=contour_scale,cmap=cmap2,alpha=0.9,zorder = 5)
-        im  = axs.pcolormesh(self.time[0],self.time[1],signal,shading='auto',alpha=0.9,cmap=cmap,zorder = 0, norm=colors.PowerNorm(gamma=0.5))
+        
+        if 'figure' in kwargs:
+            fig = kwargs['figure']
+            axs = fig.subplots(1,1)
+        else:
+            fig = plt.figure(figsize=(6,6),dpi=150)
+            axs = fig.subplots(1,1)
+        if contour != None:
+            axs.contour(signal,extent=scale,levels=contour_scale,cmap=cmap2,alpha=0.9,zorder = 5,norm=contour_norm)
+        im  = axs.pcolormesh(self.time[0],self.time[1],signal,shading='auto',alpha=0.9,cmap=cmap,zorder = 0, norm=grid_norm)
         axs.plot([min(self.time[0]),max(self.time[0])],[min(self.time[0]),max(self.time[0])],color='k',linestyle='--',alpha=0.9,zorder=6)
         axs.set_xlabel(r'$\tau_1 / (us)$')
         axs.set_ylabel(r'$\tau_2 / (us)$')
+        axs.set_xlim(min(self.time[0]),max(self.time[0]))
+        axs.set_ylim(min(self.time[1]),max(self.time[1]))
         axs.set_aspect('equal')
         if optimal:
             axs.scatter(self.time_4p[0],self.time_4p[1],c='b',s=15,label='4-pulse',zorder=10)
             axs.scatter(self.time_5p[0],self.time_5p[1],c='lime',s=15,label = '5-pulse',zorder=10)
-            fig.legend(loc=2)
+            plt.legend(loc=2)
+            axs.text(0,-0.1,fr'$\tau_1 = ${self.time_4p[0]}$\mu s$ & $\tau_2 = ${self.time_4p[1]}$\mu s$',c='b',transform=axs.transAxes)
+            axs.text(0.55,-0.1,fr'$\tau_1 = ${self.time_5p[0]}$\mu s$ & $\tau_2 = ${self.time_5p[1]}$\mu s$',c='lime',transform=axs.transAxes)
+
         
+        if 'title' in kwargs:
+            axs.set_title(kwargs['title'])
+        
+    
 
         cbar = fig.colorbar(im, label =cbar_label )
         
         return fig
+
+    def create_slice_plot(self,axis,target,norm=None,**kwargs):
+        """
+        This function returns a plot of a slice of the 2D decoherence experiment
+
+        parameters:
+        axis(0 or 1): The direction of the the slice (0 = constant tau2; 1 = constant tau1)
+        target(float): in us the target time for the slice, due to varying spacing this will find the closest time.
+        """
+
+
+        if norm == 'Tau2':
+            signal = np.real(self.data) / np.real(self.data).max(axis=1)[:,None]
+            norm_label = None  
+        elif norm == 'SNR':
+            signal = self.snr_normalize(shots=None)
+            norm_label = 'SNR'
+    
+        elif norm =='SNRpShot':
+            if not(hasattr(self,'data_snrpshot')):
+                self.snr_normalize()
+            signal = self.data_snrpshot
+            norm_label = r'SNR /$n^{-1/2}$'
+        else: #No Normalization
+            signal = np.real(self.data)
+            norm_label = None
+
+        fig = plt.figure(figsize=(6,6),dpi=150)
+        axs = fig.subplots(1,1)
+
+        slice_pos = abs(self.time[axis]-target).argmin()
+        time = self.time[axis][slice_pos]
+        if axis == 0: # This means that we are varying tau1 and have a constant tau2
+            slice_data = signal[:,slice_pos]
+            slice_time = self.time[int(not(bool(axis)))]
+            axs.set_xlabel(r'$\tau_1 / (us)$')
+        elif axis == 1: # This means that we are varying tau2 and have a constant tau 1
+            slice_data = signal[slice_pos,:]
+            slice_time = self.time[int(not(bool(axis)))]
+            axs.set_xlabel(r'$\tau_2 / (us)$')
+
+        else:
+            raise ValueError('Axis must be either 0 or 1')
+
+        axs.plot(slice_time,slice_data)
+
+        if 'title' in kwargs:
+            axs.set_title(kwargs['title'])
+
+        return fig , time
+    
+    
+    
+    def invert_signal(self):
+        """
+        This function completely inverts the signal. I.e. -x -> x and -y -> y.
+
+        This is usefull if the measured sameple is pi out of phase, or the phase was aligned for a Hahn echo not a refocused echo
+        """
+
+        try:
+            self.data = self.data * -1
+        except:
+            print('Please load data')
+
+            
+    def _data_transpose(self):
+        """
+        This is an internal method that flips the data along the diagnal.
+        
+        """
+        
+        self.data  = self.data.T
+
+    def value_at_pos(self,pos:tuple,norm=None):
+        """
+        Function that finds the value in this 2D experiment at specified coordinates
+        Parameters:
+        pos(tuple): (tau1 pos, tau2 pos)
+        norm=Nome: Can be used to select the normalisation. Options are: None, 'SNRpShot','SNR'  
+        """
+
+        if norm == None:
+            return self.data(pos[0],pos[1])
+        elif norm == 'SNRpShot':
+            return self.data_snrpshot(pos[0],pos[1])
+        elif norm == 'SNR':
+            data = self.snr_normalize(shots=None)
+            return data(pos[0],pos[1])
+        else:
+            raise ValueError('Normalization option value error')
+
+    def value_at_time(self,pos:tuple,norma=None):
+        """
+        Function that finds the closest value in this 2D experiment for specified delay times
+        Parameters:
+        pos(tuple): (tau1 time, tau2 time)
+        norm=Nome: Can be used to select the normalisation. Options are: None, 'SNRpShot','SNR'  
+        """
+        # First we need to find the closest posible values
+        tau1_pos = np.argmin(abs(self.time[0]-pos[0]))
+        tau1_time = self.time[0][tau1_pos]
+        tau2_pos = np.argmin(abs(self.time[1]-pos[1]))
+        tau2_time = self.time[1][tau2_pos]
+        print(f'Closest times: \u03C41 ={tau1_time} & \u03C42 ={tau2_time}')
+
+        return self.value_at_pos((tau1_pos,tau2_pos),norm=norma)
