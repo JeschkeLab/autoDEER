@@ -159,7 +159,6 @@ class TwoD_Experiment:
         """
 
 
-
         if hasattr(self, 'data_snrpshot'):
             norm_signal = self.data_snrpshot
         else:
