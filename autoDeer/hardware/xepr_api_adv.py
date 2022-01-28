@@ -1,6 +1,3 @@
-from posixpath import expanduser
-import re
-from tempfile import TemporaryFile
 import numpy as np
 import time
 import os,sys

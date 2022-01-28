@@ -4,8 +4,8 @@
 #
 # Hugo Karas 2021
 
-import imp
-from hardware.xepr_api_adv import xepr_api 
+# import imp
+# from autoDeer.hardware.xepr_api_adv import xepr_api 
 import time
 import numpy as np
 #from scipy.interpolate import RBFInterpolator
@@ -13,8 +13,8 @@ from scipy.interpolate import Rbf as RBFInterpolator
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-from TwoD_Experiment import TwoD_Experiment
-from File_Saving import save_file
+from autoDeer.TwoD_Experiment import TwoD_Experiment
+from autoDeer.File_Saving import save_file
 import logging
 
 po_log = logging.getLogger('core.Param_Opt')
