@@ -16,15 +16,20 @@ import matplotlib.colors as colors
 from autoDeer.TwoD_Experiment import TwoD_Experiment
 from autoDeer.File_Saving import save_file
 import logging
+import importlib
 
 po_log = logging.getLogger('core.Param_Opt')
+
+MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
 
 
 def carr_purcell_run(api,ps_length,d0,sweeps=4,steps=100,nuc_mod=[1,1]):
     
     # Setting the location of the pulse_spel
     def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
+    def_name = MODULE_DIR + '/PulseSpel/param_opt.def'
     exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
+    exp_name = MODULE_DIR + '/PulseSpel/param_opt.exp'
     
     api.set_ReplaceMode(False) #Turn replace mode off
     
@@ -141,7 +146,9 @@ def tau2_scan_run(api,ps_length,d0,tau1):
     
     # Setting the location of the pulse_spel
     def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
+    def_name = MODULE_DIR + '/PulseSpel/param_opt.def'
     exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
+    exp_name = MODULE_DIR + '/PulseSpel/param_opt.exp'
     
     api.set_ReplaceMode(False) #Turn replace mode off
     
@@ -186,7 +193,9 @@ def tau2_scan_run(api,ps_length,d0,tau1):
 def twoD_scan(api,ps_length,delays,steps,loops):
     # Setting the location of the pulse_spel
     def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
+    def_name = MODULE_DIR + '/PulseSpel/param_opt.def'
     exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
+    exp_name = MODULE_DIR + '/PulseSpel/param_opt.exp'
     
     api.set_ReplaceMode(False) #Turn replace mode off
     

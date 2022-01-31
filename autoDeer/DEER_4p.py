@@ -1,11 +1,13 @@
+import importlib
 import deerlab as dl
 import numpy as np
 import os,sys;
 
 from autoDeer.File_Saving import save_file
 import time
+import importlib
 
-file_dir = os.path.dirname(__file__)
+MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
 
 def change_DEER_length(path,new_length:int):
     """This is a HIGHLY specific function to change  a line in a specific pulse spel file. This will break your pulse spel script if applied to any other file."""
@@ -43,9 +45,9 @@ def std_deerlab(t,Vexp):
 def run_4pDeer(api,pulse_lengths,delays,steps,avgs):
     
     # exp_file = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/autoDEER_4p.exp'
-    exp_file = file_dir + "/PulseSpel/autoDEER_4p.exp"
+    exp_file = MODULE_DIR + "/PulseSpel/autoDEER_4p.exp"
     # def_file = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/autoDEER_4p.def'
-    def_file = file_dir+"/PulseSpel/autoDEER_4p.def"
+    def_file = MODULE_DIR+"/PulseSpel/autoDEER_4p.def"
 
     # 
     api.set_ReplaceMode(False) #Turn replace mode off
