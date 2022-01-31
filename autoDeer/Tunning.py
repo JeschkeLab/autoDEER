@@ -14,7 +14,7 @@ from scipy.optimize import minimize_scalar
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
 
 
-def get_pulse_trans(api,ps_length:tuple,d0):
+def setup_pulse_trans(api,ps_length:tuple,d0):
 
     # Setting the location of the pulse_spel
     #def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
@@ -22,7 +22,7 @@ def get_pulse_trans(api,ps_length:tuple,d0):
     #exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
     exp_name = MODULE_DIR + '/PulseSpel/param_opt.exp'
     
-    api.set_ReplaceMode(False) #Turn replace mode off
+    api.set_ReplaceMode(True) #Turn replace mode off
 
     # Check that what pulse spel scripts are loaded and compile
     if api.get_PulseSpel_def_filename() != def_name:
@@ -44,10 +44,6 @@ def get_pulse_trans(api,ps_length:tuple,d0):
     api.set_PulseSpel_phase_cycling("None")
 
     api.set_Acquistion_mode(1) # Run from Pulse Spel
-
-    # Run Experiment
-    api.run_exp()
-    time.sleep(1)
 
     return 1
 
@@ -75,7 +71,7 @@ def tune(api,d0:int,channel:str = 'main',phase_target:str = 'R+'):
     if not phase_target in phase_opts:
         raise ValueError(f'Phase target must be one of: {phase_opts}')
 
-    get_pulse_trans(api,[16,32]) #TODO auto-finding of do though the abs pulse
+    setup_pulse_trans(api,[16,32]) #TODO auto-finding of do though the abs pulse
 
     if channel == 'main':
         lb = 0.0
@@ -115,6 +111,8 @@ def tune(api,d0:int,channel:str = 'main',phase_target:str = 'R+'):
     def objecive(x,*args):
         '''x is the given phase setting. Args are (phase_target,imag_target)'''
         api.hidden[phase_channel].value = x # Set phase to value
+        api.exp_run()
+        time.sleep(5)
 
         t,v = api.acquire_scan()
         v_cor = DC_cor(v)
@@ -122,7 +120,7 @@ def tune(api,d0:int,channel:str = 'main',phase_target:str = 'R+'):
         if args[1] == True:
             v = -1j * v
 
-        phase = calc_phase(v_cor)
+        phase = calc_phase(t,v_cor)
         # Calc Phase
         print(f'Phase Setting = {x} - Phase = {phase}')
         return phase - args[0]
