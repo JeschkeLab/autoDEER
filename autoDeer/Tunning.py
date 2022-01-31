@@ -4,14 +4,17 @@
 # Hugo Karas 2021
 
 import time
+from turtle import end_fill
+from xml.etree.ElementTree import TreeBuilder
 import numpy as np
 import importlib
+from scipy.optimize import minimize_scalar
 
 
-MODULE_DIR = importlib.util.find_spec('pydeernet').submodule_search_locations
+MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
 
 
-def get_pulse_trans(api,ps_length,d0):
+def get_pulse_trans(api,ps_length:tuple,d0):
 
     # Setting the location of the pulse_spel
     #def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
@@ -48,21 +51,83 @@ def get_pulse_trans(api,ps_length,d0):
 
     return 1
 
-def calc_phase(api):
-    d0 = 600
-    ps_length = [16,32]
-
-    get_pulse_trans(api,ps_length,d0)
-
-    t,V = api.acquire_dataset()
+def calc_phase(t,V):
     time_step = t[1]-t[0]
     V_cor = DC_cor(V)
     real = np.trapz(np.real(V_cor),x=t)
     imag = np.trapz(np.imag(V_cor),x=t)
-    phase = real/np.sqrt(real**2 + imag**2)
+    phase = np.arctan(real/imag)
+    # phase = real/np.sqrt(real**2 + imag**2)
     return phase
 
 def DC_cor(V):
     num_points = len(V)
     offset =  np.mean(V[int(num_points*0.75):])
     return V - offset
+
+def tune(api,d0:int,channel:str = 'main',phase_target:str = 'R+'):
+
+    channel_opts = ['main', '+<x>','-<x>','+<y>','-<y>']
+    phase_opts = ['R+','R-','I+','I-']
+    if not channel in channel_opts:
+        raise ValueError(f'Channel must be one of: {channel_opts}')
+    
+    if not phase_target in phase_opts:
+        raise ValueError(f'Phase target must be one of: {phase_opts}')
+
+    get_pulse_trans(api,[16,32]) #TODO auto-finding of do though the abs pulse
+
+    if channel == 'main':
+        lb = 0.0
+        ub = 4095.0
+        start = 2000.0
+        tol = 1
+        maxiter = 10
+        phase_channel = 'SignalPhase'
+    elif channel in ['+<x>','-<x>','+<y>','-<y>']:
+        lb = 0.0
+        ub = 100.0
+        start = 50.0
+        tol = 0.1
+        maxiter = 10
+        if channel == '+<x>':
+            phase_channel = 'BrXPhase'
+        elif channel == '-<x>':
+            phase_channel = 'MinBrXPhase'
+        elif channel == '+<y>':
+            phase_channel = 'BrYPhase'
+        elif channel == '-<y>':
+            phase_channel = 'MinBrYPhase'
+
+
+    if phase_target in ['R+','I+']:
+        phase_aim = np.pi / 2
+    elif phase_target in ['R-','I-']:
+        phase_aim = -np.pi / 2
+    
+    
+    if phase_target in ['I+','I-']:
+        imag_target = True
+    else:
+        imag_target = False
+    
+    
+    def objecive(x,*args):
+        '''x is the given phase setting. Args are (phase_target,imag_target)'''
+        api.hidden[phase_channel].value = x # Set phase to value
+
+        t,v = api.acquire_scan()
+        v_cor = DC_cor(v)
+
+        if args[1] == True:
+            v = -1j * v
+
+        phase = calc_phase(v_cor)
+        # Calc Phase
+        print(f'Phase Setting = {x} - Phase = {phase}')
+        return phase - args[0]
+
+    
+    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_target,imag_target))
+
+    return output.x
