@@ -32,7 +32,8 @@ def carr_purcell_run(api,ps_length,d0,sweeps=4,steps=100,nuc_mod=[1,1]):
     exp_name = MODULE_DIR + '/PulseSpel/param_opt.exp'
     
     api.set_ReplaceMode(False) #Turn replace mode off
-    
+    api.set_set_PhaseCycle(True)
+
     # Check that what pulse spel scripts are loaded and compile
     if api.get_PulseSpel_def_filename() != def_name:
         api.set_PulseSpel_def_filepath(def_name)
@@ -151,7 +152,8 @@ def tau2_scan_run(api,ps_length,d0,tau1):
     exp_name = MODULE_DIR + '/PulseSpel/param_opt.exp'
     
     api.set_ReplaceMode(False) #Turn replace mode off
-    
+    api.set_set_PhaseCycle(True)
+
     # Check that what pulse spel scripts are loaded and compile
     if api.get_PulseSpel_def_filename() != def_name:
         api.set_PulseSpel_def_filepath(def_name)
@@ -198,6 +200,7 @@ def twoD_scan(api,ps_length,delays,steps,loops):
     exp_name = MODULE_DIR + '/PulseSpel/param_opt.exp'
     
     api.set_ReplaceMode(False) #Turn replace mode off
+    api.set_set_PhaseCycle(True)
     
     # Check that what pulse spel scripts are loaded and compile
     if api.get_PulseSpel_def_filename() != def_name:

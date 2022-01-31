@@ -192,7 +192,16 @@ class xepr_api:
             hw_log.info('Replace mode turned off')
 
         self.cur_exp["ftEpr.ReplaceMode"].value = value
-    
+
+    def set_PhaseCycle(self,state=True):
+        if state:
+            hw_log.info("On-Board Phase Cycling turned on")
+            self.cur_exp["PCycleOn"].value = state
+        else:
+            hw_log.info("On-Board Phase Cycling turned off")
+            self.cur_exp["PCycleOn"].value = state
+        
+        return state
     def get_PulseSpel_exp_filename(self):
         return os.path.basename(self.cur_exp["ftEPR.PlsSPELPrgPaF"].value)
 

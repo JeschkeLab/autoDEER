@@ -23,6 +23,7 @@ def setup_pulse_trans(api,ps_length:tuple,d0):
     exp_name = MODULE_DIR[0] + '/PulseSpel/param_opt.exp'
     
     api.set_ReplaceMode(True) #Turn replace mode off
+    api.set_set_PhaseCycle(False)
 
     # Check that what pulse spel scripts are loaded and compile
     if api.get_PulseSpel_def_filename() != def_name:
@@ -44,10 +45,10 @@ def setup_pulse_trans(api,ps_length:tuple,d0):
     api.set_PulseSpel_var("d2",400) # Not required but done anyway
 
     # Selecting the experiment
-    api.set_PulseSpel_experiment("Phase Control")
-    api.set_PulseSpel_phase_cycling("None")
+    api.set_PulseSpel_experiment("Hahn Echo")
+    api.set_PulseSpel_phase_cycling("Hahn")
 
-    api.set_Acquistion_mode(1) # Run from Pulse Spel
+    api.set_Acquistion_mode(1) # Run fr om Pulse Spel
 
     return 1
 

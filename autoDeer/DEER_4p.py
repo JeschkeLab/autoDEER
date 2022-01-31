@@ -51,6 +51,7 @@ def run_4pDeer(api,pulse_lengths,delays,steps,avgs):
 
     # 
     api.set_ReplaceMode(False) #Turn replace mode off
+    api.set_set_PhaseCycle(True)
     
     # Set the number of points per trace
     d3 = delays[1] - 180
