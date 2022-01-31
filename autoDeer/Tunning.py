@@ -39,6 +39,8 @@ def setup_pulse_trans(api,ps_length:tuple,d0):
     api.set_PulseSpel_var("p0",ps_length[0])
     api.set_PulseSpel_var("p1",ps_length[1])
 
+    api.set_PulseSpel_var("d0",d0)
+
     # Selecting the experiment
     api.set_PulseSpel_experiment("Phase Control")
     api.set_PulseSpel_phase_cycling("None")
