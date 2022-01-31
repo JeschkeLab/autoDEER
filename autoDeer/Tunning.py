@@ -18,9 +18,9 @@ def setup_pulse_trans(api,ps_length:tuple,d0):
 
     # Setting the location of the pulse_spel
     #def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
-    def_name = MODULE_DIR + '/PulseSpel/param_opt.def'
+    def_name = MODULE_DIR[0] + '/PulseSpel/param_opt.def'
     #exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
-    exp_name = MODULE_DIR + '/PulseSpel/param_opt.exp'
+    exp_name = MODULE_DIR[0] + '/PulseSpel/param_opt.exp'
     
     api.set_ReplaceMode(True) #Turn replace mode off
 
