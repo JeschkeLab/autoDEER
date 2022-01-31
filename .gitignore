@@ -144,3 +144,4 @@ dmypy.json
 # Weird pulse spel save files
 .def%
 .exp%
+.DS_Store
