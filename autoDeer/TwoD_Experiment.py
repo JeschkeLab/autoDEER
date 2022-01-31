@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-import deerlab as dl
+from deerlab import deerload
 import os
 
 class TwoD_Experiment:
@@ -32,13 +32,13 @@ class TwoD_Experiment:
         file_name,file_ext = os.path.splitext(file)
         
         if file_ext == '.DSC':
-            self.time,self.data,self.params = dl.deerload(file,full_output=True)
+            self.time,self.data,self.params = deerload(file,full_output=True)
             self.data = self.data.T
             self.scans = int(self.params.get('DSL').get('recorder').get('NbScansDone'))
             self.shots = int(self.params.get('DSL')['ftEpr']['ShotsPLoop'])
             self.shrt = float(self.params.get('DSL')['ftEpr']['ShotRepTime'].split()[0]) # in us
         else:
-            self.time,self.data= dl.deerload(file,full_output=False)
+            self.time,self.data= deerload(file,full_output=False)
             self.params = None
             
     def import_data(self,time,data,scans:int,shots:int,shrt:int):
