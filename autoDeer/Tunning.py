@@ -5,12 +5,19 @@
 
 import time
 import numpy as np
+import importlib
+
+
+MODULE_DIR = importlib.util.find_spec('pydeernet').submodule_search_locations
+
 
 def get_pulse_trans(api,ps_length,d0):
 
     # Setting the location of the pulse_spel
-    def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/phase_set.def'
-    exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/phase_set.exp'
+    #def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
+    def_name = MODULE_DIR + '/PulseSpel/param_opt.def'
+    #exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
+    exp_name = MODULE_DIR + '/PulseSpel/param_opt.exp'
     
     api.set_ReplaceMode(False) #Turn replace mode off
 

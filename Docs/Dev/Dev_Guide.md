@@ -23,3 +23,4 @@ The following files are needed for a a build to be possible
 - `__init__.py` in **every** module/submodule directory
 
 #### Code:
+` python3 -m build`
