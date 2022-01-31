@@ -17,6 +17,8 @@ dim4 s[256]         ; Constant tau1+tau2
                     ; This will need changing for these experiments as the delay can't become negative
                     ; sx = (d11-d13)/d12
 
+dim5 s[300]         ; EDFS
+
 end defs
 
 begin lists "16 pulse"
@@ -26,6 +28,13 @@ ph3 +x +x +x +x +x +x +x +x -x -x -x -x -x -x -x -x
 asg1 +a -a -a +a +a -a -a +a +a -a -a +a +a -a -a +a
 bsg1 +b -b -b +b +b -b -b +b +b -b -b +b +b -b -b +b
 end lists
+
+begin lists1 "EDFS"
+ph1 +x -x
+ph2 +x
+asg +a -a
+bsg +b -b
+end lists1 "EDFS"
 
 begin exp "Carr Purcell exp" [INTG QUAD]
 
@@ -285,3 +294,43 @@ scansdone(k)
 next k
 
 end exp4
+
+begin exp5 "EDFS"   [INTG QUAD]
+pg=p2                         ; integration gate
+
+ for k=1 to n                  ; averaging loop
+
+  totscans(n)                  ; output of total number of scans
+
+  bsweep x=1 to sx             ; sweep loop
+    shot i=1 to h              ; accumulation loop
+      d9                       ; DAF
+      p1 [ph1]                 ; 1st pulse and phase program
+      d1                       ; tau                       
+      p2 [ph2]                ; 2nd pulse and phase program
+      d1                       ; tau
+      d0                       ; constant acquisition delay
+      acq [sg1]                ; acquisition
+    next i                     ; end of accumulation loop 
+   next x                      ; end of sweep loop
+
+  scansdone(k)                 ; output of scans done
+
+ next k
+
+ end exp5
+
+ begin exp6 "Hahn Echo" [TRANS QUAD]
+
+    shot i=1 to h              ; accumulation loop
+      d9                       ; DAF
+      p1 [ph1]                 ; 1st pulse and phase program
+      d1                       ; tau                       
+      p2 [ph2]                ; 2nd pulse and phase program
+      d1                       ; tau
+      d0                       ; constant acquisition delay
+      dig [sg1]               ; acquisition
+    next i                     ; end of accumulation loop 
+
+
+ end exp5
