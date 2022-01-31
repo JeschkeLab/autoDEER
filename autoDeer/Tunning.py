@@ -23,7 +23,7 @@ def setup_pulse_trans(api,ps_length:tuple,d0):
     exp_name = MODULE_DIR[0] + '/PulseSpel/param_opt.exp'
     
     api.set_ReplaceMode(True) #Turn replace mode off
-    api.set_set_PhaseCycle(False)
+    api.set_PhaseCycle(False)
 
     # Check that what pulse spel scripts are loaded and compile
     if api.get_PulseSpel_def_filename() != def_name:
