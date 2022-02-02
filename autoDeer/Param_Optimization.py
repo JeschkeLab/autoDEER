@@ -332,3 +332,98 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
     
     
     return 1
+
+
+
+def run_EDFS(api,d0,filename:str,path:str,sweep_size:int = 300,scans = 4, shots = 10) -> None:
+
+    meta = {'Experiment':'EDFS','D0':d0,'scans':scans,'shots':shots}
+
+    # Open/Create File
+
+    file = save_file()
+    file.create_file(path + filename + ".h5")
+
+    # Get Current Frequency
+    freq = api.get_freq()
+
+    # Get Current Magnet Value
+    field = api.get_field()
+
+    sweep_width = api.set_sweep_width(sweep_size)
+
+    meta.update({'MW Freq':freq,'Field':field,'Sweep Width':sweep_width})
+    # Run pulse Spel EDFS
+
+    run_ps_script(api,'/PulseSpel/param_opt.def',"EDFS","EDFS",[16,32],[d0,400,400],[0,0],[shots,scans])
+
+    while api.is_exp_running() == True:
+        time.sleep(1)
+
+    EDFS_data = api.acquire_dataset()
+    api.xepr_save(path+ 'EDFS_' + filename)
+
+    # Find the main peak
+    peak = EDFS_data.time[np.argmax(EDFS_data.data)]
+    
+    meta.update({'EDFS_peak':peak})
+
+    file.save_experimental_data(EDFS_data,"EDFS",meta=meta)
+
+
+    pass
+
+def run_ps_script(api,ps_script:str,exp:str,phase_cycle:str,ps_length,delays,steps,loops,**kwargs):
+    """This script runs a *GENERAL* pulse spell script. Please see the larger documenation on this form."""
+
+    def_name = MODULE_DIR + ps_script
+    exp_name = MODULE_DIR + ps_script
+
+    if "ReplaceMode" in kwargs:
+        api.set_ReplaceMode(kwargs["ReplaceMode"])
+    else:
+        api.set_ReplaceMode(False) #Turn replace mode off
+    
+    if "PhaseCycle" in kwargs:
+        api.set_ReplaceMode(kwargs["PhaseCycle"]) 
+    else:
+        api.set_set_PhaseCycle(True)
+
+    if api.get_PulseSpel_def_filename() != def_name:
+        api.set_PulseSpel_def_filepath(def_name)
+    if api.get_PulseSpel_exp_filename() != exp_name:
+        api.set_PulseSpel_exp_filepath(exp_name)
+
+    # Set pulse lengths
+    api.set_PulseSpel_var("p0",ps_length[1])
+    api.set_PulseSpel_var("p1",ps_length[0])
+    api.set_PulseSpel_var("p2",ps_length[0])
+
+    # Set Pulse Delays
+    api.set_PulseSpel_var("d0",delays[0])
+    api.set_PulseSpel_var("d1",delays[1]) # Starting pulse delay
+    api.set_PulseSpel_var("d2",delays[2]) # Starting pulse delay
+
+    # Set Pulse Steps
+    api.set_PulseSpel_var("d12",steps[0]) # tau 1 step
+    api.set_PulseSpel_var("d14",steps[1]) # tau 2 step
+
+
+    # Set Averaging loops
+    api.set_PulseSpel_var("h",loops[0]) # Shots per points
+    api.set_PulseSpel_var("n",loops[1]) # Sweeps
+
+
+    api.compile_PulseSpel_prg()
+    api.compile_PulseSpel_def() 
+
+    # Selecting experiments
+    api.set_PulseSpel_experiment(exp)
+    api.set_PulseSpel_phase_cycling(phase_cycle)
+
+    api.set_Acquistion_mode(1) # Run from Pulse Spel
+
+    api.run_exp()
+    time.sleep(1)
+
+    return 0

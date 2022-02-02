@@ -346,6 +346,30 @@ class xepr_api:
     def dataset_save(self):
         pass
 
+    def get_field(self) -> int:
+        """ This returns the central field"""
+        return self.cur_exp['CenterField']
+
+    def set_field(self,val:int) -> int:
+        """ This sets the central field"""
+        self.cur_exp['CenterField'] = val
+        hw_log.info(f'Field position set to {val} G')
+        return self.cur_exp['CenterField']
+
+    def get_freq(self) -> int:
+        """ This returns the central field"""
+        return self.cur_exp['FrequencyMon']
+
+    def set_sweep_width(self,val:int) -> int:
+        self.cur_exp['SweepWidth'] = val
+        hw_log.info('Field sweep width set to {val} G')
+        return self.cur_exp['SweepWidth'] 
+    
+    def get_sweep_width(self) -> int:
+        return self.cur_exp['SweepWidth']
+
+    
+
 
 ## Section on phase control
 

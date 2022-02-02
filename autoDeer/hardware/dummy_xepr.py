@@ -115,7 +115,10 @@ class dummy_cur_exp:
         self.PlsSPELGlbPaF = dummy_param(None,None,str,'rand_path')         # Pulse Spel Definitions Path
         self.PlsSPELLISTSlct = dummy_param(None,None,str,'Phase Cycle')     # Selecting the phase cycling
         self.PlsSPELEXPSlct = dummy_param(None,None,str,'Experiment')       # Selecting the Experiment
-        self.ReplaceMode = dummy_param(None,None,bool,False)                # Setting the replace mode state       
+        self.ReplaceMode = dummy_param(None,None,bool,False)                # Setting the replace mode state
+        self.CenterField = dummy_param(0,15000,int)
+        self.FrequencyMon = dummy_param(33,35,float)
+        self.SweepWidth = dummy_param(0,10000,int,300)
     
 
     def __getitem__(self, name):
