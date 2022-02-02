@@ -2,10 +2,15 @@ import importlib
 import deerlab as dl
 import numpy as np
 import os,sys;
+from scipy.integrate import cumulative_trapezoid
 
 from autoDeer.File_Saving import save_file
 import time
 import importlib
+import logging
+
+log = logging.getLogger('core.DEER')
+
 
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
 
@@ -174,3 +179,27 @@ def long_run_stop_save(api,filename,path,meta=None):
     dset_deer = file.save_experimental_data(DEER1_dataset,"DEER quick",dset_name="Distance Distribution",meta=dl_meta)
 
     return fit, sigma
+
+def IdentifyROI(dist,r,criterion = 0.99,plot=False):
+
+    # Normlaize the distribution
+    dist = dist / np.trapz(dist,r)
+    cumulative_dist = cumulative_trapezoid(dist,r,initial=0)
+    min_dist = r[np.argmin(np.abs(1 - cumulative_dist - criterion))]
+    max_dist = r[np.argmin(np.abs(cumulative_dist - criterion))]
+
+    if not plot:
+        return[min_dist,max_dist]
+
+    else:
+        pass
+
+def QualityControl(fit):
+
+    if fit.regparam < 1:
+        log.warning('Regularization Parameter is too small. Please try a different model')
+        return 1
+    else:
+        return 0
+
+    
