@@ -210,16 +210,17 @@ class xepr_api:
         return self.cur_exp["ftEPR.PlsSPELPrgPaF"].value
 
     def set_PulseSpel_exp_filepath(self,fullpath):
+        self.save_PulseSpel_exp()
         self.Xepr.XeprCmds.aqPgLoad(fullpath)
 
     def get_PulseSpel_def_filename(self):
-        self.save_PulseSpel_def()
         return os.path.basename(self.cur_exp["ftEPR.PlsSPELGlbPaF"].value) 
 
     def get_PulseSpel_def_filenpath(self):
         return self.cur_exp["ftEPR.PlsSPELGlbPaF"].value
 
     def set_PulseSpel_def_filepath(self,fullpath):
+        self.save_PulseSpel_def()
         self.Xepr.XeprCmds.aqPgDefLoad(fullpath)
 
     def get_PulseSpel_phase_cycling(self):

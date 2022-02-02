@@ -434,7 +434,7 @@ class TwoD_Experiment:
         else:
             raise ValueError('Normalization option value error')
 
-    def value_at_time(self,pos:tuple,norma=None):
+    def value_at_time(self,pos:tuple,norm=None):
         """
         Function that finds the closest value in this 2D experiment for specified delay times
         Parameters:
@@ -448,4 +448,4 @@ class TwoD_Experiment:
         tau2_time = self.time[1][tau2_pos]
         print(f'Closest times: \u03C41 ={tau1_time} & \u03C42 ={tau2_time}')
 
-        return self.value_at_pos((tau1_pos,tau2_pos),norm=norma)
+        return self.value_at_pos((tau1_pos,tau2_pos),norm=norm)
