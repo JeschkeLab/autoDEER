@@ -26,7 +26,7 @@ def deerlab_next_scan(api):
     t = t/1000
     Vexp = dl.correctphase(Vexp)
     t = dl.correctzerotime(Vexp,t)
-    r = dl.time2dist(t)          # distance axis, nm
+    r = np.linspace(1,10,100)          # distance axis, nm
     fit = dl.fitmodel(Vexp,t,r,'P',dl.bg_hom3d,dl.ex_4pdeer,verbose=False)
     sigma = dl.noiselevel(Vexp,'der')
     #print(dl.time2dist(t))
@@ -36,7 +36,7 @@ def std_deerlab(t,Vexp):
     t = t/1000
     Vexp = dl.correctphase(Vexp)
     t = dl.correctzerotime(Vexp,t)
-    r = dl.time2dist(t)          # distance axis, nm
+    r = np.linspace(1,10,100)
     fit = dl.fitmodel(Vexp,t,r,'P',dl.bg_hom3d,dl.ex_4pdeer,verbose=False)
     sigma = dl.noiselevel(Vexp,'der')
     #print(dl.time2dist(t))
@@ -113,9 +113,61 @@ def main_run(api,ps_length:int,delays,filename:str,path:str,steps = [12,2,2], ex
 
     DEER1_dataset = api.acquire_dataset()
     
-    dset_raw = file.save_experimental_data(DEER1_dataset,"DEER quick",meta=meta_4pDeer)
+    dset_raw = file.save_experimental_data(DEER1_dataset,"DEER Quick",meta=meta_4pDeer)
 
     api.xepr_save( path+ 'DEER_quick' + filename)
+    
+    [fit, sigma] = std_deerlab(DEER1_dataset.time,DEER1_dataset.data)
+    dl_meta = {'sigma':sigma,'ddparam':fit.ddparam,'bgparam':fit.bgparam,'exparam':fit.exparam}
+    dset_deer = file.save_experimental_data(DEER1_dataset,"DEER quick",dset_name="Distance Distribution",meta=dl_meta)
+
+    return fit, sigma
+
+def long_run_start(api,ps_length:int,delays,filename:str,path:str,steps = [12,2,2],loops=[10,2000,1]): # This follows the same structure as the main run in Paramter Optimization
+    """long_run_start This function starts a long DEER trace and then returns. It does *not* wait until the experiment has finished.
+
+    :param api: The instance of the Xepr Class
+    :type api: XeprAPIAdv
+    :param ps_length: A tuple of 2 elements giving the time (in ns) of a [pi/2,pi] pulses
+    :type ps_length: int
+    :param delays: A tuple of 3 elememnts giveing the time (in ns) of the initial pulse delays [d0,d1,d2]
+    :type delays: [type]
+    :param filename: The name of the file that this should be saved as. No Extentions
+    :type filename: str
+    :param path: The path of where the file should be saved to.
+    :type path: str
+    :param steps: [description], defaults to [12,2,2]
+    :type steps: list, optional
+    :return: [description]
+    :rtype: [type]
+    """
+    
+    file = save_file()
+    file.open_file(path + filename + ".h5")
+
+    meta_4pDeer = {'Pulse Lengths':ps_length,'d0':delays,'steps':steps,'start time':time.strftime("%Y/%m/%d - %H:%M")}
+    run_4pDeer(api,ps_length,delays,steps,loops)
+    return meta_4pDeer
+
+
+
+def long_run_stop_save(api,filename,path,meta=None):
+    
+    file = save_file()
+    file.open_file(path + filename + ".h5")
+    
+    api.stop_exp()
+
+    while api.is_exp_running() == True:
+        time.sleep(1)
+    if meta != None:
+        meta.update({'end time':time.strftime("%Y/%m/%d - %H:%M")})
+
+
+    DEER1_dataset = api.acquire_dataset()
+    
+    dset_raw = file.save_experimental_data(DEER1_dataset,"DEER Long",meta=meta)
+    api.xepr_save( path+ 'DEER_long' + filename)
     
     [fit, sigma] = std_deerlab(DEER1_dataset.time,DEER1_dataset.data)
     dl_meta = {'sigma':sigma,'ddparam':fit.ddparam,'bgparam':fit.bgparam,'exparam':fit.exparam}
