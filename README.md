@@ -11,8 +11,9 @@ A python package designed for the running of automated and optimised DEER/PELDOR
 2) Scipy
 3) Matplotlib
 4) pytest
-5) Xepr API for python 3 (https://github.com/OE-FET/XeprAPI)
-6) DeerLab (https://jeschkelab.github.io/DeerLab/)
+5) h5py
+6) Xepr API for python 3 (https://github.com/OE-FET/XeprAPI)
+7) DeerLab (https://jeschkelab.github.io/DeerLab/)
 
 ## Troubleshooting
 - <Can't find any open instances of Xepr>
