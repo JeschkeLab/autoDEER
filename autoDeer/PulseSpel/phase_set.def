@@ -10,17 +10,26 @@ srt  = 6000 * srtu ; Standard for nitroxides at 50K
                     ; 50K: 4000
                     ; 15K: 15000-25000
 
+; Pulse Lengths
 p0   = 16      ; pi pulses
 p1   = 32      ; pi/2 pulses
-
 pg   = 16      ; Integrator Gate Width
 
-d0   = 652     
+; Pulse Delays
+d0   = 500     
 
-d1 = 400
+d1   = 400     
+d2   = 400     
 
+Time increments
+d12  = 100     
+d14  = 30  
+d16  = 2    ; Nuclear Modulation Averaging
 
 h    = 10       ; number of shots/sweep
 n    = 1       ; number of sweeps to accumulate 
+m   = 4 ; Nuclear modulation loops
 
+w    = 15
+p2   = 32 ns   
 end defs

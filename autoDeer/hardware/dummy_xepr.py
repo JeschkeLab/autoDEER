@@ -184,6 +184,7 @@ class dummy_xepr:
     def XeprDataset(self): # Returns the current dataset
         
         cur_exp = self.cur_exp
+        hidden = self.hidden
         # Generates simulated DEER data
         def generateDEER(num_points,max_time):
             """
@@ -216,6 +217,15 @@ class dummy_xepr:
             Z = fun_2d(X,Y)
             noise = np.random.normal(0, .05, Z.shape) *np.array([1+1j])
             return [t,t],Z+noise
+
+        def generate_hahn_echo(numpoints,max_time,phase,phase_offset=0.2):
+            def gaussian(t,a,b,c,phase):
+                return a * np.exp(-(t-b)**2/c) * np.exp(-1j*(phase+phase_offset))
+            t = np.arange(0,max_time,max_time/numpoints) 
+            noise = np.random.normal(loc=0.0,scale=0.03,size=t.shape) + 1j * np.random.normal(loc=0.0,scale=0.03,size=t.shape)
+            V = gaussian(t,1,numpoints/2,numpoints*2,phase) + noise
+            
+            return t,V
         
         if cur_exp.PlsSPELEXPSlct.value == 'DEER':
             t,V = generateDEER(250,4000)
@@ -229,8 +239,26 @@ class dummy_xepr:
         elif cur_exp.PlsSPELEXPSlct.value =='tau 2 scan':
             t,V = generateCarrPurcell(250,4000)
             return dummy_dataset(t,V)
+        elif cur_exp.PlsSPELEXPSlct.value == 'Hahn Echo':
+            def phases(x,range):
+                m = 6/range *np.pi
+                c = -3*np.pi
+                return m*x + c
+            if cur_exp.PlsSPELLISTSlct.value == 'MainPhase':
+                phase_setting = hidden['SignalPhase'].value
+                phase = phases(phase_setting,hidden['SignalPhase'].aqGetParMaxValue())
+            elif cur_exp.PlsSPELLISTSlct.value in ['BrXPhase','BrYPhase','MinBrXPhase','MinBrYPhase']:
+                phase_setting = hidden[cur_exp.PlsSPELLISTSlct.value]
+                phase = phases(phase_setting,hidden[cur_exp.PlsSPELLISTSlct.value].aqGetParMaxValue())
+            else:
+                print("Sorry, This can not be simulated yet, returning Main Phase")
+                phase_setting = hidden['SignalPhase']
+                phase = phases(phase_setting,hidden['SignalPhase'].aqGetParMaxValue())
+            
+            t,V = generate_hahn_echo(512,512,phase)
+            return dummy_dataset(t,V)
         else:
-            print("Sorry, This cannae be simulated yet, returning white noise")
+            print("Sorry, This can not be simulated yet, returning white noise")
             t = np.linspace(0,2500,250)
             noise = np.random.normal(0, .1, t.shape) *np.array([1+1j])
             return dummy_dataset(t,noise)        
@@ -267,6 +295,21 @@ class dummy_xepr:
 
 class dummy_hidden:
     # This is a dummy version of the hidden class containing the extra current experiment features
+
+    def __init__(self) -> None:
+        self.SignalPhase = dummy_param(0,4095,type=int,par=rand.randint(0,4096))
+        self.BrXPhase = dummy_param(0,1,type=float,par=rand.random())
+        self.BrYPhase = dummy_param(0,1,type=float,par=rand.random())
+        self.MinBrXPhase = dummy_param(0,1,type=float,par=rand.random())
+        self.MinBrYPhase = dummy_param(0,1,type=float,par=rand.random())
+
+        self.BrXAmp = dummy_param(0,1,type=float,par=rand.random())
+        self.BrYAmp = dummy_param(0,1,type=float,par=rand.random())
+        self.MinBrXAmp = dummy_param(0,1,type=float,par=rand.random())
+        self.MinBrYAmp = dummy_param(0,1,type=float,par=rand.random())
+       
+        pass
+
 
     def __getitem__(self, name):
         """This method returns a given parameter class for the name provided

@@ -5,28 +5,56 @@
 
 begin defs
 
-dim s[400]          ; Phase control
+dim s[512]          ; Phase control
 
 end defs
 
-begin lists "None"
-ph1 +x
+begin lists "MainPhase"
+ph1 +x -x
 ph2 +x
-ph3 +x
-asg1 +a
-bsg1 +b
+asg1 +a -a
+bsg1 +b -b
 end lists
 
-begin exp "Phase Control" [TRANS QUAD]
+begin lists1 "BrXPhase"
+ph1 +x -x
+ph2 +<x>
+asg1 +a -a
+bsg1 +b -b
+end lists1
 
-shot i=1 to h              ; accumulation loop
-    d9
-    p0[ph1]
-    d1
-    p1[ph1]
-    d1
-    d0
-    dig [sg1]
-next i
+begin lists2 "MinBrXPhase"
+ph1 +x -x
+ph2 -<x>
+asg1 +a -a
+bsg1 +b -b
+end lists2
 
-end exp
+begin lists3 "BrYPhase"
+ph1 +x -x
+ph2 +<y>
+asg1 +a -a
+bsg1 +b -b
+end lists3
+
+begin lists4 "MinBrYPhase"
+ph1 +x -x
+ph2 -<y>
+asg1 +a -a
+bsg1 +b -b
+end lists4
+
+ begin exp "Hahn Echo" [TRANS QUAD]
+
+    shot i=1 to h              ; accumulation loop
+      d9                       ; DAF
+      p1 [ph1]                 ; 1st pulse and phase program
+      d1                       ; tau                       
+      p2 [ph2]                ; 2nd pulse and phase program
+      d1                       ; tau
+      d0                       ; constant acquisition delay
+      dig [sg1]               ; acquisition
+    next i                     ; end of accumulation loop 
+
+
+ end exp
