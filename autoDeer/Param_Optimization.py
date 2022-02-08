@@ -335,8 +335,26 @@ def main_run(api,ps_length:int,d0:int,filename:str,path:str):
 
 
 
-def run_EDFS(api,d0,filename:str,path:str,sweep_size:int = 300,scans = 4, shots = 10) -> None:
+def run_EDFS(api, d0:int, filename:str, path:str, sweep_size:int = 300, scans:int = 4, shots:int = 10) -> None:
+    """run_EDFS Runs an Echo Detected Field Sweep (EDFS)
 
+    Parameters
+    ----------
+    api : [type]
+        The class that talks to the spectrometer this is being applied to.
+    d0 : int
+        The spectrometer offset delay, d0
+    filename : str
+        The name of the save file.
+    path : str
+        The *full* path to the save file
+    sweep_size : int, optional
+        The number of data points per sweep, by default 300
+    scans : int, optional
+        The number of scans to be done, by default 4
+    shots : int, optional
+        The number of shots per point, by default 10
+    """
     meta = {'Experiment':'EDFS','D0':d0,'scans':scans,'shots':shots}
 
     # Open/Create File
@@ -373,16 +391,31 @@ def run_EDFS(api,d0,filename:str,path:str,sweep_size:int = 300,scans = 4, shots 
 
     pass
 
-def run_ps_script(api,ps_script:str,exp:str,phase_cycle:str,ps_length,delays,steps,loops,**kwargs):
-    """This script runs a *GENERAL* pulse spell script. Please see the larger documenation on this form.
-    
-    -----Parameters----
+def run_ps_script(api,ps_script:str,exp:str,phase_cycle:str,ps_length:list[int,int],
+        delays:list[int,int,int],steps:list[int,int],loops:list[int,int], shrt:int=6000,**kwargs) -> None:
+    """run_ps_script Runs a general pulse spell script according to the set paramters. The script must conform to the standard setup.
 
-    Keyword Arguments
-    
-    
+    Parameters
+    ----------
+    api : [type]
+        The class that talks to the spectrometer this is being applied to.
+    ps_script : str
+        The *local* path to the pulse spel script
+    exp : str
+        The name of the experiment to be run.
+    phase_cycle : str
+        The name of the phase cycle to be run.
+    ps_length : list[int,int]
+        The length (in ns) of the pulses used [pi/2,pi]
+    delays : list[int,int,int]
+        The length (in ns) of the delays [d0,d1,d2].
+    steps : list[int,int]
+        The length (in ns) of the steps sizes [d11,d21]/
+    loops : list[int,int]
+        The number of iterations in each loop [shots per point,sweeps]
+    shrt : int
+        The shot repetition time in us, by default 6000us.
     """
-
     def_name = MODULE_DIR + ps_script + '.def'
     exp_name = MODULE_DIR + ps_script + '.exp' 
 
@@ -433,7 +466,7 @@ def run_ps_script(api,ps_script:str,exp:str,phase_cycle:str,ps_length,delays,ste
     api.run_exp()
     time.sleep(1)
 
-    return 0
+    pass
 
 
 # Function to autophase the MPFU channels
@@ -444,11 +477,43 @@ class MaxIterError(RuntimeError):
 class BoundError(RuntimeError):
     pass
 
-def secant_method(fun,x0,x1):
+def secant_method(fun:function,x0:float,x1:float) -> float:
+    """ The secant method """
     x2 = (x0*fun(x1) - x1*fun(x0))/(fun(x1)-fun(x0))
     return x2
     
-def root_finder(obj,x0,x1,bounds=[0,1],MaxIter=20,tol=1,MaxStep =None):
+def root_finder(obj:function,x0:float,x1:float,bounds:list[float,float]=[0,1],MaxIter:int=20,tol:float=1,MaxStep:float =None) -> float:
+    """root_finder Optimizes the objective function through a modified secant method. 
+    This introduces bounds on the method, as well as a maximum number of iterations and a maximum step size. 
+
+    Parameters
+    ----------
+    obj : function
+        The objective function for which the root is to be found. This should only have one input variable, and the root should be located at y=0.
+    x0 : float
+        The lower initial guess
+    x1 : float
+        The upper initial guess
+    bounds : list[float,float], optional
+        The lower and upper bound of the stepper motor. If the optimization leaves these limits it will return a BoundError, by default [0,1]
+    MaxIter : int, optional
+        The maximum number of steps/iterations per cycle, by default 30
+    tol : float, optional
+        The condition for when to stop. When the difference between x1 and x0 is below this value it will stop, by default 1
+    MaxStep : float, optional
+        The maximum step size per step of the secant method, by default None
+    Returns
+    -------
+    float
+        The root of this objective function under these conditions
+
+    Raises
+    ------
+    BoundError
+        The secant method moved outside the bounds. Try using a smaller MaxStep size.
+    MaxIterError
+        The optimization stopped due too many iterations. Try increasing the tolerance or the MaxIter. 
+    """
     if x0 == x1:
         x0 = x0-1
         x1 = x1+1
@@ -479,14 +544,62 @@ def root_finder(obj,x0,x1,bounds=[0,1],MaxIter=20,tol=1,MaxStep =None):
     else:
         return (x0+x1)/2
 
-def trans_angle(api,x,channel):
+def trans_angle(api,x,channel:str)->float:
+    """trans_angle Sets the phase of the appropraite channel, records a dataset, takes the mean and then returns the complex phase.
+
+    Parameters
+    ----------
+    api : [type]
+        The class that talks to the spectrometer this is being applied to.
+    x : int or float
+        The setting for the phase stepper motor
+    channel : str
+        Name of channel to be tunned, using XeprAPI notations. Options:['SignalPhase','BrXPhase',MinBrXPhase','BrYPhase','MinBrYPhase']
+
+    Returns
+    -------
+    float
+        The current phase of this chosen channel.
+    """
     api.hidden[channel].value = x
+    time.sleep(10)
     dataset = api.acquire_dataset()
     val = np.mean(dataset.data)
     angle = np.arctan2(np.imag(val),np.real(val))
     return angle
 
-def tune(api,target,channel,lim,tol,MaxStep,MaxIter=30):    
+def tune(api,target:str,channel:str,lim:list,tol:float,MaxStep:float,MaxIter:int=30) -> float:
+    """tune Optimizes the phase of a given channel to a specific target position. 
+    In the case of the optimization failing due to too many iterations the tolerance is automatically doubled. This is done a maximum 
+    of two times.
+
+    Parameters
+    ----------
+    api : [type]
+        The class that talks to the spectrometer this is being applied to.
+    target : str
+        How to tune the channel. Options:['R+','R-','I+','I-']
+    channel : str
+        Name of channel to be tunned, using XeprAPI notations. Options:['SignalPhase','BrXPhase',MinBrXPhase','BrYPhase','MinBrYPhase']
+    lim : list[float,float]
+        The lower and upper bound of the stepper motor. If the optimization leaves these limits it will return a BoundError, by default [0,1]
+    tol : float
+        The condition for when to stop. When the difference between x1 and x0 is below this value it will stop, by default 1
+    MaxStep : float
+        The maximum step size per step of the secant method.
+    MaxIter : int, optional
+        The maximum number of steps/iterations per cycle, by default 30
+
+    Returns
+    -------
+    float
+        The optimal setting for that channel
+
+    Raises
+    ------
+    ValueError
+        If the target isn't one of the options.
+    """
     if target == 'I+':
         gaus_int_imag = lambda x: trans_angle(api,x,channel) - np.pi/2
     elif target == 'I-':
@@ -517,7 +630,24 @@ def tune(api,target,channel,lim,tol,MaxStep,MaxIter=30):
             x = root_finder(obj,0.45*lim[1],0.55*lim[1],bounds=lim,tol=tol,MaxIter=MaxIter,MaxStep=MaxStep)
     return x
 
-def MpfuTune(api,target,channel):
+def MpfuTune(api,target:str,channel:str) -> float:
+    """MpfuTune: Tunes the given MPFU channel, such that is closely matches the target condition. This is done through a modified secant method.
+    
+    
+    Parameters
+    ----------
+    api : [type]
+        The class that talks to the spectrometer this is being applied to.
+    target : str
+         How to tune the channel. Options:['R+','R-','I+','I-']
+    channel : str
+        Name of channel to be tunned, using XeprAPI notations. Options:['+<X>','-<X>','+<Y>','-<Y>']
+
+    Returns
+    -------
+    float
+        The optimal setting for that channel
+    """
     if channel == '+<X>':
         channel = 'BrXPhase'
     elif channel == '-<X>':
@@ -529,8 +659,23 @@ def MpfuTune(api,target,channel):
     
     return tune(api,target,channel,[0,100],0.5,20)
 
-def MainTune(api,target):
-    return tune(api,target,'SignalPhase',[0,4095],5,100)
+def MainTune(api,target:str) -> int:
+    """MainTune  Tunes the global main channel, such that is closely matches the target condition. 
+    This is done through a modified secant method, under integer conditions.
 
-def runTune(api,channel,d0):
+    Parameters
+    ----------
+    api : [type]
+        [description]
+    target : str
+         How to tune the channel. Options:['R+','R-','I+','I-']
+
+    Returns
+    -------
+    int
+        The optimal setting for that channel
+    """
+    return round(tune(api,target,'SignalPhase',[0,4095],5,100))
+
+def runTune(api,channel:str,d0:int):
     run_ps_script(api,'/PulseSpel/phase_set','Hahn Echo',channel,[16,32],[d0,400,400],[0,0,0],[10,2000,0],ReplaceMode=True)
