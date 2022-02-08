@@ -355,7 +355,7 @@ def run_EDFS(api,d0,filename:str,path:str,sweep_size:int = 300,scans = 4, shots 
     meta.update({'MW Freq':freq,'Field':field,'Sweep Width':sweep_width})
     # Run pulse Spel EDFS
 
-    run_ps_script(api,'/PulseSpel/param_opt.def',"EDFS","EDFS",[16,32],[d0,400,400],[0,0],[shots,scans])
+    run_ps_script(api,'/PulseSpel/param_opt',"EDFS","EDFS",[16,32],[d0,400,400],[0,0],[shots,scans])
 
     while api.is_exp_running() == True:
         time.sleep(1)
@@ -374,10 +374,17 @@ def run_EDFS(api,d0,filename:str,path:str,sweep_size:int = 300,scans = 4, shots 
     pass
 
 def run_ps_script(api,ps_script:str,exp:str,phase_cycle:str,ps_length,delays,steps,loops,**kwargs):
-    """This script runs a *GENERAL* pulse spell script. Please see the larger documenation on this form."""
+    """This script runs a *GENERAL* pulse spell script. Please see the larger documenation on this form.
+    
+    -----Parameters----
 
-    def_name = MODULE_DIR + ps_script
-    exp_name = MODULE_DIR + ps_script
+    Keyword Arguments
+    
+    
+    """
+
+    def_name = MODULE_DIR + ps_script + '.def'
+    exp_name = MODULE_DIR + ps_script + '.exp' 
 
     if "ReplaceMode" in kwargs:
         api.set_ReplaceMode(kwargs["ReplaceMode"])
@@ -385,9 +392,9 @@ def run_ps_script(api,ps_script:str,exp:str,phase_cycle:str,ps_length,delays,ste
         api.set_ReplaceMode(False) #Turn replace mode off
     
     if "PhaseCycle" in kwargs:
-        api.set_ReplaceMode(kwargs["PhaseCycle"]) 
+        api.set_PhaseCycle(kwargs["PhaseCycle"]) 
     else:
-        api.set_set_PhaseCycle(True)
+        api.set_PhaseCycle(True) #This is the default value
 
     if api.get_PulseSpel_def_filename() != def_name:
         api.set_PulseSpel_def_filepath(def_name)
@@ -427,3 +434,103 @@ def run_ps_script(api,ps_script:str,exp:str,phase_cycle:str,ps_length,delays,ste
     time.sleep(1)
 
     return 0
+
+
+# Function to autophase the MPFU channels
+
+class MaxIterError(RuntimeError):
+    pass
+
+class BoundError(RuntimeError):
+    pass
+
+def secant_method(fun,x0,x1):
+    x2 = (x0*fun(x1) - x1*fun(x0))/(fun(x1)-fun(x0))
+    return x2
+    
+def root_finder(obj,x0,x1,bounds=[0,1],MaxIter=20,tol=1,MaxStep =None):
+    if x0 == x1:
+        x0 = x0-1
+        x1 = x1+1
+    count = 0
+    Found = False
+    while (not Found) and (count < MaxIter):
+        print(x0,x1)
+        x2 = obj(x0,x1)
+        
+        if (MaxStep != None):
+            if (np.abs(x2-x1) > MaxStep):
+                sign = np.sign(x2-x1)
+                x2 = x1 + sign * MaxStep
+        
+        if x2 < bounds[0] or x2 > bounds[1]:
+            raise BoundError('Outside limits. Try reducing the Maximum Step Size')
+        
+        x0 = x1
+        x1 = x2
+        count = count + 1
+        diff = np.abs(x1-x0)
+        if diff < tol:
+            Found = True
+
+    if count == MaxIter:
+        print('Warning: Max Iteration reached. Increase tolerence or averaging')
+        raise MaxIterError('MaxIter Reached')
+    else:
+        return (x0+x1)/2
+
+def trans_angle(api,x,channel):
+    api.hidden[channel].value = x
+    dataset = api.acquire_dataset()
+    val = np.mean(dataset.data)
+    angle = np.arctan2(np.imag(val),np.real(val))
+    return angle
+
+def tune(api,target,channel,lim,tol,MaxStep,MaxIter=30):    
+    if target == 'I+':
+        gaus_int_imag = lambda x: trans_angle(api,x,channel) - np.pi/2
+    elif target == 'I-':
+        gaus_int_imag = lambda x: trans_angle(api,x,channel) + np.pi/2
+    elif target == 'R+':
+        gaus_int_imag = lambda x: trans_angle(api,x,channel)
+    elif target == 'R-':
+        gaus_int_imag = lambda x: trans_angle(api,x,channel) + np.pi
+    else:
+        raise ValueError("Target must be one of:['R+','R-','I+','I-']")
+
+    if channel == 'SignalPhase':
+        obj = lambda x0,x1: round(secant_method(gaus_int_imag,x0,x1))
+    else:
+        obj = lambda x0,x1: round(secant_method(gaus_int_imag,x0,x1),2)
+
+
+    try:
+        x = root_finder(obj,0.45*lim[1],0.55*lim[1],bounds=lim,tol=tol,MaxIter=MaxIter,MaxStep=MaxStep)
+    except MaxIterError:
+        tol = tol * 2 
+        print(f'Tolerance increased to {tol}')
+        try:
+            x = root_finder(obj,0.45*lim[1],0.55*lim[1],bounds=lim,tol=tol,MaxIter=MaxIter,MaxStep=MaxStep)
+        except MaxIterError:
+            tol = tol  * 2
+            print(f'Tolerance increased to {tol}') 
+            x = root_finder(obj,0.45*lim[1],0.55*lim[1],bounds=lim,tol=tol,MaxIter=MaxIter,MaxStep=MaxStep)
+    return x
+
+def MpfuTune(api,target,channel):
+    if channel == '+<X>':
+        channel = 'BrXPhase'
+    elif channel == '-<X>':
+        channel == 'MinBrXPhase'
+    elif channel == '+<Y>':
+        channel == 'BrYPhase'
+    elif channel == '-<Y>':
+        channel == 'MinBrYPhase'
+    
+    return tune(api,target,channel,[0,100],0.5,20)
+
+def MainTune(api,target):
+    return tune(api,target,'SignalPhase',[0,4095],5,100)
+
+def runTune(api,channel,d0):
+    run_ps_script(api,'/PulseSpel/phase_set','Hahn Echo',channel,[16,32],[d0,400,400],[0,0,0],[10,2000,0],ReplaceMode=True)
