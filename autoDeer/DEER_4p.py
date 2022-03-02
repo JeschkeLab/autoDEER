@@ -184,10 +184,19 @@ def IdentifyROI(dist,r,criterion = 0.99,plot=False):
 
     # Normlaize the distribution
     dist = dist / np.trapz(dist,r)
-    cumulative_dist = cumulative_trapezoid(dist,r,initial=0)
-    min_dist = r[np.argmin(np.abs(1 - cumulative_dist - criterion))]
-    max_dist = r[np.argmin(np.abs(cumulative_dist - criterion))]
+    # cumulative_dist = cumulative_trapezoid(dist,r,initial=0)
+    # min_dist = r[np.argmin(np.abs(1 - cumulative_dist - criterion))]
+    # max_dist = r[np.argmin(np.abs(cumulative_dist - criterion))]
 
+    c_trapz_dist = np.zeros((dist.shape[0],dist.shape[0]))
+
+    for i in range(0,dist.shape[0]):
+        c_trapz_dist[i,i:] = cumulative_trapezoid(dist[i:],r[i:],initial=0)
+
+    c_trapz_dist[(c_trapz_dist < criterion)] = 3
+    ind = np.unravel_index(np.argmin(c_trapz_dist),c_trapz_dist.shape)
+    min_dist = r[ind[0]]
+    max_dist = r[ind[1]]
     if not plot:
         return[min_dist,max_dist]
 

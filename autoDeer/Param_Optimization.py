@@ -20,7 +20,7 @@ import importlib
 
 po_log = logging.getLogger('core.Param_Opt')
 
-MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
+MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
 
 
 def carr_purcell_run(api,ps_length,d0,sweeps=4,steps=100,nuc_mod=[1,1]):
@@ -28,7 +28,7 @@ def carr_purcell_run(api,ps_length,d0,sweeps=4,steps=100,nuc_mod=[1,1]):
     # Setting the location of the pulse_spel
     def_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.def'
     def_name = MODULE_DIR + '/PulseSpel/param_opt.def'
-    exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
+
     exp_name = MODULE_DIR + '/PulseSpel/param_opt.exp'
     
     api.set_ReplaceMode(False) #Turn replace mode off
@@ -477,12 +477,12 @@ class MaxIterError(RuntimeError):
 class BoundError(RuntimeError):
     pass
 
-def secant_method(fun:function,x0:float,x1:float) -> float:
+def secant_method(fun,x0:float,x1:float) -> float:
     """ The secant method """
     x2 = (x0*fun(x1) - x1*fun(x0))/(fun(x1)-fun(x0))
     return x2
     
-def root_finder(obj:function,x0:float,x1:float,bounds:list[float,float]=[0,1],MaxIter:int=20,tol:float=1,MaxStep:float =None) -> float:
+def root_finder(obj,x0:float,x1:float,bounds:list[float,float]=[0,1],MaxIter:int=20,tol:float=1,MaxStep:float =None) -> float:
     """root_finder Optimizes the objective function through a modified secant method. 
     This introduces bounds on the method, as well as a maximum number of iterations and a maximum step size. 
 

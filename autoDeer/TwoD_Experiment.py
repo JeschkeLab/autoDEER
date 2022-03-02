@@ -330,8 +330,8 @@ class TwoD_Experiment:
             axs.scatter(self.time_4p[0],self.time_4p[1],c='b',s=15,label='4-pulse',zorder=10)
             axs.scatter(self.time_5p[0],self.time_5p[1],c='lime',s=15,label = '5-pulse',zorder=10)
             plt.legend(loc=2)
-            axs.text(0,-0.1,fr'$\tau_1 = ${self.time_4p[0]}$\mu s$ & $\tau_2 = ${self.time_4p[1]}$\mu s$',c='b',transform=axs.transAxes)
-            axs.text(0.55,-0.1,fr'$\tau_1 = ${self.time_5p[0]}$\mu s$ & $\tau_2 = ${self.time_5p[1]}$\mu s$',c='lime',transform=axs.transAxes)
+            axs.text(-0.02,-0.1,fr'$\tau_1 = ${round(self.time_4p[0],1)}$\mu s$ & $\tau_2 = ${round(self.time_4p[1],1)}$\mu s$',c='b',transform=axs.transAxes)
+            axs.text(0.58,-0.1,fr'$\tau_1 = ${round(self.time_5p[0],1)}$\mu s$ & $\tau_2 = ${round(self.time_5p[1],1)}$\mu s$',c='lime',transform=axs.transAxes)
 
         
         if 'title' in kwargs:
