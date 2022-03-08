@@ -4,3 +4,4 @@ scipy
 matplotlib
 pytest
 deerlab
+pyvisa

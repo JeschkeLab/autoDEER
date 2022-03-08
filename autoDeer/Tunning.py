@@ -4,8 +4,6 @@
 # Hugo Karas 2021
 
 import time
-from turtle import end_fill
-from xml.etree.ElementTree import TreeBuilder
 import numpy as np
 import importlib
 from scipy.optimize import minimize_scalar
