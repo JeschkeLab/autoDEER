@@ -106,9 +106,9 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
     
     
     if phase_target in ['I+','I-']:
-        imag_target = True
+        imag_aim = True
     else:
-        imag_target = False
+        imag_aim = False
     
     
     def objecive(x,*args):
@@ -132,6 +132,6 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
         return phase - args[0]
 
     
-    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_target,imag_target))
+    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,imag_aim))
 
     return output.x
