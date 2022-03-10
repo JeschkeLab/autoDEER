@@ -114,7 +114,7 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
     def objecive(x,*args):
         '''x is the given phase setting. Args are (phase_target,imag_target)'''
         api.hidden[phase_channel].value = x # Set phase to value
-        api.exp_run()
+        api.run_exp()
         while api.is_exp_running():
             time.sleep(1)
 
