@@ -46,7 +46,7 @@ def setup_pulse_trans(api,ps_length:tuple,d0):
     api.set_PulseSpel_experiment("Hahn Echo")
     api.set_PulseSpel_phase_cycling("Hahn")
 
-    api.set_Acquistion_mode(1) # Run fr om Pulse Spel
+    api.set_Acquistion_mode(2) # Run fr om Pulse Spel
 
     return 1
 
@@ -64,7 +64,7 @@ def DC_cor(V):
     offset =  np.mean(V[int(num_points*0.75):])
     return V - offset
 
-def tune(api,d0:int,channel:str = 'main',phase_target:str = 'R+'):
+def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
 
     channel_opts = ['main', '+<x>','-<x>','+<y>','-<y>']
     phase_opts = ['R+','R-','I+','I-']
@@ -74,7 +74,7 @@ def tune(api,d0:int,channel:str = 'main',phase_target:str = 'R+'):
     if not phase_target in phase_opts:
         raise ValueError(f'Phase target must be one of: {phase_opts}')
 
-    setup_pulse_trans(api,[16,32]) #TODO auto-finding of do though the abs pulse
+    setup_pulse_trans(api,[16,32],d0) #TODO auto-finding of do though the abs pulse
 
     if channel == 'main':
         lb = 0.0
@@ -115,7 +115,8 @@ def tune(api,d0:int,channel:str = 'main',phase_target:str = 'R+'):
         '''x is the given phase setting. Args are (phase_target,imag_target)'''
         api.hidden[phase_channel].value = x # Set phase to value
         api.exp_run()
-        time.sleep(5)
+        while api.is_exp_running():
+            time.sleep(1)
 
         t,v = api.acquire_scan()
         v_cor = DC_cor(v)
