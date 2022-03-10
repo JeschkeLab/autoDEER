@@ -118,7 +118,9 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
         while api.is_exp_running():
             time.sleep(1)
 
-        t,v = api.acquire_scan()
+        data = api.acquire_scan()
+        t = data.X
+        v = data.O
         v_cor = DC_cor(v)
 
         if args[1] == True:
