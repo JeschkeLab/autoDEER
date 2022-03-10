@@ -55,7 +55,7 @@ def calc_phase(t,V):
     V_cor = DC_cor(V)
     real = np.trapz(np.real(V_cor),x=t)
     imag = np.trapz(np.imag(V_cor),x=t)
-    phase = np.arctan(real/imag)
+    phase = np.arctan2(real,imag)
     # phase = real/np.sqrt(real**2 + imag**2)
     return phase
 
@@ -74,7 +74,7 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
     if not phase_target in phase_opts:
         raise ValueError(f'Phase target must be one of: {phase_opts}')
 
-    setup_pulse_trans(api,[16,32],d0) #TODO auto-finding of do though the abs pulse
+    setup_pulse_trans(api,(16,32),d0) #TODO auto-finding of do though the abs pulse
 
     if channel == 'main':
         lb = 0.0
@@ -114,6 +114,7 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
     def objecive(x,*args):
         '''x is the given phase setting. Args are (phase_target,imag_target)'''
         api.hidden[phase_channel].value = x # Set phase to value
+        time.sleep(2)
         api.run_exp()
         while api.is_exp_running():
             time.sleep(1)
@@ -128,7 +129,7 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
 
         phase = calc_phase(t,v_cor)
         # Calc Phase
-        print(f'Phase Setting = {x} - Phase = {phase}')
+        print(f'Phase Setting = {x:.1f} \t Phase = {phase:.3f}')
         return phase - args[0]
 
     
