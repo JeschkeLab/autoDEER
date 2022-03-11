@@ -46,8 +46,13 @@ def setup_pulse_trans(api,ps_length:tuple,d0):
     api.set_PulseSpel_experiment("Hahn Echo")
     api.set_PulseSpel_phase_cycling("Hahn")
 
-    api.set_Acquistion_mode(2) # Run fr om Pulse Spel
-
+    api.set_Acquistion_mode(3)
+    api.run_exp()
+    
+    time.sleep(5)
+    
+    api.set_Acquistion_mode(2) # Run from om Pulse Spel
+    api.run_exp()
     return 1
 
 def calc_phase(t,V):
@@ -55,7 +60,7 @@ def calc_phase(t,V):
     V_cor = DC_cor(V)
     real = np.trapz(np.real(V_cor),x=t)
     imag = np.trapz(np.imag(V_cor),x=t)
-    phase = np.arctan2(real,imag)
+    phase = np.arctan2(imag,real)
     # phase = real/np.sqrt(real**2 + imag**2)
     return phase
 
@@ -99,16 +104,30 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
             phase_channel = 'MinBrYPhase'
 
 
-    if phase_target in ['R+','I+']:
-        phase_aim = np.pi / 2
-    elif phase_target in ['R-','I-']:
-        phase_aim = -np.pi / 2
+    # if phase_target in ['R+','I+']:
+    #     phase_aim = np.pi / 2
+    # elif phase_target in ['R-','I-']:
+    #     phase_aim = -np.pi / 2
+    
+    if phase_target == 'R+':
+        phase_aim = 0
+        neg_aim = False
+    elif phase_target == 'I+':
+        phase_aim = np.pi/2
+        neg_aim = False
+    elif phase_target == 'I-':
+        phase_aim = -np.pi/2
+        neg_aim = False
+
+    if phase_target == 'R-':
+        phase_aim = 0
+        neg_aim = True
     
     
-    if phase_target in ['I+','I-']:
-        imag_aim = True
-    else:
-        imag_aim = False
+    # if phase_target in ['I+','I-']:
+    #     imag_aim = True
+    # else:
+    #     imag_aim = False
     
     
     def objecive(x,*args):
@@ -125,14 +144,14 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
         v_cor = DC_cor(v)
 
         if args[1] == True:
-            v = -1j * v
+            v = -1 * v
 
         phase = calc_phase(t,v_cor)
         # Calc Phase
-        print(f'Phase Setting = {x:.1f} \t Phase = {phase:.3f}')
-        return phase - args[0]
+        print(f'Phase Setting = {x:.1f} \t Phase = {phase:.2f} \t Phase Dif = {np.abs(phase - args[0]):.2f}')
+        return np.abs(phase - args[0])
 
-    
-    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,imag_aim))
+    print(f'Phase Aim = {phase_aim:.3f}')
+    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,neg_aim),options={'xatol':0.05,'maxiter':30})
 
     return output.x
