@@ -44,6 +44,13 @@ asg1 +a -a
 bsg1 +b -b
 end lists4
 
+begin lists5 "BrXAmp"
+ph1 +<x> -<x>
+ph2 +<x>
+asg1 +a -a
+bsg1 +b -b
+end lists5
+
  begin exp "Hahn Echo" [TRANS QUAD]
 
     shot i=1 to h              ; accumulation loop
@@ -58,3 +65,29 @@ end lists4
 
 
  end exp
+
+ begin exp1 "Nutation" [INTG QUAD]
+
+  p0 = 0
+  p1 = 0
+  dx = 0
+
+  sweep x=1 to sx
+     shot i=1 to h              ; accumulation loop
+      d9                       ; DAF
+      p0 [ph1]                 ; 1st pulse and phase program
+      d1                       ; tau                       
+      p1 [ph2]                ; 2nd pulse and phase program
+      d1                       ; tau
+      d0                       ; constant acquisition delay
+      dig [sg1]               ; acquisition
+    next i                     ; end of accumulation loop 
+
+    p0 = p0 + 2
+    p1 = p0 + 4
+    dx = dx + 2
+    next X
+
+end exp1
+
+
