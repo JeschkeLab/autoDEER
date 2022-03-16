@@ -22,6 +22,12 @@ def setup_pulse_trans(api,ps_length:tuple,d0,channel:str = "MainPhase"):
     
     api.set_ReplaceMode(False) #Turn replace mode off
     api.set_PhaseCycle(False)
+    
+    # Set Specjet No. of Points
+    
+    api.hidden['NoOfPoints'].value = 512
+    api.hidden['NoOfAverages'].value = 20
+    api.hidden['NOnBoardAvgs'].value = 60
 
     # Check that what pulse spel scripts are loaded and compile
     if api.get_PulseSpel_def_filename() != def_name:
@@ -37,7 +43,7 @@ def setup_pulse_trans(api,ps_length:tuple,d0,channel:str = "MainPhase"):
     # Set pulse lengths
     api.set_PulseSpel_var("p0",ps_length[0])
     api.set_PulseSpel_var("p1",ps_length[1])
-
+    
     api.set_PulseSpel_var("d0",d0)
     api.set_PulseSpel_var("d1",400)
     api.set_PulseSpel_var("d2",400) # Not required but done anyway
@@ -45,13 +51,21 @@ def setup_pulse_trans(api,ps_length:tuple,d0,channel:str = "MainPhase"):
     # Selecting the experiment
     api.set_PulseSpel_experiment("Hahn Echo")
     api.set_PulseSpel_phase_cycling(channel)
-
+    
+    # Load setting to tables
+    api.set_Acquistion_mode(1)
+    api.run_exp()
+    time.sleep(5)
+    api.stop_exp()
+    
+    # Start Transient Mode
     api.set_Acquistion_mode(3)
     api.run_exp()
     
     time.sleep(5)
     
-    api.set_Acquistion_mode(2) # Run from om Pulse Spel
+    # Read Transient Monde
+    api.set_Acquistion_mode(2) # Run from om Pulse Spel usin
     api.run_exp()
     return 1
 
@@ -144,7 +158,7 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
         v_cor = DC_cor(v)
 
         if args[1] == True:
-            v = -1 * v
+            v_cor = -1 * v_cor
 
         phase = calc_phase(t,v_cor)
         # Calc Phase
@@ -152,7 +166,9 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
         return np.abs(phase - args[0])
 
     print(f'Phase Aim = {phase_aim:.3f}')
-    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,neg_aim),options={'xatol':0.5,'maxiter':30})
+    api.hidden['AverageStart'].value = True
+
+    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,neg_aim),options={'xatol':5,'maxiter':30})
 
     return output.x
 
@@ -201,7 +217,18 @@ def tune_power(api,d0:int = 600,channel:str = 'main') -> float:
         # Calc Phase
         print(f'Attenuator Setting = {x:.1f} \t inte = {inte:.2f} ')
         return inte
-
+    
     output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],options={'xatol':0.5,'maxiter':30})
 
     pass
+
+
+def calc_d0(api,acq_length):
+    guess = 500
+    
+    
+    data = xepr.acquire_dataset()
+    t = data.time
+    d = data.data
+    d0 = guess + round(t[np.argmax(abs(d))]/2)*2 - acq_length/2
+    return d0

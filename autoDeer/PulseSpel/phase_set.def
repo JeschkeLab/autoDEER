@@ -21,7 +21,7 @@ d0   = 500
 d1   = 400     
 d2   = 400     
 
-Time increments
+;Time increments
 d12  = 100     
 d14  = 30  
 d16  = 2    ; Nuclear Modulation Averaging
