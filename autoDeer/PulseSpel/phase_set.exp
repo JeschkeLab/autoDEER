@@ -23,7 +23,7 @@ asg1 +a -a
 bsg1 +b -b
 end lists1
 
-begin lists2 "MinBrXPhase"
+begin lists2 "BrMinXPhase"
 ph1 +x -x
 ph2 -<x>
 asg1 +a -a
@@ -37,7 +37,7 @@ asg1 +a -a
 bsg1 +b -b
 end lists3
 
-begin lists4 "MinBrYPhase"
+begin lists4 "BrMinYPhase"
 ph1 +x -x
 ph2 -<y>
 asg1 +a -a
@@ -48,9 +48,9 @@ end lists4
 
     shot i=1 to h              ; accumulation loop
       d9                       ; DAF
-      p1 [ph1]                 ; 1st pulse and phase program
+      p0 [ph1]                 ; 1st pulse and phase program
       d1                       ; tau                       
-      p2 [ph2]                ; 2nd pulse and phase program
+      p1 [ph2]                ; 2nd pulse and phase program
       d1                       ; tau
       d0                       ; constant acquisition delay
       dig [sg1]               ; acquisition

@@ -11,8 +11,8 @@ srt  = 6000 * srtu ; Standard for nitroxides at 50K
                     ; 15K: 15000-25000
 
 ; Pulse Lengths
-p0   = 16      ; pi pulses
-p1   = 32      ; pi/2 pulses
+p0   = 16      ; pi/2 pulses
+p1   = 32      ; pi pulses
 pg   = 16      ; Integrator Gate Width
 
 ; Pulse Delays

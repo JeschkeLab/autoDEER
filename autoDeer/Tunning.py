@@ -93,30 +93,30 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
     if not phase_target in phase_opts:
         raise ValueError(f'Phase target must be one of: {phase_opts}')
 
-    setup_pulse_trans(api,(16,32),d0) #TODO auto-finding of do though the abs pulse
 
     if channel == 'main':
         lb = 0.0
         ub = 4095.0
         start = 2000.0
-        tol = 1
+        tol = 5
         maxiter = 10
         phase_channel = 'SignalPhase'
     elif channel in ['+<x>','-<x>','+<y>','-<y>']:
         lb = 0.0
         ub = 100.0
         start = 50.0
-        tol = 0.1
+        tol = 1
         maxiter = 10
         if channel == '+<x>':
             phase_channel = 'BrXPhase'
         elif channel == '-<x>':
-            phase_channel = 'MinBrXPhase'
+            phase_channel = 'BrMinXPhase'
         elif channel == '+<y>':
             phase_channel = 'BrYPhase'
         elif channel == '-<y>':
-            phase_channel = 'MinBrYPhase'
+            phase_channel = 'BrMinYPhase'
 
+    setup_pulse_trans(api,(16,32),d0,channel=phase_channel) #TODO auto-finding of do though the abs pulse
 
     # if phase_target in ['R+','I+']:
     #     phase_aim = np.pi / 2
@@ -168,7 +168,7 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
     print(f'Phase Aim = {phase_aim:.3f}')
     api.hidden['AverageStart'].value = True
 
-    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,neg_aim),options={'xatol':5,'maxiter':30})
+    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,neg_aim),options={'xatol':tol,'maxiter':30})
 
     return output.x
 
@@ -180,23 +180,26 @@ def tune_power(api,d0:int = 600,channel:str = 'main') -> float:
         raise ValueError(f'Channel must be one of: {channel_opts}')
 
 
-    setup_pulse_trans(api,(16,32),d0) #TODO auto-finding of do though the abs pulse
 
     if channel == 'main':
         lb = 0.0
         ub = 60.0
+        tol = 1
         atten_channel = 'PowerAtten'
     elif channel in ['+<x>','-<x>','+<y>','-<y>']:
         lb = 0.0
         ub = 100.0
+        tol  = 2
         if channel == '+<x>':
             atten_channel = 'BrXAmp'
         elif channel == '-<x>':
-            atten_channel = 'MinBrXAmp'
+            atten_channel = 'BrMinXAmp'
         elif channel == '+<y>':
             atten_channel = 'BrYAmp'
         elif channel == '-<y>':
-            atten_channel = 'MinBrYAmp'
+            atten_channel = 'BrMinYAmp'
+            
+    setup_pulse_trans(api,(16,32),d0,channel = atten_channel) #TODO auto-finding of do though the abs pulse
 
     def objecive(x,*args):
         '''x is the given attenuator setting'''
@@ -211,14 +214,15 @@ def tune_power(api,d0:int = 600,channel:str = 'main') -> float:
         v = data.data
         v_cor = DC_cor(v)
 
-        inte = -1 *  np.sqrt(np.trapz(np.real(v_cor)**2) + np.trapz(np.imag(v_cor)**2))
+        inte = -1 *  np.sqrt(np.trapz(np.real(v_cor))**2 + np.trapz(np.imag(v_cor))**2)
 
 
         # Calc Phase
         print(f'Attenuator Setting = {x:.1f} \t inte = {inte:.2f} ')
         return inte
     
-    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],options={'xatol':0.5,'maxiter':30})
+    api.hidden['AverageStart'].value = True
+    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
 
     pass
 
