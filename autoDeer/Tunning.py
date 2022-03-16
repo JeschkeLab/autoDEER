@@ -20,7 +20,7 @@ def setup_pulse_trans(api,ps_length:tuple,d0,channel:str = "MainPhase"):
     #exp_name = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/param_opt.exp'
     exp_name = MODULE_DIR[0] + '/PulseSpel/phase_set.exp'
     
-    api.set_ReplaceMode(True) #Turn replace mode off
+    api.set_ReplaceMode(False) #Turn replace mode off
     api.set_PhaseCycle(False)
 
     # Check that what pulse spel scripts are loaded and compile
@@ -152,7 +152,7 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
         return np.abs(phase - args[0])
 
     print(f'Phase Aim = {phase_aim:.3f}')
-    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,neg_aim),options={'xatol':0.05,'maxiter':30})
+    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,neg_aim),options={'xatol':0.5,'maxiter':30})
 
     return output.x
 
@@ -195,13 +195,13 @@ def tune_power(api,d0:int = 600,channel:str = 'main') -> float:
         v = data.data
         v_cor = DC_cor(v)
 
-        inte = - np.sqrt(np.trapz(np.real(v_cor)^2) + np.trapz(np.imag(v_cor)^2))
+        inte = -1 *  np.sqrt(np.trapz(np.real(v_cor)**2) + np.trapz(np.imag(v_cor)**2))
 
 
         # Calc Phase
         print(f'Attenuator Setting = {x:.1f} \t inte = {inte:.2f} ')
         return inte
 
-    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],options={'xatol':20,'maxiter':30})
+    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],options={'xatol':0.5,'maxiter':30})
 
     pass
