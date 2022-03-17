@@ -6,7 +6,7 @@
 import time
 import numpy as np
 import importlib
-from scipy.optimize import minimize_scalar
+from scipy.optimize import minimize_scalar,minimize
 
 
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
@@ -83,7 +83,7 @@ def DC_cor(V):
     offset =  np.mean(V[int(num_points*0.75):])
     return V - offset
 
-def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+',ps_length:int = 32):
+def tune_phase(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+',ps_length:int = 32):
 
     if ps_length%4 != 0:
         raise ValueError("ps_length must be a multiple of 4")
@@ -104,15 +104,17 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+',ps_length
     if channel == 'main':
         lb = 0.0
         ub = 4095.0
-        start = 2000.0
+        start_point = 2000.0
         tol = 5
         maxiter = 10
+        rhobeg = 200
         phase_channel = 'SignalPhase'
     elif channel in ['+<x>','-<x>','+<y>','-<y>']:
         lb = 0.0
         ub = 100.0
-        start = 50.0
-        tol = 1
+        start_point = 50.0
+        tol = 0.5
+        rhobeg = 5
         maxiter = 10
         if channel == '+<x>':
             phase_channel = 'BrXPhase'
@@ -122,8 +124,10 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+',ps_length
             phase_channel = 'BrYPhase'
         elif channel == '-<y>':
             phase_channel = 'BrMinYPhase'
-
-    setup_pulse_trans(api,(16,32),d0,channel=phase_channel) #TODO auto-finding of do though the abs pulse
+    else:
+        raise ValueError("Channel must be one of:['main','+<x>','-<x>','+<y>','-<y>']")
+        
+    setup_pulse_trans(api,ps_lengths,d0,channel=phase_channel) #TODO auto-finding of d0 though the abs pulse
 
     # if phase_target in ['R+','I+']:
     #     phase_aim = np.pi / 2
@@ -151,10 +155,11 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+',ps_length
     #     imag_aim = False
     
     
-    def objecive(x,*args):
+    def objective(x,*args):
         '''x is the given phase setting. Args are (phase_target,imag_target)'''
+        x = x[0]
         api.hidden[phase_channel].value = x # Set phase to value
-        time.sleep(2)
+        time.sleep(4)
         api.run_exp()
         while api.is_exp_running():
             time.sleep(1)
@@ -174,13 +179,21 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+',ps_length
 
     print(f'Phase Aim = {phase_aim:.3f}')
     api.hidden['AverageStart'].value = True
+    api.hidden[phase_channel].value = start_point
+    time.sleep(10)# Wait for phase to shift
 
-    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,neg_aim),options={'xatol':tol,'maxiter':30})
+    # output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,neg_aim),options={'xatol':tol,'maxiter':30})
+    cons = ({'type':'ineq','fun': lambda x: x - lb},
+        {'type':'ineq','fun': lambda x: ub - x})
     
-    print(f"Optimal Phase Setting for {phase_channel} is: {output.x:.1f}")
-    api.hidden[phase_channel].value = output.x
+    output = minimize(objective,start_point,method = 'COBYLA',args=(phase_aim,neg_aim),
+                      constraints=cons,options={'rhobeg':rhobeg,'tol':tol,'maxiter':30,'catol':0})
+    result = output.x[0]
+
+    print(f"Optimal Phase Setting for {phase_channel} is: {result:.1f}")
+    api.hidden[phase_channel].value = result
     
-    return output.x
+    return result
 
 
 
@@ -205,11 +218,15 @@ def tune_power(api,d0:int = 600,channel:str = 'main',ps_target:int = 32) -> floa
         lb = 0.0
         ub = 60.0
         tol = 1
+        rhobeg = 5
+        start_point = 20
         atten_channel = 'PowerAtten'
     elif channel in ['+<x>','-<x>','+<y>','-<y>']:
         lb = 0.0
         ub = 100.0
-        tol  = 2
+        tol  = 0.5
+        rhobeg = 5
+        start_point = 50
         if channel == '+<x>':
             atten_channel = 'BrXAmp'
             phase_channel = 'BrXPhase'
@@ -222,12 +239,16 @@ def tune_power(api,d0:int = 600,channel:str = 'main',ps_target:int = 32) -> floa
         elif channel == '-<y>':
             atten_channel = 'BrMinYAmp'
             phase_channel = 'BrMinYPhase'
+    else:
+        raise ValueError("Channel must be one of:['main','+<x>','-<x>','+<y>','-<y>']")
 
             
     setup_pulse_trans(api,ps_lengths,d0,channel = phase_channel) #TODO auto-finding of do though the abs pulse
 
-    def objecive(x,*args):
+    def objective(x,*args):
         '''x is the given attenuator setting'''
+        x = x[0]
+        
         api.hidden[atten_channel].value = x # Set phase to value
         time.sleep(2)
         api.run_exp()
@@ -246,11 +267,17 @@ def tune_power(api,d0:int = 600,channel:str = 'main',ps_target:int = 32) -> floa
         return inte
     
     api.hidden['AverageStart'].value = True
-    output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
-
-    print(f"Optimal Attenuator Setting for {atten_channel} is: {output.x:.1f}")
-    api.hidden[atten_channel].value = output.x
-    return output.x
+    # output = minimize_scalar(objective,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
+    
+    cons = ({'type':'ineq','fun': lambda x: x - lb},
+            {'type':'ineq','fun': lambda x: ub - x})
+    
+    output = minimize(objective,start_point,method = 'COBYLA',constraints=cons,options={'rhobeg':rhobeg,'tol':tol,'maxiter':30,'catol':0})
+    result = output.x[0]
+    
+    print(f"Optimal Attenuator Setting for {atten_channel} is: {result:.1f}")
+    api.hidden[atten_channel].value = result
+    return result
     
 
 
