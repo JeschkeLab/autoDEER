@@ -83,8 +83,15 @@ def DC_cor(V):
     offset =  np.mean(V[int(num_points*0.75):])
     return V - offset
 
-def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
+def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+',ps_length:int = 32):
 
+    if ps_length%4 != 0:
+        raise ValueError("ps_length must be a multiple of 4")
+    elif ps_length < 4:
+        raise ValueError("ps_length must be a greater than or equal to 4")
+    else:
+        ps_lengths = (int(ps_length/2),int(ps_length))
+    
     channel_opts = ['main', '+<x>','-<x>','+<y>','-<y>']
     phase_opts = ['R+','R-','I+','I-']
     if not channel in channel_opts:
@@ -169,12 +176,25 @@ def tune(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+'):
     api.hidden['AverageStart'].value = True
 
     output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,neg_aim),options={'xatol':tol,'maxiter':30})
-
+    
+    print(f"Optimal Phase Setting for {phase_channel} is: {output.x:.1f}")
+    api.hidden[phase_channel].value = output.x
+    
     return output.x
 
 
-def tune_power(api,d0:int = 600,channel:str = 'main') -> float:
 
+def tune_power(api,d0:int = 600,channel:str = 'main',ps_target:int = 32) -> float:
+
+    
+    if ps_target%4 != 0:
+        raise ValueError("ps_target must be a multiple of 4")
+    elif ps_target < 4:
+        raise ValueError("ps_target must be a greater than or equal to 4")
+    else:
+        ps_lengths = (int(ps_target/2),int(ps_target))
+    
+    
     channel_opts = ['main', '+<x>','-<x>','+<y>','-<y>']
     if not channel in channel_opts:
         raise ValueError(f'Channel must be one of: {channel_opts}')
@@ -192,14 +212,19 @@ def tune_power(api,d0:int = 600,channel:str = 'main') -> float:
         tol  = 2
         if channel == '+<x>':
             atten_channel = 'BrXAmp'
+            phase_channel = 'BrXPhase'
         elif channel == '-<x>':
             atten_channel = 'BrMinXAmp'
+            phase_channel = 'BrMinXPhase'            
         elif channel == '+<y>':
             atten_channel = 'BrYAmp'
+            phase_channel = 'BrYPhase'
         elif channel == '-<y>':
             atten_channel = 'BrMinYAmp'
+            phase_channel = 'BrMinYPhase'
+
             
-    setup_pulse_trans(api,(16,32),d0,channel = atten_channel) #TODO auto-finding of do though the abs pulse
+    setup_pulse_trans(api,ps_lengths,d0,channel = phase_channel) #TODO auto-finding of do though the abs pulse
 
     def objecive(x,*args):
         '''x is the given attenuator setting'''
@@ -214,8 +239,7 @@ def tune_power(api,d0:int = 600,channel:str = 'main') -> float:
         v = data.data
         v_cor = DC_cor(v)
 
-        inte = -1 *  np.sqrt(np.trapz(np.real(v_cor))**2 + np.trapz(np.imag(v_cor))**2)
-
+        inte = -1 *  np.trapz(np.abs(np.real(v_cor)) + np.abs(np.imag(v_cor))) 
 
         # Calc Phase
         print(f'Attenuator Setting = {x:.1f} \t inte = {inte:.2f} ')
@@ -224,7 +248,10 @@ def tune_power(api,d0:int = 600,channel:str = 'main') -> float:
     api.hidden['AverageStart'].value = True
     output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
 
-    pass
+    print(f"Optimal Attenuator Setting for {atten_channel} is: {output.x:.1f}")
+    api.hidden[atten_channel].value = output.x
+    return output.x
+    
 
 
 def calc_d0(api,acq_length):
