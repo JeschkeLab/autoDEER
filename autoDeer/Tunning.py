@@ -159,7 +159,7 @@ def tune_phase(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+',ps_
         '''x is the given phase setting. Args are (phase_target,imag_target)'''
         x = x[0]
         api.hidden[phase_channel].value = x # Set phase to value
-        time.sleep(4)
+        time.sleep(6)
         api.run_exp()
         while api.is_exp_running():
             time.sleep(1)
@@ -173,14 +173,19 @@ def tune_phase(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+',ps_
             v_cor = -1 * v_cor
 
         phase = calc_phase(t,v_cor)
+        phase = np.trapz(np.real(v_cor))
         # Calc Phase
         print(f'Phase Setting = {x:.1f} \t Phase = {phase:.2f} \t Phase Dif = {np.abs(phase - args[0]):.2f}')
-        return np.abs(phase - args[0])
+        # return np.abs(phase - args[0])
+        return phase
 
     print(f'Phase Aim = {phase_aim:.3f}')
     api.hidden['AverageStart'].value = True
-    api.hidden[phase_channel].value = start_point
-    time.sleep(10)# Wait for phase to shift
+    objective([start_point + 5],phase_aim,neg_aim)
+    objective([start_point + 4],phase_aim,neg_aim)
+    objective([start_point + 3],phase_aim,neg_aim)
+    objective([start_point + 2],phase_aim,neg_aim)
+    
 
     # output = minimize_scalar(objecive,method='bounded',bounds=[lb,ub],args=(phase_aim,neg_aim),options={'xatol':tol,'maxiter':30})
     cons = ({'type':'ineq','fun': lambda x: x - lb},
