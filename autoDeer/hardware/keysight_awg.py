@@ -8,6 +8,7 @@ from typing import Optional,Union
 import numpy as np
 from io import StringIO
 import logging
+import matplotlib.pyplot as plt
 
 hw_log = logging.getLogger('hardware.AWG')
 
@@ -55,7 +56,7 @@ class waveform:
         sampling_freq = 12e9
         grad:int = 64
         min_length:int = 5*grad
-        max = 2**12
+        max = 2**11
 
         # Check_amplitude
         if np.max(np.abs(self.shape)) >= max:
@@ -66,13 +67,13 @@ class waveform:
             raise WaveformError(f"Waveform gradularity must equal {grad}")
 
         # Check Minimum Length
-        if np.shape(self.shape)[0]%grad < min_length:
+        if np.shape(self.shape)[0] < min_length:
             raise WaveformError(f"Waveform must be longer than {min_length}")
 
         return True
 
     def set_amp(self,val:Union[float,str]):
-        max = 2**12
+        max = 2**11 - 1
 
         if type(val) == str:
             if val.lower() == 'max':
@@ -80,14 +81,21 @@ class waveform:
             elif val.lower == 'min':
                 val = 0
         
-        cur_max = abs(max(self.shape))
+        cur_max = np.max(abs(self.shape))
         self.shape = self.shape / cur_max
         self.shape = self.shape * max
+        self.shape = self.shape.astype(np.int16)
  
     def DACencode(self):
-        encodedData = dacEncode(self.shape,[self.mk1,self.mk2])
+        encodedData = dacEncode(self.shape,np.vstack([self.mk1,self.mk2]))
         return encodedData
 
+    def plot(self):
+        fig, ax = plt.subplots()
+        ax.plot(self.shape)
+        ax.set_xlabel('Sample')
+        ax.set_ylabel('DAC')
+        return fig
 
 
 class interface:
