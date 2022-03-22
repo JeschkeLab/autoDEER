@@ -3,7 +3,6 @@ This is selection of functions and comands for the control of the keysight M8120
 """
 import re
 import socket
-from tkinter import E
 import numpy as np
 from io import StringIO
 import logging
@@ -100,7 +99,7 @@ class interface:
             self.instr_socket.close()
         pass
 
-    def _sendSCPI(self,cmd) -> None:
+    def _sendSCPI(self,cmd,cmd_check:bool=True) -> None:
 
         if type(cmd) is str:
             cmd_b = cmd.encode()
@@ -108,6 +107,9 @@ class interface:
         elif type(cmd) is bytes:
             cmd_b = cmd
             cmd_s = cmd.decode()
+
+        if cmd_check == True:
+            self._check_cmd(cmd_s)
         
         self.instr_socket.sendall(cmd_b)
         hw_log.info(f'SCPI_Cmd:{cmd_s}')
@@ -121,10 +123,13 @@ class interface:
         
         return  data
 
-    def _sendrecvSCPI(self,cmd:str,buffer:int):
+    def _sendrecvSCPI(self,cmd:str,buffer:int,error_check:bool=True,cmd_check:bool = True):
 
-        self._sendSCPI(cmd)
+        self._sendSCPI(cmd,cmd_check=cmd_check)
         data = self._recvSCPI(buffer)
+
+        if error_check:
+            self._raise_errors()
         
         return  data
 
@@ -133,7 +138,7 @@ class interface:
         errors = []
         check = True
         while check:
-            error = self._sendrecvSCPI(b":SYST:ERR?",512)
+            error = self._sendrecvSCPI(b":SYST:ERR? \n",512,error_check=False)
             if error[0] == '0':
                 check = False
             else:
@@ -158,6 +163,21 @@ class interface:
             for e in errors:
                 msg += e
             raise RuntimeError(msg)
+
+    def _check_cmd(self,cmd:str or bytes):
+
+        # Check the line error is included
+
+        if type(cmd) == bytes:
+            cmd_s = cmd.decode()
+        else:
+            cmd_s = cmd
+
+        check_string = "\n\Z"
+        match = re.search(check_string,cmd_s)
+        
+        if match == None:
+            raise ValueError("The given SCPI AWG cmd is not terminated (\\n) \n cmd:"+cmd_s)
 
     def Abort(self,chn:int = 0)->None:
         """Abort Stop signal generation on either one or more channels. If channels are coupled bith channels are stopped.
