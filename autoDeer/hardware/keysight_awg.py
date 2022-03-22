@@ -1,8 +1,10 @@
 """
 This is selection of functions and comands for the control of the keysight M8120 AWG through a TCP Socket
 """
+import os.path as path
 import re
 import socket
+from typing import Optional,Union
 import numpy as np
 from io import StringIO
 import logging
@@ -99,7 +101,7 @@ class interface:
             self.instr_socket.close()
         pass
 
-    def _sendSCPI(self,cmd,cmd_check:bool=True) -> None:
+    def _sendSCPI(self,cmd,cmd_check:bool=True,error_check:bool = True) -> None:
 
         if type(cmd) is str:
             cmd_b = cmd.encode()
@@ -113,19 +115,29 @@ class interface:
         
         self.instr_socket.sendall(cmd_b)
         hw_log.info(f'SCPI_Cmd:{cmd_s}')
+
+        if error_check:
+            self._raise_errors()
         
         pass
 
-    def _recvSCPI(self,buffer):
+    def _recvSCPI(self,buffer,msg_check:bool = True,decode:bool = True):
         data_b = self.instr_socket.recv(buffer)
-        data = data_b.decode()
-        hw_log.info(f'SCPI_recv:{data}')
-        
-        return  data
+
+        if decode:
+            data = data_b.decode()
+            hw_log.debug(f'SCPI_recv:{data}')
+
+            if msg_check:
+                self._check_msg(data)
+            
+            return  data
+        else:
+            return data_b
 
     def _sendrecvSCPI(self,cmd:str,buffer:int,error_check:bool=True,cmd_check:bool = True):
 
-        self._sendSCPI(cmd,cmd_check=cmd_check)
+        self._sendSCPI(cmd,cmd_check=cmd_check,error_check=False)
         data = self._recvSCPI(buffer)
 
         if error_check:
@@ -166,7 +178,7 @@ class interface:
 
     def _check_cmd(self,cmd:str or bytes):
 
-        # Check the line error is included
+        # Check the line termintation is included
 
         if type(cmd) == bytes:
             cmd_s = cmd.decode()
@@ -178,6 +190,79 @@ class interface:
         
         if match == None:
             raise ValueError("The given SCPI AWG cmd is not terminated (\\n) \n cmd:"+cmd_s)
+
+    def _check_msg(self,msg:str or bytes):
+
+        # Check the line termintation is included
+
+        if type(msg) == bytes:
+            msg_s = msg.decode()
+        else:
+            msg_s = msg
+
+        check_string = "\n\Z"
+        match = re.search(check_string,msg_s)
+        
+        if match == None:
+            raise ValueError("The recieved TCP msg is not terminated: Please increase the buffer size")
+
+    def getSystemSettings(self,savefile:Optional[str]=None):
+        """SystemSettings Gets the current AWG settings. This is either returns as a string or saves to file.
+
+        Parameters
+        ----------
+        savefile : str or None, optional
+            The file path of where to save the system settings. If None is give returns a string, by default None
+
+        Returns
+        -------
+        Optional[str]
+            Returns the system settings as one long string.
+        """        
+        data = self._sendrecvSCPI(b':SYST:SET? \n',20000,error_check=True)
+
+        # This removes any #xxxx that occurs at the begining. This can't be loaded by the spectrometer.
+        re_mask = "^#[0-9]*"
+        data = re.sub(re_mask,"",data)
+        
+        if savefile == None:
+            return data
+        else:
+            with open(savefile, 'w') as f:
+                f.write(data)
+            pass
+
+    def setSystemSettings(self,settings:Optional[Union[bytes,str]] = None,save_path:Optional[str] = None)->None:
+        """SystemSettings Sends and sets the AWG settings. This can either take a string of settings or a save file
+
+        Parameters
+        ----------
+        settings : Optional[Union[bytes,str]]
+            This can be either a bytes string or a normal string of the settings.
+        save_path : Optional[str]
+            The file path to a save file containg the settings as a single line string.
+        """
+
+        if (not settings) and (not save_path):
+            raise ValueError('Only one of settings or save_path can be given.')
+        elif settings != None:
+            if type(settings) == str:
+                data = settings.encode()
+            else:
+                data = settings
+        elif save_path != None:
+            if path.exists(save_path):
+                with open(save_path,'r') as f:
+                    data = f.read()
+                data = data.encode()
+        else:
+            raise ValueError('One of settings or save_path can be given.')
+
+        msg = b':SYST:SET'
+        msg += data
+        self._sendSCPI(msg,cmd_check=True)
+        self._raise_errors()
+
 
     def Abort(self,chn:int = 0)->None:
         """Abort Stop signal generation on either one or more channels. If channels are coupled bith channels are stopped.
