@@ -3,15 +3,53 @@ This is selection of functions and comands for the control of the keysight M8120
 """
 import re
 import socket
-from unittest import result
-
+from tkinter import E
+import numpy as np
+from io import StringIO
 import logging
 
 hw_log = logging.getLogger('hardware.AWG')
 
+def dacDecode(data):
+    data_s = data.decode()
+    raw_values = np.genfromtxt(StringIO(data_s), delimiter = ",")
+    num_values = len(raw_values)
+    markers = np.zeros(2,num_values)
+    decoded_data = np.zeros(num_values)
+    for i,val in enumerate(raw_values):
+        markers[0,i] = val & 1
+        markers[1,i] = (val & 2) >> 1
+        decoded_data[i] = val // 16
+    return decoded_data
+
+
+def dacEncode(data,markers):
+    num_values = len(data)
+    num_markers = np.shape(markers)[0]
+    new_data = np.zeros(num_values,dtype=np.int16)
+    for i in range(0,num_values):
+        tmp_data = data[i] * 16
+        tmp_data = tmp_data + int(markers[0,i])
+        tmp_data = tmp_data + int(markers[1,i] * 2)
+        new_data[i] = tmp_data
+    return new_data
+    
+class sequence:
+
+    def __init__(self,awg) -> None:
+        self.awg = awg
+        pass
+
+class waveform:
+
+    def __init__(self,awg) -> None:
+        self.awg = awg
+        pass
+    
+
 class interface:
 
-    def __init__(self,protocol) -> None:
+    def __init__(self) -> None:
         pass
 
     def open_con(self,host,port=5025) -> None:
@@ -50,8 +88,8 @@ class interface:
         try:
             self.instr_socket.sendall(b"*CLS\n")
 
-            self.instr_socket.sendall(b"*RST;*OPC?\n")
-            result = self.instr_socket.recv(8)
+            # self.instr_socket.sendall(b"*RST;*OPC?\n")
+            # result = self.instr_socket.recv(8)
 
             self.instr_socket.sendall(b"*IDN?\n")
             idn_result = self.instr_socket.recv(255)
@@ -78,18 +116,48 @@ class interface:
 
     def _recvSCPI(self,buffer):
         data_b = self.instr_socket.recv(buffer)
-        data = data_b.decode
+        data = data_b.decode()
         hw_log.info(f'SCPI_recv:{data}')
         
         return  data
 
     def _sendrecvSCPI(self,cmd:str,buffer:int):
 
-        self._sendSCPI(self,cmd)
-        data = self._recvSCPI(self,buffer)
+        self._sendSCPI(cmd)
+        data = self._recvSCPI(buffer)
         
         return  data
 
+    def _get_errors(self):
+
+        errors = []
+        check = True
+        while check:
+            error = self._sendrecvSCPI(b":SYST:ERR?",512)
+            if error[0] == '0':
+                check = False
+            else:
+                errors.append(error)
+        return errors
+
+    def _check_errors(self):
+
+        errors = self._get_errors()
+        if errors == []:
+            return False
+        else:
+            return True
+
+    def _raise_errors(self):
+        errors = self._get_errors()
+
+        if errors == []:
+            pass
+        else:
+            msg = ""
+            for e in errors:
+                msg += e
+            raise RuntimeError(msg)
 
     def Abort(self,chn:int = 0)->None:
         """Abort Stop signal generation on either one or more channels. If channels are coupled bith channels are stopped.
@@ -420,3 +488,5 @@ class interface:
         self._sendSCPI(cmd("") + b" " + value_str +  b"\n")
 
         return self.getTrigImp()
+
+    
