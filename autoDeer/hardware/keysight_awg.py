@@ -43,10 +43,52 @@ class sequence:
 
 class waveform:
 
-    def __init__(self,awg) -> None:
+    def __init__(self,awg,shape,markers) -> None:
         self.awg = awg
+        self.shape = shape
+        self.mk1 = markers[0,:]
+        self.mk2 = markers[1,:]
+
         pass
-    
+
+    def _awg_check(self):
+        sampling_freq = 12e9
+        grad:int = 64
+        min_length:int = 5*grad
+        max = 2**12
+
+        # Check_amplitude
+        if np.max(np.abs(self.shape)) >= max:
+            raise WaveformError(f"Waveform exceeds maximum possible value. Limited to +- {max}")
+
+        # Check Gradularity
+        if np.shape(self.shape)[0]%grad != 0:
+            raise WaveformError(f"Waveform gradularity must equal {grad}")
+
+        # Check Minimum Length
+        if np.shape(self.shape)[0]%grad < min_length:
+            raise WaveformError(f"Waveform must be longer than {min_length}")
+
+        return True
+
+    def set_amp(self,val:Union[float,str]):
+        max = 2**12
+
+        if type(val) == str:
+            if val.lower() == 'max':
+                val = 1
+            elif val.lower == 'min':
+                val = 0
+        
+        cur_max = abs(max(self.shape))
+        self.shape = self.shape / cur_max
+        self.shape = self.shape * max
+ 
+    def DACencode(self):
+        encodedData = dacEncode(self.shape,[self.mk1,self.mk2])
+        return encodedData
+
+
 
 class interface:
 
@@ -594,4 +636,12 @@ class interface:
 
         return self.getTrigImp()
 
-    
+
+class WaveformError(Exception):
+    pass
+
+class AWGError(Exception):
+    pass
+
+class SequenceError(Exception):
+    pass
