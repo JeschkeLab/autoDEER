@@ -56,11 +56,12 @@ class waveform:
         sampling_freq = 12e9
         grad:int = 64
         min_length:int = 5*grad
-        max = 2**11
+        shape_max = 2**11
+        encode_max = 2**15
 
-        # Check_amplitude
-        if np.max(np.abs(self.shape)) >= max:
-            raise WaveformError(f"Waveform exceeds maximum possible value. Limited to +- {max}")
+        # Check amplitude of waveform
+        if np.max(np.abs(self.shape)) > shape_max:
+            raise WaveformError(f"Waveform exceeds maximum possible value. Limited to +- {shape_max}")
 
         # Check Gradularity
         if np.shape(self.shape)[0]%grad != 0:
@@ -69,6 +70,18 @@ class waveform:
         # Check Minimum Length
         if np.shape(self.shape)[0] < min_length:
             raise WaveformError(f"Waveform must be longer than {min_length}")
+
+        # Check encoded data
+        if hasattr(self,'encodedData'):
+            if np.max(np.abs(self.encodedData)) > encode_max:
+                raise WaveformError(f"Waveform exceeds maximum possible value. Limited to +- {encode_max}")
+            # Check Gradularity
+            if np.shape(self.encodedData)[0]%grad != 0:
+                raise WaveformError(f"Waveform gradularity must equal {grad}")
+
+            # Check Minimum Length
+            if np.shape(self.encodedData)[0] < min_length:
+                raise WaveformError(f"Waveform must be longer than {min_length}")
 
         return True
 
@@ -87,8 +100,8 @@ class waveform:
         self.shape = self.shape.astype(np.int16)
  
     def DACencode(self):
-        encodedData = dacEncode(self.shape,np.vstack([self.mk1,self.mk2]))
-        return encodedData
+        self.encodedData = dacEncode(self.shape,np.vstack([self.mk1,self.mk2]))
+        return self.encodedData
 
     def plot(self):
         fig, ax = plt.subplots()
@@ -96,6 +109,20 @@ class waveform:
         ax.set_xlabel('Sample')
         ax.set_ylabel('DAC')
         return fig
+
+    def define_new_waveform(self,ID:int):
+        num_points:int = np.shape(self.encodedData)[0]
+        self._awg_check()
+        cmd = 'TRAC:DEF {},{},0 \n'.format(int(ID),int(num_points))
+        self.awg._sendSCPI(cmd.encode())
+    
+    def send_waveform(self,ID:int):
+        self._awg_check()
+        cmd = ':TRAC:DATA {},0'.format(int(ID))
+        for i in self.encodedData:
+            cmd += ',%i' %i
+        cmd += ' \n'
+        self.awg._sendSCPI(cmd.encode)
 
 
 class interface:
@@ -185,10 +212,10 @@ class interface:
         else:
             return data_b
 
-    def _sendrecvSCPI(self,cmd:str,buffer:int,error_check:bool=True,cmd_check:bool = True):
+    def _sendrecvSCPI(self,cmd:str,buffer:int,decode:int=True,error_check:bool=True,cmd_check:bool = True):
 
         self._sendSCPI(cmd,cmd_check=cmd_check,error_check=False)
-        data = self._recvSCPI(buffer)
+        data = self._recvSCPI(buffer,decode)
 
         if error_check:
             self._raise_errors()
@@ -643,6 +670,96 @@ class interface:
         self._sendSCPI(cmd("") + b" " + value_str +  b"\n")
 
         return self.getTrigImp()
+
+    
+    def getMemoryStatus(self,ch:int = 3)-> np.ndarray:
+
+
+        def print_mem(mem,ch):
+            re_mask = "[0-9]+"
+            match = re.findall(re_mask,mem1)
+            print(f"Channel {ch}: Bytes Avaliable = {int(match[0])},Bytes in use = {int(match[1])},Continguous Bytes Avaliable = {int(match[3])}")
+            return [int(match[0]),int(match[1]),int(match[2])]
+
+        if ch == 3:
+            mem1 = self._sendrecvSCPI(b"TRAC1:FREE? \n",128,decode=True)
+            mem2 = self._sendrecvSCPI(b"TRAC2:FREE? \n",128,decode=True)
+            mem1 = print_mem(mem1,1)
+            mem2 = print_mem(mem2,2)
+            mem = np.vstack(mem1,mem2)
+
+        elif (ch == 1) or (ch == 3):
+            cmd = "TRAC{}:FREE? \n".format(int(ch))
+            mem1 = self._sendrecvSCPI(cmd.encode(),128,decode=True)
+            mem = print_mem(mem1,ch)
+
+        else:
+            raise ValueError("Channel must be one of 1,2,3(both).")
+
+        return mem
+
+    
+    def getWaveformCatalog(self,ch:int =2) -> np.ndarray:
+
+
+        def extractCat(cat_string):
+            cat_mask = "[0-9]+,[0-9]+"
+            waveforms = re.findall(cat_mask,cat_string)
+            num_waveforms = len(waveforms)
+            catalog = np.zeros((num_waveforms,2),dtype=np.int16)
+            for i,wave in enumerate(waveforms):
+                iD,num_points = re.findall("[0-9]+",wave)
+                catalog[i,:] = [int(iD),int(num_points)]
+            return catalog
+
+        if ch == 3:
+            
+            cat1 = self._sendrecvSCPI(b"TRAC1:CAT? \n",128)
+            cat2 = self._sendrecvSCPI(b"TRAC2:CAT? \n",128)
+            return np.hstack(extractCat(cat1),extractCat(cat2))
+
+        elif (ch == 1) or (ch ==3):
+            
+            cmd = "TRAC{}:CAT? \n".format(int(ch))
+            cat1 = self._sendrecvSCPI(cmd.encode(),128)
+            return extractCat(cat1)
+
+        else:
+            raise ValueError("Channel must be one of 1,2,3(both).")
+
+
+    def deleteWaveform(self,ch:int,ID:int) -> None:
+
+        if ch == 3:
+            cmd = "TRAC1DEL{} \n".format(ID)
+            self._sendSCPI(cmd.encode)
+            cmd = "TRAC2DEL{} \n".format(ID)
+            self._sendSCPI(cmd.encode)
+        
+        elif (ch == 1) or (ch ==3):
+            cmd = "TRAC{}DEL{} \n".format(ch,ID)
+            self._sendSCPI(cmd.encode)
+        
+        else:
+            raise ValueError("Channel must be one of 1,2,3(both).")
+
+        pass
+
+    def deleteAllWaveforms(self,ch:int) -> None:
+
+        if ch == 3:
+            self._sendSCPI(b"TRAC1DEL:ALL \n")
+            self._sendSCPI(b"TRAC2DEL:ALL \n")
+        
+        elif (ch == 1) or (ch ==3):
+            cmd = "TRAC{}DEL:ALL \n".format(ch)
+            self._sendSCPI(cmd.encode)
+        
+        else:
+            raise ValueError("Channel must be one of 1,2,3(both).")
+
+        pass
+
 
 
 class WaveformError(Exception):
