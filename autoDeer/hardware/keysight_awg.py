@@ -35,14 +35,189 @@ def dacEncode(data,markers):
         tmp_data = tmp_data + int(markers[1,i] * 2)
         new_data[i] = tmp_data
     return new_data
+
+class SequenceTable:
+
+    def __init__(self,awg) -> None:
+        self.awg = awg
+        pass
     
-class sequence:
+    def read_from_str(self,str):
+        re_mask="[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+,[0-9]+"
+        entries = re.findall(re_mask,str)
+        self.table = []
+        for entry in entries:
+            new_seq = Sequence(self.awg)
+            new_seq.read_from_str(entry)
+            self.table.append(new_seq)
+        return self.table
+
+    def write_to_str(self):
+        string = ""
+        for seq in self.table:
+            string += seq.write_to_str()
+            string += ","
+        string = string[:-1]
+
+        return string
+    
+
+
+
+class Sequence:
 
     def __init__(self,awg) -> None:
         self.awg = awg
         pass
 
-class waveform:
+    def read_from_str(self,str):
+        re_mask="[0-9]+"
+        parameters = re.findall(re_mask,str)
+        self.params = []
+        for param in parameters:
+            self.params.append(int(param))
+
+    def write_to_str(self):
+        string = ""
+        for param in self.params:
+            string += (str(param) +",")
+        string = string[:-1]
+        return string
+        
+
+    def decode(self,mode):
+        self.entry_dict = {}
+        for i,param in enumerate(self.params):
+            param = int(param)
+
+            if i == 0:
+                data_cmd = (param & 2**31)  // 2**31
+                self.entry_dict['data_cmd']          = data_cmd
+                self.entry_dict['end_marker_seq']    =   (param & 2**30)  // 2**30
+                self.entry_dict['end_marker_sce']    =   (param & 2**29)  // 2**29
+                self.entry_dict['init_marker_seq']   =   (param & 2**28)  // 2**28
+                self.entry_dict['marker_enable']     =   (param & 2**24)  // 2**24
+                self.entry_dict['seq_adv_mode']      =   (param & 0b111100000000000000000000)  // 2**20
+                self.entry_dict['seg_adv_mode']      =   (param & 0b11110000000000000000)  // 2**16
+                self.entry_dict['amp_tab_init']      =   (param & 2**15)  // 2**15
+                self.entry_dict['amp_tab_incr']      =   (param & 2**14)  // 2**14
+                self.entry_dict['freq_tab_init']     =   (param & 2**13)  // 2**13
+                self.entry_dict['freq_tab_incr']     =   (param & 2**12)  // 2**12
+
+                if data_cmd == 0:
+                    # We can identify that this is a Data entry
+                    self.entry_type = 'data'
+                    self.entry_dict['entry_type'] = self.entry_type
+                else:
+                    # We still need the cmd code in word 3 to idenify if it is idle delay or config
+                    self.entry_type == None
+                
+            elif i == 1:
+                # The sequence loop count. This should be zero in all situation except the first entry of a sequence
+                self.entry_dict['seq_loop_cnt'] = param
+
+            elif i ==2:
+
+                if self.entry_type == 'data':
+                    self.entry_dict['seg_loop_cnt'] = param
+        
+                else:
+                    if (param  & 0b1111111111111111) == 0:
+                        self.entry_type = 'idle delay'
+                        self.entry_dict['entry_type']
+                        self.entry_dict['cmd_code'] = 0
+
+                    elif (param  & 0b1111111111111111) == 1:
+                        self.entry_type = 'config'
+                        self.entry_dict['entry_type'] = self.entry_type
+                        self.entry_dict['cmd_code'] = 1
+                        self.entry_dict['action_table_id'] = (param  & 0b11111111111111110000000000000000) // 2**16
+
+            elif i == 3:
+
+                if self.entry_type == 'idle delay':
+                    if mode == 'speed':
+                        self.entry_dict['idle_sample'] = (param  & 0b111111111111)
+                    else:
+                        raise RuntimeError("Only Speed mode has been currently implemented for the idle delay cmd.")
+
+                elif (self.entry_type == 'data') or (self.entry_type == 'config'):
+                    self.entry_dict['seg_id'] = (param  & 0b1111111111111111111)
+
+                else:
+                    raise RuntimeError(f"entry_type must be one of ['data','idle delay','config']. Currently it is {self.entry_type}")     
+                
+            elif i == 4:
+
+                if self.entry_type == 'idle delay':
+                    
+                    self.entry_dict['idle_delay'] = param 
+
+                elif (self.entry_type == 'data') or (self.entry_type == 'config'):
+                    self.entry_dict['seg_start_offset'] = param
+
+                else:
+                    raise RuntimeError(f"entry_type must be one of ['data','idle delay','config']. Currently it is {self.entry_type}")   
+                    
+            elif i == 5:
+
+                if self.entry_type == 'idle delay':
+                    param = 0 
+                elif (self.entry_type == 'data') or (self.entry_type == 'config'):
+                    self.entry_dict['seg_end_offset'] = param
+
+                else:
+                    raise RuntimeError(f"entry_type must be one of ['data','idle delay','config']. Currently it is {self.entry_type}")    
+
+
+
+    def _binary_builder(self,dict,element,bit_pos):
+        if element in dict:
+            return dict[element] * 2**bit_pos
+        else:
+            return 0
+    def encode(self,dict):
+        mode = 'speed'
+        # Building the control word
+        control_word = 0
+        control_word += self._binary_builder(dict,'data_cmd',31)
+        control_word += self._binary_builder(dict,'end_marker_seq',30)
+        control_word += self._binary_builder(dict,'end_marker_sce',29)
+        control_word += self._binary_builder(dict,'init_marker_seq',28)
+        control_word += self._binary_builder(dict,'marker_enable',24)
+        control_word += self._binary_builder(dict,'seq_adv_mode',20)
+        control_word += self._binary_builder(dict,'seg_adv_mode',16)
+        control_word += self._binary_builder(dict,'amp_tab_init',15)
+        control_word += self._binary_builder(dict,'amp_tab_incr',14)
+        control_word += self._binary_builder(dict,'freq_tab_init',13)
+        control_word += self._binary_builder(dict,'freq_tab_incr',12)
+        print(control_word)
+
+        # Building the Segment loop word
+        seq_loop_word = dict['seq_loop_cnt']
+
+        if dict['data_cmd'] == 0:
+            word2 = dict['seg_loop_cnt']
+            word3 = dict['seg_id']
+            word4 = dict['seg_start_offset']
+            word5 = dict['seg_end_offset']
+        elif dict['data_cmd'] == 1:
+            word2 = dict['cmd_code']
+            if dict['cmd_code'] == 0:
+                word3 = dict['idle_sample']
+                word4 = dict['idle_delay']
+                word5 = 0
+
+            elif dict['cmd_code'] == 1:
+                word2 += self._binary_builder(dict,'action_table_id',16)
+                word3 = dict['seg_id']
+                word4 = dict['seg_start_offset']
+                word5 = dict['seg_end_offset']
+        entry = str(control_word)+','+str(seq_loop_word)+','+str(word2)+','+str(word3)+','+str(word4)+','+str(word5)
+        self.params = [control_word,seq_loop_word,word2,word3,word4,word5]
+        return entry
+
+class Waveform:
 
     def __init__(self,awg,shape,markers) -> None:
         self.awg = awg
@@ -125,7 +300,7 @@ class waveform:
         self.awg._sendSCPI(cmd.encode)
 
 
-class interface:
+class Interface:
 
     def __init__(self) -> None:
         pass
@@ -133,7 +308,7 @@ class interface:
     def open_con(self,host,port=5025) -> None:
         try:
             self.instr_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        except socket.error as mg:
+        except socket.error as msg:
             print('Failed to create socket. Error code: ' + str(msg[0]) + ' , Error message : ' + msg[1])
             self.instr_socket.close()
         
@@ -186,6 +361,8 @@ class interface:
         elif type(cmd) is bytes:
             cmd_b = cmd
             cmd_s = cmd.decode()
+        else:
+            raise ValueError(f"Cmd must be either of type str or bytes. The type is:{type(cmd)}")
 
         if cmd_check == True:
             self._check_cmd(cmd_s)
@@ -699,7 +876,7 @@ class interface:
         return mem
 
     
-    def getWaveformCatalog(self,ch:int =2) -> np.ndarray:
+    def getWaveformCatalog(self,ch:int =3) -> np.ndarray:
 
 
         def extractCat(cat_string):
@@ -716,9 +893,9 @@ class interface:
             
             cat1 = self._sendrecvSCPI(b"TRAC1:CAT? \n",128)
             cat2 = self._sendrecvSCPI(b"TRAC2:CAT? \n",128)
-            return np.hstack(extractCat(cat1),extractCat(cat2))
+            return [extractCat(cat1),extractCat(cat2)]
 
-        elif (ch == 1) or (ch ==3):
+        elif (ch == 1) or (ch ==2):
             
             cmd = "TRAC{}:CAT? \n".format(int(ch))
             cat1 = self._sendrecvSCPI(cmd.encode(),128)
@@ -731,14 +908,14 @@ class interface:
     def deleteWaveform(self,ch:int,ID:int) -> None:
 
         if ch == 3:
-            cmd = "TRAC1DEL{} \n".format(ID)
+            cmd = "TRAC1:DEL {} \n".format(ID)
             self._sendSCPI(cmd.encode)
-            cmd = "TRAC2DEL{} \n".format(ID)
+            cmd = "TRAC2:DEL {} \n".format(ID)
             self._sendSCPI(cmd.encode)
         
-        elif (ch == 1) or (ch ==3):
-            cmd = "TRAC{}DEL{} \n".format(ch,ID)
-            self._sendSCPI(cmd.encode)
+        elif (ch == 1) or (ch ==2):
+            cmd = "TRAC{}:DEL {} \n".format(ch,ID)
+            self._sendSCPI(cmd.encode())
         
         else:
             raise ValueError("Channel must be one of 1,2,3(both).")
@@ -748,17 +925,112 @@ class interface:
     def deleteAllWaveforms(self,ch:int) -> None:
 
         if ch == 3:
-            self._sendSCPI(b"TRAC1DEL:ALL \n")
-            self._sendSCPI(b"TRAC2DEL:ALL \n")
+            self._sendSCPI(b"TRAC1:DEL:ALL \n")
+            self._sendSCPI(b"TRAC2:DEL:ALL \n")
         
-        elif (ch == 1) or (ch ==3):
-            cmd = "TRAC{}DEL:ALL \n".format(ch)
-            self._sendSCPI(cmd.encode)
+        elif (ch == 1) or (ch ==2):
+            cmd = "TRAC{}:DEL:ALL \n".format(ch)
+            self._sendSCPI(cmd.encode())
         
         else:
             raise ValueError("Channel must be one of 1,2,3(both).")
 
         pass
+
+    def setFunctionMode(self,mode:str,ch:int=3):
+        options = {"Arbitary":"ARB","Sequence":"STS","Scenario":"STSC"}
+
+        if not mode in options:
+            raise ValueError(f"Mode must be one of: {options}. Not:{mode}.")
+        
+        if ch == 3:
+            cmd = "FUNC1:MODE {} \n".format(options[mode])
+            self._sendSCPI(cmd.encode())
+            cmd = "FUNC2:MODE {} \n".format(options[mode])
+            self._sendSCPI(cmd.encode())
+        
+        elif (ch == 1) or (ch ==2):
+            cmd = "FUNC{}:MODE {} \n".format(ch,options[mode])
+            self._sendSCPI(cmd.encode())
+        
+        else:
+            raise ValueError("Channel must be one of 1,2,3(both).")
+
+        pass
+
+    def getFunctionMode(self,ch:int=3):
+        options = {"ARB":"Arbitary","STS":"Sequence","STSC":"Scenario"}
+        
+        if ch == 3:
+            mode1 = self._sendrecvSCPI(b"FUNC1:MODE? \n",512)
+            mode2 = self._sendrecvSCPI(b"FUNC2:MODE? \n",512)
+
+            return mode1, mode2
+        
+        elif (ch == 1) or (ch ==2):
+            cmd = "FUNC{}:MODE? \n".format(ch)
+            mode = self._sendrecvSCPI(cmd.encode(),512)
+            return mode
+        
+        else:
+            raise ValueError("Channel must be one of 1,2,3(both).")
+
+    def resetSequenceTable(self,ch:int=3):
+        
+        if ch == 3:
+            self._sendSCPI(b":STAB1:RES \n")
+            self._sendSCPI(b":STAB2:RES \n")
+
+        elif (ch == 1) or (ch ==2):
+            cmd = ":STAB{}:RES \n".format(ch)
+            self._sendSCPI(cmd.encode())
+            
+
+    def getSequenceTable(self,length:int,ch:int=3):
+
+        print("WARNING: Due to AWG API limitations this should be read with a grain of salt.")
+
+        length = int(length * 6)
+        num_bytes = length * 11
+        if ch == 3:
+            seq_table1 = SequenceTable(self)
+            seq_table2 = SequenceTable(self)
+            cmd = "STAB1:DATA? 0,{} \n".format(length)
+            cat1 = self._sendrecvSCPI(cmd.encode(),num_bytes)
+            cmd = "STAB2:DATA? 0,{} \n".format(length)
+            cat2 = self._sendrecvSCPI(cmd.encode(),num_bytes)
+            seq_table1.read_from_str(cat1)
+            seq_table2.read_from_str(cat2)
+
+            return [seq_table1,seq_table2]
+
+
+
+        elif (ch == 1) or (ch ==2):
+            seq_table= SequenceTable(self)
+
+            cmd = "STAB{}:DATA? 0,{} \n".format(int(ch),length)
+            cat1 = self._sendrecvSCPI(cmd.encode(),num_bytes)
+            seq_table.read_from_str(cat1)
+
+            return seq_table
+
+        else:
+            raise ValueError("Channel must be one of 1,2,3(both).")
+
+    def setSequenceTable(self,seqtable:SequenceTable,id:int,ch:int=3):
+
+        string = seqtable.write_to_str()
+
+        cmd = "STAB{}:DATA {},{} \n"
+        if ch == 3:
+            self._sendSCPI((cmd.format(1,int(id),string)).encode())
+            self._sendSCPI((cmd.format(2,int(id),string)).encode())
+
+        elif (ch == 1) or (ch ==2):
+            self._sendSCPI((cmd.format(ch,int(id),string)).encode())
+
+    
 
 
 
