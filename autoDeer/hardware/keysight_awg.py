@@ -278,6 +278,15 @@ class Waveform:
         self.encodedData = dacEncode(self.shape,np.vstack([self.mk1,self.mk2]))
         return self.encodedData
 
+    def write_to_string(self):
+        self.DACencode()
+        string = ""
+        for num in self.encodedData:
+            string += str(int(num))
+            string += ","
+        string = string[:-1]
+        return string
+
     def plot(self):
         fig, ax = plt.subplots()
         ax.plot(self.shape)
@@ -937,6 +946,34 @@ class Interface:
 
         pass
 
+    def defineWaveform(self,id:int,length:int,init_value:int = 0,ch:int=3) -> None:
+
+        if length%64 != 0:
+            raise ValueError(f"The length of a waveform must be a multiple of the gradularity.")
+
+        if ch == 3:
+            cmd = "TRAC{}:DEF {},{},{} \n".format(1,id,length,init_value)
+            self._sendSCPI(cmd.encode())
+            cmd = "TRAC{}:DEF {},{},{} \n".format(2,id,length,init_value)
+            self._sendSCPI(cmd.encode())
+        elif (ch == 1) or (ch ==2):
+            cmd = "TRAC{}:DEF {},{},{} \n".format(ch,id,length,init_value)
+            self._sendSCPI(cmd.encode())
+        
+
+    def setWaveform(self,waveform:Waveform,id:int,ch:int=3,offset:int=0) -> None:
+
+        string = waveform.write_to_string()
+
+        if ch == 3:
+            cmd = "TRAC{}:DATA {},{},{} \n".format(1,id,offset,string)
+            self._sendSCPI(cmd.encode())
+            cmd = "TRAC{}:DATA {},{},{} \n".format(2,id,offset,string)
+            self._sendSCPI(cmd.encode())
+        elif (ch == 1) or (ch ==2):
+            cmd = "TRAC{}:DATA {},{},{} \n".format(ch,id,offset,string)
+            self._sendSCPI(cmd.encode())
+
     def setFunctionMode(self,mode:str,ch:int=3):
         options = {"Arbitary":"ARB","Sequence":"STS","Scenario":"STSC"}
 
@@ -984,7 +1021,7 @@ class Interface:
         elif (ch == 1) or (ch ==2):
             cmd = ":STAB{}:RES \n".format(ch)
             self._sendSCPI(cmd.encode())
-            
+
 
     def getSequenceTable(self,length:int,ch:int=3):
 
