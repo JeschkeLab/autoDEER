@@ -9,6 +9,7 @@ import numpy as np
 from io import StringIO
 import logging
 import matplotlib.pyplot as plt
+from pytest import mark
 
 hw_log = logging.getLogger('hardware.AWG')
 
@@ -219,11 +220,16 @@ class Sequence:
 
 class Waveform:
 
-    def __init__(self,awg,shape,markers) -> None:
+    def __init__(self,awg,shape,markers=None) -> None:
         self.awg = awg
         self.shape = shape
-        self.mk1 = markers[0,:]
-        self.mk2 = markers[1,:]
+        self.num_points = np.shape(self.shape)
+        if type(markers) == type(None):
+            self.mk1 = np.ones(self.num_points,dtype=np.int16)
+            self.mk2 = np.ones(self.num_points,dtype=np.int16)
+        else:
+            self.mk1 = markers[0,:]
+            self.mk2 = markers[1,:]
 
         pass
 
@@ -293,6 +299,26 @@ class Waveform:
         ax.set_xlabel('Sample')
         ax.set_ylabel('DAC')
         return fig
+
+    def pulse_blanking(self,preamb=1800,postamb=0):
+        prestack = np.zeros(preamb,dtype=np.int16)
+        poststack = np.zeros(postamb,dtype=np.int16)
+        self.shape = np.hstack([prestack,self.shape,poststack])
+
+        prestack = np.ones(preamb,dtype=np.int16)
+        poststack = np.ones(postamb,dtype=np.int16)
+        self.mk1 = np.hstack([prestack,self.mk1,poststack])
+        self.mk2 = np.hstack([prestack,self.mk2,poststack])
+
+    def enforce_gradualrity(self):
+        wave_length = np.shape(self.shape)[0]
+        if (wave_length%64) != 0:
+            extra_zeros = np.zeros(64-wave_length%64)
+            self.shape = np.hstack([self.shape,extra_zeros])
+
+            extra_ones = np.ones(64-wave_length%64)
+            self.mk1 = np.hstack([self.mk1,extra_ones])
+            self.mk2 = np.hstack([self.mk2,extra_ones])
 
     def define_new_waveform(self,ID:int):
         num_points:int = np.shape(self.encodedData)[0]
