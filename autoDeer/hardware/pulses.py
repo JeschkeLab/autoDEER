@@ -1,4 +1,3 @@
-from mimetypes import init
 import numpy as np
 from scipy.integrate import cumulative_trapezoid
 from scipy.interpolate import pchip_interpolate
@@ -75,3 +74,14 @@ def HSorder1(sampling_rate:float,length:int,nu:tuple,HSbeta:int=10,HSorder:tuple
     return [real_wave,imag_wave]
 
 
+def rectPulse(sampling_rate:float,length:int,nu,scale=1,phase=0):
+
+    dt = 1/sampling_rate
+    n = round(length/dt)    
+    tp = n*dt
+    t = np.linspace(0,tp-dt,n)
+
+    real_wave = scale * np.sin(2 * np.pi * nu * t + phase)
+    imag_wave = scale * np.cos(2 * np.pi * nu * t + phase)
+
+    return [real_wave,imag_wave]

@@ -222,6 +222,8 @@ class Waveform:
 
     def __init__(self,awg,shape,markers=None) -> None:
         self.awg = awg
+        if np.ndim(shape) == 2:
+            self.complex = True
         self.shape = shape
         self.num_points = np.shape(self.shape)
         if type(markers) == type(None):
@@ -245,23 +247,33 @@ class Waveform:
             raise WaveformError(f"Waveform exceeds maximum possible value. Limited to +- {shape_max}")
 
         # Check Gradularity
-        if np.shape(self.shape)[0]%grad != 0:
+        if self.complex == True:
+            n = np.shape(self.shape)[1]
+        else:
+            n = np.shape(self.shape)[0]
+
+        if n % grad != 0:
             raise WaveformError(f"Waveform gradularity must equal {grad}")
 
         # Check Minimum Length
-        if np.shape(self.shape)[0] < min_length:
+        if n < min_length:
             raise WaveformError(f"Waveform must be longer than {min_length}")
 
         # Check encoded data
         if hasattr(self,'encodedData'):
+            if self.complex == True:
+                en = np.shape(self.encodedData)[1]
+            else:
+                en = np.shape(self.encodedData)[0]
+                
             if np.max(np.abs(self.encodedData)) > encode_max:
                 raise WaveformError(f"Waveform exceeds maximum possible value. Limited to +- {encode_max}")
             # Check Gradularity
-            if np.shape(self.encodedData)[0]%grad != 0:
+            if en % grad != 0:
                 raise WaveformError(f"Waveform gradularity must equal {grad}")
 
             # Check Minimum Length
-            if np.shape(self.encodedData)[0] < min_length:
+            if en < min_length:
                 raise WaveformError(f"Waveform must be longer than {min_length}")
 
         return True
@@ -281,44 +293,87 @@ class Waveform:
         self.shape = self.shape.astype(np.int16)
  
     def DACencode(self):
-        self.encodedData = dacEncode(self.shape,np.vstack([self.mk1,self.mk2]))
+        encodedData_real = dacEncode(self.shape[0,:],np.vstack([self.mk1,self.mk2]))
+        encodedData_imag = dacEncode(self.shape[0,:],np.vstack([self.mk1,self.mk2]))
+        self.encodedData = np.vstack([encodedData_real,encodedData_imag])
         return self.encodedData
 
     def write_to_string(self):
         self.DACencode()
-        string = ""
-        for num in self.encodedData:
-            string += str(int(num))
-            string += ","
-        string = string[:-1]
-        return string
+
+        if self.complex == True:
+            string1 = ""
+            for num in self.encodedData[0,:]:
+                string1 += str(int(num))
+                string1 += ","
+            string1 = string1[:-1]    
+
+            string2 = ""
+            for num in self.encodedData[1,:]:
+                string2 += str(int(num))
+                string2 += ","
+            string2 = string2[:-1] 
+
+            return [string1,string2]
+        else:
+            string = ""
+            for num in self.encodedData:
+                string += str(int(num))
+                string += ","
+            string = string[:-1]
+            return string
 
     def plot(self):
         fig, ax = plt.subplots()
-        ax.plot(self.shape)
+        if self.complex == True:
+            ax.plot(self.shape[0,:])
+            ax.set_title('Channel 1')
+        else:
+            ax.plot(self.shape)
         ax.set_xlabel('Sample')
         ax.set_ylabel('DAC')
         return fig
 
     def pulse_blanking(self,preamb=1800,postamb=0):
-        prestack = np.zeros(preamb,dtype=np.int16)
-        poststack = np.zeros(postamb,dtype=np.int16)
+        # Blank Channels
+        if self.complex == True:
+            prestack = np.zeros((2,preamb),dtype=np.int16)
+            poststack = np.zeros((2,postamb),dtype=np.int16)
+        else:
+            prestack = np.zeros(preamb,dtype=np.int16)
+            poststack = np.zeros(postamb,dtype=np.int16)
+
         self.shape = np.hstack([prestack,self.shape,poststack])
 
-        prestack = np.ones(preamb,dtype=np.int16)
-        poststack = np.ones(postamb,dtype=np.int16)
+        # Blank Markers
+        if self.complex == True:
+            prestack = np.ones((2,preamb),dtype=np.int16)
+            poststack = np.ones((2,postamb),dtype=np.int16)
+        else:
+            prestack = np.ones(preamb,dtype=np.int16)
+            poststack = np.ones(postamb,dtype=np.int16)
         self.mk1 = np.hstack([prestack,self.mk1,poststack])
         self.mk2 = np.hstack([prestack,self.mk2,poststack])
 
     def enforce_gradualrity(self):
-        wave_length = np.shape(self.shape)[0]
-        if (wave_length%64) != 0:
-            extra_zeros = np.zeros(64-wave_length%64)
-            self.shape = np.hstack([self.shape,extra_zeros])
+        if self.complex == True:
+            wave_length = np.shape(self.shape)[1]
+            if (wave_length%64) != 0:
+                extra_zeros = np.zeros((2,64-wave_length%64))
+                self.shape = np.hstack([self.shape,extra_zeros])
 
-            extra_ones = np.ones(64-wave_length%64)
-            self.mk1 = np.hstack([self.mk1,extra_ones])
-            self.mk2 = np.hstack([self.mk2,extra_ones])
+                extra_ones = np.ones((2,64-wave_length%64))
+                self.mk1 = np.hstack([self.mk1,extra_ones])
+                self.mk2 = np.hstack([self.mk2,extra_ones])
+        else:
+            wave_length = np.shape(self.shape)[0]
+            if (wave_length%64) != 0:
+                extra_zeros = np.zeros(64-wave_length%64)
+                self.shape = np.hstack([self.shape,extra_zeros])
+
+                extra_ones = np.ones(64-wave_length%64)
+                self.mk1 = np.hstack([self.mk1,extra_ones])
+                self.mk2 = np.hstack([self.mk2,extra_ones])
 
     def define_new_waveform(self,ID:int):
         num_points:int = np.shape(self.encodedData)[0]
