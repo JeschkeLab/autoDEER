@@ -4,6 +4,10 @@ import time
 import numpy as np
 from autoDeer.hardware import xepr_api
 import scipy.fft as fft
+import importlib
+
+
+MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
 
 def run_nutation(api:xepr_api,pulse_lengths,delays,steps,avgs):
     
@@ -15,11 +19,6 @@ def run_nutation(api:xepr_api,pulse_lengths,delays,steps,avgs):
     # 
     api.set_ReplaceMode(False) #Turn replace mode off
     api.set_set_PhaseCycle(True)
-    
-    # Set the number of points per trace
-    d3 = delays[1] - 180
-    num_points =  np.floor((delays[1]+delays[2]-d3-200)/steps[0])
-    change_DEER_length(exp_file,num_points)
     
 
     api.set_PulseSpel_exp_filepath(exp_file)
@@ -97,11 +96,25 @@ def get_nutations(api:xepr_api,channel,nu,field,step,nx:int=128):
     return nut_data
 
 
-def calc_res_prof(nut_data):
+def calc_res_prof(time,nut_data):
+
+    nu1_cutoff = 5*1e-3
+
+    fax = fft.fftfreq(time)
+    fax = fft.fftshift(fax)
 
     fnut = fft.fft(nut_data)
     fnut = fft.fftshift(fnut)
 
+    nuoff = np.argwhere(fax > nu1_cutoff)
+    nu1_id = np.argmax(np.abs(fnut[nuoff:-1]))
+    nu1 = abs(fax(nu1_id + nuoff - 1))
+
+    pass
+
+
+
+    
 
 
 
