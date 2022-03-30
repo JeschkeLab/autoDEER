@@ -375,19 +375,25 @@ class Waveform:
                 self.mk1 = np.hstack([self.mk1,extra_ones])
                 self.mk2 = np.hstack([self.mk2,extra_ones])
 
-    def define_new_waveform(self,ID:int):
-        num_points:int = np.shape(self.encodedData)[0]
-        self._awg_check()
-        cmd = 'TRAC:DEF {},{},0 \n'.format(int(ID),int(num_points))
-        self.awg._sendSCPI(cmd.encode())
-    
-    def send_waveform(self,ID:int):
-        self._awg_check()
-        cmd = ':TRAC:DATA {},0'.format(int(ID))
-        for i in self.encodedData:
-            cmd += ',%i' %i
-        cmd += ' \n'
-        self.awg._sendSCPI(cmd.encode)
+    def define_new_waveform(self,ID:int,ch:int=3):
+
+        if self.complex == True:
+            print(f"Complex Waveform so ignoring channel. Real-> Ch1, Imag -> Ch2")
+            self.awg.defineWaveform(ID,3008,0,ch=3)
+        else:
+            self.awg.defineWaveform(ID,3008,0,ch=ch)
+
+    def send_waveform(self,ID:int,ch:int=3):
+        
+        string = self.write_to_string()
+        if self.complex == True:
+            print(f"Complex Waveform so ignoring channel. Real-> Ch1, Imag -> Ch2")
+            
+            self.awg.setWaveform(string[0],ID,1,0)
+            self.awg.setWaveform(string[1],ID,2,0)
+
+        else:
+            self.awg.setWaveform(string,ID,ch,0)
 
 
 class Interface:
@@ -1042,9 +1048,7 @@ class Interface:
             self._sendSCPI(cmd.encode())
         
 
-    def setWaveform(self,waveform:Waveform,id:int,ch:int=3,offset:int=0) -> None:
-
-        string = waveform.write_to_string()
+    def setWaveform(self,string:str,id:int,ch:int=3,offset:int=0) -> None:
 
         if ch == 3:
             cmd = "TRAC{}:DATA {},{},{} \n".format(1,id,offset,string)
