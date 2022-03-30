@@ -1,3 +1,4 @@
+from multiprocessing.connection import wait
 import numpy as np
 import time
 import os,sys
@@ -11,6 +12,7 @@ hw_log = logging.getLogger('hardware.Xepr')
 
 # def connect_Xepr():
 #     try:
+
 #         Xepr = XeprAPI.Xepr()
 #         return Xepr
 
@@ -351,14 +353,17 @@ class xepr_api:
         """ This returns the central field"""
         return self.cur_exp['CenterField']
 
-    def set_field(self,val:int) -> int:
+    def set_field(self,val:int,hold:bool=True) -> int:
         """ This sets the central field"""
         self.cur_exp['CenterField'] = val
         hw_log.info(f'Field position set to {val} G')
+        if hold == True:
+            while self.cur_exp['FieldWait'] == True:
+                time.sleep(0.5)
         return self.cur_exp['CenterField']
 
-    def get_freq(self) -> int:
-        """ This returns the central field"""
+    def get_counterfreq(self) -> float:
+        """ This returns the current freq counter"""
         return self.cur_exp['FrequencyMon']
 
     def set_sweep_width(self,val:int) -> int:
@@ -368,6 +373,17 @@ class xepr_api:
     
     def get_sweep_width(self) -> int:
         return self.cur_exp['SweepWidth']
+
+    def set_freq(self,val:np.float128) -> float:
+        """ This sets bridge frequency"""
+        self.cur_exp['FrequencyA'] = val
+        hw_log.info(f'Frequency set to {val} G')
+        return self.cur_exp['FrequencyA']
+
+    def get_freq(self) -> float:
+        """ This returns the current bridge frequency"""
+        return self.cur_exp['FrequencyA']
+
 
     
 
