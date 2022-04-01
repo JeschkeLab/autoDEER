@@ -12,7 +12,7 @@ import os
 from scipy.interpolate import pchip_interpolate
 from scipy.signal import hilbert,windows
 import matplotlib.pyplot as plt
-
+from scipy.optimize import curve_fit
 
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
 
@@ -140,8 +140,10 @@ class resonatorProfile:
                 throw_mask = np.append(throw_mask,np.squeeze(np.argwhere(abs(data[:,0] - freq)<0.001)))
 
         data = np.delete(data,throw_mask,axis=0)
+
+        self.res_prof = data
     
-        return data
+        return self.res_prof
 
     def import_from_bruker(self,folder_path,reg_exp="nut_[0-9]+.DSC"):
         
@@ -170,9 +172,18 @@ class resonatorProfile:
 
         return t_axis, nut_data_sorted
 
-    def calculate_shape(self,data,q,fc):
+    def calculate_shape(self,data,params=None):
+        if params == None:
+            params = self.params
+        
+        A = params[0]
+        q = params[1]
+        fc = params[2]
+
         nu_x = data[:,0]
         nu_y = data[:,1] * 1e3 # Convert from GHz to MHz
+
+        nu_y = nu_y/A
 
         # Build domains of filters
         srate = 36 * 3 * 4
@@ -190,8 +201,6 @@ class resonatorProfile:
         self.nu_max = habs_o[frq>33].max()
 
         # Lorentzian model
-        q=110
-        fc=34.535
         z = q * (frq**2 -fc**2)/(frq*fc)
         model = (1-z*1j )/ (1 + z**2) # Lorentzian = 1-zj/(1+z^2)
         model[np.isnan(model)] = 0 
@@ -284,10 +293,38 @@ class resonatorProfile:
         ax.set_xlabel('Frequency GHz')
         ax.set_ylabel('Normalised Nutation Freq.')
         ax.legend()
-        ax.set_title('Resontor Profile')
+        ax.set_title('Resonator Profile')
         ax.set_xlim((fmin,fmax))
 
         return fig
+
+    
+    def autofit(self,nu_lims:tuple=None):
+        def lorentz(f,a,q,fc):
+            z = q * (f**2 -fc**2)/(f*fc)
+            model = a*(1-z*1j )/ (1 + z**2) # Lorentzian = 1-zj/(1+z^2)
+            return np.abs(model)
+
+        if nu_lims != None:
+            fmin = nu_lims[0]
+            fmax = nu_lims[1]
+        else:
+            fmin = 33
+            fmax = 35 
+
+        nu_x = self.res_prof[:,0]
+        nu_y = self.res_prof[:,1] *1e3
+        nu_y_norm = nu_y/nu_y.max() 
+
+        res, pcov = curve_fit(lorentz,nu_x,nu_y_norm,[1,100,34.5],bounds=([0.7,0,33],[1.3,1000,35]))
+        std = np.sqrt(np.diag(pcov))
+
+        self.params = res
+        self.params_std = std
+
+
+    
+        
 
 
 
