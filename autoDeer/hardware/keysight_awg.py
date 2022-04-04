@@ -9,8 +9,6 @@ import numpy as np
 from io import StringIO
 import logging
 import matplotlib.pyplot as plt
-from pytest import mark
-
 hw_log = logging.getLogger('hardware.AWG')
 
 def dacDecode(data):
@@ -354,6 +352,9 @@ class Waveform:
             poststack = np.ones(postamb,dtype=np.int16)
         self.mk1 = np.hstack([prestack,self.mk1,poststack])
         self.mk2 = np.hstack([prestack,self.mk2,poststack])
+        
+        self.num_points = self.shape[-1]
+
 
     def enforce_gradualrity(self):
         if self.complex == True:
@@ -375,13 +376,15 @@ class Waveform:
                 self.mk1 = np.hstack([self.mk1,extra_ones])
                 self.mk2 = np.hstack([self.mk2,extra_ones])
 
+        self.num_points = self.shape[-1]
+
     def define_new_waveform(self,ID:int,ch:int=3):
 
         if self.complex == True:
             print(f"Complex Waveform so ignoring channel. Real-> Ch1, Imag -> Ch2")
-            self.awg.defineWaveform(ID,3008,0,ch=3)
+            self.awg.defineWaveform(ID,self.num_points,0,ch=3)
         else:
-            self.awg.defineWaveform(ID,3008,0,ch=ch)
+            self.awg.defineWaveform(ID,self.num_points,0,ch=ch)
 
     def send_waveform(self,ID:int,ch:int=3):
         

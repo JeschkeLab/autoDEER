@@ -3,7 +3,7 @@ import numpy as np
 from autoDeer.hardware import Interface,Waveform,Sequence,SequenceTable
 import autoDeer.hardware.pulses as pulses
 
-def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int):
+def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int,h:int):
 
     awg.Abort()
     awg.deleteAllWaveforms(ch=3)
@@ -12,7 +12,8 @@ def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int):
     seq_table = SequenceTable(awg)
     seq_table.table = []
     
-    ps_length_table = np.linspace(p_start,p_start+nx*p_step,nx)
+    ps_length_table = np.linspace(p_start,p_start + nx * p_step,nx)
+    
     for iD,length in enumerate(ps_length_table):
         wave = Waveform(awg,
                         pulses.rectPulse(12e9,length,2e9,1,0),
