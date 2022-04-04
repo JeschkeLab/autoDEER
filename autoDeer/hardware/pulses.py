@@ -1,4 +1,5 @@
 import numpy as np
+from autoDeer.ResPro import resonatorProfile
 from scipy.integrate import cumulative_trapezoid
 from scipy.interpolate import pchip_interpolate
 
@@ -11,7 +12,7 @@ def gaus_shape(x,amp=1,offset=0,c=10):
     y = amp * np.exp(-(x-offset)**2/c**2)
     return y
 
-def HSorder1(sampling_rate:float,length:int,nu:tuple,HSbeta:int=10,HSorder:tuple=[1,6],phase=0,scale=1):
+def HSorder1(sampling_rate:float,length:int,nu:tuple,resonator:resonatorProfile=None,HSbeta:int=10,HSorder:tuple=[1,6],phase=0,scale=1):
 
 
     # Make time axis
@@ -39,8 +40,12 @@ def HSorder1(sampling_rate:float,length:int,nu:tuple,HSbeta:int=10,HSorder:tuple
     smoothing = AM
 
     # Default the resonator profile 
-    res_range = [0, 20]
-    res_nu1 = [1, 1]
+    if resonator == None:
+        res_range = [0, 20]
+        res_nu1 = [1, 1]
+    else:
+        res_range = [resonator.IF.min(),resonator.IF.max()]
+        res_nu1 = resonator.IF_rp
 
     sprofile = pchip_interpolate(res_range,np.abs(res_nu1),frange)
     sprofile_orig = sprofile
