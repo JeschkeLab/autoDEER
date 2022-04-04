@@ -353,7 +353,7 @@ class Waveform:
         self.mk1 = np.hstack([prestack,self.mk1,poststack])
         self.mk2 = np.hstack([prestack,self.mk2,poststack])
         
-        self.num_points = self.shape[-1]
+        self.num_points = self.shape.shape[-1]
 
 
     def enforce_gradualrity(self):
@@ -376,7 +376,7 @@ class Waveform:
                 self.mk1 = np.hstack([self.mk1,extra_ones])
                 self.mk2 = np.hstack([self.mk2,extra_ones])
 
-        self.num_points = self.shape[-1]
+        self.num_points = self.shape.shape[-1]
 
     def define_new_waveform(self,ID:int,ch:int=3):
 

@@ -1,9 +1,8 @@
-import imp
 import numpy as np
 from autoDeer.hardware import Interface,Waveform,Sequence,SequenceTable
 import autoDeer.hardware.pulses as pulses
 
-def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int,h:int):
+def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int,h:int,IF:float=2):
 
     awg.Abort()
     awg.deleteAllWaveforms(ch=3)
@@ -15,8 +14,9 @@ def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int,h:int):
     ps_length_table = np.linspace(p_start,p_start + nx * p_step,nx)
     
     for iD,length in enumerate(ps_length_table):
+        iD = iD + 1
         wave = Waveform(awg,
-                        pulses.rectPulse(12e9,length,2e9,1,0),
+                        pulses.rectPulse(12e9,length*1e-9,IF*1e9,1,0),
                         None)
         wave.pulse_blanking()
         wave.enforce_gradualrity()
@@ -36,13 +36,13 @@ def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int,h:int):
                     "init_marker_seq":1,
                     "marker_enable":1,
                     "seg_adv_mode":3,
-                    "seq_loop_cnt":1,
-                    "seg_loop_cnt":1,
-                    "seg_id":1,
+                    "seq_loop_cnt":1024,
+                    "seg_loop_cnt":h,
+                    "seg_id":iD,
                     "seg_start_offset":0,
                     "seg_end_offset":length-1}
                     )
-        else:
+        elif iD == nx:
             seq.encode(
                         {"data_cmd":0,
                     "init_marker_seq":0,
@@ -50,9 +50,20 @@ def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int,h:int):
                     "end_marker_sce":1,
                     "marker_enable":1,
                     "seg_adv_mode":3,
-                    "seq_loop_cnt":1,
-                    "seg_loop_cnt":1,
-                    "seg_id":2,
+                    "seq_loop_cnt":1024,
+                    "seg_loop_cnt":h,
+                    "seg_id":iD,
+                    "seg_start_offset":0,
+                    "seg_end_offset":length-1}
+                    )            
+        else:
+            seq.encode(
+                        {"data_cmd":0,
+                    "marker_enable":1,
+                    "seg_adv_mode":3,
+                    "seq_loop_cnt":1024,
+                    "seg_loop_cnt":h,
+                    "seg_id":iD,
                     "seg_start_offset":0,
                     "seg_end_offset":length-1}
                     )
