@@ -1,0 +1,74 @@
+;     PulseSPEL variables for DEER experiments
+;
+begin defs 
+;                                               
+; 
+;                                                         Gunnar Jeschke, 2002
+; ### Block of used variables ###
+; 
+; Repetition time
+;
+srt  = 5000 * srtu ; shot repetition time, srtu= 1 �s
+;                  ; usual values for nitroxides: 1000 * srtu at 80 K
+                   ; 4000 * srtu at 50 K
+;                  ; 10000...40000 * srtu at 15 K
+;
+; Pulse lengths
+;                        
+p0   = 16      ; observer pi pulse length (frq1)
+p1   = 16      ; observer pi/2 pulse length (frq1) 
+p2   = 200     ; pump pi pulse length (frq2)
+;
+; Variable delays
+;
+d0   = 606     ; field-sweep X-band
+
+d1   = 400     ; tau1 (initial value)
+d2   = 2000    ; tau2
+d11  = 200     ; tau3
+d3   = 80      ; deadtime delay during which no data are acquired
+               ; d3 >= 360, if TWT window must be split (single gate time exceeded)
+d7   = 1000    ; initial inversionrecovery delay
+d24  = 120     
+;
+; Time increments
+;
+d30  = 16      ; t time scale increment of dipolar time evolution
+d31  = 16      ; time scale increment for nuclear modulation averaging
+d29  = 2       ; time increment for pulse length in nutation
+;
+; Counters
+;
+h    = 20      ; number of shots/loop                     ( counter: I )
+n    = 1       ; number of sweeps to accumulate           ( counter: K )
+m    = 8       ; number of tau1 averages for nuclear modulation
+;                suppression
+;
+; ### Block of additional variables (Bruker definitions) ###
+p3   = 40      ;
+p7   = 80      ; LeCroy trigger
+p9   = 1000    
+pg   = 24      ; Integrator Gate Width (is superseeded by DEER pulse program)
+;
+d4   = 3000    ;
+d5   = 400     ;
+;
+dx   = 0       ; t time scale starting value
+dy   = 0       ; t1 time scale starting value
+;
+d20  = 0       ; Initial value of dx
+d21  = 0       ; Initial value of dy
+;
+s    = 300     ; Sweep length (n. of data really taken)   ( counter: X )
+t    = 1       ; second time axis sweep length            ( counter: Y )
+;
+r    = 1       ;
+c    = 1       ;
+b    = 1       ;
+;
+w    = 180     ; Split point of sweeps (ns) ,i.e. pulse separation where
+; TWT gate pulse can be split.
+;
+d6   = 100 us  
+end defs
+
