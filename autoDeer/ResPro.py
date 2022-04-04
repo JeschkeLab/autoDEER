@@ -3,7 +3,6 @@
 import imp
 import time
 import numpy as np
-from autoDeer.hardware import xepr_api
 import scipy.fft as fft
 import importlib
 from deerlab import deerload
@@ -16,12 +15,12 @@ from scipy.optimize import curve_fit
 
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
 
-def run_nutation(api:xepr_api,pulse_lengths,delays,steps,avgs):
+def run_nutation(api,pulse_lengths:dict={"p0":16,"p1":16,"p2":200},delays:dict={"d1":400,"d7":1000},steps,avgs):
     
     # exp_file = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/autoDEER_4p.exp'
-    exp_file = MODULE_DIR + "/PulseSpel/res_pro.exp"
+    exp_file = MODULE_DIR + "/PulseSpel/HUKA_DEER_AWG.exp"
     # def_file = '/home/xuser/Desktop/huka/autoDeer/autoDeer/PulseSpel/autoDEER_4p.def'
-    def_file = MODULE_DIR+"/PulseSpel/res_pro.def"
+    def_file = MODULE_DIR+"/PulseSpel/HUKA_DEER_AWG.def"
 
     # 
     api.set_ReplaceMode(False) #Turn replace mode off
@@ -36,13 +35,12 @@ def run_nutation(api:xepr_api,pulse_lengths,delays,steps,avgs):
     # Set Pulse Lengths
     api.set_PulseSpel_var("p0",pulse_lengths[1])
     api.set_PulseSpel_var("p1",pulse_lengths[0])
-    api.set_PulseSpel_var("p2",pulse_lengths[0])
+    api.set_PulseSpel_var("p2",pulse_lengths[2])
     
     # Set delays
     api.set_PulseSpel_var("d0",delays[0])
     api.set_PulseSpel_var("d1",delays[1])
     api.set_PulseSpel_var("d2",delays[2])
-    api.set_PulseSpel_var("d3",d3)
     # Set Steps
     api.set_PulseSpel_var("d30",steps[0])
     api.set_PulseSpel_var("d31",steps[1])
@@ -52,8 +50,8 @@ def run_nutation(api:xepr_api,pulse_lengths,delays,steps,avgs):
     api.set_PulseSpel_var("n",avgs[1])
     api.set_PulseSpel_var("m",avgs[2])
     
-    api.set_PulseSpel_experiment("DEER")
-    api.set_PulseSpel_phase_cycling("DEER run")
+    api.set_PulseSpel_experiment("AWG seq inv (p2)")
+    api.set_PulseSpel_phase_cycling("AWG +-<x> obs")
     api.set_Acquistion_mode(1)
     
     # Compile Defs and Program
@@ -66,7 +64,7 @@ def run_nutation(api:xepr_api,pulse_lengths,delays,steps,avgs):
     return 1
 
 
-def get_nutations(api:xepr_api,channel,nu,field,step,nx:int=128):
+def get_nutations(api,nu,field,step,nx:int=128):
 
     min_freq = nu[0]
     max_freq = nu[1]
@@ -177,8 +175,8 @@ class resonatorProfile:
             params = self.params
         
         A = params[0]
-        q = params[1]
-        fc = params[2]
+        self.q = params[1]
+        self.fc = params[2]
 
         nu_x = data[:,0]
         nu_y = data[:,1] * 1e3 # Convert from GHz to MHz
@@ -201,7 +199,7 @@ class resonatorProfile:
         self.nu_max = habs_o[frq>33].max()
 
         # Lorentzian model
-        z = q * (frq**2 -fc**2)/(frq*fc)
+        z = self.q * (frq**2 -self.fc**2)/(frq*self.fc)
         model = (1-z*1j )/ (1 + z**2) # Lorentzian = 1-zj/(1+z^2)
         model[np.isnan(model)] = 0 
         l_abs = np.abs(model)  # Model fit
@@ -320,10 +318,20 @@ class resonatorProfile:
         std = np.sqrt(np.diag(pcov))
 
         self.params = res
+        self.q = self.params[1]
+        self.fc =self.params[2]
         self.params_std = std
 
 
-    
+    def calc_IF_prof(self,IF:float,bridgeFreq:float,nu_lims = [33,35],type = 'fit'):
+        int_idx = np.squeeze(np.argwhere((nu_lims[0]< self.frq) & (self.frq < nu_lims[-1]))) # Where to interpolate
+        self.IF = self.frq[int_idx] - bridgeFreq + IF
+        if type == 'fit':
+            self.IF_rp = self.labs[int_idx]
+        elif type == 'raw':
+            self.IF_rp = self.habs[int_idx]
+
+
         
 
 
