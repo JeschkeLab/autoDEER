@@ -1,5 +1,6 @@
 import numpy as np
 from autoDeer.hardware import Interface,Waveform,Sequence,SequenceTable
+from autoDeer.ResPro import resonatorProfile
 import autoDeer.hardware.pulses as pulses
 
 def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int,h:int,IF:float=2):
@@ -79,7 +80,7 @@ def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int,h:int,IF:float
 
 
 
-def deer_pulse_5p(awg:Interface,tpump:int,nu,res_prof=None):
+def deer_pulse_5p(awg:Interface,tpump:int,nu,res_prof:resonatorProfile=None):
 
     awg.Abort()
     awg.deleteAllWaveforms(ch=3)
