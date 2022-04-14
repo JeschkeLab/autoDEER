@@ -200,8 +200,116 @@ def tune_phase(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+',ps_
     
     return result
 
+def tune_phase_force(api,d0:int = 600,channel:str = 'main',phase_target:str = 'R+',ps_length:int = 32):
+
+    if ps_length%4 != 0:
+        raise ValueError("ps_length must be a multiple of 4")
+    elif ps_length < 4:
+        raise ValueError("ps_length must be a greater than or equal to 4")
+    else:
+        ps_lengths = (int(ps_length/2),int(ps_length))
+    
+    channel_opts = ['main', '+<x>','-<x>','+<y>','-<y>']
+    phase_opts = ['R+','R-','I+','I-']
+    if not channel in channel_opts:
+        raise ValueError(f'Channel must be one of: {channel_opts}')
+    
+    if not phase_target in phase_opts:
+        raise ValueError(f'Phase target must be one of: {phase_opts}')
 
 
+    if channel == 'main':
+        lb = 0.0
+        ub = 4095.0
+        start_point = 2000.0
+        tol = 5
+        maxiter = 10
+        rhobeg = 200
+        phase_channel = 'SignalPhase'
+    elif channel in ['+<x>','-<x>','+<y>','-<y>']:
+        lb = 0.0
+        ub = 100.0
+        start_point = 50.0
+        tol = 0.5
+        rhobeg = 5
+        maxiter = 10
+        if channel == '+<x>':
+            phase_channel = 'BrXPhase'
+        elif channel == '-<x>':
+            phase_channel = 'BrMinXPhase'
+        elif channel == '+<y>':
+            phase_channel = 'BrYPhase'
+        elif channel == '-<y>':
+            phase_channel = 'BrMinYPhase'
+    else:
+        raise ValueError("Channel must be one of:['main','+<x>','-<x>','+<y>','-<y>']")
+        
+    setup_pulse_trans(api,ps_lengths,d0,channel=phase_channel) #TODO auto-finding of d0 though the abs pulse
+
+    # if phase_target in ['R+','I+']:
+    #     phase_aim = np.pi / 2
+    # elif phase_target in ['R-','I-']:
+    #     phase_aim = -np.pi / 2
+    
+    if phase_target == 'R+':
+        phase_aim = 0
+        neg_aim = False
+    elif phase_target == 'I+':
+        phase_aim = np.pi/2
+        neg_aim = False
+    elif phase_target == 'I-':
+        phase_aim = -np.pi/2
+        neg_aim = False
+
+    if phase_target == 'R-':
+        phase_aim = 0
+        neg_aim = True
+        
+    def find_phase(x,*args):
+        '''x is the given phase setting. Args are (phase_target,imag_target)'''
+        api.hidden[phase_channel].value = x # Set phase to value
+        time.sleep(3)
+        api.run_exp()
+        while api.is_exp_running():
+            time.sleep(1)
+
+        data = api.acquire_scan()
+        t = data.time
+        v = data.data
+        v_cor = DC_cor(v)
+
+        if args[1] == True:
+            v_cor = -1 * v_cor
+
+        phase = calc_phase(t,v_cor)
+        # phase = np.trapz(np.real(v_cor))
+        # Calc Phase
+        print(f'Phase Setting = {x:.1f} \t Phase = {phase:.2f} \t Phase Dif = {np.abs(phase - args[0]):.2f}')
+        # return np.abs(phase - args[0])
+        return np.abs(phase - args[0])    
+    
+    api.hidden['AverageStart'].value = True
+    find_phase(6,phase_aim,neg_aim)
+    find_phase(3,phase_aim,neg_aim)
+    find_phase(1,phase_aim,neg_aim)
+
+    settings = np.arange(0,105,2.5)
+    phases = np.zeros(41)
+    for i in range(0,41):
+        phases[i] = find_phase(settings[i],phase_aim,neg_aim)
+    
+    min_pos = settings[np.argmin(phases)]
+    find_phase(min_pos - 15,phase_aim,neg_aim)
+    find_phase(min_pos - 10,phase_aim,neg_aim)
+    find_phase(min_pos - 8,phase_aim,neg_aim)
+    find_phase(min_pos - 5,phase_aim,neg_aim)
+    find_phase(min_pos - 2 ,phase_aim,neg_aim)
+    find_phase(min_pos ,phase_aim,neg_aim)
+
+    return min_pos
+        
+        
+        
 def tune_power(api,d0:int = 600,channel:str = 'main',ps_target:int = 32) -> float:
 
     

@@ -26,17 +26,17 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
     api.compile_PulseSpel_prg()
     api.compile_PulseSpel_def()   
 
-    if "ReplaceMode".lower() in settings:
+    if "ReplaceMode" in settings:
         api.set_ReplaceMode(settings["ReplaceMode"]) 
     else:
         api.set_ReplaceMode(False) 
     
-    if "PhaseCycle".lower() in settings:
-        api.set_set_PhaseCycle(settings["PhaseCycle"]) 
+    if "PhaseCycle" in settings:
+        api.set_PhaseCycle(settings["PhaseCycle"]) 
     else:
         api.set_ReplaceMode(True) 
 
-    if "Acquistion_mode".lower() in settings:
+    if "Acquistion_mode" in settings:
         api.set_Acquistion_mode(settings["Acquistion_mode"])
     else:    
         api.set_Acquistion_mode(1)

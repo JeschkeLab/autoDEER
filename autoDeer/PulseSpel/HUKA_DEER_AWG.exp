@@ -10,12 +10,12 @@ begin defs
  dim s[512]              ;     dimension of data trace [sx] for pi/2 tp=p1 +<x>/-<x>
  dim1 s[512]             ;     dimension [sx] for pi tp=p1 -<y> echo up!
  dim2 s[64]             ;     nutation on -<y> channel
- dim3 s[1024]            ;     dimension [sx] for Field Sweep +<x>/-<x> pg=200ns, turn On-Board phase cycling off
+ dim3 s[300]            ;     dimension [sx] for Field Sweep +<x>/-<x> pg=200ns, turn On-Board phase cycling off
  dim4 s[128]             ;      dimension [sx] for AWG seq inv (p2)
  dim5 s[193]             ;     dimension [sx] for standing DEER 
  dim6 s[238];               ;     dimension for DEER ; sx = (d2+d1-1*d3)/d30
  dim7 s[450]              ;     dimension [sx] for standing 5'-DEER 
- dim8 s[303,2]              ;     dimension for alternating 5'-DEER with two t0; sx =(d2-1*d3+d24)/d30
+ dim8 s[500]              ;     dimension for alternating 5'-DEER with two t0; sx =(d2-1*d3+d24)/d30
  dim9 s[1000]               ;    dimension for 4-DEER relaxation
  dim10 s[1500]               ;    dimension for 5'-DEER relaxation
 

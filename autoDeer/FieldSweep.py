@@ -46,8 +46,8 @@ class FieldSweep():
         ax.set_xlabel('Field G')
         ax.set_ylabel('Normalised Amplitude')
         if hasattr(self,"max_field"):
-            min_value = np.minimum(np.hstack(np.real(data),np.imag(data)))
-            max_value = np.minimum(np.hstack(np.real(data),np.imag(data)))
+            min_value = np.min(np.hstack([np.real(data),np.imag(data)]))
+            max_value = np.min(np.hstack([np.real(data),np.imag(data)]))
             ax.vlines(self.max_field,min_value,max_value,label="Maximum")
 
         return fig
