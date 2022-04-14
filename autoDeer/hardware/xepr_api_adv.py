@@ -375,14 +375,23 @@ class xepr_api:
         return self.cur_exp['SweepWidth'].value
 
     def set_freq(self,val:np.float128) -> float:
-        """ This sets bridge frequency"""
-        self.cur_exp['FrequencyA'].value = val
-        hw_log.info(f'Frequency set to {val} G')
-        return self.cur_exp['FrequencyA'].value
+        """ This sets bridge frequency, and works through a polynomial approximation. This might need to be adjusted
+        for different spectrometers"""
+        f_pol = [1.420009750632201e4,
+            -5.118516287710228e3,
+            2.092103562165744e2,
+            -2.034307248428457,
+            0,0]
+
+        pol_func = np.polynomial.polynomial.Polynomial(f_pol)
+        pos = round(pol_func(val))
+        self.cur_exp['Frequency'].value = pos
+        hw_log.info(f'Frequency set to {val} at position {pos}')
+        return self.cur_exp['Frequency'].value
 
     def get_freq(self) -> float:
         """ This returns the current bridge frequency"""
-        return self.cur_exp['FrequencyA'].value
+        return self.cur_exp['Frequency'].value
 
 
     
