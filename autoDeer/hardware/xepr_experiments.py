@@ -2,7 +2,7 @@ import importlib
 import time
 import numpy as np
 
-MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
+MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
 
 def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:bool=True)->None:
 
