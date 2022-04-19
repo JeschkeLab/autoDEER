@@ -1,3 +1,4 @@
+from distutils.command.config import config
 from multiprocessing.connection import wait
 import numpy as np
 import time
@@ -392,6 +393,44 @@ class xepr_api:
     def get_freq(self) -> float:
         """ This returns the current bridge frequency"""
         return self.cur_exp['Frequency'].value
+
+    def get_spec_config(self) -> str:
+        """get_spec_config Gets the name of the current spectrometer configuration file.
+
+        Returns
+        -------
+        str
+            Returns the name of the current spectrometer configuration file
+        """
+
+        return self.hidden['PlsPrgCalDbName'].value
+
+    def set_spec_config(self,name:str='Normal') -> str:
+        """set_spec_config Sets the name of the current spectrometer configuration file
+
+        Parameters
+        ----------
+        name : str, optional
+            The file name of config file. Normal and AWG, shortcut to the standard types, by default 'Normal'
+
+        Returns
+        -------
+        str
+            Returns the name of the current spectrometer configuration file
+        """
+        if name == 'Normal':
+            config_file = 'Q_TWT_Jun21'
+        elif name == 'AWG':
+            config_file = 'Q_awgins2013'
+        else:
+            config_file = name
+        
+        if self.get_spec_config() != config_file:
+            self.hidden['PlsPrgCalDbName'].value = config_file
+            self.hidden['PlsPrgCalDbLoad']
+            self.hidden['ApplyCfg']
+        
+
 
 
     
