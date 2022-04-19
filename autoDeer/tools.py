@@ -91,3 +91,14 @@ def eprload(path:str,experiment:str=None,type=None,**kwargs):
     elif type == 'MAT':
         pass
 
+
+def progress_bar(progress,post=""):
+
+    num_hash = round(progress // 0.05)
+    num_space = 20-num_hash
+
+    print("\rProgress: "+"|"+"#"*num_hash +" "*num_space +"|"+post)
+
+def progress_bar_frac(num,den):
+    
+    progress_bar(num/den,f"{num:i} out of {den:i}")

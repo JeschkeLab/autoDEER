@@ -2,6 +2,8 @@ import numpy as np
 from autoDeer.hardware import Interface,Waveform,Sequence,SequenceTable
 from autoDeer.ResPro import resonatorProfile
 import autoDeer.hardware.pulses as pulses
+import autoDeer.tools as tools
+
 
 def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int,h:int,IF:float=2):
 
@@ -72,7 +74,7 @@ def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int,h:int,IF:float
 
         # Append Sequences to the sequnece table
         seq_table.table.append(seq)
-        
+        tools.progress_bar_frac(iD,nx)
     seq_table.write_to_str()
     awg.setSequenceTable(seq_table,0,3)
 

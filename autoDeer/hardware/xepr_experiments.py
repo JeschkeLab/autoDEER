@@ -2,6 +2,7 @@ import importlib
 import time
 import numpy as np
 import re
+import autoDeer.tools as tools
 
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
 
@@ -151,6 +152,6 @@ def get_nutations(api,nu,field,step,nx:int=128):
         nut_data[i,0] = api.get_counterfreq()
         nut_data[i,1:] = dataset.data
         t = dataset.time
-
+        tools.progress_bar_frac(i,n)
     return t,nut_data
 
