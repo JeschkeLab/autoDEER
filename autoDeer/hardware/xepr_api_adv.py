@@ -319,6 +319,7 @@ class xepr_api:
     def run_exp(self):
         self.cur_exp.aqExpRun()
         hw_log.info('Experiment started')
+        time.sleep(5)
         pass
 
     def stop_exp(self):
@@ -357,6 +358,7 @@ class xepr_api:
     def set_field(self,val:int,hold:bool=True) -> int:
         """ This sets the central field"""
         self.cur_exp['CenterField'].value = val
+        time.sleep(2) #Always wait 2s after a field change
         hw_log.info(f'Field position set to {val} G')
         if hold == True:
             while self.cur_exp['FieldWait'] == True:
@@ -386,13 +388,13 @@ class xepr_api:
 
         pol_func = np.polynomial.polynomial.Polynomial(f_pol)
         pos = round(pol_func(val))
-        self.cur_exp['Frequency'].value = pos
+        self.hidden['Frequency'].value = pos
         hw_log.info(f'Frequency set to {val} at position {pos}')
-        return self.cur_exp['Frequency'].value
+        return self.hidden['Frequency'].value
 
     def get_freq(self) -> float:
         """ This returns the current bridge frequency"""
-        return self.cur_exp['Frequency'].value
+        return self.hidden['Frequency'].value
 
     def get_spec_config(self) -> str:
         """get_spec_config Gets the name of the current spectrometer configuration file.
