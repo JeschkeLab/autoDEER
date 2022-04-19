@@ -190,7 +190,7 @@ class Sequence:
         control_word += self._binary_builder(dict,'amp_tab_incr',14)
         control_word += self._binary_builder(dict,'freq_tab_init',13)
         control_word += self._binary_builder(dict,'freq_tab_incr',12)
-        print(control_word)
+        # print(control_word)
 
         # Building the Segment loop word
         seq_loop_word = dict['seq_loop_cnt']
@@ -381,7 +381,7 @@ class Waveform:
     def define_new_waveform(self,ID:int,ch:int=3):
 
         if self.complex == True:
-            print(f"Complex Waveform so ignoring channel. Real-> Ch1, Imag -> Ch2")
+            # print(f"Complex Waveform so ignoring channel. Real-> Ch1, Imag -> Ch2")
             self.awg.defineWaveform(ID,self.num_points,0,ch=3)
         else:
             self.awg.defineWaveform(ID,self.num_points,0,ch=ch)
@@ -390,7 +390,7 @@ class Waveform:
         
         string = self.write_to_string()
         if self.complex == True:
-            print(f"Complex Waveform so ignoring channel. Real-> Ch1, Imag -> Ch2")
+            # print(f"Complex Waveform so ignoring channel. Real-> Ch1, Imag -> Ch2")
             
             self.awg.setWaveform(string[0],ID,1,0)
             self.awg.setWaveform(string[1],ID,2,0)
