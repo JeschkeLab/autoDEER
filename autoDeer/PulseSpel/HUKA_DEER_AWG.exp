@@ -114,6 +114,24 @@ p10=p1
 end exp   
 ;
 
+begin exp1 "pi tp=p1 -<y>" [TRANS QUAD]         ; QUAD detection
+
+p11=p1
+p10=p1
+   
+    shot i=1 to h              ; accumulation loop
+      d9                       ; DAF
+      p10 [ph1]                ; pi/2 pulse at obs frequency + or -<x>
+      d1                       ; tau                       
+      p11 [ph2]                ; pi pulse at obs frequency +<x>
+      d1                       ; tau
+      d0                       ; constant acquisition delay
+      dig [sg1]                ; acquisition
+    next i                     ; end of accumulation loop 
+   
+end exp   
+;
+
 begin exp2 "-<y> nutation" [INTG QUAD]         ; QUAD detection\n\
 
 p10 = p1                    ; Pulse Length

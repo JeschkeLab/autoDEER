@@ -1,6 +1,7 @@
 import importlib
 import time
 import numpy as np
+import re
 
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
 
@@ -41,6 +42,15 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
     else:    
         api.set_Acquistion_mode(1)
 
+    # Identifying a dimension change in settings
+    r = re.compile("dim([0-9]*)")
+    match_list = list(filter(lambda list: list != None,[r.match(i) for i in settings.keys()]))
+    if len(match_list) >= 1:
+        for i in range(0,len(match_list)):
+            key = match_list[i][0]
+            dim = int(r.findall(key)[0])
+            new_length = settings[key]
+            change_dimensions(exp_file,dim,new_length)
     
     # setting PS Variables
 
@@ -79,6 +89,31 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
         time.sleep(1)
     pass
 
+def change_dimensions(path,dim:int,new_length:int):
+    """This is a HIGHLY specific function to change  a line in a specific pulse spel file. This will break your pulse spel script if applied to any other file."""
+    
+    dim_str = "dim" +str(int(dim))
+    # Open file
+    with open(path, 'r') as file:
+        data = file.readlines()
+
+    # Build Regular expression to search for
+    re_search = fr"dim{int(dim)}\s*s\[[0-9]+,*[0-9]*\]" # This identifies the correct line and extracts the comment.
+    if type(new_length) == int:
+        new_string = f"dim{int(dim)} s[{int(new_length)}]"
+    elif type(new_length) == list:
+        if len(new_length) == 1:
+            new_string = f"dim{int(dim)} s[{int(new_length[0])}]"
+        elif len(new_length) == 2:
+            new_string = f"dim{int(dim)} s[{int(new_length[0])},{int(new_length[1])}]"
+        else:
+            raise ValueError("New length can't have more than 2 dimensions")
+
+    data = [re.sub(re_search,new_string,line) for line in data]
+
+    with open(path, 'w') as file:
+        file.writelines( data )
+        
     
 
 def get_nutations(api,nu,field,step,nx:int=128):
