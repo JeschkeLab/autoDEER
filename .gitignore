@@ -146,3 +146,9 @@ dmypy.json
 .exp%
 .DS_Store
 .vscode/launch.json
+autoDeer/PulseSpel/*.def%
+autoDeer/PulseSpel/*.exp%
+
+# Any plots
+**/*.png
+**/*.svg
