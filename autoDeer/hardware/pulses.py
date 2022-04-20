@@ -45,6 +45,7 @@ def HSorder1(sampling_rate:float,length:int,nu:tuple,resonator:resonatorProfile=
         res_nu1 = [1, 1]
     else:
         res_range = [resonator.IF.min(),resonator.IF.max()]
+        res_range = resonator.IF
         res_nu1 = resonator.IF_rp
 
     sprofile = pchip_interpolate(res_range,np.abs(res_nu1),frange)
