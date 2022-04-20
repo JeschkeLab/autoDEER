@@ -129,7 +129,7 @@ p10=p1
       dig [sg1]                ; acquisition
     next i                     ; end of accumulation loop 
    
-end exp   
+end exp1   
 ;
 
 begin exp2 "-<y> nutation" [INTG QUAD]         ; QUAD detection\n\
@@ -212,7 +212,7 @@ d25 = d25 + 6
 
 for k=1 to n;
 dx = 0                          ;Axis to zero 
-
+totscans(n)
 sweep x=1 to sx
     shot i=1 to h              ; accumulation loop
       d9                       ; DAF
@@ -228,6 +228,7 @@ sweep x=1 to sx
     next i                     ; end of accumulation loop
 dx = dx + 1
 next x
+scansdone(k)
 next k
    
 end exp4
