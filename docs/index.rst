@@ -13,16 +13,21 @@ to calculate the optimal paramaters for future experiments.
     autoDeer is an actively developed software package, that is still very much a work in process. At this moment in time we only recomened it is used by people who understand how
     the python code work and can debug when it goes wrong. Please consider this to be an Alpha release, it is hoped that a more stable Beta version can be released soon.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-   
-   
+Installation
+-----------------
+Currently, autoDeer **must** be installed from source. Once, semi-stable version exists it will be packaged. ::
+        
+    python -m pip install .
+
+Or to install in develop mode. ::
+        
+    python -m pip install -e .  
+      
 .. toctree::
     :hidden:
     :caption: Advanced
 
-    ./userguide/quickstart
+    ./userguide/Overview
 
 .. toctree::
     :hidden:

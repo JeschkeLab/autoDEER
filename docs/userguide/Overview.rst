@@ -1,4 +1,4 @@
-Quickstart Guide
+Overview
 ==================
 
 AutoDeer aim is to provide an as automated as possible experiance for Double Electron Electron Resonance (DEER). 
