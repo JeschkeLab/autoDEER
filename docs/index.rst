@@ -29,6 +29,12 @@ Welcome to autoDeer's documentation!
 
     ./userguide/Analysis
 
+.. toctree::
+    :hidden:
+    :caption: Examples
+
+    ./auto_examples/index
+
 Indices and tables
 ==================
 

@@ -152,3 +152,5 @@ autoDeer/PulseSpel/*.exp%
 # Any plots
 **/*.png
 **/*.svg
+
+**/auto_examples/**
