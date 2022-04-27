@@ -391,8 +391,8 @@ def run_EDFS(api, d0:int, filename:str, path:str, sweep_size:int = 300, scans:in
 
     pass
 
-def run_ps_script(api,ps_script:str,exp:str,phase_cycle:str,ps_length:list[int,int],
-        delays:list[int,int,int],steps:list[int,int],loops:list[int,int], shrt:int=6000,**kwargs) -> None:
+def run_ps_script(api,ps_script:str,exp:str,phase_cycle:str,ps_length,
+        delays,steps,loops, shrt:int=6000,**kwargs) -> None:
     """run_ps_script Runs a general pulse spell script according to the set paramters. The script must conform to the standard setup.
 
     Parameters
@@ -482,7 +482,7 @@ def secant_method(fun,x0:float,x1:float) -> float:
     x2 = (x0*fun(x1) - x1*fun(x0))/(fun(x1)-fun(x0))
     return x2
     
-def root_finder(obj,x0:float,x1:float,bounds:list[float,float]=[0,1],MaxIter:int=20,tol:float=1,MaxStep:float =None) -> float:
+def root_finder(obj,x0:float,x1:float,bounds=[0,1],MaxIter:int=20,tol:float=1,MaxStep:float =None) -> float:
     """root_finder Optimizes the objective function through a modified secant method. 
     This introduces bounds on the method, as well as a maximum number of iterations and a maximum step size. 
 

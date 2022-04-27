@@ -393,6 +393,51 @@ class TwoD_Experiment:
 
         return fig , time
     
+    def optimal_slice_plot(self,norm=None,**kwargs):
+        """optimal_slice_plot Creates a plot of along the optimal decay time for 4 & 5 pulse DEER.
+
+        Parameters
+        ----------
+        norm : str, optional
+            The normalisation of the data. Options include = ['Tau2','SNR','SNRpShot','None'], by default None
+        """  
+        if norm == 'Tau2':
+            signal = np.real(self.data) / np.real(self.data).max(axis=1)[:,None]
+            norm_label = None  
+        elif norm == 'SNR':
+            signal = self.snr_normalize(shots=None)
+            norm_label = 'SNR'
+    
+        elif norm =='SNRpShot':
+            if not(hasattr(self,'data_snrpshot')):
+                self.snr_normalize()
+            signal = self.data_snrpshot
+            norm_label = r'SNR /$n^{-1/2}$'
+        else: #No Normalization
+            signal = np.real(self.data)
+            norm_label = None
+
+        fig = plt.figure(figsize=(6,6),dpi=150)
+        axs = fig.subplots(1,1)
+
+        # maximise signal along Tau2 for 4p DEER
+        optimal_4p = np.argmax(signal,axis=1)
+        optimal_4p = signal.argmax(axis=1)
+
+
+        axs.plot(self.time[0],np.diag(signal[:,optimal_4p]),label="4pDEER")
+        axs.plot(self.time[0]*2,np.diag(signal),label="5pDEER")
+
+        ax2 = axs.twinx()
+        ax2.plot(self.time[0],self.time[1][optimal_4p],'--',label="4pDEER")
+        # axs.set_xlabel(r'$\tau_1$ / $\mu s $')
+        axs.set_xlabel("Dipolar Evolution Time")
+        axs.set_ylabel(norm_label)
+        ax2.set_ylabel(r'$\tau_2$ / $\mu s $')
+        fig.legend()
+
+
+
     
     
     def invert_signal(self):

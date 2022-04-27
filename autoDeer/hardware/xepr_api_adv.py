@@ -1,3 +1,4 @@
+from distutils.command.config import config
 from multiprocessing.connection import wait
 import numpy as np
 import time
@@ -318,6 +319,7 @@ class xepr_api:
     def run_exp(self):
         self.cur_exp.aqExpRun()
         hw_log.info('Experiment started')
+        time.sleep(5)
         pass
 
     def stop_exp(self):
@@ -351,38 +353,86 @@ class xepr_api:
 
     def get_field(self) -> int:
         """ This returns the central field"""
-        return self.cur_exp['CenterField']
+        return self.cur_exp['CenterField'].value
 
     def set_field(self,val:int,hold:bool=True) -> int:
         """ This sets the central field"""
-        self.cur_exp['CenterField'] = val
+        self.cur_exp['CenterField'].value = val
+        time.sleep(2) #Always wait 2s after a field change
         hw_log.info(f'Field position set to {val} G')
         if hold == True:
             while self.cur_exp['FieldWait'] == True:
                 time.sleep(0.5)
-        return self.cur_exp['CenterField']
+        return self.cur_exp['CenterField'].value
 
     def get_counterfreq(self) -> float:
         """ This returns the current freq counter"""
-        return self.cur_exp['FrequencyMon']
+        return self.cur_exp['FrequencyMon'].value
 
     def set_sweep_width(self,val:int) -> int:
-        self.cur_exp['SweepWidth'] = val
+        self.cur_exp['SweepWidth'].value = val
         hw_log.info('Field sweep width set to {val} G')
-        return self.cur_exp['SweepWidth'] 
+        return self.cur_exp['SweepWidth'].value 
     
     def get_sweep_width(self) -> int:
-        return self.cur_exp['SweepWidth']
+        return self.cur_exp['SweepWidth'].value
 
     def set_freq(self,val:np.float128) -> float:
-        """ This sets bridge frequency"""
-        self.cur_exp['FrequencyA'] = val
-        hw_log.info(f'Frequency set to {val} G')
-        return self.cur_exp['FrequencyA']
+        """ This sets bridge frequency, and works through a polynomial approximation. This might need to be adjusted
+        for different spectrometers"""
+        f_pol = [1.420009750632201e4,
+            -5.118516287710228e3,
+            2.092103562165744e2,
+            -2.034307248428457,
+            0,0]
+
+        pol_func = np.polynomial.polynomial.Polynomial(f_pol)
+        pos = round(pol_func(val))
+        self.hidden['Frequency'].value = pos
+        hw_log.info(f'Frequency set to {val} at position {pos}')
+        return self.hidden['Frequency'].value
 
     def get_freq(self) -> float:
         """ This returns the current bridge frequency"""
-        return self.cur_exp['FrequencyA']
+        return self.hidden['Frequency'].value
+
+    def get_spec_config(self) -> str:
+        """get_spec_config Gets the name of the current spectrometer configuration file.
+
+        Returns
+        -------
+        str
+            Returns the name of the current spectrometer configuration file
+        """
+
+        return self.hidden['PlsPrgCalDbName'].value
+
+    def set_spec_config(self,name:str='Normal') -> str:
+        """set_spec_config Sets the name of the current spectrometer configuration file
+
+        Parameters
+        ----------
+        name : str, optional
+            The file name of config file. Normal and AWG, shortcut to the standard types, by default 'Normal'
+
+        Returns
+        -------
+        str
+            Returns the name of the current spectrometer configuration file
+        """
+        if name == 'Normal':
+            config_file = 'Q_TWT_Jun21'
+        elif name == 'AWG':
+            config_file = 'Q_awgins2013'
+        else:
+            config_file = name
+        
+        if self.get_spec_config() != config_file:
+            self.hidden['PlsPrgCalDbName'].value = config_file
+            self.hidden['PlsPrgCalDbLoad']
+            self.hidden['ApplyCfg']
+        
+
 
 
     
