@@ -10,8 +10,8 @@ from deerlab import deerload
 import os
 
 class TwoD_Experiment:
-    """"
-    TwoD_Experiment: This is a class for loading and processing 2D Decoherence experiments
+    """
+    This is a class for loading and processing 2D Decoherence experiments
     """
 
     def __init__(self) -> None:
@@ -22,13 +22,14 @@ class TwoD_Experiment:
 
 
     def load(self,file):
-        """
-        Using deerlab the file is loaded. If the file is a bruker .DSC file then extra paremeters are loaded. 
+        """Using deerlab the file is loaded. If the file is a bruker .DSC file then extra paremeters are loaded. 
         If it is a .csv or .txt file then any required metadata will need to be inputted by the user
-        Parameters:
-        self:
-        file (string): This is the full file path for the datafile
-        """
+
+        Parameters
+        ----------
+        file : str
+            This is the full file path for the datafile
+        """        
         file_name,file_ext = os.path.splitext(file)
         
         if file_ext == '.DSC':
@@ -42,14 +43,21 @@ class TwoD_Experiment:
             self.params = None
             
     def import_data(self,time,data,scans:int,shots:int,shrt:int):
-        """
-        The loads all the import infomation directly from python variables and arrays
-        Parameters:
-        time - [timex,timey]
-        data - numpy 2d array
-        scans(int)
-        shots(int)
-        shrt(int)
+        """The loads all the import infomation directly from python variables and arrays
+
+
+        Parameters
+        ----------
+        time : _type_
+            [timex,timey]
+        data : _type_
+            _description_
+        scans : int
+            Number of scans done
+        shots : int
+            Number of shots per point
+        shrt : int
+            The shot repetition time in us
         """
         self.time = time
         self.data = data

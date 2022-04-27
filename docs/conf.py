@@ -32,7 +32,8 @@ release = '0.2'
 # ones.
 extensions = ['sphinx.ext.autodoc',
 'sphinx_gallery.gen_gallery',
-'sphinx.ext.autosummary']
+'sphinx.ext.autosummary',
+'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
