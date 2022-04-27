@@ -7,17 +7,17 @@ It has been written to be used with three types of spectrometers (Bruker, Bruker
 Spectrometer types
 -------------------
 
-*Bruker*
+**Bruker**
 
 This uses the Bruker Xepr Python API to control an E580 Spectrometer. The Spectrometer must have the digital upgrade that enables the API, and have 4 MPFU channels.
 There is currently no support for Bruker AWG, as we do not have access to one. 
 
-*Bruker-Hybrid*
+**Bruker-Hybrid**
 
 This is designed to work with a Bruker E580 Spectrometer where a Keysight M8190A AWG is used as an incoherent source for probe pulses. 
 The AWG is triggered by the ELDOR channel on the E580 Spectrometer.
 
-*Homebuilt*
+**Homebuilt**
 
 Currently there is no control for Homebuilt spectrometers, due to the wide range of implementations. 
 The automated analysis does work when using an old-style ".mat" file to save data.
@@ -26,16 +26,27 @@ The automated analysis does work when using an old-style ".mat" file to save dat
 Features:
 ----------
 
-*Control*
+**Control**
 
 Currently, autoDeer can control Bruker E580 Spectrometers and Keysight M8190A AWG, within a limited set of scenarios.
 All of this control is still very buggy and unreliable and is *not* yet recomened for regular use. This will hopefully 
 change withing the next few months.
 
-*Analysis*
+==================       =============   =========== ============
+Feature                  Bruker          Hybrid      Homebuilt
+==================       =============   =========== ============
+Running PulseSpel           X               O           O
+Shaped pulses               O               X           O
+4p Deer                     X               X           O
+5p Deer                     X               X           O
+Resonator Profiles          O               X           O 
+==================       =============   =========== ============
+
+**Analysis**
 
 The Second part of an automated spectrometer is analysing data and choosing parameters. This can take the form of a decohernce
-experiment or of a 4/5 pulse Deer experiment. This is much more stable and can be used. 
+experiment or of a 4/5 pulse Deer experiment. This is much more stable, is spectrometer independent and can be used. 
+
 
 
 Interfaces:

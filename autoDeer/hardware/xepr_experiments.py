@@ -7,6 +7,28 @@ import autoDeer.tools as tools
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
 
 def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:bool=True)->None:
+    """A function to run a general Pulse Spel experiment through autoDeer.
+
+    Parameters
+    ----------
+    api : _type_
+        The current Bruker Xepr class
+    ps_file : tuple
+        A tuple containing the file path to both the ".exp" and ".def" files.
+    exp : tuple
+        A tuple giving the name of the experiment and phase cycle.
+    settings : dict
+        A dictionary containing possible acquistion settings. Options include ['ReplaceMode','PhaseCycle','Acquistion_mode']
+    variables : dict
+        A dictionary containg pulse spel variables to choose from can, these can also be dimension of experiment.
+    run : bool, optional
+        Should the experiment run or just compile, by default True
+
+    Raises
+    ------
+    ValueError
+        If an input is of the wrong type.
+    """
 
 
     if len(ps_file) == 1:
@@ -90,9 +112,23 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
         time.sleep(1)
     pass
 
-def change_dimensions(path,dim:int,new_length:int):
-    """This is a HIGHLY specific function to change  a line in a specific pulse spel file. This will break your pulse spel script if applied to any other file."""
-    
+def change_dimensions(path,dim:int,new_length:int):    
+    """A function to rewrite a pulseSpel experiment file with a new dimension
+
+    Parameters
+    ----------
+    path : str
+        The full file path.
+    dim : int
+        The experiment number that needs to be changed
+    new_length : int
+        The new length can be a list of two if 2D.
+
+    Raises
+    ------
+    ValueError
+        If there more than 2 dimesnions are supplied. Xepr can not handle 3+D experiments.
+    """
     dim_str = "dim" +str(int(dim))
     # Open file
     with open(path, 'r') as file:

@@ -30,13 +30,10 @@ References
 -------------------------
 .. [1] Fábregas-Ibáñez, Luis, Stefan Stoll, and Gunnar Jeschke. “Compactness Regularisation in the Analysis of Dipolar EPR Spectroscopy.” Journal of Magnetic Resonance, 2022. 
         
-.. [2] Fábregas Ibáñez, Luis, Gunnar Jeschke, and Stefan Stoll. “DeerLab: A Comprehensive Software Package for Analyzing Dipolar Electron Paramagnetic Resonance Spectroscopy Data.” 
-Magnetic Resonance 1, no. 2 (October 1, 2020): 209–24. https://doi.org/10.5194/mr-1-209-2020.
+.. [2] Fábregas Ibáñez, Luis, Gunnar Jeschke, and Stefan Stoll. “DeerLab: A Comprehensive Software Package for Analyzing Dipolar Electron Paramagnetic Resonance Spectroscopy Data.” Magnetic Resonance 1, no. 2 (October 1, 2020): 209–24. https://doi.org/10.5194/mr-1-209-2020.
 
-.. [3] Bahrenberg, Thorsten, Samuel M. Jahn, Akiva Feintuch, Stefan Stoll, and Daniella Goldfarb. “The Decay of the Refocused Hahn Echo in Double Electron–Electron Resonance (DEER) 
-Experiments.” Magnetic Resonance 2, no. 1 (April 16, 2021): 161–73. https://doi.org/10.5194/mr-2-161-2021.
+.. [3] Bahrenberg, Thorsten, Samuel M. Jahn, Akiva Feintuch, Stefan Stoll, and Daniella Goldfarb. “The Decay of the Refocused Hahn Echo in Double Electron–Electron Resonance (DEER) Experiments.” Magnetic Resonance 2, no. 1 (April 16, 2021): 161–73. https://doi.org/10.5194/mr-2-161-2021.
 
-.. [4] Soetbeer, Janne, Miriam Hülsmann, Adelheid Godt, Yevhen Polyhach, and Gunnar Jeschke. “Dynamical Decoupling of Nitroxides in O-Terphenyl: A Study of Temperature, Deuteration 
-and Concentration Effects.” Physical Chemistry Chemical Physics 20, no. 3 (January 17, 2018): 1615–28. https://doi.org/10.1039/C7CP07074H.
+.. [4] Soetbeer, Janne, Miriam Hülsmann, Adelheid Godt, Yevhen Polyhach, and Gunnar Jeschke. “Dynamical Decoupling of Nitroxides in O-Terphenyl: A Study of Temperature, Deuteration and Concentration Effects.” Physical Chemistry Chemical Physics 20, no. 3 (January 17, 2018): 1615–28. https://doi.org/10.1039/C7CP07074H.
 
 

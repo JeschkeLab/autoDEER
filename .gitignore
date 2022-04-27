@@ -154,3 +154,4 @@ autoDeer/PulseSpel/*.exp%
 **/*.svg
 
 **/auto_examples/**
+**/_autosummary/**
