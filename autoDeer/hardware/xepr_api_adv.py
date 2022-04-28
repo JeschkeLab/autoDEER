@@ -36,7 +36,7 @@ class xepr_api:
         self.hidden = None
         self._tmp_dir = None
         self.XeprCmds = None
-        self.meta = hardware_meta # This will become more neuanced eventually. Currentlty this is sufficent.
+        self.meta = hardware_meta  # This will become more nuanced eventually. Currently this is sufficient.
         pass
 
     def set_Xepr_global(self,Xepr_inst): 
@@ -62,8 +62,8 @@ class xepr_api:
             except OSError:
                 print('Xepr API: Could not connect to any Xepr instance.')
             except RuntimeError:
-                raise RuntimeError("There is already a connection from Xepr to this python Kernal.\n" \
-                    "Please use the correct python object or restart the kernal ")
+                raise RuntimeError("There is already a connection from Xepr to this python Kernel.\n" \
+                    "Please use the correct python object or restart the kernel ")
             except:
                 RuntimeError("Can't connect to Xepr: Please check Xepr is running and open to API")
             else:
@@ -82,7 +82,7 @@ class xepr_api:
             
     def find_cur_exp(self):
         """
-        Trys and finds the current experiment
+        Try and finds the current experiment
         """
         if self.Xepr == None:
             raise RuntimeError("Please connect API to Xepr")
@@ -130,7 +130,7 @@ class xepr_api:
 
     def acquire_scan(self):
         """
-        This script detects the end of the scan and acquires the data set. This requries that the experiment is still running, or recently finished. Once it has been saved this will no longer work.
+        This script detects the end of the scan and acquires the data set. This requires that the experiment is still running, or recently finished. Once it has been saved this will no longer work.
         """
         if self.is_exp_running():
         
@@ -147,7 +147,7 @@ class xepr_api:
 
     def acquire_scan_at(self,scan_num:int):
         """
-        This script acquires the scan after a spacific number of scans
+        This script acquires the scan after a specific number of scans
         """
         x_length = int(self.cur_exp.getParam("XSpecRes").value)
         time_per_point = self.cur_exp.getParam("ShotRepTime").value *1e-6*self.cur_exp.getParam("ShotsPLoop").value*2
@@ -157,8 +157,8 @@ class xepr_api:
 
     def acquire_scan_2d(self):
         """
-        This function acquries the dataset after a full 2D scan.
-        This is done by identfying the number of scansteps per sweep and acquring the data on that scan.
+        This function acquires the dataset after a full 2D scan.
+        This is done by identifying the number of scansteps per sweep and acquiring the data on that scan.
         This requires that the experiment has not been saved. 
         """
         if self.is_exp_running():
@@ -180,7 +180,7 @@ class xepr_api:
 
     def set_PulseSpel_var(self,variable:str,value:int):
         """
-        This can be used to change any pulse spel variable whilst the experiment is running. These changes take effect at the begining of the next scan
+        This can be used to change any pulse spel variable whilst the experiment is running. These changes take effect at the beginning of the next scan
         """
         hw_log.debug(f'Set pulse spel var {str(variable)} to {int(value)}')
         self.cur_exp["ftEpr.PlsSPELSetVar"].value = str(variable) + " = "+ str(int(value))
@@ -219,7 +219,7 @@ class xepr_api:
     def get_PulseSpel_def_filename(self):
         return os.path.basename(self.cur_exp["ftEPR.PlsSPELGlbPaF"].value) 
 
-    def get_PulseSpel_def_filenpath(self):
+    def get_PulseSpel_def_filepath(self):
         return self.cur_exp["ftEPR.PlsSPELGlbPaF"].value
 
     def set_PulseSpel_def_filepath(self,fullpath):
@@ -282,7 +282,7 @@ class xepr_api:
             path = self._tmp_dir + "pulsespel_" + timestr + ".def"
         else:
             path = name
-        hw_log.debug(f'Saved Pulse Spel defintion to: {path}')
+        hw_log.debug(f'Saved Pulse Spel definition to: {path}')
         self.Xepr.XeprCmds.aqPgDefSaveAs(path)
 
 
@@ -291,9 +291,9 @@ class xepr_api:
         return self.cur_exp["ftEPR.FTAcqModeSlct"].value    
     
     def set_Acquisition_mode(self, mode:int):
-        """mode=0: Run from tabels, mode=1: Run from Pulse Spel, mode=2:Read transient, mode=3:Start Transient"""
+        """mode=0: Run from tables, mode=1: Run from Pulse Spel, mode=2:Read transient, mode=3:Start Transient"""
         if mode == 0:
-            self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Run from Tabels'
+            self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Run from Tables'
         elif mode == 1:
             self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Run from PulseSPEL'
         elif mode == 2:

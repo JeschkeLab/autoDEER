@@ -30,7 +30,7 @@ def find_AWG_deer_files(folder,start_time,experiment="4pdeer",end_time=None):
     return include_files_list
 
 
-def calc_percieved_freq(f_sample,f_signal):
+def calc_perceived_freq(f_sample,f_signal):
     return np.abs(f_signal-f_sample*np.round(f_signal/f_sample))
 
 def apply_match(data,freq,filter='rect',sampling_rate=2,integrate=False):
@@ -86,6 +86,6 @@ def get_deer(filepath):
     data = all_data['dta']
     sampling_rate = 2
     nu_obs = all_data['deer']['events'][0]['pulsedef']['nu_init']
-    freq = calc_percieved_freq(sampling_rate,nu_obs)
+    freq = calc_perceived_freq(sampling_rate,nu_obs)
     trace = -1* np.apply_along_axis(apply_match,0,data,freq)
     return trace    
