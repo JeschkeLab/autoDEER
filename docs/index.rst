@@ -31,6 +31,7 @@ Or to install in develop mode. ::
 
 .. toctree::
     :hidden:
+    :maxdepth: 2
     :caption: Control
 
     ./userguide/Control

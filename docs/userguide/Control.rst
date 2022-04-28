@@ -43,3 +43,10 @@ and probe pulses to it. This is not designed to complete. ::
         sampling_freq = 12e9
         sampling_period = 1/sampling_freq
         grad = 64
+
+
+.. toctree::
+    :hidden:
+    :caption: Bruker
+
+    ./Bruker
