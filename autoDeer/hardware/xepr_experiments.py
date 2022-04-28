@@ -18,7 +18,7 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
     exp : tuple
         A tuple giving the name of the experiment and phase cycle.
     settings : dict
-        A dictionary containing possible acquistion settings. Options include ['ReplaceMode','PhaseCycle','Acquistion_mode']
+        A dictionary containing possible acquisition settings. Options include ['ReplaceMode','PhaseCycle','Acquisition_mode']
     variables : dict
         A dictionary containg pulse spel variables to choose from can, these can also be dimension of experiment.
     run : bool, optional
@@ -60,10 +60,10 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
     else:
         api.set_ReplaceMode(True) 
 
-    if "Acquistion_mode" in settings:
-        api.set_Acquistion_mode(settings["Acquistion_mode"])
+    if "Acquisition_mode" in settings:
+        api.set_Acquisition_mode(settings["Acquisition_mode"])
     else:    
-        api.set_Acquistion_mode(1)
+        api.set_Acquisition_mode(1)
 
     # Identifying a dimension change in settings
     r = re.compile("dim([0-9]*)")

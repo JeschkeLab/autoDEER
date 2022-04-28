@@ -287,10 +287,10 @@ class xepr_api:
 
 
 
-    def get_Acquistion_mode(self):
+    def get_Acquisition_mode(self):
         return self.cur_exp["ftEPR.FTAcqModeSlct"].value    
     
-    def set_Acquistion_mode(self, mode:int):
+    def set_Acquisition_mode(self, mode:int):
         """mode=0: Run from tabels, mode=1: Run from Pulse Spel, mode=2:Read transient, mode=3:Start Transient"""
         if mode == 0:
             self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Run from Tabels'
@@ -301,7 +301,7 @@ class xepr_api:
         elif mode == 3:
             self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Start Transient'
         else:
-            print('Acqusiton Mode not changed. Input error.')
+            print('Acquisition Mode not changed. Input error.')
             return 0
               
     def compile_PulseSpel_prg(self):
