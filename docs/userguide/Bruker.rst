@@ -67,9 +67,9 @@ Reading a Dataset
 -------------------------
 
 
-Now that an experiment is running, the data will need to be read into Python. This can be done concurrently and at the end. Here we have three different commands:
+Now that an experiment is running, the data will need to be read into Python. This can be done concurrently and at the end of a scan. Here we have three different commands:
 
-    1. 'api.acquire_dataset()' - This acquires the data now!
-    2. 'api.acquire_scan()' - This acquires the data at the end of the current scan.
-    3. 'api.acquire_scan_at(scan_num)' - This acquires the data at a given scan number.
+1. ``api.acquire_dataset()`` - This acquires the data now!
+2. ``api.acquire_scan()`` - This acquires the data at the end of the current scan.
+3. ``api.acquire_scan_at(scan_num)`` - This acquires the data at a given scan number.
    

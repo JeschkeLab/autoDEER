@@ -46,7 +46,6 @@ and probe pulses to it. This is not designed to complete. ::
 
 
 .. toctree::
-    :hidden:
-    :caption: Bruker
-
+    :maxdepth: 2
+    
     ./Bruker

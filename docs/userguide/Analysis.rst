@@ -37,3 +37,8 @@ References
 .. [4] Soetbeer, Janne, Miriam Hülsmann, Adelheid Godt, Yevhen Polyhach, and Gunnar Jeschke. “Dynamical Decoupling of Nitroxides in O-Terphenyl: A Study of Temperature, Deuteration and Concentration Effects.” Physical Chemistry Chemical Physics 20, no. 3 (January 17, 2018): 1615–28. https://doi.org/10.1039/C7CP07074H.
 
 
+
+.. toctree::
+    :maxdepth: 2
+    
+    ./Decoherence_experiments
