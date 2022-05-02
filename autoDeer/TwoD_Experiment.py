@@ -421,11 +421,14 @@ class TwoD_Experiment:
                 self.snr_normalize()
             signal = self.data_snrpshot
             norm_label = r'SNR /$n^{-1/2}$'
+        elif norm =='Max':
+            signal = np.real(self.data) /  np.real(self.data).max()
+            norm_label = 'Signal / A.U.'
         else: #No Normalization
             signal = np.real(self.data)
-            norm_label = None
+            norm_label = 'Signal / A.U.'
 
-        fig = plt.figure(figsize=(6,6),dpi=150)
+        fig = plt.figure(figsize=(6,3.5),dpi=150)
         axs = fig.subplots(1,1)
 
         # maximise signal along Tau2 for 4p DEER
@@ -436,15 +439,20 @@ class TwoD_Experiment:
         axs.plot(self.time[0],np.diag(signal[:,optimal_4p]),label="4pDEER")
         axs.plot(self.time[0]*2,np.diag(signal),label="5pDEER")
 
-        ax2 = axs.twinx()
-        ax2.plot(self.time[0],self.time[1][optimal_4p],'--',label="4pDEER")
-        # axs.set_xlabel(r'$\tau_1$ / $\mu s $')
-        axs.set_xlabel("Dipolar Evolution Time")
+        axs.set_xlabel("Dipolar Evolution Time / $\mu s $")
         axs.set_ylabel(norm_label)
-        ax2.set_ylabel(r'$\tau_2$ / $\mu s $')
-        fig.legend()
+
+        evo2dist = lambda t: 6 * (t/2)**(1/3)
+        dist2evo = lambda r: 2 * (r/6)**3
+        secax = axs.secondary_xaxis('top', functions=(evo2dist, dist2evo))
+        secax.set_xlabel('Distance / $nm$',color='darkorange')
+        secax.tick_params(colors='darkorange')
+        axs.spines['top'].set_color('darkorange')
+        axs.set_xlim(0.1,None)
+        axs.legend()
 
 
+        return fig
 
     
     
