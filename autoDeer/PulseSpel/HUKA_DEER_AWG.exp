@@ -495,7 +495,7 @@ begin exp9 "4-DEER Relax" [INTG QUAD]
  next k                        ; end of scan accumulation loop 
 end exp9  
 
-begin exp10 "5p DEER" [INTG QUAD]
+begin exp10 "5p DEER relax" [INTG QUAD]
 
  totscans(n)                   ; output of total number of scans
  for k=1 to n                  ; averaging loop
