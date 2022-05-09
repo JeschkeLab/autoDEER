@@ -92,7 +92,7 @@ class TwoD_Experiment:
         tau1_max_locs = signal_real.argmax(axis=0)
 
         axs[0].contour(signal_real,extent=scale,levels=10,cmap=cmap2)
-        axs[0].pcolormesh(time[0],time[1],signal_real,shading='auto',alpha=0.95,cmap=cmap)
+        axs[0].pcolormesh(time[0],time[1],signal_real,shading='auto',alpha=1,cmap=cmap,linewidth=0,rasterized=True)
         axs[0].plot([min(time[0]),max(time[0])],[min(time[1]),max(time[1])],color='k',linestyle='--')
         axs[0].plot(time[0][tau2_max_locs],time[1],color='r')
         axs[0].plot(time[0],time[1][tau2_max_locs],color='r')
@@ -103,7 +103,7 @@ class TwoD_Experiment:
 
         # Second Tau2 Normalised Plot
         signal_real_tau2_norm = signal_real / signal_real.max(axis=1)[:,None]
-        im = axs[1].pcolormesh(time[0],time[1],signal_real_tau2_norm,shading='auto',alpha=0.95,cmap=cmap)
+        im = axs[1].pcolormesh(time[0],time[1],signal_real_tau2_norm,shading='auto',alpha=1,cmap=cmap,linewidth=0,rasterized=True)
 
         axs[1].contour(time[0],time[1],signal_real_tau2_norm,levels=5,cmap=cmap2)
         axs[1].plot([min(time[0]),max(time[0])],[min(time[1]),max(time[1])],color='k',linestyle='--')
