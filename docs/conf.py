@@ -36,6 +36,12 @@ extensions = ['sphinx.ext.autodoc',
 'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
+# Configuration of Sphinx-Autosymmary
+# ----------------------------------------------------------------------
+add_module_names = False
+# Turn on sphinx.ext.autosummary
+autosummary_generate = True 
+# Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # List of patterns, relative to source directory, that match files and
@@ -57,6 +63,6 @@ html_theme = 'pydata_sphinx_theme'
 html_static_path = ['_static']
 
 sphinx_gallery_conf = {
-     'examples_dirs': '../examples',   # path to your example scripts
+     'examples_dirs': '../examples/scripts/',   # path to your example scripts
      'gallery_dirs': 'auto_examples',  # path to where to save gallery generated output
 }
