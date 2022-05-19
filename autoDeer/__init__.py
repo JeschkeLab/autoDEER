@@ -10,4 +10,4 @@ from .ResPro import *
 from .FieldSweep import FieldSweep
 from .ResPro import resonatorProfile
 from .home_built_func import get_deer,find_AWG_deer_files
-from .DEER_analysis import std_4p_deer_analysis
+from .DEER_analysis import std_deer_analysis

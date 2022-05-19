@@ -14,7 +14,7 @@ API Reference
     FieldSweep
     resonatorProfile
     save_file
-
+    IdentifyROI
 .. rubric:: Functions
 
 .. autosummary::
