@@ -550,3 +550,48 @@ begin exp10 "5p DEER relax" [INTG QUAD]
  next k                        ; end of scan accumulation loop
 
 end exp10 
+
+begin exp11 "Refocused Echo" [TRANS,QUAD]
+
+
+ pg=p1;                        ; integration gate, standard 24 ns
+ d25=200-pg                    ; trigger correction for shorter gate, not in use, remember to change d0 by hand
+ d25=d25/2
+ d25=d25-p0
+ d25=d25-4
+
+ ; delay between pi/2 and standing pump pulse
+ d8 = d2                      ; tau
+ d8 = d8 - d11                 ; subtract d11 = t0
+ 
+ ; delay before moving pump pulse
+ d13 = d3                        ; initially deadtime, gets incremented by d30
+ 
+ ; delay after moving pump pulse
+ d4 = 2* d2
+ d4 = d4 - d3                      ; initially d2 (tau) - deadtime, gets decremented by d30
+ d4 = d4 + d24                     ; add shift
+ 
+ ; delay between last observer pi and acquisition
+ d21 = d2                          ; delay tau/2
+ d21 = d21 + d24                   ; add shift d24 once
+ 
+ ; nucl mod increment for tau delays
+ d29 = d31
+ 
+  shot i=1 to h           ; accumulation loop
+    d9                    ; DAF
+    p0 [ph1]              ; pulse at +<x> or -<x>
+    d8                    ; tau/2 - d11
+    d11                   ; t0
+    p1 [ph2]              ; -<y> pulse (pi)
+    d26                  ; initially d3 = deadtime
+    d16                   ; initially d2 - deadtime + shift
+    p1 [ph2]              ; pulse at -<y>       
+    d21                   ;
+    d0                    ; constant acquisition delay
+    d25                   ; trigger correction
+    dig [sg1]             ; acquisition
+  next i                  ; end of accumulation loop
+
+end exp11
