@@ -16,7 +16,7 @@ def calc_identifiability(profile):
     return fit_result[0][0]
 
 
-def std_4p_deer_analysis(t,V,tau1,tau2,zerotime=0,num_points=50,compactness=True):
+def std_4p_deer_analysis(t,V,tau1,tau2,tau3=None,zerotime=0,num_points=50,compactness=True):
     plt.style.use('seaborn')
     Vexp = dl.correctphase(V)
     Vexp = Vexp/np.max(Vexp)         # Rescaling (aesthetic)
@@ -24,10 +24,15 @@ def std_4p_deer_analysis(t,V,tau1,tau2,zerotime=0,num_points=50,compactness=True
 
     rmax = 6*(t.max()/2)**(1/3)
     rmax_e = np.ceil(rmax) # Effective rmax
-    rmax_e = 5
     
-    r = np.linspace(1,rmax_e,50) # nm  
+    r = np.linspace(1,rmax_e,80) # nm  
+    
     experimentInfo = dl.ex_4pdeer(tau1,tau2, pathways=[1,2,3])
+    
+    if tau3 != None:
+        experimentInfo = dl.ex_fwd5pdeer(tau1,tau2,tau3)
+
+
     Vmodel = dl.dipolarmodel(t,r,experiment=experimentInfo)
     if compactness:
         compactness_penalty = dl.dipolarpenalty(None, r, 'compactness', 'icc')
