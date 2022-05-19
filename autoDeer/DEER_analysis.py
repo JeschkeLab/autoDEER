@@ -25,11 +25,12 @@ def std_deer_analysis(t,V,tau1,tau2,tau3=None,zerotime=0,num_points=50,compactne
     rmax = 6*(t.max()/2)**(1/3)
     rmax_e = np.ceil(rmax) # Effective rmax
     
-    r = np.linspace(1,rmax_e,80) # nm  
+    r = np.linspace(1,rmax_e,num_points) # nm  
     
     experimentInfo = dl.ex_4pdeer(tau1,tau2, pathways=[1,2,3])
     
     if tau3 != None:
+        print("5pulse")
         experimentInfo = dl.ex_fwd5pdeer(tau1,tau2,tau3)
 
 
@@ -69,7 +70,6 @@ def std_deer_analysis(t,V,tau1,tau2,tau3=None,zerotime=0,num_points=50,compactne
     # Top right distance domain
     Pfit = fit.P
     Pci = fit.PUncert.ci(95)
-    r = np.linspace(1,rmax_e,50) # nm  
     axs['Primary_dist'].plot(r,Pfit,'-',color='orange',label='Fit')
     axs['Primary_dist'].fill_between(r,Pci[:,0],Pci[:,1],color='orange',alpha=0.3,label='95% CI')
     
