@@ -16,7 +16,7 @@ def calc_identifiability(profile):
     return fit_result[0][0]
 
 
-def std_4p_deer_analysis(t,V,tau1,tau2,tau3=None,zerotime=0,num_points=50,compactness=True):
+def std_deer_analysis(t,V,tau1,tau2,tau3=None,zerotime=0,num_points=50,compactness=True):
     plt.style.use('seaborn')
     Vexp = dl.correctphase(V)
     Vexp = Vexp/np.max(Vexp)         # Rescaling (aesthetic)
