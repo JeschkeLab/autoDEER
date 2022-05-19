@@ -12,6 +12,8 @@ from scipy.interpolate import pchip_interpolate
 from scipy.signal import hilbert,windows
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+import pickle
+
 
 class resonatorProfile:
 
@@ -244,6 +246,16 @@ class resonatorProfile:
         elif type == 'raw':
             self.IF_rp = self.habs[int_idx]
 
+
+    def _pickle_save(self,file="res_prof"):
+
+        with open(file,'w') as file:
+            pickle.dump(self,file)
+
+    def _pickle_load(self,file="res_prof"):
+
+        with open(file,'r') as file:
+            self = pickle.load(file)
 
         
 

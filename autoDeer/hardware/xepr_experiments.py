@@ -30,7 +30,17 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
         If an input is of the wrong type.
     """
 
-
+    # Identifying a dimension change in settings
+    r = re.compile("dim([0-9]*)")
+    match_list = list(filter(lambda list: list != None,[r.match(i) for i in settings.keys()]))
+    if len(match_list) >= 1:
+        for i in range(0,len(match_list)):
+            key = match_list[i][0]
+            dim = int(r.findall(key)[0])
+            new_length = settings[key]
+            change_dimensions(exp_file,dim,new_length)
+            
+            
     if len(ps_file) == 1:
         # Assuming that both the EXP file and the DEF file have the same name bar-extention
         exp_file = MODULE_DIR + ps_file[0] +".exp"
@@ -65,15 +75,7 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
     else:    
         api.set_Acquisition_mode(1)
 
-    # Identifying a dimension change in settings
-    r = re.compile("dim([0-9]*)")
-    match_list = list(filter(lambda list: list != None,[r.match(i) for i in settings.keys()]))
-    if len(match_list) >= 1:
-        for i in range(0,len(match_list)):
-            key = match_list[i][0]
-            dim = int(r.findall(key)[0])
-            new_length = settings[key]
-            change_dimensions(exp_file,dim,new_length)
+
     
     # setting PS Variables
 

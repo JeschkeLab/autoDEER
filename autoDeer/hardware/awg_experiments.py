@@ -112,7 +112,7 @@ def deer_pulse_5p(awg:Interface,tpump:int,nu,res_prof:resonatorProfile=None):
 
     # Negative Hyperbolic Secant Pulse
 
-    [p_real,p_imag] = pulses.HSorder1(12,
+    [n_real,n_imag] = pulses.HSorder1(12,
                                 tpump,
                                 np.flip(nu),
                                 resonator=res_prof,
@@ -120,7 +120,7 @@ def deer_pulse_5p(awg:Interface,tpump:int,nu,res_prof:resonatorProfile=None):
                                 HSorder=np.flip([1,6]),
                                 phase=0,
                                 scale=1)
-    wave2 = Waveform(awg,np.vstack([p_real,p_imag]))
+    wave2 = Waveform(awg,np.vstack([n_real,n_imag]))
     wave2.pulse_blanking()
     wave2.enforce_gradualrity()
     wave2.set_amp('max')
@@ -163,4 +163,4 @@ def deer_pulse_5p(awg:Interface,tpump:int,nu,res_prof:resonatorProfile=None):
     seq_table.write_to_str()
     awg.setSequenceTable(seq_table,0,3)
 
-    pass
+    return [p_real+1j*p_imag,n_real+1j*n_imag]
