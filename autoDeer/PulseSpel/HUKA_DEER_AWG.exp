@@ -433,7 +433,6 @@ begin exp8 "5p DEER" [INTG QUAD]
            p1 [ph2]              ; pulse at -<y>       
            d21                   ;
            d0                    ; constant acquisition delay
-           d25                   ; trigger correction
            acq [sg1]             ; acquisition
          next i                  ; end of accumulation loop
          dx  = dx  + d30         ; define time axis increment
@@ -555,34 +554,24 @@ begin exp11 "Refocused Echo" [TRANS QUAD]
 
 
  ; delay between pi/2 and standing pump pulse
- d8 = d2                      ; tau
- d8 = d8 - d11                 ; subtract d11 = t0
+ d8 = d1                      ; tau
  
  ; delay before moving pump pulse
- d13 = d3                        ; initially deadtime, gets incremented by d30
- 
- ; delay after moving pump pulse
- d4 = 2* d2
- d4 = d4 - d3                      ; initially d2 (tau) - deadtime, gets decremented by d30
- d4 = d4 + d24                     ; add shift
- 
+ d13 = d1                        ; initially deadtime, gets incremented by d30
+ d13 = d13 + d2 ;
  ; delay between last observer pi and acquisition
  d21 = d2                          ; delay tau/2
- d21 = d21 + d24                   ; add shift d24 once
- 
+
  ; nucl mod increment for tau delays
  d29 = d31
  d26=d13
- d16=d4
  
   shot i=1 to h           ; accumulation loop
     d9                    ; DAF
     p0 [ph1]              ; pulse at +<x> or -<x>
-    d8                    ; tau/2 - d11
-    d11                   ; t0
+    d8                    ; tau1
     p1 [ph2]              ; -<y> pulse (pi)
     d26                  ; initially d3 = deadtime
-    d16                   ; initially d2 - deadtime + shift
     p1 [ph2]              ; pulse at -<y>       
     d21                   ;
     d0                    ; constant acquisition delay
