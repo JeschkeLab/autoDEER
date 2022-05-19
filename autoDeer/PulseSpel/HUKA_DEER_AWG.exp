@@ -18,7 +18,7 @@ begin defs
  dim8 s[500]              ;     dimension for alternating 5'-DEER with two t0; sx =(d2-1*d3+d24)/d30
  dim9 s[1000]               ;    dimension for 4-DEER relaxation
  dim10 s[1500]               ;    dimension for 5'-DEER relaxation
-
+ dim11 s[512];
 end defs
 
 begin lists "+<x> (pi/2)"
@@ -551,14 +551,8 @@ begin exp10 "5p DEER relax" [INTG QUAD]
 
 end exp10 
 
-begin exp11 "Refocused Echo" [TRANS,QUAD]
+begin exp11 "Refocused Echo" [TRANS QUAD]
 
-
- pg=p1;                        ; integration gate, standard 24 ns
- d25=200-pg                    ; trigger correction for shorter gate, not in use, remember to change d0 by hand
- d25=d25/2
- d25=d25-p0
- d25=d25-4
 
  ; delay between pi/2 and standing pump pulse
  d8 = d2                      ; tau
@@ -578,6 +572,8 @@ begin exp11 "Refocused Echo" [TRANS,QUAD]
  
  ; nucl mod increment for tau delays
  d29 = d31
+ d26=d13
+ d16=d4
  
   shot i=1 to h           ; accumulation loop
     d9                    ; DAF
@@ -590,7 +586,6 @@ begin exp11 "Refocused Echo" [TRANS,QUAD]
     p1 [ph2]              ; pulse at -<y>       
     d21                   ;
     d0                    ; constant acquisition delay
-    d25                   ; trigger correction
     dig [sg1]             ; acquisition
   next i                  ; end of accumulation loop
 
