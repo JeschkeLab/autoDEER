@@ -2,7 +2,7 @@ import time
 import numpy as np
 from scipy.optimize import curve_fit
 import deerlab as dl
-import matplotlib as plt
+import matplotlib.pyplot as plt
 from autoDeer.DEER_4p import IdentifyROI
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -18,7 +18,6 @@ def calc_identifiability(profile):
 
 def std_4p_deer_analysis(t,V,tau1,tau2,zerotime=0,num_points=50,compactness=True):
     plt.style.use('seaborn')
-    plt.ion()
     Vexp = dl.correctphase(V)
     Vexp = Vexp/np.max(Vexp)         # Rescaling (aesthetic)
     t = t-zerotime
@@ -35,7 +34,7 @@ def std_4p_deer_analysis(t,V,tau1,tau2,zerotime=0,num_points=50,compactness=True
     else:
         compactness_penalty = None
     fit = dl.fit(Vmodel,Vexp,penalties=compactness_penalty)
-    ROI = IdentifyROI(fit.P,r,criterion=0.97)
+    ROI = IdentifyROI(fit.P,r,criterion=0.99)
 
     Vfit = fit.model
     Vci = fit.modelUncert.ci(95)
@@ -51,9 +50,9 @@ def std_4p_deer_analysis(t,V,tau1,tau2,zerotime=0,num_points=50,compactness=True
     axs['Primary_time'].plot(t,Vfit,linewidth=3,color='orange',label='Fit')
     axs['Primary_time'].fill_between(t,Vci[:,0],Vci[:,1],color='orange',alpha=0.3)
 
-    Bfcn = lambda mod,conc: (1-mod)*dl.bg_hom3d(time,conc,mod)
-    Bfit = Bfcn(fit.lam3,fit.conc)
-    axs['Primary_time'].plot(time,Bfit,'--',color='blue',label='Backgnd')
+    # Bfcn = lambda mod,conc: (1-mod)*dl.bg_hom3d(time,conc,mod)
+    # Bfit = Bfcn(fit.lam3,fit.conc)
+    # axs['Primary_time'].plot(time,Bfit,'--',color='blue',label='Backgnd')
 
 
     axs['Primary_time'].set_xlabel(r"Time / $\mu s$")
@@ -69,7 +68,6 @@ def std_4p_deer_analysis(t,V,tau1,tau2,zerotime=0,num_points=50,compactness=True
     axs['Primary_dist'].plot(r,Pfit,'-',color='orange',label='Fit')
     axs['Primary_dist'].fill_between(r,Pci[:,0],Pci[:,1],color='orange',alpha=0.3,label='95% CI')
     
-    ROI = IdentifyROI(Pfit,r,criterion=0.97)
     axs['Primary_dist'].fill_betweenx([0,Pci[:,1].max()],ROI[0],ROI[1],alpha=0.2,color='green',label="ROI",hatch="/")
     
     axs['Primary_dist'].set_xlabel(r"Disatnce / $ nm$")
@@ -80,22 +78,21 @@ def std_4p_deer_analysis(t,V,tau1,tau2,zerotime=0,num_points=50,compactness=True
 
     MNR = fit.lam3/fit.noiselvl
     axs['Primary_time'].text(0.05,0.05,f"MNR: {fit.lam3/fit.noiselvl:.2f}",transform = fig.transFigure,size="x-large",color="black")
-    if MNR < 20:
+    if MNR < 10:
         axs['Primary_time'].text(0.05,0.01,"LOW MNR: More averages requried",transform = fig.transFigure,size="x-large",color="red")
 
     ROI_error = (rmax - ROI[1])
     
+    rec_tau_max = (ROI[1]/3)**3 * 2
+
     axs['Primary_time'].text(0.55,0.05,f"ROI: {ROI[0]:.2f}nm to {ROI[1]:.2f}nm",transform = fig.transFigure,size="x-large",color="black")
+    axs['Primary_time'].text(0.55,0.01,rf"Recommended $\tau_{{max}}$ = {rec_tau_max:.2f}us",transform = fig.transFigure,size="x-large",color="black")
+
     if ROI_error < 0.5:
         axs['Primary_time'].text(0.55,0.01,r"ROI is too close to $r_{max}. Increase $\tau_{max}$",
         transform = fig.transFigure,size="x-large",color="red")
 
-
-
     fig.show()
-
-
-
 
     return fit
 
