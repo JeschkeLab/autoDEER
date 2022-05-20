@@ -16,13 +16,49 @@ def calc_identifiability(profile):
     return fit_result[0][0]
 
 
-def std_deer_analysis(t,V,tau1,tau2,tau3=None,zerotime=0,num_points=50,compactness=True):
+def std_deer_analysis(t:np.ndarray,V:np.ndarray,tau1,tau2,tau3=None,zerotime=0,num_points=50,compactness=True,precision="Detailed"):
+    """std_deer_analysis This function conducts the standard deer analysis using deerlab
+
+    Parameters
+    ----------
+    t : np.ndarray
+        The time domain of the data
+    V : np.ndarray
+        The signal, of equal length as t
+    tau1 : float
+        The first inter pulse delay.
+    tau2 : float
+        The second inter pulse delay
+    tau3 : float, optional
+        For 5p DEER the third delay. If this has a value it is automatically detected as 5pulse, by default None
+    zerotime : float, optional
+        What value in the time axis represents the maximum, by default 0
+    num_points : int, optional
+        How many points in the distance distribution. This number should not be too high, by default 50
+    compactness : bool, optional
+        Is the compactness criterion applied, this should always be applied, by default True
+    precision : str, optional
+        How large the rmax should be. "Detailed", for normal work, "Speed" for setup experiments, by default "Detailed"
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
     plt.style.use('seaborn')
     Vexp = dl.correctphase(V)
     Vexp = Vexp/np.max(Vexp)         # Rescaling (aesthetic)
     t = t-zerotime
 
-    rmax = 6*(t.max()/2)**(1/3)
+    if precision == "Detailed":
+        Ltype = 3
+    elif precision =="Speed":
+        Ltype = 6
+    else:
+        print("No Precision set. Ltype = 4nm")
+        Ltype = 4
+
+    rmax = Ltype*(t.max()/2)**(1/3)
     rmax_e = np.ceil(rmax) # Effective rmax
     
     r = np.linspace(1,rmax_e,num_points) # nm  
