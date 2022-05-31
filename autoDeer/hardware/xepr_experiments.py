@@ -193,3 +193,28 @@ def get_nutations(api,nu,field,step,nx:int=128):
         tools.progress_bar_frac(i,n)
     return t,nut_data
 
+
+def CP_run(api,d0,num_pulses=3,ps_length=16,sweeps=4,dt=100,num_points=256):
+
+
+    if num_pulses == 3:
+        run_general(api,
+        ["/PulseSpel/HUKA_DEER_AWG"],
+        ["5p DEER relax","AWG +-<x> obs"],
+        {"PhaseCycle":True},
+        {"p0":ps_length,"p1":ps_length,"h":10,"n":sweeps,"d0":d0,"dim10":num_points},
+        False)
+    else:
+        raise ValueError("Only CP3 is currently implemented")
+
+
+def DEER5p_run(api,ps_length,d0,tau2,sweeps=4,deadtime=80,dt=16,num_points=256):
+
+    run_general(api,
+    ["/PulseSpel/HUKA_DEER_AWG"],
+    ["5p DEER","DEER run AWG -+<x>"],
+    {"PhaseCycle":True,"ReplaceMode":False},
+    {"p0":ps_length,"p1":ps_length,"h":20,"n":sweeps,"d2":tau2,"d11":200,"d3":deadtime,"d30":dt,"d0":d0,"dim8":num_points},
+               run=False)
+
+

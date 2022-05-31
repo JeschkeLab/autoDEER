@@ -14,7 +14,7 @@ API Reference
     FieldSweep
     resonatorProfile
     save_file
-
+    
 .. rubric:: Functions
 
 .. autosummary::
@@ -23,6 +23,8 @@ API Reference
     
     find_AWG_deer_files
     get_deer
+    std_deer_analysis
+    IdentifyROI
 
 Hardware
 ---------------------
