@@ -200,9 +200,9 @@ def CP_run(api,d0,num_pulses=3,ps_length=16,sweeps=4,dt=100,num_points=256):
     if num_pulses == 3:
         run_general(api,
         ["/PulseSpel/HUKA_DEER_AWG"],
-        ["5p DEER relax","AWG +-<x> obs"],
+        ["5p DEER relax",""DEER run AWG -+<x>"],
         {"PhaseCycle":True},
-        {"p0":ps_length,"p1":ps_length,"h":10,"n":sweeps,"d0":d0,"dim10":num_points},
+        {"p0":ps_length,"p1":ps_length,"h":10,"n":sweeps,"d30":dt,"d0":d0,"dim10":num_points},
         False)
     else:
         raise ValueError("Only CP3 is currently implemented")
