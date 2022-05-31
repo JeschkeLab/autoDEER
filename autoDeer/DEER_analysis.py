@@ -135,5 +135,5 @@ def std_deer_analysis(t:np.ndarray,V:np.ndarray,tau1,tau2,tau3=None,zerotime=0,n
 
     fig.show()
 
-    return fit
+    return fig,ROI,rec_tau_max
 
