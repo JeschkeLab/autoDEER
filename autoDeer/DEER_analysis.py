@@ -45,7 +45,7 @@ def std_deer_analysis(t:np.ndarray,V:np.ndarray,tau1,tau2,tau3=None,zerotime=0,n
     _type_
         _description_
     """
-    plt.style.use('seaborn')
+    # plt.style.use('seaborn')
     Vexp = dl.correctphase(V)
     Vexp = Vexp/np.max(Vexp)         # Rescaling (aesthetic)
     t = t-zerotime
@@ -83,7 +83,7 @@ def std_deer_analysis(t:np.ndarray,V:np.ndarray,tau1,tau2,tau3=None,zerotime=0,n
 
     fig, axs= plt.subplot_mosaic([
         ['Primary_time','Primary_time','Primary_dist','Primary_dist']
-        ],figsize=(10,5))
+        ],figsize=(12.5,6.28))
     fig.tight_layout(pad=4)
     fig.subplots_adjust(bottom=0.2,hspace=0.4)
 
@@ -111,23 +111,23 @@ def std_deer_analysis(t:np.ndarray,V:np.ndarray,tau1,tau2,tau3=None,zerotime=0,n
     
     axs['Primary_dist'].fill_betweenx([0,Pci[:,1].max()],ROI[0],ROI[1],alpha=0.2,color='green',label="ROI",hatch="/")
     
-    axs['Primary_dist'].set_xlabel(r"Disatnce / $ nm$")
+    axs['Primary_dist'].set_xlabel(r"Distance / $ nm$")
     axs['Primary_dist'].set_ylabel(r"$P(r^{-1})$")
     axs['Primary_dist'].legend()
 
 
 
     MNR = fit.lam3/fit.noiselvl
-    axs['Primary_time'].text(0.05,0.05,f"MNR: {fit.lam3/fit.noiselvl:.2f}",transform = fig.transFigure,size="x-large",color="black")
+    axs['Primary_time'].text(0.05,0.05,f"MNR: {fit.lam3/fit.noiselvl:.2f}",transform = fig.transFigure,fontsize="16",color="black")
     if MNR < 10:
-        axs['Primary_time'].text(0.05,0.01,"LOW MNR: More averages requried",transform = fig.transFigure,size="x-large",color="red")
+        axs['Primary_time'].text(0.05,0.01,"LOW MNR: More averages requried",transform = fig.transFigure,fontsize="16",color="red")
 
     ROI_error = (rmax - ROI[1])
     
     rec_tau_max = (ROI[1]/3)**3 * 2
 
-    axs['Primary_time'].text(0.55,0.05,f"ROI: {ROI[0]:.2f}nm to {ROI[1]:.2f}nm",transform = fig.transFigure,size="x-large",color="black")
-    axs['Primary_time'].text(0.55,0.01,rf"Recommended $\tau_{{max}}$ = {rec_tau_max:.2f}us",transform = fig.transFigure,size="x-large",color="black")
+    axs['Primary_time'].text(0.55,0.05,f"ROI: {ROI[0]:.2f}nm to {ROI[1]:.2f}nm",transform = fig.transFigure,fontsize="16",color="black")
+    axs['Primary_time'].text(0.55,0.01,rf"Recommended $\tau_{{max}}$ = {rec_tau_max:.2f}us",transform = fig.transFigure,fontsize="16",color="black")
 
     if ROI_error < 0.5:
         axs['Primary_time'].text(0.55,0.01,r"ROI is too close to $r_{max}. Increase $\tau_{max}$",
