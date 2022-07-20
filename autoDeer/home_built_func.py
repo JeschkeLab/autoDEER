@@ -110,13 +110,14 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
             nAvgs = matfile["nAvgs"]
             dta = [matfile["dta"]]
         elif "dta_001" in matfile.keys():
-            for ii in range(0,estr["avgs"]):
+            dta = []
+            for ii in range(1,estr["avgs"]+1):
                 actname = 'dta_%03u' % ii 
                 if actname in matfile.keys():
-                    dta[ii] = matfile[actname]
+                    dta.append(matfile[actname])
 
                 # Only keep it if the average is complete, unless it is the first
-                if sum(dta[ii][-estr["events"][estr["det_event"]-1]["det_len"]:]) ==0 and ii >1:
+                if sum(dta[ii-1][:,-1]) ==0 and ii >1:
                     dta = dta[:-1]
                 else:
                     nAvgs = ii
@@ -177,7 +178,7 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
     for ii in range(0,len(cycled)):
         estr["postsigns"]["ids"] = np.array(estr["postsigns"]["ids"]).reshape(-1)
         if not (elim_pcyc and cycled[ii]):
-            dta_x.append(estr["parvars"][estr["postsigns"]["ids"][ii]-1]["axis"])
+            dta_x.append(estr["parvars"][estr["postsigns"]["ids"][ii]-1]["axis"].astype(np.int32))
             relevant_parvars.append(estr["postsigns"]["ids"][ii]-1)
             ii_dtax += 1
     
@@ -458,7 +459,7 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
         else:
             dta_avg[0:evlen,:] = dta_avg[0:evlen,:] + np.multiply(dta_dc[ran_echo,:],np.exp(-1j * corr_phase))
 
-    
+    dta_avg = dta_avg[0:evlen,...]
     #keyboard
     #flip back 2D Data
     if flipback:
@@ -482,7 +483,7 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
 class AWGdata:
 
     def __init__(self,t_ax,dta_avg) -> None:
-        self.t_axis = t_ax
+        self.t_ax = t_ax
         self.dta_avg = dta_avg 
 
     def transient_plot2D(self):
