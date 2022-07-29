@@ -417,7 +417,7 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
                 raise RuntimeError(f"Echo position at {e_idx} with evaluation length of {evlen} is not valid, since the dataset has only {np.size(dta_dc,0)} points.")
 
             # here the final time axis of the dataset
-            t_ax = np.arange(-evlen/2,evlen/2) * fsmp
+            t_ax = np.arange(-evlen/2,evlen/2) / fsmp
 
             # get also indices of reference echo in case of 2D data
             if absofsum.ndim ==2:
