@@ -32,6 +32,17 @@ class FieldSweep():
 
         return self.max_field
 
+    def calc_gyro(self,det_frq):
+
+        if not hasattr(self,"max_field"):
+            self.find_max()
+        
+        self.gyro = det_frq/self.max_field
+        hf_x = det_frq - self.gyro*self.axis
+        self.fs_x = det_frq + hf_x
+        self.fs_x = det_frq - self.gyro*self.axis
+        return self.gyro
+
     def plot(self,norm=True)->Figure:
 
         if norm == True:
