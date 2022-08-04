@@ -8,6 +8,7 @@ begin defs
 dim s[10]           ; Hahn Echo
 dim1 s[10]          ; Refocused Echo
 dim2 s[64]
+dim3 s[512]         ; Hahn Echo Trans
 
 end defs
 
@@ -113,5 +114,19 @@ end exp1
     next x
 
 end exp2
+
+begin exp3 "Hahn Echo Trans" [INTG QUAD]
+
+    shot i=1 to h              ; accumulation loop
+      d9                       ; DAF
+      p1 [ph1]                 ; 1st pulse and phase program
+      d1                       ; tau                       
+      p0 [ph2]                ; 2nd pulse and phase program
+      d1                       ; tau
+      d0                       ; constant acquisition delay
+      dig [sg1]               ; acquisition
+    next i                     ; end of accumulation loop 
+
+end exp3
 
 
