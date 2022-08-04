@@ -334,11 +334,17 @@ class xepr_api:
         # Saves the current viewpoint to either the specified file in the working directory or to the filepath.
         # This is a bruker save function
         # Taken from Custom Xepr
+        xepr_file_limit = 70
         directory, basename = os.path.split(path)
         if not title:
             title = basename
         if not os.path.exists(directory):
             os.makedirs(directory)
+
+        if len(basename) > xepr_file_limit:
+            print("File name is too long. The file_name will be truncated, but the full name will be saved as the title")
+            path = directory + "/" + basename[:70]
+
         self.Xepr.XeprCmds.vpSave("Current Primary", title, path)
         hw_log.info(f'Saved data to: {path}')
         time.sleep(0.5)
