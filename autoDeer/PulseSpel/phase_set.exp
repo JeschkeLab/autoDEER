@@ -5,8 +5,9 @@
 
 begin defs
 
-dim s[512]          ; Phase control
-dim1 s[64]
+dim s[10]           ; Hahn Echo
+dim1 s[10]          ; Refocused Echo
+dim2 s[64]
 
 end defs
 
@@ -52,22 +53,44 @@ asg1 +a -a
 bsg1 +b -b
 end lists5
 
- begin exp "Hahn Echo" [TRANS QUAD]
+begin exp "Hahn Echo" [INTG QUAD]
 
+  sweep x=1 to sx
     shot i=1 to h              ; accumulation loop
       d9                       ; DAF
-      p0 [ph1]                 ; 1st pulse and phase program
+      p1 [ph1]                 ; 1st pulse and phase program
       d1                       ; tau                       
-      p1 [ph2]                ; 2nd pulse and phase program
+      p0 [ph2]                ; 2nd pulse and phase program
       d1                       ; tau
       d0                       ; constant acquisition delay
-      dig [sg1]               ; acquisition
+      acq [sg1]               ; acquisition
     next i                     ; end of accumulation loop 
+  next x
+
+end exp
+
+begin exp1 "Refocused Echo" [INTG QUAD]
+
+    sweep x=1 to sx
+      shot i=1 to h              ; accumulation loop
+        d9                       ; DAF
+        p1 [ph1]                 ; 1st pulse and phase program
+        d1                       ; tau1                       
+        p0 [ph2]                 ; 2nd pulse and phase program
+        d1                       ; tau1
+        d2                       ; tau2
+        p0 [ph2]                 ; 2nd pulse and phase program
+        d2                       ; tau2
+        d0                       ; constant acquisition delay
+        acq [sg1]               ; acquisition
+      next i                     ; end of accumulation loop 
+    next x
 
 
- end exp
+end exp1
 
- begin exp1 "Nutation" [INTG QUAD]
+
+ begin exp2 "Nutation" [INTG QUAD]
 
   p0 = 0
   p1 = 0
@@ -76,9 +99,9 @@ end lists5
   sweep x=1 to sx
      shot i=1 to h              ; accumulation loop
       d9                       ; DAF
-      p0 [ph1]                 ; 1st pulse and phase program
+      p1 [ph1]                 ; 1st pulse and phase program
       d1                       ; tau                       
-      p1 [ph2]                ; 2nd pulse and phase program
+      p0 [ph2]                ; 2nd pulse and phase program
       d1                       ; tau
       d0                       ; constant acquisition delay
       acq [sg1]               ; acquisition
@@ -89,6 +112,6 @@ end lists5
     dx = dx + 2
     next x
 
-end exp1
+end exp2
 
 

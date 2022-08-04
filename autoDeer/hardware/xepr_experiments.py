@@ -218,10 +218,27 @@ def DEER5p_run(api,ps_length,d0,tau2,sweeps=4,deadtime=80,dt=16,num_points=256):
 
 class MPFUtune:
 
-    def __init__(self,api) -> None:
+    def __init__(self,api,echo="Hahn",ps_length=16,d0=680) -> None:
         self.api = api
         self.hardware_wait = 5 # In second the time to wait for hardware changes
+        self.ps_length = ps_length
+        self.d0 = 600
+        if echo == "Hahn":
+            self._setup_echo("Hahn Echo",tau1=400)
+        elif echo == "Refocused":
+            self._setup_echo("Refocused Echo",tau1=200,tau2=400)
+        else:
+            raise ValueError("Only Hahn and Refocused echo's are currently supported")
         pass
+
+    def _setup_echo(self,echo,tau1=400,tau2=400):
+        PulseSpel_file = "/PulseSpel/phase_set"
+        run_general(self.api,
+                    [PulseSpel_file],
+                    [echo,"BrXPhase"],
+                    {"PhaseCycle":False},
+                    {"p0":self.ps_length,"p1":self.ps_length*2,"h":20,"n":1,"d0":self.d0,"d1":tau1,"d2":tau2}
+                    )
 
 
     def tune_phase(self,channel,target):
@@ -323,8 +340,17 @@ class MPFUtune:
         return result
 
     def tune(self,channels:dict):
-        
+
         for channel in channels:
+            if channel == '+<x>':
+                phase_cycle = 'BrXPhase'
+            elif channel == '-<x>':
+                phase_cycle = 'BrMinXPhase'
+            elif channel == '+<y>':
+                phase_cycle = 'BrYPhase'
+            elif channel == '-<y>':
+                phase_cycle = 'BrMinYPhase'
+            self.api.set_PulseSpel_phase_cycling(phase_cycle)
             print(f"Tuning channel: {channel}")
             self.tune_power(channel)
             self.tune_phase(channel,channels[channel])
