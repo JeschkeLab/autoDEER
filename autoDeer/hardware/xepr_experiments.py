@@ -263,7 +263,7 @@ class MPFUtune:
 
 
         def objective(x,*args):
-            x = x[0]
+#             x = x[0]
             self.api.hidden[phase_channel].value = x # Set phase to value
             time.sleep(self.hardware_wait)
             self.api.run_exp()
@@ -274,12 +274,12 @@ class MPFUtune:
 
             val = test_fun(np.sum(v))
 
-            print(f'Phase Setting = {x:.1f} \t Echo Amplitude = {val:.2f}')
+            print(f'Phase Setting = {x:.1f} \t Echo Amplitude = {-1*val:.2f}')
 
             return val
 
         output = minimize_scalar(objective,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
-        result = output.x[0]
+        result = output.x
         print(f"Optimal Phase Setting for {phase_channel} is: {result:.1f}")
         self.api.hidden[phase_channel].value = result
         return result
@@ -305,7 +305,6 @@ class MPFUtune:
         tol = 0.1
 
         def objective(x,*args):
-            x = x[0]
             self.api.hidden[atten_channel].value = x # Set phase to value
             time.sleep(self.hardware_wait)
             self.api.run_exp()
@@ -314,15 +313,15 @@ class MPFUtune:
             data = self.api.acquire_scan()
             v = data.data
 
-            val = np.sum(np.abs(v))
+            val = -1* np.sum(np.abs(v))
 
-            print(f'Power Setting = {x:.1f} \t Echo Amplitude = {val:.2f}')
+            print(f'Power Setting = {x:.1f} \t Echo Amplitude = {-1*val:.2f}')
 
             return val
 
         output = minimize_scalar(objective,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
-        result = output.x[0]
-        print(f"Optimal Phase Setting for {atten_channel} is: {result:.1f}")
+        result = output.x
+        print(f"Optimal Power Setting for {atten_channel} is: {result:.1f}")
         self.api.hidden[atten_channel].value = result
         return result
 
