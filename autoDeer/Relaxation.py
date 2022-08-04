@@ -48,8 +48,8 @@ class Carr_Purcell:
 
         fig, ax = plt.subplots()
         if hasattr(self,"popt"):
-            ax.plot(self.axis/1000,self.func(self.axis,*self.popt),label='fit','b-')
-            ax.plot(self.axis/1000,data,label='data','o')
+            ax.plot(self.axis/1000,self.func(self.axis,*self.popt),label='fit')
+            ax.plot(self.axis/1000,data,label='data')
             ax.legend()
         else:
             ax.plot(self.axis/1000,data,label='data')
