@@ -12,7 +12,7 @@ class Carr_Purcell:
 
     def import_from_bruker(self,file_path)->None:
 
-        t,V = deerload(file_path, False, True)
+        t,V = deerload(file_path, False, False)
         self.axis = t
         self.data = V
         pass 
@@ -29,14 +29,17 @@ class Carr_Purcell:
     
     def fit(self,type = "mono"):
 
+        data = np.abs(self.data)
+        data /= np.max(data)
+
         if type == "mono":
             self.func = lambda x,a,b,e: a*np.exp(-b*x**e)
-            p0 = [self.data.max(),1,1]
-            bounds = ([0,0,0],[np.inf,np.inf,np.inf])
+            p0 = [1,1,2]
+            bounds = ([0,0,-10,0],[2,1000,10,1000])
         else:
             raise ValueError("Type must be one of: mono")
         
-        self.popt = curve_fit(self.func,self.axis,self.data,p0=p0,bounds=bounds)
+        self.fit_result = curve_fit(self.func,self.axis,data,p0=p0)
         pass
 
 
@@ -47,12 +50,12 @@ class Carr_Purcell:
             data /= np.max(data)
 
         fig, ax = plt.subplots()
-        if hasattr(self,"popt"):
-            ax.plot(self.axis/1000,self.func(self.axis,*self.popt),label='fit')
-            ax.plot(self.axis/1000,data,label='data')
+        if hasattr(self,"fit_result"):
+            ax.plot(self.axis,self.func(self.axis,*self.fit_result[0]),label='fit')
+            ax.plot(self.axis,data,label='data')
             ax.legend()
         else:
-            ax.plot(self.axis/1000,data,label='data')
+            ax.plot(self.axis,data,label='data')
 
 
         ax.set_xlabel('Time / us')
@@ -74,8 +77,9 @@ class Carr_Purcell:
         # Target time
         target_time = 2 * 3600
 
-        num_avgs = target_time / (shrt * np.floor(2 * self.axis / 16))
+        num_avgs = target_time / (shrt * np.floor(2 * self.axis * 1000 / 16))
 
         data_snr_ = data_snr_avgs * np.sqrt(num_avgs)
 
-        self.axis[np.min(np.abs(data_snr_-20))]
+        self.optimal = self.axis[np.argmin(np.abs(data_snr_-20))]
+        return self.optimal
