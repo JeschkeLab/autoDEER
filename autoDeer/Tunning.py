@@ -393,13 +393,3 @@ def tune_power(api,d0:int = 600,channel:str = 'main',ps_target:int = 32) -> floa
     return result
     
 
-
-def calc_d0(api,acq_length):
-    guess = 500
-    
-    
-    data = xepr.acquire_dataset()
-    t = data.time
-    d = data.data
-    d0 = guess + round(t[np.argmax(abs(d))]/2)*2 - acq_length/2
-    return d0

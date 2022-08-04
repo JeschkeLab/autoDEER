@@ -1,10 +1,6 @@
 ## This is a script for function that run a resonator profile experiment and analyse the data. 
-
-import imp
-import time
 import numpy as np
 import scipy.fft as fft
-import importlib
 from deerlab import deerload
 import re
 import os
