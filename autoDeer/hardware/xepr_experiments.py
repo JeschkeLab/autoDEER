@@ -31,15 +31,7 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
         If an input is of the wrong type.
     """
 
-    # Identifying a dimension change in settings
-    r = re.compile("dim([0-9]*)")
-    match_list = list(filter(lambda list: list != None,[r.match(i) for i in settings.keys()]))
-    if len(match_list) >= 1:
-        for i in range(0,len(match_list)):
-            key = match_list[i][0]
-            dim = int(r.findall(key)[0])
-            new_length = settings[key]
-            change_dimensions(exp_file,dim,new_length)
+
             
             
     if len(ps_file) == 1:
@@ -56,6 +48,16 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
     else:
         raise ValueError("ps_file must be of form ['EXP file'] or ['EXP file','DEF file']")
 
+    # Identifying a dimension change in settings
+    r = re.compile("dim([0-9]*)")
+    match_list = list(filter(lambda list: list != None,[r.match(i) for i in variables.keys()]))
+    if len(match_list) >= 1:
+        for i in range(0,len(match_list)):
+            key = match_list[i][0]
+            dim = int(r.findall(key)[0])
+            new_length = int(variables[key])
+            change_dimensions(exp_file,dim,new_length)
+        
     api.set_PulseSpel_exp_filepath(exp_file)
     api.set_PulseSpel_def_filepath(def_file)
     api.compile_PulseSpel_prg()
@@ -148,6 +150,8 @@ def change_dimensions(path,dim:int,new_length:int):
             new_string = f"dim{int(dim)} s[{int(new_length[0])},{int(new_length[1])}]"
         else:
             raise ValueError("New length can't have more than 2 dimensions")
+    else:
+        raise ValueError("new_length must be either an int or a list")
 
     data = [re.sub(re_search,new_string,line) for line in data]
 
@@ -276,7 +280,7 @@ class MPFUtune:
 
 
         def objective(x,*args):
-            x = x[0]
+#             x = x[0]
             self.api.hidden[phase_channel].value = x # Set phase to value
             time.sleep(self.hardware_wait)
             self.api.run_exp()
@@ -287,12 +291,12 @@ class MPFUtune:
 
             val = test_fun(np.sum(v))
 
-            print(f'Phase Setting = {x:.1f} \t Echo Amplitude = {val:.2f}')
+            print(f'Phase Setting = {x:.1f} \t Echo Amplitude = {-1*val:.2f}')
 
             return val
 
         output = minimize_scalar(objective,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
-        result = output.x[0]
+        result = output.x
         print(f"Optimal Phase Setting for {phase_channel} is: {result:.1f}")
         self.api.hidden[phase_channel].value = result
         return result
@@ -318,7 +322,6 @@ class MPFUtune:
         tol = 0.1
 
         def objective(x,*args):
-            x = x[0]
             self.api.hidden[atten_channel].value = x # Set phase to value
             time.sleep(self.hardware_wait)
             self.api.run_exp()
@@ -327,15 +330,15 @@ class MPFUtune:
             data = self.api.acquire_scan()
             v = data.data
 
-            val = np.sum(np.abs(v))
+            val = -1* np.sum(np.abs(v))
 
-            print(f'Power Setting = {x:.1f} \t Echo Amplitude = {val:.2f}')
+            print(f'Power Setting = {x:.1f} \t Echo Amplitude = {-1*val:.2f}')
 
             return val
 
         output = minimize_scalar(objective,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
-        result = output.x[0]
-        print(f"Optimal Phase Setting for {atten_channel} is: {result:.1f}")
+        result = output.x
+        print(f"Optimal Power Setting for {atten_channel} is: {result:.1f}")
         self.api.hidden[atten_channel].value = result
         return result
 
