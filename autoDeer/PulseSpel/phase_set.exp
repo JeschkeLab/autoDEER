@@ -115,7 +115,7 @@ end exp1
 
 end exp2
 
-begin exp3 "Hahn Echo Trans" [INTG QUAD]
+begin exp3 "Hahn Echo Trans" [TRANS QUAD]
 
     shot i=1 to h              ; accumulation loop
       d9                       ; DAF
