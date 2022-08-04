@@ -156,3 +156,5 @@ autoDeer/PulseSpel/*.exp%
 **/auto_examples/**
 **/_autosummary/**
 *.npz
+
+Jupyter_Notebooks/
