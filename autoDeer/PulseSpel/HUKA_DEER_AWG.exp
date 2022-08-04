@@ -527,11 +527,9 @@ begin exp10 "5p DEER relax" [INTG QUAD]
          d9                    ; DAF
          p0 [ph1]              ; pulse at +<x> or -<x>
          d8                    ; tau/2 - d11
-         p2 [ph3]              ; standing pump pulse from AWG        
          d11                   ; t0
          p1 [ph2]              ; -<y> pulse (pi)
          d13                  ; initially d3 = deadtime
-         p2 [ph3]              ; moving pump pulse from AWG        
          d4                   ; initially d2 - deadtime
          p1 [ph2]              ; pulse at -<y>       
          d21                   ;
