@@ -153,8 +153,6 @@ def change_dimensions(path,dim:int,new_length:int):
     with open(path, 'w') as file:
         file.writelines( data )
         
-    
-
 def get_nutations(api,nu,field,step,nx:int=128):
 
     min_freq = nu[0]
@@ -192,7 +190,6 @@ def get_nutations(api,nu,field,step,nx:int=128):
         t = dataset.time
         tools.progress_bar_frac(i,n)
     return t,nut_data
-
 
 def CP_run(api,d0,num_pulses=3,ps_length=16,sweeps=4,dt=100,num_points=256):
 

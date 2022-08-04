@@ -1,8 +1,6 @@
-from distutils.command.config import config
-from multiprocessing.connection import wait
 import numpy as np
 import time
-import os,sys
+import os
 from numpy.core.fromnumeric import cumprod;
 import XeprAPI
 
