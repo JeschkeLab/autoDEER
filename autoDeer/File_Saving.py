@@ -7,7 +7,6 @@ This is a class designed to make the saving of data and meta data as simple as p
 
 
 import os
-import time
 import h5py as h
 import logging
 
