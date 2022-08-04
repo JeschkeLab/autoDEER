@@ -45,6 +45,15 @@ asg1 +a -a
 bsg1 +b -b
 end lists2
 
+begin lists3 "16 MPFU"
+ph1 +<x> -<x>
+ph2 +<x> +<x> +<y> +<y> -<x> -<x> -<y> -<y>
+ph3 +<x> +<x> +<x> +<x> +<x> +<x> +<x> +<x> -<x> -<x> -<x> -<x> -<x> -<x> -<x> -<x> 
+asg1 +a -a -a +a +a -a -a +a +a -a -a +a +a -a -a +a
+bsg1 +b -b -b +b +b -b -b +b +b -b -b +b +b -b -b +b
+end lists3
+
+
 begin exp "Carr Purcell exp" [INTG QUAD]
 
 dx = d1

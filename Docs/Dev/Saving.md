@@ -27,5 +27,26 @@ Attributes are the way of adding metadata to a HDF5 file, they are used for eith
 ### Our implementation
 One of other changes that would be beneficial to add is saving as we go. Currently if the software or spectrometer crashes all unsaved data is lost. We propose that the save file is constantly generated in the tmp folder until the end of the experiment. It is only at the end of the experiment that the user specifies a name and location and the file is then simply moved to this location. We could also extend this further such that during a very long experiment the data is autosaved once an hour. This would have a few benefits: Firstly, if the software crashes it can be recovered. Secondly, if there is a fundamental change in the sample environment (such as a change in temperature), then the only a short period of data is lost. 
 
-#### Current Limitations
-- Only 1 type of experiment may feature i
+
+## EPR Hierarchical structure
+To allow the easy and automated parsing of data from hierarchial data formats a standard needs to be created. Here we define ours.
+
+# Structure:
+- File
+    - Spectrometer
+    - Experiment
+        - Type
+        - Data
+        - Axes
+        - Meta +++
+
+Allowable Metadata Keys
+| Type  | Scans  |   | Start Time  |
+| Field  | Shots  |   | End Time  |
+| MW Freq  | SHRT  |   |   |
+| ELDOR Freq  | Pulse Lengths  |   |   |
+| Sweep Width  |   |   |   |
+
+
+
+
