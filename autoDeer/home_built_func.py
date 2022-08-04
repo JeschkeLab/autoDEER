@@ -115,12 +115,11 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
                 actname = 'dta_%03u' % ii 
                 if actname in matfile.keys():
                     dta.append(matfile[actname])
-
-                # Only keep it if the average is complete, unless it is the first
-                if sum(dta[ii-1][:,-1]) ==0 and ii >1:
-                    dta = dta[:-1]
-                else:
-                    nAvgs = ii
+                    # Only keep it if the average is complete, unless it is the first
+                    if sum(dta[ii-1][:,-1]) ==0 and ii >1:
+                        dta = dta[:-1]
+                    else:
+                        nAvgs = ii
         return [dta,nAvgs]
     
     dta,nAvgs = extract_data(matfile)
@@ -195,7 +194,7 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
     # Check for any frequency changes as well as any fixed downconversion frequencies
 
     if "det_frq" in options.keys():
-        det_frq = options.det_frq
+        det_frq = options["det_frq"]
     else:
 
         det_frq_dim = 0
