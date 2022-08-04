@@ -226,7 +226,7 @@ class MPFUtune:
         self.api = api
         self.hardware_wait = 5 # In second the time to wait for hardware changes
         self.ps_length = ps_length
-        self.d0 = 600
+        self.d0 = d0
         if echo == "Hahn":
             self._setup_echo("Hahn Echo",tau1=400)
         elif echo == "Refocused":
@@ -241,7 +241,7 @@ class MPFUtune:
                     [PulseSpel_file],
                     [echo,"BrXPhase"],
                     {"PhaseCycle":False},
-                    {"p0":self.ps_length,"p1":self.ps_length*2,"h":20,"n":1,"d0":self.d0,"d1":tau1,"d2":tau2}
+                    {"p0":self.ps_length*2,"p1":self.ps_length,"h":20,"n":1,"d0":self.d0,"d1":tau1,"d2":tau2,"pg":128}
                     )
 
 
