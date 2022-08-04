@@ -3,6 +3,7 @@ import time
 import numpy as np
 import re
 import autoDeer.tools as tools
+from scipy.optimize import minimize_scalar
 
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
 
@@ -217,5 +218,123 @@ def DEER5p_run(api,ps_length,d0,tau2,sweeps=4,deadtime=80,dt=16,num_points=256):
     {"PhaseCycle":True,"ReplaceMode":False},
     {"p0":ps_length,"p1":ps_length,"h":20,"n":sweeps,"d2":tau2,"d11":200,"d3":deadtime,"d30":dt,"d0":d0,"dim8":num_points},
                run=False)
+
+
+class MPFUtune:
+
+    def __init__(self,api) -> None:
+        self.api = api
+        self.hardware_wait = 5 # In second the time to wait for hardware changes
+        pass
+
+
+    def tune_phase(self,channel,target):
+
+        channel_opts = ['+<x>','-<x>','+<y>','-<y>']
+        phase_opts = ['R+','R-','I+','I-']
+
+        if not channel in channel_opts:
+            raise ValueError(f'Channel must be one of: {channel_opts}')
+    
+        if not target in phase_opts:
+            raise ValueError(f'Phase target must be one of: {phase_opts}')
+        if channel == '+<x>':
+            phase_channel = 'BrXPhase'
+        elif channel == '-<x>':
+            phase_channel = 'BrMinXPhase'
+        elif channel == '+<y>':
+            phase_channel = 'BrYPhase'
+        elif channel == '-<y>':
+            phase_channel = 'BrMinYPhase'
+
+        if target == 'R+':
+            test_fun = lambda x: -1 * np.real(x)
+        elif target == 'R-':
+            test_fun = lambda x: 1 * np.real(x)
+        elif target == 'I+':
+            test_fun = lambda x: -1 * np.imag(x)
+        elif target == 'I-':
+            test_fun = lambda x: 1 * np.imag(x)
+
+        lb = 0.0
+        ub = 100.0
+        start_point = 50.0
+        tol = 0.1
+
+
+        def objective(x,*args):
+            x = x[0]
+            self.api.hidden[phase_channel].value = x # Set phase to value
+            time.sleep(self.hardware_wait)
+            self.api.run_exp()
+            while self.api.is_exp_running():
+                time.sleep(1)
+            data = self.api.acquire_scan()
+            v = data.data
+
+            val = test_fun(np.sum(v))
+
+            print(f'Phase Setting = {x:.1f} \t Echo Amplitude = {val:.2f}')
+
+            return val
+
+        output = minimize_scalar(objective,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
+        result = output.x[0]
+        print(f"Optimal Phase Setting for {phase_channel} is: {result:.1f}")
+        self.api.hidden[phase_channel].value = result
+        return result
+
+    def tune_power(self,channel):
+        channel_opts = ['+<x>','-<x>','+<y>','-<y>']
+        if not channel in channel_opts:
+            raise ValueError(f'Channel must be one of: {channel_opts}')
+        
+        if channel == '+<x>':
+            atten_channel = 'BrXAmp'
+        elif channel == '-<x>':
+            atten_channel = 'BrMinXAmp'
+        elif channel == '+<y>':
+            atten_channel = 'BrYAmp'
+        elif channel == '-<y>':
+            atten_channel = 'BrMinYAmp'
+
+
+        lb = 0.0
+        ub = 100.0
+        start_point = 50.0
+        tol = 0.1
+
+        def objective(x,*args):
+            x = x[0]
+            self.api.hidden[atten_channel].value = x # Set phase to value
+            time.sleep(self.hardware_wait)
+            self.api.run_exp()
+            while self.api.is_exp_running():
+                time.sleep(1)
+            data = self.api.acquire_scan()
+            v = data.data
+
+            val = np.sum(np.abs(v))
+
+            print(f'Power Setting = {x:.1f} \t Echo Amplitude = {val:.2f}')
+
+            return val
+
+        output = minimize_scalar(objective,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
+        result = output.x[0]
+        print(f"Optimal Phase Setting for {atten_channel} is: {result:.1f}")
+        self.api.hidden[atten_channel].value = result
+        return result
+
+    def tune(self,channels:dict):
+        
+        for channel in channels:
+            print(f"Tuning channel: {channel}")
+            self.tune_power(channel)
+            self.tune_phase(channel,channels[channel])
+
+
+
+
 
 
