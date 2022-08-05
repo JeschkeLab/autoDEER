@@ -36,15 +36,15 @@ end lists2
 begin lists3 "BrYPhase"
 ph1 +<y>
 ph2 +<y>
-asg1 +a -a
-bsg1 +b -b
+asg1 +a
+bsg1 +b
 end lists3
 
 begin lists4 "BrMinYPhase"
 ph1 -<y>
 ph2 -<y>
-asg1 +a -a
-bsg1 +b -b
+asg1 +a
+bsg1 +b
 end lists4
 
 begin lists5 "BrXAmp"
@@ -115,7 +115,7 @@ end exp1
 
 end exp2
 
-begin exp3 "Hahn Echo Trans" [INTG QUAD]
+begin exp3 "Hahn Echo Trans" [TRANS QUAD]
 
     shot i=1 to h              ; accumulation loop
       d9                       ; DAF

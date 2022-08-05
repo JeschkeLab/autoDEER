@@ -241,7 +241,8 @@ class MPFUtune:
                     [PulseSpel_file],
                     [echo,"BrXPhase"],
                     {"PhaseCycle":False},
-                    {"p0":self.ps_length*2,"p1":self.ps_length,"h":20,"n":1,"d0":self.d0,"d1":tau1,"d2":tau2,"pg":128}
+                    {"p0":self.ps_length*2,"p1":self.ps_length,"h":20,"n":1,"d0":self.d0,"d1":tau1,"d2":tau2,"pg":128},
+                    run=False
                     )
 
 
@@ -364,16 +365,16 @@ class MPFUtune:
         run_general(self.api,
             [PulseSpel_file],
             ['Hahn Echo Trans',"BrXPhase"],
-            {"PhaseCycle":True},
+            {"PhaseCycle":False},
             {"p0":self.ps_length*2,"p1":self.ps_length,"h":20,"n":1,"d0":self.d0,"d1":400,"d0":initial_d0}
             )
-        self.api.run_exp()
         while self.api.is_exp_running():
                 time.sleep(1)
         data = self.api.acquire_scan()
         max_pos = np.argmax(np.abs(data.data))
         max_time = data.time[max_pos]
         d0 = initial_d0 + max_time
+        return d0
 
 
 
