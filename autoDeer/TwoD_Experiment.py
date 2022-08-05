@@ -6,12 +6,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-import deerlab as dl
+from deerlab import deerload
 import os
 
 class TwoD_Experiment:
-    """"
-    TwoD_Experiment: This is a class for loading and processing 2D Decoherence experiments
+    """
+    This is a class for loading and processing 2D Decoherence experiments
     """
 
     def __init__(self) -> None:
@@ -22,34 +22,42 @@ class TwoD_Experiment:
 
 
     def load(self,file):
-        """
-        Using deerlab the file is loaded. If the file is a bruker .DSC file then extra paremeters are loaded. 
+        """Using deerlab the file is loaded. If the file is a bruker .DSC file then extra paremeters are loaded. 
         If it is a .csv or .txt file then any required metadata will need to be inputted by the user
-        Parameters:
-        self:
-        file (string): This is the full file path for the datafile
-        """
+
+        Parameters
+        ----------
+        file : str
+            This is the full file path for the datafile
+        """        
         file_name,file_ext = os.path.splitext(file)
         
         if file_ext == '.DSC':
-            self.time,self.data,self.params = dl.deerload(file,full_output=True)
+            self.time,self.data,self.params = deerload(file,full_output=True)
             self.data = self.data.T
             self.scans = int(self.params.get('DSL').get('recorder').get('NbScansDone'))
             self.shots = int(self.params.get('DSL')['ftEpr']['ShotsPLoop'])
             self.shrt = float(self.params.get('DSL')['ftEpr']['ShotRepTime'].split()[0]) # in us
         else:
-            self.time,self.data= dl.deerload(file,full_output=False)
+            self.time,self.data= deerload(file,full_output=False)
             self.params = None
             
     def import_data(self,time,data,scans:int,shots:int,shrt:int):
-        """
-        The loads all the import infomation directly from python variables and arrays
-        Parameters:
-        time - [timex,timey]
-        data - numpy 2d array
-        scans(int)
-        shots(int)
-        shrt(int)
+        """The loads all the import infomation directly from python variables and arrays
+
+
+        Parameters
+        ----------
+        time : _type_
+            [timex,timey]
+        data : _type_
+            _description_
+        scans : int
+            Number of scans done
+        shots : int
+            Number of shots per point
+        shrt : int
+            The shot repetition time in us
         """
         self.time = time
         self.data = data
@@ -84,7 +92,7 @@ class TwoD_Experiment:
         tau1_max_locs = signal_real.argmax(axis=0)
 
         axs[0].contour(signal_real,extent=scale,levels=10,cmap=cmap2)
-        axs[0].pcolormesh(time[0],time[1],signal_real,shading='auto',alpha=0.95,cmap=cmap)
+        axs[0].pcolormesh(time[0],time[1],signal_real,shading='auto',alpha=1,cmap=cmap,linewidth=0,rasterized=True)
         axs[0].plot([min(time[0]),max(time[0])],[min(time[1]),max(time[1])],color='k',linestyle='--')
         axs[0].plot(time[0][tau2_max_locs],time[1],color='r')
         axs[0].plot(time[0],time[1][tau2_max_locs],color='r')
@@ -95,7 +103,7 @@ class TwoD_Experiment:
 
         # Second Tau2 Normalised Plot
         signal_real_tau2_norm = signal_real / signal_real.max(axis=1)[:,None]
-        im = axs[1].pcolormesh(time[0],time[1],signal_real_tau2_norm,shading='auto',alpha=0.95,cmap=cmap)
+        im = axs[1].pcolormesh(time[0],time[1],signal_real_tau2_norm,shading='auto',alpha=1,cmap=cmap,linewidth=0,rasterized=True)
 
         axs[1].contour(time[0],time[1],signal_real_tau2_norm,levels=5,cmap=cmap2)
         axs[1].plot([min(time[0]),max(time[0])],[min(time[1]),max(time[1])],color='k',linestyle='--')
@@ -330,8 +338,8 @@ class TwoD_Experiment:
             axs.scatter(self.time_4p[0],self.time_4p[1],c='b',s=15,label='4-pulse',zorder=10)
             axs.scatter(self.time_5p[0],self.time_5p[1],c='lime',s=15,label = '5-pulse',zorder=10)
             plt.legend(loc=2)
-            axs.text(0,-0.1,fr'$\tau_1 = ${self.time_4p[0]}$\mu s$ & $\tau_2 = ${self.time_4p[1]}$\mu s$',c='b',transform=axs.transAxes)
-            axs.text(0.55,-0.1,fr'$\tau_1 = ${self.time_5p[0]}$\mu s$ & $\tau_2 = ${self.time_5p[1]}$\mu s$',c='lime',transform=axs.transAxes)
+            axs.text(-0.02,-0.1,fr'$\tau_1 = ${round(self.time_4p[0],1)}$\mu s$ & $\tau_2 = ${round(self.time_4p[1],1)}$\mu s$',c='b',transform=axs.transAxes)
+            axs.text(0.58,-0.1,fr'$\tau_1 = ${round(self.time_5p[0],1)}$\mu s$ & $\tau_2 = ${round(self.time_5p[1],1)}$\mu s$',c='lime',transform=axs.transAxes)
 
         
         if 'title' in kwargs:
@@ -393,6 +401,59 @@ class TwoD_Experiment:
 
         return fig , time
     
+    def optimal_slice_plot(self,norm=None,**kwargs):
+        """optimal_slice_plot Creates a plot of along the optimal decay time for 4 & 5 pulse DEER.
+
+        Parameters
+        ----------
+        norm : str, optional
+            The normalisation of the data. Options include = ['Tau2','SNR','SNRpShot','None'], by default None
+        """  
+        if norm == 'Tau2':
+            signal = np.real(self.data) / np.real(self.data).max(axis=1)[:,None]
+            norm_label = None  
+        elif norm == 'SNR':
+            signal = self.snr_normalize(shots=None)
+            norm_label = 'SNR'
+    
+        elif norm =='SNRpShot':
+            if not(hasattr(self,'data_snrpshot')):
+                self.snr_normalize()
+            signal = self.data_snrpshot
+            norm_label = r'SNR /$n^{-1/2}$'
+        elif norm =='Max':
+            signal = np.real(self.data) /  np.real(self.data).max()
+            norm_label = 'Signal / A.U.'
+        else: #No Normalization
+            signal = np.real(self.data)
+            norm_label = 'Signal / A.U.'
+
+        fig = plt.figure(figsize=(6,3.5),dpi=150)
+        axs = fig.subplots(1,1)
+
+        # maximise signal along Tau2 for 4p DEER
+        optimal_4p = np.argmax(signal,axis=1)
+        optimal_4p = signal.argmax(axis=1)
+
+
+        axs.plot(self.time[0],np.diag(signal[:,optimal_4p]),label="4pDEER")
+        axs.plot(self.time[0]*2,np.diag(signal),label="5pDEER")
+
+        axs.set_xlabel("Dipolar Evolution Time / $\mu s $")
+        axs.set_ylabel(norm_label)
+
+        evo2dist = lambda t: 6 * (t/2)**(1/3)
+        dist2evo = lambda r: 2 * (r/6)**3
+        secax = axs.secondary_xaxis('top', functions=(evo2dist, dist2evo))
+        secax.set_xlabel('Distance / $nm$',color='darkorange')
+        secax.tick_params(colors='darkorange')
+        axs.spines['top'].set_color('darkorange')
+        axs.set_xlim(0.1,None)
+        axs.legend()
+
+
+        return fig
+
     
     
     def invert_signal(self):
@@ -434,7 +495,7 @@ class TwoD_Experiment:
         else:
             raise ValueError('Normalization option value error')
 
-    def value_at_time(self,pos:tuple,norma=None):
+    def value_at_time(self,pos:tuple,norm=None):
         """
         Function that finds the closest value in this 2D experiment for specified delay times
         Parameters:
@@ -448,4 +509,4 @@ class TwoD_Experiment:
         tau2_time = self.time[1][tau2_pos]
         print(f'Closest times: \u03C41 ={tau1_time} & \u03C42 ={tau2_time}')
 
-        return self.value_at_pos((tau1_pos,tau2_pos),norm=norma)
+        return self.value_at_pos((tau1_pos,tau2_pos),norm=norm)

@@ -5,25 +5,25 @@
 
 begin defs
 
-srt  = 6000 * srtu ; Standard for nitroxides at 50K
+srt  = 4000 * srtu ; Standard for nitroxides at 50K
                     ; 80K: 1000
                     ; 50K: 4000
                     ; 15K: 15000-25000
 
 ; Pulse Lengths
-p0   = 16      ; pi pulses
-p1   = 32      ; pi/2 pulses
+p0   = 32      ; pi pulses
+p1   = 16      ; pi/2 pulses
 pg   = 16      ; Integrator Gate Width
 
 ; Pulse Delays
-d0   = 652     
+d0   = 682     
 
-d1   = 200     
-d2   = 300     
+d1   = 400     
+d2   = 400     
 
 ; Time increments
 d12  = 100     
-d14  = 30  
+d14  = 100  
 d16  = 2    ; Nuclear Modulation Averaging
 
 h    = 4       ; number of shots/loop

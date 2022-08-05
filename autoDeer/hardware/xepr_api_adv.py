@@ -1,9 +1,6 @@
-from posixpath import expanduser
-import re
-from tempfile import TemporaryFile
 import numpy as np
 import time
-import os,sys
+import os
 from numpy.core.fromnumeric import cumprod;
 import XeprAPI
 
@@ -14,6 +11,7 @@ hw_log = logging.getLogger('hardware.Xepr')
 
 # def connect_Xepr():
 #     try:
+
 #         Xepr = XeprAPI.Xepr()
 #         return Xepr
 
@@ -36,7 +34,7 @@ class xepr_api:
         self.hidden = None
         self._tmp_dir = None
         self.XeprCmds = None
-        self.meta = hardware_meta # This will become more neuanced eventually. Currentlty this is sufficent.
+        self.meta = hardware_meta  # This will become more nuanced eventually. Currently this is sufficient.
         pass
 
     def set_Xepr_global(self,Xepr_inst): 
@@ -62,8 +60,8 @@ class xepr_api:
             except OSError:
                 print('Xepr API: Could not connect to any Xepr instance.')
             except RuntimeError:
-                raise RuntimeError("There is already a connection from Xepr to this python Kernal.\n" \
-                    "Please use the correct python object or restart the kernal ")
+                raise RuntimeError("There is already a connection from Xepr to this python Kernel.\n" \
+                    "Please use the correct python object or restart the kernel ")
             except:
                 RuntimeError("Can't connect to Xepr: Please check Xepr is running and open to API")
             else:
@@ -82,7 +80,7 @@ class xepr_api:
             
     def find_cur_exp(self):
         """
-        Trys and finds the current experiment
+        Try and finds the current experiment
         """
         if self.Xepr == None:
             raise RuntimeError("Please connect API to Xepr")
@@ -130,7 +128,7 @@ class xepr_api:
 
     def acquire_scan(self):
         """
-        This script detects the end of the scan and acquires the data set. This requries that the experiment is still running, or recently finished. Once it has been saved this will no longer work.
+        This script detects the end of the scan and acquires the data set. This requires that the experiment is still running, or recently finished. Once it has been saved this will no longer work.
         """
         if self.is_exp_running():
         
@@ -147,7 +145,7 @@ class xepr_api:
 
     def acquire_scan_at(self,scan_num:int):
         """
-        This script acquires the scan after a spacific number of scans
+        This script acquires the scan after a specific number of scans
         """
         x_length = int(self.cur_exp.getParam("XSpecRes").value)
         time_per_point = self.cur_exp.getParam("ShotRepTime").value *1e-6*self.cur_exp.getParam("ShotsPLoop").value*2
@@ -157,8 +155,8 @@ class xepr_api:
 
     def acquire_scan_2d(self):
         """
-        This function acquries the dataset after a full 2D scan.
-        This is done by identfying the number of scansteps per sweep and acquring the data on that scan.
+        This function acquires the dataset after a full 2D scan.
+        This is done by identifying the number of scansteps per sweep and acquiring the data on that scan.
         This requires that the experiment has not been saved. 
         """
         if self.is_exp_running():
@@ -180,7 +178,7 @@ class xepr_api:
 
     def set_PulseSpel_var(self,variable:str,value:int):
         """
-        This can be used to change any pulse spel variable whilst the experiment is running. These changes take effect at the begining of the next scan
+        This can be used to change any pulse spel variable whilst the experiment is running. These changes take effect at the beginning of the next scan
         """
         hw_log.debug(f'Set pulse spel var {str(variable)} to {int(value)}')
         self.cur_exp["ftEpr.PlsSPELSetVar"].value = str(variable) + " = "+ str(int(value))
@@ -195,7 +193,16 @@ class xepr_api:
             hw_log.info('Replace mode turned off')
 
         self.cur_exp["ftEpr.ReplaceMode"].value = value
-    
+
+    def set_PhaseCycle(self,state=True):
+        if state:
+            hw_log.info("On-Board Phase Cycling turned on")
+            self.cur_exp["PCycleOn"].value = state
+        else:
+            hw_log.info("On-Board Phase Cycling turned off")
+            self.cur_exp["PCycleOn"].value = state
+        
+        return state
     def get_PulseSpel_exp_filename(self):
         return os.path.basename(self.cur_exp["ftEPR.PlsSPELPrgPaF"].value)
 
@@ -204,16 +211,17 @@ class xepr_api:
         return self.cur_exp["ftEPR.PlsSPELPrgPaF"].value
 
     def set_PulseSpel_exp_filepath(self,fullpath):
+        self.save_PulseSpel_exp()
         self.Xepr.XeprCmds.aqPgLoad(fullpath)
 
     def get_PulseSpel_def_filename(self):
-        self.save_PulseSpel_def()
         return os.path.basename(self.cur_exp["ftEPR.PlsSPELGlbPaF"].value) 
 
-    def get_PulseSpel_def_filenpath(self):
+    def get_PulseSpel_def_filepath(self):
         return self.cur_exp["ftEPR.PlsSPELGlbPaF"].value
 
     def set_PulseSpel_def_filepath(self,fullpath):
+        self.save_PulseSpel_def()
         self.Xepr.XeprCmds.aqPgDefLoad(fullpath)
 
     def get_PulseSpel_phase_cycling(self):
@@ -272,18 +280,18 @@ class xepr_api:
             path = self._tmp_dir + "pulsespel_" + timestr + ".def"
         else:
             path = name
-        hw_log.debug(f'Saved Pulse Spel defintion to: {path}')
+        hw_log.debug(f'Saved Pulse Spel definition to: {path}')
         self.Xepr.XeprCmds.aqPgDefSaveAs(path)
 
 
 
-    def get_Acquistion_mode(self):
+    def get_Acquisition_mode(self):
         return self.cur_exp["ftEPR.FTAcqModeSlct"].value    
     
-    def set_Acquistion_mode(self, mode:int):
-        """mode=0: Run from tabels, mode=1: Run from Pulse Spel, mode=2:Read transient, mode=3:Start Transient"""
+    def set_Acquisition_mode(self, mode:int):
+        """mode=0: Run from tables, mode=1: Run from Pulse Spel, mode=2:Read transient, mode=3:Start Transient"""
         if mode == 0:
-            self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Run from Tabels'
+            self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Run from Tables'
         elif mode == 1:
             self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Run from PulseSPEL'
         elif mode == 2:
@@ -291,7 +299,7 @@ class xepr_api:
         elif mode == 3:
             self.cur_exp["ftEPR.FTAcqModeSlct"].value = 'Start Transient'
         else:
-            print('Acqusiton Mode not changed. Input error.')
+            print('Acquisition Mode not changed. Input error.')
             return 0
               
     def compile_PulseSpel_prg(self):
@@ -309,6 +317,7 @@ class xepr_api:
     def run_exp(self):
         self.cur_exp.aqExpRun()
         hw_log.info('Experiment started')
+        time.sleep(5)
         pass
 
     def stop_exp(self):
@@ -325,11 +334,17 @@ class xepr_api:
         # Saves the current viewpoint to either the specified file in the working directory or to the filepath.
         # This is a bruker save function
         # Taken from Custom Xepr
+        xepr_file_limit = 70
         directory, basename = os.path.split(path)
         if not title:
             title = basename
         if not os.path.exists(directory):
             os.makedirs(directory)
+
+        if len(basename) > xepr_file_limit:
+            print("File name is too long. The file_name will be truncated, but the full name will be saved as the title")
+            path = directory + "/" + basename[:70]
+
         self.Xepr.XeprCmds.vpSave("Current Primary", title, path)
         hw_log.info(f'Saved data to: {path}')
         time.sleep(0.5)
@@ -339,6 +354,92 @@ class xepr_api:
 
     def dataset_save(self):
         pass
+
+    def get_field(self) -> int:
+        """ This returns the central field"""
+        return self.cur_exp['CenterField'].value
+
+    def set_field(self,val:int,hold:bool=True) -> int:
+        """ This sets the central field"""
+        self.cur_exp['CenterField'].value = val
+        time.sleep(2) #Always wait 2s after a field change
+        hw_log.info(f'Field position set to {val} G')
+        if hold == True:
+            while self.cur_exp['FieldWait'] == True:
+                time.sleep(0.5)
+        return self.cur_exp['CenterField'].value
+
+    def get_counterfreq(self) -> float:
+        """ This returns the current freq counter"""
+        return self.cur_exp['FrequencyMon'].value
+
+    def set_sweep_width(self,val:int) -> int:
+        self.cur_exp['SweepWidth'].value = val
+        hw_log.info('Field sweep width set to {val} G')
+        return self.cur_exp['SweepWidth'].value 
+    
+    def get_sweep_width(self) -> int:
+        return self.cur_exp['SweepWidth'].value
+
+    def set_freq(self,val:np.float128) -> float:
+        """ This sets bridge frequency, and works through a polynomial approximation. This might need to be adjusted
+        for different spectrometers"""
+        f_pol = [1.420009750632201e4,
+            -5.118516287710228e3,
+            2.092103562165744e2,
+            -2.034307248428457,
+            0,0]
+
+        pol_func = np.polynomial.polynomial.Polynomial(f_pol)
+        pos = round(pol_func(val))
+        self.hidden['Frequency'].value = pos
+        hw_log.info(f'Frequency set to {val} at position {pos}')
+        return self.hidden['Frequency'].value
+
+    def get_freq(self) -> float:
+        """ This returns the current bridge frequency"""
+        return self.hidden['Frequency'].value
+
+    def get_spec_config(self) -> str:
+        """get_spec_config Gets the name of the current spectrometer configuration file.
+
+        Returns
+        -------
+        str
+            Returns the name of the current spectrometer configuration file
+        """
+
+        return self.hidden['PlsPrgCalDbName'].value
+
+    def set_spec_config(self,name:str='Normal') -> str:
+        """set_spec_config Sets the name of the current spectrometer configuration file
+
+        Parameters
+        ----------
+        name : str, optional
+            The file name of config file. Normal and AWG, shortcut to the standard types, by default 'Normal'
+
+        Returns
+        -------
+        str
+            Returns the name of the current spectrometer configuration file
+        """
+        if name == 'Normal':
+            config_file = 'Q_TWT_Jun21'
+        elif name == 'AWG':
+            config_file = 'Q_awgins2013'
+        else:
+            config_file = name
+        
+        if self.get_spec_config() != config_file:
+            self.hidden['PlsPrgCalDbName'].value = config_file
+            self.hidden['PlsPrgCalDbLoad']
+            self.hidden['ApplyCfg']
+        
+
+
+
+    
 
 
 ## Section on phase control

@@ -115,7 +115,10 @@ class dummy_cur_exp:
         self.PlsSPELGlbPaF = dummy_param(None,None,str,'rand_path')         # Pulse Spel Definitions Path
         self.PlsSPELLISTSlct = dummy_param(None,None,str,'Phase Cycle')     # Selecting the phase cycling
         self.PlsSPELEXPSlct = dummy_param(None,None,str,'Experiment')       # Selecting the Experiment
-        self.ReplaceMode = dummy_param(None,None,bool,False)                # Setting the replace mode state       
+        self.ReplaceMode = dummy_param(None,None,bool,False)                # Setting the replace mode state
+        self.CenterField = dummy_param(0,15000,int)
+        self.FrequencyMon = dummy_param(33,35,float)
+        self.SweepWidth = dummy_param(0,10000,int,300)
     
 
     def __getitem__(self, name):
@@ -181,6 +184,7 @@ class dummy_xepr:
     def XeprDataset(self): # Returns the current dataset
         
         cur_exp = self.cur_exp
+        hidden = self.hidden
         # Generates simulated DEER data
         def generateDEER(num_points,max_time):
             """
@@ -213,6 +217,24 @@ class dummy_xepr:
             Z = fun_2d(X,Y)
             noise = np.random.normal(0, .05, Z.shape) *np.array([1+1j])
             return [t,t],Z+noise
+
+        def generate_hahn_echo_transient(numpoints,phase,phase_offset=0.2):
+            def gaussian(t,a,b,c,phase):
+                return a * np.exp(-(t-b)**2/c) * np.exp(-1j*(phase+phase_offset))
+            t = np.arange(0,numpoints,1) 
+            noise = np.random.normal(loc=0.0,scale=0.1,size=t.shape) + 1j * np.random.normal(loc=0.0,scale=0.03,size=t.shape)
+            V = gaussian(t,1,numpoints/2,numpoints*2,phase) + noise
+            return t,V
+
+        def generate_phase_experiment(numpoints,pg,phase,phase_offset=0.2):
+            vals = np.zeros(numpoints)
+            vals = vals + 1j* vals
+            t = range(0,numpoints)
+            for i in t:
+                ta,V = generate_hahn_echo_transient(pg,phase,phase_offset)
+                vals[i,] = np.trapz(V,x=ta)
+            return t, vals
+
         
         if cur_exp.PlsSPELEXPSlct.value == 'DEER':
             t,V = generateDEER(250,4000)
@@ -226,8 +248,26 @@ class dummy_xepr:
         elif cur_exp.PlsSPELEXPSlct.value =='tau 2 scan':
             t,V = generateCarrPurcell(250,4000)
             return dummy_dataset(t,V)
+        elif cur_exp.PlsSPELEXPSlct.value == 'Hahn Echo':
+            def phases(x,range):
+                m = 6/range *np.pi
+                c = -3*np.pi
+                return m*x + c
+            if cur_exp.PlsSPELLISTSlct.value == 'MainPhase':
+                phase_setting = hidden['SignalPhase'].value
+                phase = phases(phase_setting,hidden['SignalPhase'].aqGetParMaxValue)
+            elif cur_exp.PlsSPELLISTSlct.value in ['BrXPhase','BrYPhase','MinBrXPhase','MinBrYPhase']:
+                phase_setting = hidden[cur_exp.PlsSPELLISTSlct.value].value
+                phase = phases(phase_setting,hidden[cur_exp.PlsSPELLISTSlct.value].aqGetParMaxValue)
+            else:
+                print("Sorry, This can not be simulated yet, returning Main Phase")
+                phase_setting = hidden['SignalPhase']
+                phase = phases(phase_setting,hidden['SignalPhase'].aqGetParMaxValue())
+            
+            t,V = generate_phase_experiment(10,512,phase)
+            return dummy_dataset(t,V)
         else:
-            print("Sorry, This cannae be simulated yet, returning white noise")
+            print("Sorry, This can not be simulated yet, returning white noise")
             t = np.linspace(0,2500,250)
             noise = np.random.normal(0, .1, t.shape) *np.array([1+1j])
             return dummy_dataset(t,noise)        
@@ -265,6 +305,21 @@ class dummy_xepr:
 class dummy_hidden:
     # This is a dummy version of the hidden class containing the extra current experiment features
 
+    def __init__(self) -> None:
+        self.SignalPhase = dummy_param(0,4095,type=int,par=rand.randint(0,4096))
+        self.BrXPhase = dummy_param(0,100,type=float,par=rand.random())
+        self.BrYPhase = dummy_param(0,100,type=float,par=rand.random())
+        self.MinBrXPhase = dummy_param(0,100,type=float,par=rand.random())
+        self.MinBrYPhase = dummy_param(0,100,type=float,par=rand.random())
+
+        self.BrXAmp = dummy_param(0,100,type=float,par=rand.random())
+        self.BrYAmp = dummy_param(0,100,type=float,par=rand.random())
+        self.MinBrXAmp = dummy_param(0,100,type=float,par=rand.random())
+        self.MinBrYAmp = dummy_param(0,100,type=float,par=rand.random())
+       
+        pass
+
+
     def __getitem__(self, name):
         """This method returns a given parameter class for the name provided
 
@@ -276,6 +331,17 @@ class dummy_hidden:
         if '.' in name:
             # This removes the category allowing the paramter class to be found
             name = name.split('.')[1]
+        return(getattr(self,name))
+
+    def getParam(self,name:str):
+        """Extracts a paremeter from the current exeperiment
+
+        :param name: The name of the parameter to be extracted
+        :type name: string
+        :return: An instance of the parameter class for the given paramter name
+        :rtype: parameter Class
+        """
+        return getattr(self,name)
 
 class dummy_dataset:
 

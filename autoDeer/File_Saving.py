@@ -7,7 +7,6 @@ This is a class designed to make the saving of data and meta data as simple as p
 
 
 import os
-import time
 import h5py as h
 import logging
 
@@ -18,6 +17,7 @@ log = logging.getLogger('core.Saving')
 class save_file:
 
     def create_file(self,file_name):
+        """ This function create a file with this file name. If the file does not exist it will return an error"""
         if not os.path.isabs(file_name): # path is not an absolute path
             if self.data_dir == None:
                 raise RuntimeError("Data directory must be set unless an absolute path is given")
@@ -37,6 +37,7 @@ class save_file:
             return self.file
 
     def open_file(self,file_name):
+        """This function will open a file with the given name/path. If one does not exist it will create one."""
         if not os.path.isabs(file_name): # path is not an absolute path
             if self.data_dir == None:
                 raise RuntimeError("Data directory must be set unless an absolute path is given")
@@ -47,7 +48,7 @@ class save_file:
                 else:
                     split_name_no_ext = os.path.splitext(split_name[1])[0]
                     file_path = self.data_dir + split_name_no_ext
-                    self.file = h.File(file_path.encode(encoding="ascii"),'r+')
+                    self.file = h.File(file_path.encode(encoding="ascii"),'a')
                     return self.file
 
         else:

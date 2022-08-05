@@ -144,3 +144,17 @@ dmypy.json
 # Weird pulse spel save files
 .def%
 .exp%
+.DS_Store
+.vscode/launch.json
+autoDeer/PulseSpel/*.def%
+autoDeer/PulseSpel/*.exp%
+
+# Any plots
+**/*.png
+**/*.svg
+
+**/auto_examples/**
+**/_autosummary/**
+*.npz
+
+Jupyter_Notebooks/
