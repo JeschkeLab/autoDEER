@@ -51,6 +51,7 @@ class FieldSweep():
 
 
         fig, ax = plt.subplots()
+        ax.plot(self.axis,np.abs(data),label='real')
         ax.plot(self.axis,np.real(data),label='real')
         ax.plot(self.axis,np.imag(data),label='imag')
         ax.legend()
