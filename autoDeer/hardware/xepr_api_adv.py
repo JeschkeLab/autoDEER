@@ -435,7 +435,82 @@ class xepr_api:
             self.hidden['PlsPrgCalDbName'].value = config_file
             self.hidden['PlsPrgCalDbLoad']
             self.hidden['ApplyCfg']
+
+    def get_attenuator(self,channel:str) -> float:
+        if channel == 'Main':
+            atten_channel = 'PowerAtten' 
+        elif channel == '+<x>':
+            atten_channel = 'BrXAmp'
+        elif channel == '-<x>':
+            atten_channel = 'BrMinXAmp'
+        elif channel == '+<y>':
+            atten_channel = 'BrYAmp'
+        elif channel == '-<y>':
+            atten_channel = 'BrMinYAmp'
+        elif channel == 'ELDOR':
+            atten_channel = 'ELDORAtt'
+
+        return self.api.hidden[atten_channel].value
+
+    def set_attenuator(self,channel:str,value) -> float:
+        if channel == 'Main':
+            atten_channel = 'PowerAtten' 
+        elif channel == '+<x>':
+            atten_channel = 'BrXAmp'
+        elif channel == '-<x>':
+            atten_channel = 'BrMinXAmp'
+        elif channel == '+<y>':
+            atten_channel = 'BrYAmp'
+        elif channel == '-<y>':
+            atten_channel = 'BrMinYAmp'
+        elif channel == 'ELDOR':
+            atten_channel = 'ELDORAtt'
         
+        self.api.hidden[atten_channel].value = value
+
+        return self.get_attenuator(channel)
+
+    def get_phase(self,channel:str) -> float:
+        if channel == 'Main':
+            phase_channel = 'PowerAtten' 
+        elif channel == '+<x>':
+            phase_channel = 'BrXPhase'
+        elif channel == '-<x>':
+            phase_channel = 'BrMinXPhase'
+        elif channel == '+<y>':
+            phase_channel = 'BrYPhase'
+        elif channel == '-<y>':
+            phase_channel = 'BrMinYPhase'
+
+        return self.api.hidden[phase_channel].value
+
+    def set_phase(self,channel:str,value) -> float:
+        if channel == 'Main':
+            phase_channel = 'SignalPhase'
+        elif channel == '+<x>':
+            phase_channel = 'BrXPhase'
+        elif channel == '-<x>':
+            phase_channel = 'BrMinXPhase'
+        elif channel == '+<y>':
+            phase_channel = 'BrYPhase'
+        elif channel == '-<y>':
+            phase_channel = 'BrMinYPhase'
+        
+        self.api.hidden[phase_channel].value = value
+
+        return self.get_attenuator(channel)
+
+    def get_ELDOR_freq(self) -> float:
+
+        return self.api.cur_exp['ELDORFreqMon'].value
+
+    def set_ELDOR_freq(self,value) -> float:
+
+        self.api.cur_exp['ELDORFreqMon'].value = value
+
+        return self.get_ELDOR_freq()
+
+
 
 
 
