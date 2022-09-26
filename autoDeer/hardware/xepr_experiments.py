@@ -246,7 +246,7 @@ class MPFUtune:
                     )
 
 
-    def tune_phase(self,channel,target):
+    def tune_phase(self,channel,target,tol=0.1,maxiter=30):
 
         channel_opts = ['+<x>','-<x>','+<y>','-<y>']
         phase_opts = ['R+','R-','I+','I-']
@@ -276,9 +276,6 @@ class MPFUtune:
 
         lb = 0.0
         ub = 100.0
-        start_point = 50.0
-        tol = 0.1
-
 
         def objective(x,*args):
 #             x = x[0]
@@ -296,13 +293,13 @@ class MPFUtune:
 
             return val
 
-        output = minimize_scalar(objective,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
+        output = minimize_scalar(objective,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':maxiter})
         result = output.x
         print(f"Optimal Phase Setting for {phase_channel} is: {result:.1f}")
         self.api.hidden[phase_channel].value = result
         return result
 
-    def tune_power(self,channel):
+    def tune_power(self,channel,tol=0.1,maxiter=30):
         channel_opts = ['+<x>','-<x>','+<y>','-<y>']
         if not channel in channel_opts:
             raise ValueError(f'Channel must be one of: {channel_opts}')
@@ -319,8 +316,6 @@ class MPFUtune:
 
         lb = 0.0
         ub = 100.0
-        start_point = 50.0
-        tol = 0.1
 
         def objective(x,*args):
             self.api.hidden[atten_channel].value = x # Set phase to value
@@ -337,7 +332,7 @@ class MPFUtune:
 
             return val
 
-        output = minimize_scalar(objective,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':30})
+        output = minimize_scalar(objective,method='bounded',bounds=[lb,ub],options={'xatol':tol,'maxiter':maxiter})
         result = output.x
         print(f"Optimal Power Setting for {atten_channel} is: {result:.1f}")
         self.api.hidden[atten_channel].value = result
