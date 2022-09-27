@@ -58,8 +58,8 @@ end lists3
 
 begin lists4 "ELDOR nut"
 ph1 ELDOR ELDOR
-ph2 +x -x
-ph3 +x +x
+ph2 +<x> -<x>
+ph3 +<x> +<x>
 asg1 +a -a
 bsg1 +b -b
 end lists4
