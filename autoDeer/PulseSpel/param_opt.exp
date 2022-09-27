@@ -56,13 +56,13 @@ asg1 +a -a -a +a +a -a -a +a +a -a -a +a +a -a -a +a
 bsg1 +b -b -b +b +b -b -b +b +b -b -b +b +b -b -b +b
 end lists3
 
-begin lists2 "ELDOR nut"
+begin lists4 "ELDOR nut"
 ph1 ELDOR ELDOR
 ph2 +x -x
 ph3 +x +x
 asg1 +a -a
 bsg1 +b -b
-end lists2
+end lists4
 
 
 begin exp "Carr Purcell exp" [INTG QUAD]
