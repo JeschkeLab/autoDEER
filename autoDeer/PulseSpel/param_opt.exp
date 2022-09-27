@@ -366,8 +366,8 @@ pg=p2                         ; integration gate
 
 begin exp7 "nutation" [INTG QUAD]         ; QUAD detection\n\
 
-p20 = 2 * p1
-pg = 2 * p20                ; acquisition time
+p6 = 2 * p1
+pg = 2 * p6                ; acquisition time
 d30 = d29 * sx              ; Nutation Step Size
 d30 = d30 + 1000            ; Pulse Delay
 for k=1 to n
@@ -381,7 +381,7 @@ for k=1 to n
       d30
       p1 [ph2]                 ; 1st pulse and phase program\n\
       d1                       ; tau                       \n\
-      p20 [ph3]                 ; 2nd pulse and phase program\n\
+      p6 [ph3]                 ; 2nd pulse and phase program\n\
       d1                       ; tau\n\
       d0                       ; constant acquisition delay\n\
       acq [sg1]                ; acquisition\n\
