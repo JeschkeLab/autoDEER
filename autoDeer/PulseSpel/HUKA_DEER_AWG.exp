@@ -1,9 +1,7 @@
-; 5p DEER Setup and Run 
-; This is designed for C243 Bruker AWG Hybrid spectrometer ONLY. 
-; DO NOT USE ON ANY OTHER spectrometer
-;
-;  G.Jechke, A.Doll, F.Breitgoff, H.Karas
-;  2022
+; 4p and 5p DEER experiments for autoDEER
+; Gunnar Jeschke & Hugo Karas
+; 2022 
+
 
 
 begin defs
