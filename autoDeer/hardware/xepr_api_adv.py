@@ -2,21 +2,37 @@ import numpy as np
 import time
 import os
 import XeprAPI
-
+from openepr import dataset
 
 import logging
 
 hw_log = logging.getLogger('hardware.Xepr')
 
-# def connect_Xepr():
-#     try:
+# =============================================================================
 
-#         Xepr = XeprAPI.Xepr()
-#         return Xepr
+
+# class dataset:
+#     def __init__(self, time: np.ndarray, data: np.ndarray, 
+#                  cur_exp: XeprAPI.Xepr.XeprExperiment = None) -> None:
+
+#         self.time = time
+#         self.data = data
+#         self.dim: int = int(len(time))
+#         self.size = np.shape(data)
+#         if cur_exp is not None:
+#             self.scans_done = cur_exp.getParam("NbScansDone").value
+#             self.scans_todo = cur_exp.getParam("NbScansToDo").value
+#             self.shrt = cur_exp.getParam("ShotRepTime").value
+#             self.shot_p_point = cur_exp.getParam("ShotsPLoop").value
+#         pass
+
+
+# ============================================================================
+
 
 hardware_meta = {  # This dictionary should be moved into a config file 
     "Type":             "Complete Spectrometer",
-    "Manufactuer":      "Bruker",
+    "Manufacturer":     "Bruker",
     "Model":            "E600",
     "Local name":       "C_Floor",
     "Acq. Resolution":  2,
@@ -34,14 +50,23 @@ class xepr_api:
         self.hidden = None
         self._tmp_dir = None
         self.XeprCmds = None
-        self.meta = hardware_meta
+        self.spec_config = hardware_meta
         pass
 
-    def set_Xepr_global(self, Xepr_inst):
+    def connect(self) -> None:
+        """
+        Connect to the Xepr Spectrometer.
+        """
+        self.find_Xepr()
+        self.find_cur_exp()
+        self.find_hidden()
+        pass
+
+    def _set_Xepr_global(self, Xepr_inst):
         self.Xepr = Xepr_inst
         self.XeprCmds = self.Xepr.XeprCmds
 
-    def get_Xepr_global(self):
+    def _get_Xepr_global(self):
         if self.Xepr is not None:
             return self.Xepr
         else:
@@ -69,14 +94,14 @@ class xepr_api:
                 RuntimeError("Can't connect to Xepr: Please check Xepr is "
                              "running and open to API")
             else:
-                self.set_Xepr_global(self.Xepr_local)
+                self._set_Xepr_global(self.Xepr_local)
         else:
             print('Already Connected to Xepr!')
 
-    def set_cur_exp_global(self, cur_exp_inst):
+    def _set_cur_exp_global(self, cur_exp_inst):
         self.cur_exp = cur_exp_inst
 
-    def get_cur_exp_global(self):
+    def _get_cur_exp_global(self):
         if self.cur_exp is not None:
             return self.cur_exp
         else:
@@ -101,7 +126,7 @@ class xepr_api:
                              "an experiment with name 'Experiment'")
             else:
                 print("Experiment found")
-        self.set_cur_exp_global(self.cur_exp)
+        self._set_cur_exp_global(self.cur_exp)
         return self.cur_exp
 
     def find_hidden(self):
@@ -111,7 +136,7 @@ class xepr_api:
     def is_exp_running(self):
         return self.cur_exp.isRunning
 
-    def acquire_dataset(self):
+    def acquire_dataset(self) -> dataset:
         """
         This function acquire the dataset, this work both for a running 
         experiment or once it has finished.
@@ -120,17 +145,24 @@ class xepr_api:
         size = dataclass.size
         data_dim = len(size)
         data = dataclass.O
+        params = {
+            "scans_done": self.cur_exp.getParam("NbScansDone").value,
+            "scans_todo": self.cur_exp.getParam("NbScansToDo").value,
+            "shrt": self.cur_exp.getParam("ShotRepTime").value,
+            "shots": self.cur_exp.getParam("ShotsPLoop").value
+            }
+
         if data_dim == 1:
             # We have a 1D dataset
             t = dataclass.X
             hw_log.debug('Acquired Dataset')
-            return dataset(t, data, self.cur_exp)
+            return dataset(t, data, params)
         elif data_dim == 2:
             # we have a 2D dataset
             t1 = dataclass.X
             t2 = dataclass.Y
             hw_log.debug('Acquired Dataset')
-            return dataset([t1, t2], data, self.cur_exp)
+            return dataset([t1, t2], data, params)
 
     def acquire_scan(self):
         """
@@ -166,7 +198,7 @@ class xepr_api:
     def acquire_scan_2d(self):
         """
         This function acquires the dataset after a full 2D scan.
-        This is done by identifying the number of scansteps per sweep and 
+        This is done by identifying the number of scan steps per sweep and 
         acquiring the data on that scan.
         This requires that the experiment has not been saved. 
         """
@@ -189,11 +221,11 @@ class xepr_api:
 
     def set_PulseSpel_var(self, variable: str, value: int):
         """
-        This can be used to change any pulse spel variable whilst the 
+        This can be used to change any pulse spell variable whilst the 
         experiment is running. These changes take effect at the beginning of 
         the next scan
         """
-        hw_log.debug(f'Set pulse spel var {str(variable)} to {int(value)}')
+        hw_log.debug(f'Set pulse spell var {str(variable)} to {int(value)}')
         self.cur_exp["ftEpr.PlsSPELSetVar"].value = str(variable) + " = " + \
             str(int(value))
 
@@ -223,7 +255,7 @@ class xepr_api:
 
     def get_PulseSpel_exp_filepath(self):
         self.save_PulseSpel_exp()
-        return self.cur_exp["ftEPR.PlsSPELPrgPaF"].value
+        return self.cur_exp["ftEPR.PlsSP§ELPrgPaF"].value
 
     def set_PulseSpel_exp_filepath(self, fullpath):
         self.save_PulseSpel_exp()
@@ -558,19 +590,3 @@ class xepr_api:
 
 
 # =============================================================================
-
-
-class dataset:
-    def __init__(self, time: np.ndarray, data: np.ndarray, cur_exp=None) \
-            -> None:
-
-        self.time = time
-        self.data = data
-        self.dim: int = int(len(time))
-        self.size = np.shape(data)
-        if cur_exp is not None:
-            self.scans_done = cur_exp.getParam("NbScansDone").value
-            self.scans_todo = cur_exp.getParam("NbScansToDo").value
-            self.shrt = cur_exp.getParam("ShotRepTime").value
-            self.shot_p_point = cur_exp.getParam("ShotsPLoop").value
-        pass
