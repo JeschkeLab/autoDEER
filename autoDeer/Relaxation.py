@@ -3,7 +3,7 @@ import numpy as np
 from deerlab import deerload, noiselevel
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-
+from hardware.openepr import dataset
 # ==
 # ===========================================================================
 
@@ -13,7 +13,7 @@ class Carr_Purcell:
     def __init__(self) -> None:
         pass
 
-    def import_from_bruker(self, file_path) -> None:
+    def import_from_bruker(self, file_path: str) -> None:
 
         t, V = deerload(file_path, False, False)
         self.axis = t
@@ -26,12 +26,12 @@ class Carr_Purcell:
         self.data = spectrum
         pass
 
-    def import_from_dataclass(self, dataclass) -> None:
-        self.axis = dataclass.time
+    def import_from_dataclass(self, dataclass: dataset) -> None:
+        self.axis = dataclass.axes
         self.data = dataclass.data
         pass
     
-    def fit(self, type="mono"):
+    def fit(self, type: str = "mono"):
 
         data = np.abs(self.data)
         data /= np.max(data)
@@ -46,7 +46,7 @@ class Carr_Purcell:
         self.fit_result = curve_fit(self.func, self.axis, data, p0=p0)
         pass
 
-    def plot(self, norm=True) -> Figure:
+    def plot(self, norm: bool = True) -> Figure:
 
         if norm is True:
             data = np.abs(self.data)
@@ -65,7 +65,7 @@ class Carr_Purcell:
         ax.set_ylabel('Normalised Amplitude')
         return fig
 
-    def find_optimal(self, shrt, averages):
+    def find_optimal(self, shrt: float, averages: int):
         # time_per_point = shrt * averages
 
         data = np.abs(self.data)
