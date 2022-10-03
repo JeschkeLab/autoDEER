@@ -7,7 +7,12 @@ from scipy.optimize import minimize_scalar
 
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
 
-def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:bool=True)->None:
+# =============================================================================
+
+
+def run_general(
+        api, ps_file: tuple, exp: tuple, settings: dict, variables: dict,
+        run: bool = True) -> None:
     """A function to run a general Pulse Spel experiment through autoDeer.
 
     Parameters
@@ -30,14 +35,12 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
     ValueError
         If an input is of the wrong type.
     """
-
-
-            
-            
+      
     if len(ps_file) == 1:
-        # Assuming that both the EXP file and the DEF file have the same name bar-extention
-        exp_file = MODULE_DIR + ps_file[0] +".exp"
-        def_file = MODULE_DIR + ps_file[0] +".def"
+        # Assuming that both the EXP file and the DEF file have the same 
+        # name bar-extention
+        exp_file = MODULE_DIR + ps_file[0] + ".exp"
+        def_file = MODULE_DIR + ps_file[0] + ".def"
 
     elif len(ps_file) == 2:
         
@@ -117,6 +120,9 @@ def run_general(api,ps_file:tuple,exp:tuple,settings:dict,variables:dict,run:boo
         time.sleep(1)
     pass
 
+# =============================================================================
+
+
 def change_dimensions(path,dim:int,new_length:int):    
     """A function to rewrite a pulseSpel experiment file with a new dimension
 
@@ -157,13 +163,16 @@ def change_dimensions(path,dim:int,new_length:int):
 
     with open(path, 'w') as file:
         file.writelines( data )
-        
-def get_nutations(api,nu,field,step,nx:int=128):
+
+# =============================================================================
+
+
+def get_nutations(api, nu, field, step, ELDOR:bool = True, nx: int = 128):
 
     min_freq = nu[0]
     max_freq = nu[1]
 
-    freq_table = np.arange(min_freq,max_freq,step)
+    freq_table = np.arange(min_freq, max_freq, step)
 
     n = len(freq_table)
 
@@ -177,8 +186,10 @@ def get_nutations(api,nu,field,step,nx:int=128):
     field_table = freq_table * start_field/min_freq
     
     # go to start field /  freq
-    api.set_field(field_table[0],hold=True)
+    api.set_field(field_table[0], hold=True)
     api.set_freq(freq_table[0])
+    if ELDOR:
+        api.set_ELDOR_freq(freq_table[0])
 
     nut_data = np.zeros((n,nx+1),dtype=np.complex64)
 
@@ -196,6 +207,9 @@ def get_nutations(api,nu,field,step,nx:int=128):
         tools.progress_bar_frac(i,n)
     return t,nut_data
 
+# =============================================================================
+
+
 def CP_run(api,d0,num_pulses=3,ps_length=16,sweeps=4,dt=100,num_points=256):
 
 
@@ -209,6 +223,8 @@ def CP_run(api,d0,num_pulses=3,ps_length=16,sweeps=4,dt=100,num_points=256):
     else:
         raise ValueError("Only CP3 is currently implemented")
 
+# =============================================================================
+
 
 def DEER5p_run(api,ps_length,d0,tau2,sweeps=4,deadtime=80,dt=16,num_points=256):
 
@@ -219,6 +235,7 @@ def DEER5p_run(api,ps_length,d0,tau2,sweeps=4,deadtime=80,dt=16,num_points=256):
     {"p0":ps_length,"p1":ps_length,"h":20,"n":sweeps,"d2":tau2,"d11":200,"d3":deadtime,"d30":dt,"d0":d0,"dim8":num_points},
                run=False)
 
+# =============================================================================
 
 class MPFUtune:
 
