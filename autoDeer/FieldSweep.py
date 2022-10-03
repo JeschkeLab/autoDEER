@@ -23,7 +23,7 @@ class FieldSweep():
         pass
 
     def import_from_dataclass(self, dataclass) -> None:
-        self.axis = dataclass.time
+        self.axis = dataclass.axes
         self.data = dataclass.data
         pass
 

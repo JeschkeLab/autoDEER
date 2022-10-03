@@ -367,7 +367,7 @@ class MPFUtune:
                 time.sleep(1)
         data = self.api.acquire_scan()
         max_pos = np.argmax(np.abs(data.data))
-        max_time = data.time[max_pos]
+        max_time = data.axes[max_pos]
         d0 = initial_d0 + max_time
         return d0
 
