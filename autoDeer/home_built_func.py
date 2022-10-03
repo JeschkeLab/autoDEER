@@ -1,55 +1,67 @@
-import os,re
+import os
+import re
 import numpy as np
 from scipy.io import loadmat
 import scipy.fft as fft
 import scipy.signal as sig
 import matplotlib.pyplot as plt
 
-def find_AWG_deer_files(folder,start_time,experiment="4pdeer",end_time=None):
+# ===========================================================================
+
+
+def find_AWG_deer_files(
+        folder, start_time, experiment="4pdeer", end_time=None):
     files_list = os.listdir(folder)
     include_files_list = []
     re_mask = r"([0-9]{8})_([0-9]{4})_"+experiment+".*.mat"
     for file in files_list:
-        if re.match(re_mask,file):
+        if re.match(re_mask, file):
             include = True
-            extract = re.findall(re_mask,file)
-            if end_time != None:
+            extract = re.findall(re_mask, file)
+            if end_time is not None:
                 if int(extract[0][0]) > end_time[0]:
                     include = False
-                elif (int(extract[0][0]) == end_time[0])& (int(extract[0][1]) > end_time[1]):
+                elif (int(extract[0][0]) == end_time[0]) \
+                        & (int(extract[0][1]) > end_time[1]):
                     include = False
             elif include:
                 if int(extract[0][0]) < start_time[0]:
                     include = False
-                elif (int(extract[0][0]) == start_time[0]) & (int(extract[0][1]) < start_time[1]):
+                elif (int(extract[0][0]) == start_time[0]) & \
+                        (int(extract[0][1]) < start_time[1]):
                     include = False
             if include:
                 include_files_list.append(file)
 
     return include_files_list
 
+# ===========================================================================
 
-def calc_perceived_freq(f_sample,f_signal):
+
+def calc_perceived_freq(f_sample, f_signal):
     return np.abs(f_signal-f_sample*np.round(f_signal/f_sample))
 
-def apply_match(data,freq,filter='rect',sampling_rate=2,integrate=False):
+# ===========================================================================
+
+
+def apply_match(data, freq, filter='rect', sampling_rate=2, integrate=False):
     # Filter is always applied in frequency domain
-    filter='rect'
-    integrate=True
+    filter = 'rect'
+    integrate = True
     data = sig.hilbert(data)
     ft_data = fft.fftshift(fft.fft(data))
-    ft_axis = fft.fftshift(fft.fftfreq(ft_data.shape[0],1/sampling_rate))
-    t_axis = np.linspace(0,data.shape[0]*1/sampling_rate,data.shape[0])
+    ft_axis = fft.fftshift(fft.fftfreq(ft_data.shape[0], 1/sampling_rate))
+    t_axis = np.linspace(0, data.shape[0]*1/sampling_rate, data.shape[0])
     filt_pos = np.argmin(np.abs(freq-ft_axis))
     if filter == 'rect':
-        def rect(center,width,length):
+        def rect(center, width, length):
             data = np.ones(length)
             data[0:center-width] = 0
             data[center+width:-1] = 0
             return data
-        filt = rect(filt_pos,10,ft_axis.shape[0])
+        filt = rect(filt_pos, 10, ft_axis.shape[0])
     ft_filt_data = ft_data * filt
-    time_data= fft.ifft(fft.fftshift(ft_data))
+    time_data = fft.ifft(fft.fftshift(ft_data))
     time_filt_data = fft.ifft(fft.fftshift(ft_filt_data))
     time_filt_data_dc = time_filt_data*np.exp(-1j*2*np.pi*freq*t_axis)
     time_data_dc = time_data*np.exp(-1j*2*np.pi*freq*t_axis)
@@ -57,42 +69,53 @@ def apply_match(data,freq,filter='rect',sampling_rate=2,integrate=False):
     if integrate:
         int_width = 48*sampling_rate
         centre = 175
-        return np.trapz(time_filt_data_dc[centre-int_width//2:centre+int_width//2])
+        return np.trapz(
+            time_filt_data_dc[centre-int_width//2:centre+int_width//2])
         # return np.trapz(time_data_dc)
     else:
         return time_data_dc
 
+# ===========================================================================
 
-def build_trace(filepath,files_list):
-    data_1 = loadmat(filepath+files_list[0],simplify_cells=True)
+
+def build_trace(filepath, files_list):
+    data_1 = loadmat(filepath+files_list[0], simplify_cells=True)
     t_dim = data_1['deer']['parvars'][1]['dim']
-    deadtime = 2*data_1['deer']['events'][1]['t']-data_1['deer']['events'][2]['t']
+    deadtime = 2 * data_1['deer']['events'][1]['t'] - \
+        data_1['deer']['events'][2]['t']
     tau1 = data_1['deer']['events'][1]['t']
-    tau2 = (data_1['deer']['events'][3]['t'] - data_1['deer']['events'][1]['t']) - tau1
+    tau2 = (data_1['deer']['events'][3]['t'] -
+            data_1['deer']['events'][1]['t']) - tau1
     t = data_1['deer']['parvars'][1]['axis'].astype(np.int64)
-    t=t - data_1['deer']['events'][2]['t'] - deadtime
+    t = t - data_1['deer']['events'][2]['t'] - deadtime
     t = t/1000
-    trace = np.zeros(t_dim,dtype=np.complex128)
+    trace = np.zeros(t_dim, dtype=np.complex128)
 
     for file in files_list:
         trace += get_deer(filepath+file)
     
-    params = {'tau1':tau1,'tau2':tau2,'deadtime':deadtime}
-    return t,trace,params
+    params = {'tau1': tau1, 'tau2': tau2, 'deadtime': deadtime}
+    return t, trace, params
+
+# ===========================================================================
+
 
 def get_deer(filepath):
-    all_data = loadmat(filepath,simplify_cells=True)
+    all_data = loadmat(filepath, simplify_cells=True)
     data = all_data['dta']
     sampling_rate = 2
     nu_obs = all_data['deer']['events'][0]['pulsedef']['nu_init']
-    freq = calc_perceived_freq(sampling_rate,nu_obs)
-    trace = -1* np.apply_along_axis(apply_match,0,data,freq)
+    freq = calc_perceived_freq(sampling_rate, nu_obs)
+    trace = -1 * np.apply_along_axis(apply_match, 0, data, freq)
     return trace    
 
+# ===========================================================================
 
-def uwb_load(matfile:np.ndarray,options:dict=dict()):
-    """uwb_load This function is based upon the uwb_eval matlab function developed by Andrin Doll. 
-    This is mostly a Python version of this software, for loading data generated by Doll style spectrometers.
+
+def uwb_load(matfile: np.ndarray, options: dict = dict()):
+    """uwb_load This function is based upon the uwb_eval matlab function 
+    developed by Andrin Doll. This is mostly a Python version of this software,
+     for loading data generated by Doll style spectrometers.
 
     Parameters
     ----------
@@ -104,86 +127,95 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
 
     # Extract Data
     estr = matfile[matfile['expname']]
-    conf = matfile['conf']
+    conf = matfile['conf'] 
+    
     def extract_data(matfile):
         if "dta" in matfile.keys():
             nAvgs = matfile["nAvgs"]
             dta = [matfile["dta"]]
         elif "dta_001" in matfile.keys():
             dta = []
-            for ii in range(1,estr["avgs"]+1):
+            for ii in range(1, estr["avgs"]+1):
                 actname = 'dta_%03u' % ii 
                 if actname in matfile.keys():
                     dta.append(matfile[actname])
-                    # Only keep it if the average is complete, unless it is the first
-                    if sum(dta[ii-1][:,-1]) ==0 and ii >1:
+                    # Only keep it if the average is complete, unless it is 
+                    # the first
+                    if sum(dta[ii-1][:, -1]) == 0 and ii > 1:
                         dta = dta[:-1]
                     else:
                         nAvgs = ii
-        return [dta,nAvgs]
+        return [dta, nAvgs]
     
-    dta,nAvgs = extract_data(matfile)
+    dta, nAvgs = extract_data(matfile)
 
     # Eliminate Phase cycles
 
-    if not "postsigns" in estr.keys():
+    if "postsigns" not in estr.keys():
         print("TODO: check uwb_eval")
         raise RuntimeError("This is not implemented yet")
 
     if estr["postsigns"]["signs"] is not list:
         estr["postsigns"]["signs"] = [estr["postsigns"]["signs"]]
 
-    cycled =  np.array(list(map(np.size,estr["postsigns"]["signs"]))) > 1
+    cycled = np.array(list(map(np.size, estr["postsigns"]["signs"]))) > 1
 
-    #decide on wheteher the phase cycle should be eliminated or not
+    #  decide on wheteher the phase cycle should be eliminated or not
     if any(cycled == 0):
-        elim_pcyc = 1 # if there is any non-phasecycling parvar
+        elim_pcyc = 1  # if there is any non-phasecycling parvar
     else:
-        elim_pcyc = 0 # if all parvars cycle phases, do not reduce them 
+        elim_pcyc = 0  # if all parvars cycle phases, do not reduce them 
     
     if "elim_pcyc" in options.keys():
         elim_pcyc = options["elim_pcyc"]
     
     # Get the cycles out
     if elim_pcyc:
-        for ii in range(0,len(cycled)):
+        for ii in range(0, len(cycled)):
             if cycled[ii]:
                 if ii > 1:
                     n_skip = np.prod(estr["postsigns"]["dims"][0:ii-1])
                 else:
                     n_skip = 1
-                plus_idx = np.where(estr["postsigns"]["signs"][ii]==1)
-                minus_idx = np.where(estr["postsigns"]["signs"][ii]==-1)
-                plus_mask = np.arange(0,n_skip) + (plus_idx - 1) * n_skip
-                minus_mask = np.arange(0,n_skip) + (minus_idx - 1) * n_skip
-                n_rep = np.size(dta[1],2) / (n_skip * estr["postsigns"]["dims"][ii])
+                plus_idx = np.where(estr["postsigns"]["signs"][ii] == 1)
+                minus_idx = np.where(estr["postsigns"]["signs"][ii] == -1)
+                plus_mask = np.arange(0, n_skip) + (plus_idx - 1) * n_skip
+                minus_mask = np.arange(0, n_skip) + (minus_idx - 1) * n_skip
+                n_rep = np.size(dta[1], 2) / \
+                    (n_skip * estr["postsigns"]["dims"][ii])
 
-                for kk in range(0,len(dta)):
-                    #re-allocate
+                for kk in range(0, len(dta)):
+                    #  re-allocate
                     tmp = dta[kk]
-                    dta[kk] = np.zeros(np.size(tmp,0),n_rep*n_skip)
+                    dta[kk] = np.zeros(np.size(tmp, 0), n_rep*n_skip)
                     # subtract out
-                    for jj in range(0,n_rep):
+                    for jj in range(0, n_rep):
                         curr_offset = (jj) * n_skip
-                        full_offset = (jj) * n_skip * estr["postsigns"]["dims"][ii]
-                        dta[kk][:,np.arange(0,n_skip)+curr_offset] = tmp[:,plus_mask+full_offset] - tmp[:,minus_mask+full_offset]
+                        full_offset = (jj) * n_skip * \
+                            estr["postsigns"]["dims"][ii]
+                        dta[kk][:, np.arange(0, n_skip)+curr_offset] = \
+                            tmp[:, plus_mask+full_offset] - \
+                            tmp[:, minus_mask+full_offset]
 
-
-    # Find all the axes
-    dta_x =[]
+    #  Find all the axes
+    dta_x = []
     ii_dtax = 0
     relevant_parvars = []
 
-    for ii in range(0,len(cycled)):
-        estr["postsigns"]["ids"] = np.array(estr["postsigns"]["ids"]).reshape(-1)
+    for ii in range(0, len(cycled)):
+        estr["postsigns"]["ids"] = \
+            np.array(estr["postsigns"]["ids"]).reshape(-1)
         if not (elim_pcyc and cycled[ii]):
-            dta_x.append(estr["parvars"][estr["postsigns"]["ids"][ii]-1]["axis"].astype(np.int32))
+            dta_x.append(estr["parvars"][estr["postsigns"]["ids"][ii]-1]
+                         ["axis"].astype(np.int32))
             relevant_parvars.append(estr["postsigns"]["ids"][ii]-1)
             ii_dtax += 1
     
     exp_dim = ii_dtax
     if ii_dtax == 0:
-        raise RuntimeError("Your dataset does not have any swept dimensions. Uwb_eval does not work for experiments without any parvars")
+        raise RuntimeError("Your dataset does not have any swept dimensions." 
+                           "Uwb_eval does not work for experiments without"
+                           "any parvars")
     elif ii_dtax > 2:
         raise RuntimeError("Uwb_eval cannot handle more than two dimensions")
     
@@ -191,93 +223,124 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
     det_frq_dim = 0
     fsmp = conf["std"]["dig_rate"]
 
-    # Check for any frequency changes as well as any fixed downconversion frequencies
+    # Check for any frequency changes as well as any fixed downconversion 
+    # frequencies
 
     if "det_frq" in options.keys():
         det_frq = options["det_frq"]
     else:
 
         det_frq_dim = 0
-        for ii in range(0,len(relevant_parvars)):
+        for ii in range(0, len(relevant_parvars)):
             act_par = estr["parvars"][relevant_parvars[ii]]
-            frq_change = np.zeros((len(act_par["variables"]),1))
-            for jj in range(0,len(act_par["variables"])):
-                if  not any('nu_' in word for word in estr["parvars"][0]["variables"]):
+            frq_change = np.zeros((len(act_par["variables"]), 1))
+            for jj in range(0, len(act_par["variables"])):
+                if not any('nu_' in word for word
+                           in estr["parvars"][0]["variables"]):
                     frq_change[jj] = 1
 
-        if any(frq_change): # was there a frequency change
+        if any(frq_change):  # was there a frequency change
             # is the frequency change relevant
             if "det_frq_id" in estr["events"][estr["det_event"]-1]:
                 frq_pulse = estr["events"][estr["det_event"]-1]["det_frq_id"]
                 nu_init_change = 0
                 nu_final_change = 0
-                for jj in range(0,np.size(act_par["variables"])):
-                     if ('events{' + str(frq_pulse) + "}.pulsedef.nu_i") in act_par["variables"][jj]:
-                         nu_init_change = jj
-                     if ('events{' + str(frq_pulse) + "}.pulsedef.nu_f") in act_par["variables"][jj]:
-                         nu_final_change = jj
+                for jj in range(0, np.size(act_par["variables"])):
+                    if ('events{' + str(frq_pulse) + "}.pulsedef.nu_i") in \
+                            act_par["variables"][jj]:
+                        nu_init_change = jj
+                    if ('events{' + str(frq_pulse) + "}.pulsedef.nu_f") in \
+                            act_par["variables"][jj]:
+                        nu_final_change = jj
 
-                if any([nu_init_change,nu_final_change]):
-                    # There is a frequency change on the frequency encoding pulse
+                if any([nu_init_change, nu_final_change]):
+                    # There is a frequency change on the frequency encoding 
+                    # pulse
 
-                    det_frq_dim = ii # dimension that will determine the detection frequency
+                    # dimension that will determine the detection frequency
+                    det_frq_dim = ii  
 
                     if "nu_final" != estr["events"][frq_pulse]['pulsedef']:
                         # rectangular pulse
                         
                         if nu_init_change == 0:
-                            print('uwb_eval has no idea how to guess your detection frequency. You were setting a rectangular pulse in event ' 
-                            + str(frq_pulse) + ', but are now increasing its end frequency. You may obtain unexpected results.')
+                            print(
+                                "uwb_eval has no idea how to guess your "
+                                "detection frequency. You were setting a "
+                                "rectangular pulse in event" + str(frq_pulse) 
+                                + ", but are now increasing its end frequency"
+                                ". You may obtain unexpected results.")
 
-                        # get the frequencies either from the vectorial definition
+                        # get the frequencies either from 
+                        # the vectorial definition
                         if "vec" in act_par.keys():
-                            det_frq = act_par["vec"][:,nu_init_change]
+                            det_frq = act_par["vec"][:, nu_init_change]
                         else:
                             # or from the parametric definition
-                            nu_init = estr["events"][frq_pulse]["pulsedef"]["nu_init"]
+                            nu_init = estr["events"][frq_pulse]["pulsedef"][
+                                "nu_init"]
                             if np.isnan(act_par["strt"][nu_init_change]):
-                                det_frq = np.arange(0,act_par["dim"]) * act_par["inc"][nu_init_change] + nu_init
+                                det_frq = np.arange(0, act_par["dim"]) * \
+                                    act_par["inc"][nu_init_change] + nu_init
                             else:
-                                det_frq = np.arange(0,act_par["dim"]) * act_par["inc"][nu_init_change] + act_par["strt"][nu_init_change]
+                                det_frq = np.arange(0, act_par["dim"]) * \
+                                    act_par["inc"][nu_init_change] + \
+                                    act_par["strt"][nu_init_change]
                     
                     else:
-                        #chirp pulse, both nu_init and nu_final need to be considered
+                        #  chirp pulse, both nu_init and nu_final need to be 
+                        # considered
 
-                        nu_init = estr["events"][frq_pulse]["pulsedef"]["nu_init"]
-                        nu_final = estr["events"][frq_pulse]["pulsedef"]["nu_final"]
+                        nu_init = estr["events"][frq_pulse]["pulsedef"][
+                            "nu_init"]
+                        nu_final = estr["events"][frq_pulse]["pulsedef"][
+                            "nu_final"]
 
-                        # get the frequencies either from the vectorial definition
+                        # get the frequencies either from the 
+                        # vectorial definition
                         if "vec" in act_par.keys():
                             if nu_init_change != 0:
-                                nu_init = act_par["vec"][:,nu_init_change]
+                                nu_init = act_par["vec"][:, nu_init_change]
                             if nu_final_change != 0:
-                                nu_final = act_par["vec"][:,nu_final_change]
+                                nu_final = act_par["vec"][:, nu_final_change]
                         else:
                             # or from the parametric definition
                             if nu_init_change != 0:
                                 if np.isnan(act_par["strt"][nu_init_change]):
-                                    nu_init = np.arange(0,act_par["dim"]) * act_par["inc"][nu_init_change] + nu_init
+                                    nu_init = np.arange(0, act_par["dim"]) * \
+                                        act_par["inc"][nu_init_change] + \
+                                        nu_init
                                 else:
-                                    nu_init = np.arange(0,act_par["dim"]) * act_par["inc"][nu_init_change] + act_par["strt"][nu_init_change]
+                                    nu_init = np.arange(0, act_par["dim"]) * \
+                                        act_par["inc"][nu_init_change] + \
+                                        act_par["strt"][nu_init_change]
                             if nu_final_change != 0:
                                 if np.isnan(act_par["strt"][nu_init_change]):
-                                    nu_final = np.arange(0,act_par["dim"]) * act_par["inc"][nu_final_change] + nu_final
+                                    nu_final = np.arange(0, act_par["dim"]) * \
+                                        act_par["inc"][nu_final_change] + \
+                                        nu_final
                                 else:
-                                    nu_final = np.arange(0,act_par["dim"]) * act_par["inc"][nu_final_change] + act_par["strt"][nu_final]
+                                    nu_final = np.arange(0, act_par["dim"]) * \
+                                        act_par["inc"][nu_final_change] + \
+                                        act_par["strt"][nu_final]
                         
                         det_frq = (nu_init + nu_final) / 2
             else:
-                #we can only land here, if there was no det_frq_id given, but
+                # we can only land here, if there was no det_frq_id given, but
                 # det_frq was explicitly provided in the experiment. This could
                 # be intentional, but could even so be a mistake of the user.
-                print('uwb_eval has no idea how to guess your detection frequency. You were changing some pulse frequencies, but did not provide det_frq_id for your detection event. I will use det_frq, as you provided it in the experiment.')
+                print("uwb_eval has no idea how to guess your detection"
+                      "frequency. You were changing some pulse frequencies, "
+                      "but did not provide det_frq_id for your detection event"
+                      ". I will use det_frq, as you provided it in the "
+                      "experiment.")
 
-    #****Check digitizer level
+    #  ****Check digitizer level
 
     parvar_pts = np.zeros(np.size(estr["parvars"]))
-    for ii in range(0,len(estr["parvars"])):
+    for ii in range(0, len(estr["parvars"])):
         if "vec" in estr["parvars"][ii]:
-            parvar_pts[ii] = np.size(estr["parvars"][ii]["vec"],0)
+            parvar_pts[ii] = np.size(estr["parvars"][ii]["vec"], 0)
         else:
             parvar_pts[ii] = estr["parvars"][ii]["dim"]
     
@@ -290,78 +353,88 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
     else:
         trace_maxlev = n_traces * estr["shots"] * 2**11
     
-    #***** Extract all the echoes
-    echopos = estr["events"][estr["det_event"]-1]["det_len"]/2 - estr["events"][estr["det_event"]-1]["det_pos"] * fsmp
-    dist = min([echopos, estr["events"][estr["det_event"]-1]["det_len"] - echopos])
-    ran_echomax = np.arange(echopos-dist,echopos+dist,dtype=np.int64)
+    #  ***** Extract all the echoes
+    echopos = estr["events"][estr["det_event"]-1]["det_len"]/2 - estr[
+        "events"][estr["det_event"]-1]["det_pos"] * fsmp
+    dist = min([echopos, estr["events"][estr["det_event"]-1]["det_len"] - 
+                echopos])
+    ran_echomax = np.arange(echopos - dist, echopos + dist, dtype=np.int64)
 
-    #get the downconversion to LO
-    t_ax_full = np.arange(0,len(ran_echomax)) / fsmp
+    # get the downconversion to LO
+    t_ax_full = np.arange(0, len(ran_echomax)) / fsmp
     LO = np.exp(-2 * np.pi * 1j * t_ax_full * det_frq)
 
     flipback = 0
 
     # 1D or 2D
     if exp_dim == 2:
-        dta_ev = np.zeros((len(dta_x[0]),len(dta_x[1])))
-        dta_avg = np.zeros((len(ran_echomax),len(dta_x[0]),len(dta_x[1])))
-        perm_order = [1,2,3]
+        dta_ev = np.zeros((len(dta_x[0]), len(dta_x[1])))
+        dta_avg = np.zeros((len(ran_echomax), len(dta_x[0]), len(dta_x[1])))
+        perm_order = [1, 2, 3]
         if det_frq_dim == 2:
-            perm_order = [1,3,2]
+            perm_order = [1, 3, 2]
             flipback = 1
-            dta_ev = np.transpose(dta_ev,dtype=np.complex128)
-            dta_avg = np.transpose(dta_avg,perm_order,dtype=np.complex128)
-    elif exp_dim ==1:
-        dta_ev = np.zeros((np.size(dta_x[0])),dtype=np.complex128)
-        dta_avg = np.zeros((len(ran_echomax),np.size(dta_x[0])),dtype=np.complex128)
+            dta_ev = np.transpose(dta_ev, dtype=np.complex128)
+            dta_avg = np.transpose(dta_avg, perm_order, dtype=np.complex128)
+    elif exp_dim == 1:
+        dta_ev = np.zeros((np.size(dta_x[0])), dtype=np.complex128)
+        dta_avg = np.zeros((len(ran_echomax), np.size(dta_x[0])),
+                           dtype=np.complex128)
     
-    for ii in range(0,len(dta)):
-        dta_c = dta[ii][ran_echomax,:]
-        dta_c = np.conj(np.apply_along_axis(sig.hilbert,0,dta_c))
+    for ii in range(0, len(dta)):
+        dta_c = dta[ii][ran_echomax, :]
+        dta_c = np.conj(np.apply_along_axis(sig.hilbert, 0, dta_c))
 
         # reshape the 2D data
-        if exp_dim  == 2:
-            dta_resort = np.reshape(dta_c, (len(ran_echomax),len(dta_x[0]) ,len(dta_x[1])))
-            dta_resort = np.transpose(dta_resort,perm_order)
+        if exp_dim == 2:
+            dta_resort = np.reshape(dta_c, (len(ran_echomax), len(dta_x[0]), 
+                                    len(dta_x[1])))
+            dta_resort = np.transpose(dta_resort, perm_order)
         else:
             dta_resort = dta_c
 
-        #downconvert
+        # downconvert
         dta_dc = np.transpose(np.transpose(dta_resort) * LO)
 
-        # refine the echo position for further evaluation, based on the first average
+        # refine the echo position for further evaluation, 
+        # based on the first average
         if ii == 0:
 
             # put a symetric window to mask the expected echo position
-            window = sig.windows.chebwin(np.size(dta_dc,0),100)
+            window = sig.windows.chebwin(np.size(dta_dc, 0), 100)
             dta_win = np.transpose(np.transpose(dta_dc) * window)
             
             # absolute part of integral, since phase is not yet determined
-            absofsum = np.squeeze(np.abs(np.sum(dta_win,0)))
+            absofsum = np.squeeze(np.abs(np.sum(dta_win, 0)))
 
             # get the strongest echo of that series
             ref_echo = np.argmax(absofsum)
 
             # use this echo to inform about the digitizer scale
 
-            max_amp = np.amax(dta[ii][ran_echomax,ref_echo],0)
+            max_amp = np.amax(dta[ii][ran_echomax, ref_echo], 0)
             dig_level = max_amp / trace_maxlev
 
             if "IFgain_levels" in conf["std"]:
                 # Check about eventual improvemnets by changing IF levels
-                possible_levels = dig_level * conf["std"]["IFgain_levels"] / conf["std"]["IFgain_levels"][estr["IFgain"]]
+                possible_levels = dig_level * conf["std"]["IFgain_levels"] / \
+                    conf["std"]["IFgain_levels"][estr["IFgain"]]
 
                 possible_levels[possible_levels > 0.75] = 0
                 best_lev = np.amax(possible_levels)
                 best_idx = np.argmax(possible_levels)
                 if best_idx != estr["IFgain"]:
-                    print(f'You are currently using {dig_level} of the maximum possible level of the digitizer at an IFgain setting of {estr["IFgain"]}'
-                    +f'\n It may be advantageous to use an IFgain setting of {best_idx} , where the maximum level will be on the order of {best_lev}.')
+                    print(
+                        f"You are currently using {dig_level} of the maximum"
+                        "possible level of the digitizer at an IFgain setting"
+                        f"of {estr['IFgain']} \n It may be advantageous to use"
+                        "an IFgain setting of {best_idx} , where the maximum "
+                        f"level will be on the order of {best_lev}.")
 
             # for 2D data, only a certain slice may be requested
 
             if "ref_echo_2D_idx" in options.keys():
-                if not "ref_echo_2D_dim" in options.keys():
+                if "ref_echo_2D_dim" not in options.keys():
                     options["ref_echo_2D_dim"] = 1
                 
                 if flipback:
@@ -371,18 +444,20 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
                         options["ref_echo_2D_dim"] = 1
                 
                 if options["ref_echo_2D_idx"] == "end":
-                    options["ref_echo_2D_idx"] = np.size(absofsum,options["ref_echo_2D_dim"]-1)
+                    options["ref_echo_2D_idx"] = np.size(
+                        absofsum, options["ref_echo_2D_dim"]-1)
 
                 if options["ref_echo_2D_dim"] == 1:
                     ii_ref = options["ref_echo_2D_idx"] - 1
-                    jj_ref = np.argmax(absofsum[ii_ref,:])
+                    jj_ref = np.argmax(absofsum[ii_ref, :])
                 else:
                     jj_ref = options["ref_echo_2D_idx"] - 1
-                    ii_ref = np.argmax(absofsum[jj_ref,:])
+                    ii_ref = np.argmax(absofsum[jj_ref, :])
                 # convert the ii_ref,jj_ref to a linear index, as this is how
                 # the convolution is done a few lines below
 
-                ref_echo = np.ravel_multi_index([ii_ref,jj_ref],absofsum.shape)
+                ref_echo = np.ravel_multi_index(
+                    [ii_ref, jj_ref], absofsum.shape)
 
             if "ref_echo" in options.keys():
                 if "end" == options["ref_echo"]:
@@ -390,53 +465,61 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
                 else:
                     ref_echo = options["ref_echo"]
             
-            # look for zerotime by crosscorrelation with echo-like window (chebwin..),
-            # use conv istead of xcorr, because of the life-easy-making 'same' option
-            #TODO turn this into a matched filter
-            convshape = sig.windows.chebwin(min([100,len(ran_echomax)]),100) # this is where one could use a matched echo shape (matched filtering)
+            # look for zerotime by crosscorrelation with 
+            # echo-like window (chebwin..),
+            # use conv istead of xcorr, because of the 
+            # life-easy-making 'same' option
+            # TODO turn this into a matched filter
+            # this is where one could use a matched echo shape 
 
-            e_idx = np.argmax(sig.convolve(np.abs(dta_dc[:,ref_echo]),convshape,mode="same"))
+            convshape = sig.windows.chebwin(min([100, len(ran_echomax)]), 100) 
+            e_idx = np.argmax(sig.convolve(
+                np.abs(dta_dc[:, ref_echo]), convshape, mode="same"))
 
             # now get the final echo window, which is centered around the
             # maximum position just found
 
-            dist = min([e_idx, np.size(dta_dc,0)-e_idx])
+            dist = min([e_idx, np.size(dta_dc, 0)-e_idx])
             evlen = 2 * dist
 
             if "evlen" in options.keys():
                 evlen = options["evlen"]
             if "find_echo" in options.keys():
-                e_idx = np.floor(np.size(dta_dc,0)/2)
+                e_idx = np.floor(np.size(dta_dc, 0)/2)
             
             # here the final range...
-            ran_echo = np.arange(e_idx-evlen/2,e_idx+evlen/2,dtype=np.int16)
+            ran_echo = np.arange(e_idx-evlen/2, e_idx+evlen/2, dtype=np.int16)
             # ... and a check wether this is applicable
 
-            if not(ran_echo[0] >=0  and ran_echo[-1] <= np.size(dta_dc,0)):
-                raise RuntimeError(f"Echo position at {e_idx} with evaluation length of {evlen} is not valid, since the dataset has only {np.size(dta_dc,0)} points.")
+            if not (ran_echo[0] >= 0 and ran_echo[-1] <= np.size(dta_dc, 0)):
+                raise RuntimeError(
+                    f"Echo position at {e_idx} with evaluation length of "
+                    f"{evlen} is not valid, since the dataset has only "
+                    f"{np.size(dta_dc,0)} points.")
 
             # here the final time axis of the dataset
-            t_ax = np.arange(-evlen/2,evlen/2) / fsmp
+            t_ax = np.arange(-evlen/2, evlen/2) / fsmp
 
             # get also indices of reference echo in case of 2D data
-            if absofsum.ndim ==2:
-                [ii_ref,jj_ref] = np.unravel_index(ref_echo,absofsum.shape)
+            if absofsum.ndim == 2:
+                [ii_ref, jj_ref] = np.unravel_index(ref_echo, absofsum.shape)
         
         # window the echo
         if exp_dim == 2:
-            dta_win = np.multiply(dta_dc[ran_echo,:,:].T,sig.windows.chebwin(evlen,100)).T
+            dta_win = np.multiply(dta_dc[ran_echo, :, :].T, 
+                                  sig.windows.chebwin(evlen, 100)).T
         else:
-            dta_win = np.multiply(dta_dc[ran_echo,:].T,sig.windows.chebwin(evlen,100)).T
-
+            dta_win = np.multiply(dta_dc[ran_echo, :].T, 
+                                  sig.windows.chebwin(evlen, 100)).T
 
         # get all the phases and use reference echo for normalization
-        dta_ang = np.angle(np.sum(dta_win,0))
+        dta_ang = np.angle(np.sum(dta_win, 0))
 
         # for frequency changes, we phase each frequency
 
         if det_frq_dim != 0:
             if exp_dim == 2:
-                corr_phase = dta_ang[:,:,jj_ref]
+                corr_phase = dta_ang[:, :, jj_ref]
             else:
                 corr_phase = dta_ang
         else:
@@ -450,22 +533,25 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
         if "phase_all" in options.keys() and options["phase_all"] == 1:
             corr_phase = dta_ang
         
-        dta_pha = np.multiply(dta_win,np.exp(-1j * corr_phase))
+        dta_pha = np.multiply(dta_win, np.exp(-1j * corr_phase))
 
-        dta_ev = dta_ev + np.squeeze(np.sum(dta_pha,0))/sum(sig.windows.chebwin(evlen,100))
+        dta_ev = dta_ev + np.squeeze(np.sum(dta_pha, 0)) / \
+            sum(sig.windows.chebwin(evlen, 100))
         if exp_dim == 2:
-            dta_avg[0:evlen,:,:] = dta_avg[0:evlen,:,:] + np.multiply(dta_dc[ran_echo,:,:],np.exp(-1j * corr_phase))
+            dta_avg[0:evlen, :, :] = dta_avg[0:evlen, :, :] + \
+                np.multiply(dta_dc[ran_echo, :, :], np.exp(-1j * corr_phase))
         else:
-            dta_avg[0:evlen,:] = dta_avg[0:evlen,:] + np.multiply(dta_dc[ran_echo,:],np.exp(-1j * corr_phase))
+            dta_avg[0:evlen, :] = dta_avg[0:evlen, :] + \
+                np.multiply(dta_dc[ran_echo, :], np.exp(-1j * corr_phase))
 
-    dta_avg = dta_avg[0:evlen,...]
-    #keyboard
-    #flip back 2D Data
+    dta_avg = dta_avg[0:evlen, ...]
+    # keyboard
+    # flip back 2D Data
     if flipback:
-        dta_avg = np.reshape(dta_avg,perm_order)
+        dta_avg = np.reshape(dta_avg, perm_order)
         dta_ev = np.transpose(dta_ev)
 
-    output = AWGdata(t_ax,dta_avg)
+    output = AWGdata(t_ax, dta_avg)
     output.nAvgs = nAvgs
     output.dta_x = dta_x
     output.dta_ev = dta_ev
@@ -481,7 +567,7 @@ def uwb_load(matfile:np.ndarray,options:dict=dict()):
 
 class AWGdata:
 
-    def __init__(self,t_ax,dta_avg) -> None:
+    def __init__(self, t_ax, dta_avg) -> None:
         self.t_ax = t_ax
         self.dta_avg = dta_avg 
 
@@ -492,7 +578,7 @@ class AWGdata:
     
     def plot(self):
         fig, ax = plt.subplots(1, 1)
-        ax.plot(self.dta_x[0],np.real(self.dta_ev),label='Re')
-        ax.plot(self.dta_x[0],np.imag(self.dta_ev),label='Im')
+        ax.plot(self.dta_x[0], np.real(self.dta_ev), label='Re')
+        ax.plot(self.dta_x[0], np.imag(self.dta_ev), label='Im')
         ax.legend()
         fig.show()
