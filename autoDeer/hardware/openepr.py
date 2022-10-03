@@ -29,7 +29,7 @@ class dataset:
         self.params = params
         self.dims = self.axes.ndim
 
-        if self.data.dtype != complex:
+        if not np.iscomplexobj(self.data):
             self.data = hilbert(self.data)
         pass
 
