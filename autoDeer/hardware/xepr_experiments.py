@@ -200,7 +200,7 @@ def get_nutations(api, nu, field, step, ELDOR: bool = True, nx: int = 128):
         api.set_field(field_table[i], hold=True)
         api.set_freq(freq_table[i])
         if ELDOR:
-            api.set_ELDOR_freq(freq_table[0])
+            api.set_ELDOR_freq(freq_table[i])
 
         api.run_exp()
         while api.is_exp_running():
