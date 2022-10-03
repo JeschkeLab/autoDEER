@@ -2,7 +2,7 @@ import numpy as np
 import time
 import os
 import XeprAPI
-from openepr import dataset
+from autoDeer.hardware.openepr import dataset
 
 import logging
 
