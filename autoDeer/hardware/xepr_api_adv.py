@@ -565,7 +565,7 @@ class xepr_api:
             float: ELDOR frequency in GHz
         """
 
-        return self.cur_exp['ELDORFreqMon'].value
+        return self.cur_exp['FrequencyA'].value
 
     def set_ELDOR_freq(self, value) -> float:
         """ Sets the freuency of the ELDOR chnannel.
@@ -577,7 +577,7 @@ class xepr_api:
             float: ELDOR frequency in GHz
         """
 
-        self.cur_exp['ELDORFreqMon'].value = value
+        self.cur_exp['FrequencyA'].value = value
 
         return self.get_ELDOR_freq()
 
