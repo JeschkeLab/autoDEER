@@ -508,7 +508,7 @@ class xepr_api:
         elif channel == 'ELDOR':
             atten_channel = 'ELDORAtt'
 
-        return self.api.hidden[atten_channel].value
+        return self.hidden[atten_channel].value
 
     def set_attenuator(self, channel: str, value) -> float:
         if channel == 'Main':
@@ -524,7 +524,7 @@ class xepr_api:
         elif channel == 'ELDOR':
             atten_channel = 'ELDORAtt'
         
-        self.api.hidden[atten_channel].value = value
+        self.hidden[atten_channel].value = value
 
         return self.get_attenuator(channel)
 
@@ -540,7 +540,7 @@ class xepr_api:
         elif channel == '-<y>':
             phase_channel = 'BrMinYPhase'
 
-        return self.api.hidden[phase_channel].value
+        return self.hidden[phase_channel].value
 
     def set_phase(self, channel: str, value: float) -> float:
         if channel == 'Main':
@@ -554,7 +554,7 @@ class xepr_api:
         elif channel == '-<y>':
             phase_channel = 'BrMinYPhase'
 
-        self.api.hidden[phase_channel].value = value
+        self.hidden[phase_channel].value = value
 
         return self.get_attenuator(channel)
 
@@ -565,7 +565,7 @@ class xepr_api:
             float: ELDOR frequency in GHz
         """
 
-        return self.api.cur_exp['ELDORFreqMon'].value
+        return self.cur_exp['ELDORFreqMon'].value
 
     def set_ELDOR_freq(self, value) -> float:
         """ Sets the freuency of the ELDOR chnannel.
@@ -577,15 +577,15 @@ class xepr_api:
             float: ELDOR frequency in GHz
         """
 
-        self.api.cur_exp['ELDORFreqMon'].value = value
+        self.cur_exp['ELDORFreqMon'].value = value
 
         return self.get_ELDOR_freq()
 
     def get_video_gain(self) -> int:
-        return self.api.cur_exp['VideoGain'].value
+        return self.cur_exp['VideoGain'].value
 
     def set_video_gain(self, value: int) -> int:
-        self.api.cur_exp['VideoGain'].value = value
+        self.cur_exp['VideoGain'].value = value
         return self.get_video_gain()
 
 
