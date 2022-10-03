@@ -178,7 +178,7 @@ def get_nutations(api, nu, field, step, ELDOR:bool = True, nx: int = 128):
 
     if len(field) == 2:
         input_freq = field[0]
-        input_field =  field[1]
+        input_field = field[1]
         start_field = input_field * min_freq / input_freq
     elif len(field) == 1:
         start_field = field
@@ -203,7 +203,7 @@ def get_nutations(api, nu, field, step, ELDOR:bool = True, nx: int = 128):
         dataset = api.acquire_dataset()
         nut_data[i,0] = api.get_counterfreq()
         nut_data[i,1:] = dataset.data
-        t = dataset.time
+        t = dataset.axes
         tools.progress_bar_frac(i,n)
     return t,nut_data
 
