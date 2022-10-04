@@ -1,3 +1,4 @@
+from cProfile import label
 import numpy as np
 import scipy.fft as fft
 from deerlab import deerload
@@ -201,7 +202,8 @@ class resonatorProfile:
 
         return fig
 
-    def res_prof_plot(self, nu_lims: tuple = None, xaxis='Bridge'):
+    def res_prof_plot(
+        self, fieldsweep=None, nu_lims: tuple = None, xaxis='Bridge'):
 
         if xaxis.lower() == 'bridge':
             frq_axis = self.frq
@@ -214,10 +216,18 @@ class resonatorProfile:
         else:
             fmin = 0
             fmax = 40 
+
+        if fieldsweep is not None:
+            if not hasattr(fieldsweep, "fs_x"):
+                fieldsweep.calc_gyro
+            data = fieldsweep.data
+            data /= np.max(np.abs(data))
         
         fig, ax = plt.subplots()
         ax.plot(frq_axis, self.habs, label="Interpolated fit")
         ax.plot(frq_axis, self.labs, label="Lorentzian Model")
+        if fieldsweep is not None:
+            ax.plot(fieldsweep.fs_x, np.abs(data), label="Appox. Field-Sweep")
         ax.set_xlabel('Frequency GHz')
         ax.set_ylabel('Normalised Nutation Freq.')
         ax.legend()
