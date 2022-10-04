@@ -372,8 +372,8 @@ class MPFUtune:
         return result
 
     def tune_power(
-        self, channel: str, tol=0.1, maxiter=30,
-        bounds: list[float] = [0, 100]) -> float:
+            self, channel: str, tol=0.1, maxiter=30,
+            bounds: list[float] = [0, 100]) -> float:
         """Tunes the attenuator of a given channel to a given target using the
         standard scipy optimisation scripts. 
 
@@ -431,7 +431,8 @@ class MPFUtune:
         self.api.hidden[atten_channel].value = result
         return result
 
-    def tune(self, channels: dict, tol: float = 0.1) -> None:
+    def tune(self, channels: dict, tol: float = 0.1,
+             bounds=[0, 100]) -> None:
         """Tunes both the power and attenuation for a collection of channels.
 
         Parameters
@@ -456,7 +457,7 @@ class MPFUtune:
                 phase_cycle = 'BrMinYPhase'
             self.api.set_PulseSpel_phase_cycling(phase_cycle)
             print(f"Tuning channel: {channel}")
-            self.tune_power(channel, tol=tol)
+            self.tune_power(channel, tol=tol, bounds=bounds)
             self.tune_phase(channel, channels[channel], tol=tol)
 
     def calc_d0(self):
