@@ -31,9 +31,9 @@ release = '0.2'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-'sphinx_gallery.gen_gallery',
-'sphinx.ext.autosummary',
-'sphinx.ext.viewcode']
+              'sphinx_gallery.gen_gallery',
+              'sphinx.ext.autosummary',
+              'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 # Configuration of Sphinx-Autosymmary
@@ -64,5 +64,6 @@ html_static_path = ['_static']
 
 sphinx_gallery_conf = {
      'examples_dirs': '../examples/scripts/',   # path to your example scripts
-     'gallery_dirs': 'auto_examples',  # path to where to save gallery generated output
+     'gallery_dirs': 'auto_examples',  # path to save gallery 
+     'plot_gallery': False,
 }

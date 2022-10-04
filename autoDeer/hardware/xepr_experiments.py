@@ -252,8 +252,23 @@ def DEER5p_run(
 
 
 class MPFUtune:
-
+    """
+    Tuning MPFU channels for optimal attenuation and phase
+    """
     def __init__(self, api, echo="Hahn", ps_length=16, d0=680) -> None:
+        """
+        Parameters
+        ----------
+        api : _type_
+            The spectrometr API object
+        echo : str, optional
+            The echo type. Options = ['Hahn","Refocused"], by default "Hahn"
+        ps_length : int, optional
+            The length of the pi/2 pulse, by default 16
+        d0 : int, optional
+            The approximate position of d0, this should be lower than ideal,
+             by default 680
+        """
         self.api = api
         self.hardware_wait = 5  # seconds 
         self.ps_length = ps_length
@@ -278,7 +293,30 @@ class MPFUtune:
                     run=False
                     )
 
-    def tune_phase(self, channel, target, tol=0.1, maxiter=30):
+    def tune_phase(
+            self, channel: str, target: str, tol=0.1, maxiter=30) -> float:
+        """Tunes the phase of a given channel to a given target using the
+        standard scipy optimisation scripts. 
+
+        Parameters
+        ----------
+        channel : str
+            The chosen MPFU channel. Options: ['+<x>', '-<x>', '+<y>', '-<y>']
+        target : str
+            The target echo position, this can either be maximising (+) or
+            minimising (-) either the real (R) or imaginary (I) of the echo. 
+            Options: ['R+', 'R-', 'I+', 'I-']
+        tol : float, optional
+            The tolerance in phase parameter, by default 0.1
+        maxiter : int, optional
+            The maximum number of iterations in the optimisation, by default 30
+
+        Returns
+        -------
+        float
+            The optimal value of the phase parameter
+
+        """
 
         channel_opts = ['+<x>', '-<x>', '+<y>', '-<y>']
         phase_opts = ['R+', 'R-', 'I+', 'I-']
@@ -333,7 +371,25 @@ class MPFUtune:
         self.api.hidden[phase_channel].value = result
         return result
 
-    def tune_power(self, channel, tol=0.1, maxiter=30):
+    def tune_power(self, channel: str, tol=0.1, maxiter=30) -> float:
+        """Tunes the attenuator of a given channel to a given target using the
+        standard scipy optimisation scripts. 
+
+        Parameters
+        ----------
+        channel : str
+            The chosen MPFU channel. Options: ['+<x>', '-<x>', '+<y>', '-<y>']
+        tol : float, optional
+            The tolerance in attenuator parameter, by default 0.1
+        maxiter : int, optional
+            The maximum number of iterations in the optimisation, by default 30
+
+        Returns
+        -------
+        float
+            The optimal value of the attenuator parameter
+
+        """
         channel_opts = ['+<x>', '-<x>', '+<y>', '-<y>']
         if channel not in channel_opts:
             raise ValueError(f'Channel must be one of: {channel_opts}')
@@ -373,8 +429,20 @@ class MPFUtune:
         self.api.hidden[atten_channel].value = result
         return result
 
-    def tune(self, channels: dict, tol=0.1):
+    def tune(self, channels: dict, tol: float = 0.1) -> None:
+        """Tunes both the power and attenuation for a collection of channels.
 
+        Parameters
+        ----------
+        channels : dict
+            A dictionary of MPFU channels to be tunned and the associated phase
+            target.\\
+            Channel options = ['+<x>', '-<x>', '+<y>', '-<y>']\\
+            Phase target options = ['R+', 'R-', 'I+', 'I-']\\
+            E.g. {'+<x>': 'R+','-<x>': 'R-'}
+        tol : float, optional
+            The tolerance for all optimisations, by default 0.1
+        """
         for channel in channels:
             if channel == '+<x>':
                 phase_cycle = 'BrXPhase'

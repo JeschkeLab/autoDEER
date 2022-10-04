@@ -35,6 +35,7 @@ Hardware
     :nosignatures:
     
     hardware.xepr_api
+    hardware.xepr_experiments.MPFUtune
 
 .. rubric:: Functions
 .. autosummary::
@@ -45,3 +46,4 @@ Hardware
     hardware.change_dimensions
     hardware.deer_pulse_5p
     hardware.sequence_nutation
+    hardware.xepr_experiments.get_nutations
