@@ -371,7 +371,9 @@ class MPFUtune:
         self.api.hidden[phase_channel].value = result
         return result
 
-    def tune_power(self, channel: str, tol=0.1, maxiter=30) -> float:
+    def tune_power(
+        self, channel: str, tol=0.1, maxiter=30,
+        bounds: list[float] = [0, 100]) -> float:
         """Tunes the attenuator of a given channel to a given target using the
         standard scipy optimisation scripts. 
 
@@ -403,8 +405,8 @@ class MPFUtune:
         elif channel == '-<y>':
             atten_channel = 'BrMinYAmp'
 
-        lb = 0.0
-        ub = 100.0
+        lb = bounds[0]
+        ub = bounds[1]
 
         def objective(x, *args):
             self.api.hidden[atten_channel].value = x  # Set phase to value
@@ -475,3 +477,21 @@ class MPFUtune:
         max_time = data.axes[max_pos]
         d0 = initial_d0 + max_time
         return d0
+
+# =============================================================================
+
+
+def ELDORtune(api, d0 = 700, ps_length=16) -> int:
+
+    def _setup_echo(self, tau1=400, tau2=400):
+        PulseSpel_file = "/PulseSpel/param_opt"
+        run_general(self.api,
+                    [PulseSpel_file],
+                    ["nutation", "ELDOR_nut"],
+                    {"PhaseCycle": True},
+                    {"p0": self.ps_length*2, "p1": self.ps_length, "h": 30,
+                     "n": 1, "d0": self.d0, "d1": tau1, "d2": tau2, "pg": 128,
+                     "dim7": 32},
+                    run=False
+                    )
+
