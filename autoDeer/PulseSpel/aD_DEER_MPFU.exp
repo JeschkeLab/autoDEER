@@ -11,12 +11,12 @@ begin defs
  dim5 s[200]            ;5pDEER relax
 end defs
 
-begin lists "DEER run" [INTG QUAD]
+begin lists "DEER run"
  ph1 +<x> -<x>
  ph2 -<y>
  ph3 ELDOR
- asg1 +a
- bsg1 +b
+ asg1 +a -a
+ bsg1 +b -b
 end lists 
 
 
@@ -150,15 +150,15 @@ begin exp3 "5pDEER_stand" [INTG QUAD]
         sweep x = 1 to sx          ; sweep loop
          shot i = 1 to h           ; accumulation loop
            d9                    ; DAF
-           p0 [ph1]              ; pulse at +<x> or -<x>
+           p1 [ph1]              ; pulse at +<x> or -<x>
            d8                    ; tau/2 - d11
            p2 [ph3]              ; standing pump pulse from AWG        
            d11                   ; t0
-           p1 [ph2]              ; -<y> pulse (pi)
+           p0 [ph2]              ; -<y> pulse (pi)
            d26                  ; initially d3 = deadtime
            p2 [ph3]              ; moving pump pulse from AWG        
            d16                   ; initially d2 - deadtime + shift
-           p1 [ph2]              ; pulse at -<y>       
+           p0 [ph2]              ; pulse at -<y>       
            d2                   ;
            d0                    ; constant acquisition delay
            acq [sg1]             ; acquisition
@@ -204,15 +204,15 @@ begin exp4 "5pDEER" [INTG QUAD]
         sweep x=1 to sx          ; sweep loop
          shot i=1 to h           ; accumulation loop
            d9                    ; DAF
-           p0 [ph1]              ; pulse at +<x> or -<x>
+           p1 [ph1]              ; pulse at +<x> or -<x>
            d8                    ; tau/2 - d11
            p2 [ph3]              ; standing pump pulse from AWG        
            d11                   ; t0
-           p1 [ph2]              ; -<y> pulse (pi)
+           p0 [ph2]              ; -<y> pulse (pi)
            d26                  ; initially d3 = deadtime
            p2 [ph3]              ; moving pump pulse from AWG        
            d16                   ; initially d2 - deadtime + shift
-           p1 [ph2]              ; pulse at -<y>       
+           p0 [ph2]              ; pulse at -<y>       
            d2                   ;
            d0                    ; constant acquisition delay
            acq [sg1]             ; acquisition
@@ -241,12 +241,12 @@ begin exp5 "5pDEER relax" [INTG QUAD]
   sweep x = 1 to sx          ; sweep loop
     shot i = 1 to h           ; accumulation loop
       d9                    ; DAF
-      p0 [ph1]              ; pulse at +<x> or -<x>
+      p1 [ph1]              ; pulse at +<x> or -<x>
       d8                    ; tau
-      p1 [ph2]              ; -<y> pulse (pi)
+      p0 [ph2]              ; -<y> pulse (pi)
       d8                    ; tau
       d8                    ; tau
-      p1 [ph2]              ; pulse at -<y>       
+      p0 [ph2]              ; pulse at -<y>       
       d8                    ;tau
       d0                    ; constant acquisition delay
       acq [sg1]             ; acquisition
