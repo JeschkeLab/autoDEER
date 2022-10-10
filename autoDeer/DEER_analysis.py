@@ -216,3 +216,43 @@ def IdentifyROI(
         pass
 
 # =============================================================================
+
+
+def remove_echo(
+        Vre: np.ndarray, Vim: np.ndarray, loc: int,
+        Criteria: float = 4) -> np.ndarray:
+    """This function removes crossing echoes. 
+    Parameters
+    ----------
+    Vre : np.ndarray
+        The real part of the phase corrected signal.
+    Vim : np.ndarray
+        The imaginary part of the phase corrected signal.
+    loc : int
+        The approximate location of the crossing echo, +- 20 data points
+    Criteria : float, optional
+        The delation criteria, in multiples of the std deviation, by default 4
+
+    Returns
+    -------
+    np.ndarray
+        The mask of points to be ignored.
+    """
+
+    search_mask = np.ones(Vre.shape[0], bool)
+    search_mask[loc-30:loc+31] = False
+
+    mask = np.abs(Vim) > Criteria * dl.noiselevel(Vre[search_mask])
+    mask = mask & np.logical_not(search_mask)
+    iskip = -1
+    for i in range(len(mask)):
+        if i < iskip:
+            continue
+        if mask[i]:
+            mask[i-3:i] = True
+            if i < len(mask) - 3:
+                mask[i:i+3] = True
+                iskip = i + 3
+
+    mask = np.logical_not(mask)
+    return mask
