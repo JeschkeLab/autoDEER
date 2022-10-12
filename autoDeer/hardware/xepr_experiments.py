@@ -3,7 +3,8 @@ import time
 import numpy as np
 import re
 import autoDeer.tools as tools
-from scipy.optimize import minimize_scalar
+from scipy.optimize import minimize_scalar,curve_fit
+from autoDeer.hardware import xepr_api
 
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
 
@@ -482,9 +483,19 @@ class MPFUtune:
 # =============================================================================
 
 
-def ELDORtune(api, d0 = 700, ps_length=16) -> int:
+class ELDORtune:
 
-    def _setup_echo(self, tau1=400, tau2=400):
+    def __init__(self, api: xepr_api, d0=700, ps_length=16) -> None:
+        self.api = api
+        self.d0 = d0
+        self.ps_length = ps_length
+        self.hardware_wait = 5
+        
+        pass
+    
+    
+
+    def _setup_exp(self, tau1=400, tau2=400):
         PulseSpel_file = "/PulseSpel/param_opt"
         run_general(self.api,
                     [PulseSpel_file],
@@ -495,4 +506,53 @@ def ELDORtune(api, d0 = 700, ps_length=16) -> int:
                      "dim7": 32},
                     run=False
                     )
+
+    def _get_exp(self):
+        self.api.run_exp()
+        data = self.acquire_scan()
+        return data
+    
+    def find_min(self, data):
+        def test_fun(x, A, B, freq, phase, decay):
+            return A*np.sin(x*2*np.pi*freq + phase)*np.exp(-1*x*decay) + B
+
+        bounds = (
+            [0, 0, 0, -np.inf, 0],
+            [1.5, 1.5, 1000, np.inf, np.inf]
+            )
+        p0 = [0.5, 0.6, 14, 1.4, 7]
+        popt, pcov = curve_fit(
+            test_fun, time, data, p0=p0, bounds=bounds)
+        return 1/(2*popt[2]) * 1000
+
+    def tune(self, target:int):
+
+        lb = 0
+        ub = 30
+        tol = 2
+        maxiter = 10
+
+        def objective(x,*args):
+            self.api.set_attenuator("ELDOR", x)
+            time.sleep(self.hardware_wait)
+            self.api.run_exp()
+            while self.api.is_exp_running():
+                time.sleep(1)
+            data = self.api.acquire_scan()
+            v = data.data
+            min = self.find_min(v)
+
+            print(f'Atten Setting = {x:.1f} \t pi/2 time = {min:.1f}')
+
+            return abs(min-args[0])
+        
+        output = minimize_scalar(
+            objective, method='bounded', bounds=[lb, ub],
+            options={'xatol': tol, 'maxiter': maxiter}, args=target)
+        result = output.x
+        print(f"Optimal ELDOR atten is: {result:.1f}")
+        self.api.set_attenuator("ELDOR", result)
+        return result
+
+        
 
