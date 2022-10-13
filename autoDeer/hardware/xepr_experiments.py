@@ -624,12 +624,12 @@ class PulseProfile:
 
         # go to start field /  freq
         self.api.set_freq(freq_table[0])
-        self.api.set_field(self.api.get_counterfreq()*gyro, hold=True)
+        self.api.set_field(self.api.get_counterfreq()/gyro, hold=True)
         tools.progress_bar_frac(0, n)
 
         for i in range(0, n):
             self.api.set_freq(freq_table[i])
-            self.api.set_field(self.api.get_counterfreq()*gyro, hold=True)
+            self.api.set_field(self.api.get_counterfreq()/gyro, hold=True)
 
             self.api.run_exp()
             while self.api.is_exp_running():
