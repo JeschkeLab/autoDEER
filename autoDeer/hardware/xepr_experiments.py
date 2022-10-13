@@ -197,7 +197,7 @@ def get_nutations(api, nu, field, step, ELDOR: bool = True, nx: int = 128):
         api.set_ELDOR_freq(freq_table[0])
 
     nut_data = np.zeros((n, nx+1), dtype=np.complex64)
-
+    tools.progress_bar_frac(0, n)
     for i in range(0, n):
         api.set_field(field_table[i], hold=True)
         api.set_freq(freq_table[i])
@@ -212,7 +212,7 @@ def get_nutations(api, nu, field, step, ELDOR: bool = True, nx: int = 128):
         nut_data[i, 0] = api.get_counterfreq()
         nut_data[i, 1:] = dataset.data
         t = dataset.axes
-        tools.progress_bar_frac(i, n)
+        tools.progress_bar_frac(i+1, n)
     return t, nut_data
 
 # =============================================================================
@@ -487,6 +487,21 @@ class MPFUtune:
 class ELDORtune:
 
     def __init__(self, api: xepr_api, d0=700, ps_length=16) -> None:
+        """
+        Tuning incoherent ELDOR channel for optimal power using nutation 
+        experiments
+
+
+        Parameters
+        ----------
+        api : xepr_api
+            The spectrometr API object
+        d0 : int, optional
+            The approximate position of d0, this should be lower than ideal,
+             by default 700
+        ps_length : int, optional
+            The length of the pi/2 pulse, by default 16
+        """
         self.api = api
         self.d0 = d0
         self.ps_length = ps_length
@@ -494,8 +509,6 @@ class ELDORtune:
         
         pass
     
-    
-
     def _setup_exp(self, tau1=400, tau2=400):
         PulseSpel_file = "/PulseSpel/param_opt"
         run_general(self.api,
@@ -518,6 +531,7 @@ class ELDORtune:
         data = correctphase(dataset.data)
         data /= data.max()
         time = dataset.axes
+
         def test_fun(x, A, B, freq, phase, decay):
             return A*np.sin(x*2*np.pi*freq + phase)*np.exp(-1*x*decay) + B
 
@@ -530,14 +544,14 @@ class ELDORtune:
             test_fun, time, data, p0=p0, bounds=bounds)
         return 1/(2*popt[2])
 
-    def tune(self, target:int):
+    def tune(self, target: int):
 
         lb = 0
         ub = 30
         tol = 2
         maxiter = 10
 
-        def objective(x,*args):
+        def objective(x, *args):
             self.api.set_attenuator("ELDOR", x)
             time.sleep(self.hardware_wait)
             self.api.run_exp()
@@ -559,4 +573,71 @@ class ELDORtune:
         return result
 
         
+# =============================================================================
 
+class PulseProfile:
+
+    def __init__(self, api: xepr_api, d0=700, ps_length=16) -> None:
+        """
+        Tuning incoherent ELDOR channel for optimal power using nutation 
+        experiments
+
+
+        Parameters
+        ----------
+        api : xepr_api
+            The spectrometr API object
+        d0 : int, optional
+            The approximate position of d0, this should be lower than ideal,
+             by default 700
+        ps_length : int, optional
+            The length of the pi/2 pulse, by default 16
+        """
+        self.api = api
+        self.d0 = d0
+        self.ps_length = ps_length
+        self.hardware_wait = 5
+        
+        pass
+
+    def _setup_exp(self, tau=400):
+        PulseSpel_file = "/PulseSpel/param_opt"
+        run_general(self.api,
+                    [PulseSpel_file],
+                    ["PulseProfile ELDOR", "ELDOR nut"],
+                    {"PhaseCycle": True},
+                    {"p0": self.ps_length*2, "p1": self.ps_length, "h": 20,
+                     "n": 1, "d0": self.d0, "d1": tau, "pg": 128,
+                     "dim8": 10},
+                    run=False
+                    )
+
+    def _freq_sweep(self, nu: list, step: float, gyro: float):
+        min_freq = nu[0]
+        max_freq = nu[1]
+
+        freq_table = np.arange(min_freq, max_freq, step)
+
+        n = len(freq_table)
+        PP_x = np.zeros(n, dtype=np.float32)
+        PP = np.zeros(n, dtype=np.complex128)
+
+        # go to start field /  freq
+        self.api.set_freq(freq_table[0])
+        self.api.set_field(self.api.get_counterfreq()*gyro, hold=True)
+        tools.progress_bar_frac(0, n)
+
+        for i in range(0, n):
+            self.api.set_freq(freq_table[i])
+            self.api.set_field(self.api.get_counterfreq()*gyro, hold=True)
+
+            self.api.run_exp()
+            while self.api.is_exp_running():
+                time.sleep(0.5)
+            
+            dataset = self.api.acquire_dataset()
+            PP_x[i] = self.api.get_counterfreq()
+            PP[i] = np.mean(dataset.data)
+            tools.progress_bar_frac(i, n)
+        
+        return PP_x, PP

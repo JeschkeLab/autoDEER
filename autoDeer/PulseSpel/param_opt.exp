@@ -23,6 +23,8 @@ dim6 s[512]         ; Hahn Echo
 
 dim7 s[128]         ; Eldor Nutation
 
+dim8 s[10]          ;PulseProfile ELDOR
+
 
 end defs
 
@@ -392,3 +394,21 @@ for k=1 to n
 scansdone(k)
 next k
 end exp7
+
+begin exp8 "PulseProfile ELDOR" [INTG QUAD]
+  d10 = 1000
+  sweep x=1 to sx
+    shot i=1 to h              ; accumulation loop
+      d9                       ; DAF
+      p7 [ph1]                 ; ELDOR test pulse
+      d10
+      p1 [ph2]                 ; 1st pulse and phase program
+      d1                       ; tau                       
+      p0 [ph3]                ; 2nd pulse and phase program
+      d1                       ; tau
+      d0                       ; constant acquisition delay
+      acq [sg1]               ; acquisition
+    next i                     ; end of accumulation loop 
+  next x
+
+end exp8
