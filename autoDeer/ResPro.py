@@ -219,7 +219,7 @@ class resonatorProfile:
 
         if fieldsweep is not None:
             if not hasattr(fieldsweep, "fs_x"):
-                fieldsweep.calc_gyro
+                fieldsweep.calc_gyro()
             data = fieldsweep.data
             data /= np.max(np.abs(data))
         

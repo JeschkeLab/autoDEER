@@ -5,6 +5,7 @@ import re
 import autoDeer.tools as tools
 from scipy.optimize import minimize_scalar,curve_fit
 from autoDeer.hardware import xepr_api
+from deerlab import correctphase
 
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
 
@@ -499,9 +500,9 @@ class ELDORtune:
         PulseSpel_file = "/PulseSpel/param_opt"
         run_general(self.api,
                     [PulseSpel_file],
-                    ["nutation", "ELDOR_nut"],
+                    ["nutation", "ELDOR nut"],
                     {"PhaseCycle": True},
-                    {"p0": self.ps_length*2, "p1": self.ps_length, "h": 30,
+                    {"p0": self.ps_length*2, "p1": self.ps_length, "h": 20,
                      "n": 1, "d0": self.d0, "d1": tau1, "d2": tau2, "pg": 128,
                      "dim7": 32},
                     run=False
@@ -512,18 +513,22 @@ class ELDORtune:
         data = self.acquire_scan()
         return data
     
-    def find_min(self, data):
+    def find_min(self, dataset):
+
+        data = correctphase(dataset.data)
+        data /= data.max()
+        time = dataset.axes
         def test_fun(x, A, B, freq, phase, decay):
             return A*np.sin(x*2*np.pi*freq + phase)*np.exp(-1*x*decay) + B
 
         bounds = (
-            [0, 0, 0, -np.inf, 0],
-            [1.5, 1.5, 1000, np.inf, np.inf]
+            [-1.5, -1, 0, -np.pi, 0],
+            [1.5, 1.5, 1, np.pi, 10]
             )
-        p0 = [0.5, 0.6, 14, 1.4, 7]
+        p0 = [0.5, 0.6, 0.04, 1.4, 0.03]
         popt, pcov = curve_fit(
             test_fun, time, data, p0=p0, bounds=bounds)
-        return 1/(2*popt[2]) * 1000
+        return 1/(2*popt[2])
 
     def tune(self, target:int):
 
@@ -538,9 +543,8 @@ class ELDORtune:
             self.api.run_exp()
             while self.api.is_exp_running():
                 time.sleep(1)
-            data = self.api.acquire_scan()
-            v = data.data
-            min = self.find_min(v)
+            dataset = self.api.acquire_scan()
+            min = self.find_min(dataset)
 
             print(f'Atten Setting = {x:.1f} \t pi/2 time = {min:.1f}')
 
