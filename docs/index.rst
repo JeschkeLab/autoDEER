@@ -25,38 +25,7 @@ Or to install in develop mode. ::
       
 .. toctree::
     :hidden:
-    :caption: Advanced
 
-    ./userguide/Overview
-
-.. toctree::
-    :hidden:
-    :maxdepth: 2
-    :caption: Control
-
-    ./userguide/Control
-
-.. toctree::
-    :hidden:
-    :caption: Analysis
-
-    ./userguide/Analysis
-
-.. toctree::
-    :hidden:
-    :caption: Examples
-
-    ./auto_examples/index
-
-.. toctree::
-    :hidden:
-    :caption: Reference
-
-    ./userguide/reference
-
-.. Indices and tables
-.. ==================
-
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
+    ./userguide/Basic_Guide/index
+    ./userguide/Advanced_Guide/index
+    ./userguide/reference.rst

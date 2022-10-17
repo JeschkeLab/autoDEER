@@ -21,10 +21,7 @@ Before a autoDeer can connect to Xepr, the gateway must be first be opened in Xe
         import autoDeer.hardware.xepr_api_adv as api
 
         xepr=api()
-        xepr.find_Xepr()
-        xepr.find_cur_exp()
-        xepr.find_hidden()
-
+        xepr.connect()
 
 
 Hybrid Systems
