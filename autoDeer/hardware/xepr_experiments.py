@@ -3,7 +3,7 @@ import time
 import numpy as np
 import re
 import autoDeer.tools as tools
-from scipy.optimize import minimize_scalar,curve_fit
+from scipy.optimize import minimize_scalar, curve_fit
 from autoDeer.hardware import xepr_api
 from deerlab import correctphase
 
@@ -58,7 +58,7 @@ def run_general(
 
     # Identifying a dimension change in settings
     r = re.compile("dim([0-9]*)")
-    match_list = list(filter(
+    match_list: list = list(filter(
         lambda list: list is not None, [r.match(i) for i in variables.keys()]))
     if len(match_list) >= 1:
         for i in range(0, len(match_list)):
@@ -125,7 +125,7 @@ def run_general(
 # =============================================================================
 
 
-def change_dimensions(path, dim: int, new_length: int):    
+def change_dimensions(path, dim: int, new_length):    
     """A function to rewrite a pulseSpel experiment file with a new dimension
 
     Parameters
@@ -601,6 +601,15 @@ class PulseProfile:
         pass
 
     def _setup_exp(self, tau=400):
+        r"""
+        Setup the pulse profile experiment. 
+
+        Parameters
+        ----------
+        tau : int, optional
+            The seperation between :math:'\pi/2' and :math:'pi' in the Hahn 
+            echo, by default 400
+        """
         PulseSpel_file = "/PulseSpel/param_opt"
         run_general(self.api,
                     [PulseSpel_file],
@@ -613,14 +622,32 @@ class PulseProfile:
                     )
 
     def _freq_sweep(self, nu: list, step: float, gyro: float):
+        """
+        Run the frequency sweep for a pulse profile. 
+
+        Parameters
+        ----------
+        nu : list
+            A list detailing the starting and ending frequency,
+            [nu_init, nu_final]
+        step : float
+            The frequency step, given in GHz
+        gyro : float
+            The gyromagnetic ratio in G/GHz. 
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
         min_freq = nu[0]
         max_freq = nu[1]
 
         freq_table = np.arange(min_freq, max_freq, step)
 
         n = len(freq_table)
-        PP_x = np.zeros(n, dtype=np.float32)
-        PP = np.zeros(n, dtype=np.complex128)
+        PP_x: np.ndarray = np.zeros(n, dtype=np.float32)
+        PP: np.ndarray = np.zeros(n, dtype=np.complex128)
 
         # go to start field /  freq
         self.api.set_freq(freq_table[0])
@@ -638,6 +665,6 @@ class PulseProfile:
             dataset = self.api.acquire_dataset()
             PP_x[i] = self.api.get_counterfreq()
             PP[i] = np.mean(dataset.data)
-            tools.progress_bar_frac(i, n)
+            tools.progress_bar_frac(i+1, n)
         
         return PP_x, PP

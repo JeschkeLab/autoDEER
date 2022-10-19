@@ -1,39 +1,51 @@
+import imp
 from matplotlib.figure import Figure
 import numpy as np
 from deerlab import deerload
 import matplotlib.pyplot as plt
+from autoDeer.hardware.openepr import dataset
 
 
 class FieldSweep():
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, dataset: dataset) -> None:
+        """Analysis and calculation of FieldSweep Experiment. 
 
-    def import_from_bruker(self, file_path) -> None:
-
-        t, V = deerload(file_path, False, True)
-        self.axis = t
-        self.data = V
-        pass 
-
-    def import_from_numpy(self, axis: np.ndarray, spectrum: np.ndarray)\
-            -> None:
-        self.axis = axis
-        self.data = spectrum
-        pass
-
-    def import_from_dataclass(self, dataclass) -> None:
-        self.axis = dataclass.axes
-        self.data = dataclass.data
+        Parameters
+        ----------
+        dataset : dataset
+            _description_
+        """
+        self.axis = dataset.axes
+        self.data = dataset.data
         pass
 
     def find_max(self) -> float:
+        """Calculates the maximum field
+
+        Returns
+        -------
+        float
+            Max field
+        """
         max_id = np.argmax(np.abs(self.data))
         self.max_field = self.axis[max_id]
 
         return self.max_field
 
-    def calc_gyro(self, det_frq):
+    def calc_gyro(self, det_frq: float) -> float:
+        """Calculates the gyromagnetic ratio for a given frequency
+
+        Parameters
+        ----------
+        det_frq : float
+            The detection frequency for the field sweep.
+
+        Returns
+        -------
+        float
+            The gyromagnetic ratio in G/GHz.
+        """
 
         if not hasattr(self, "max_field"):
             self.find_max()
@@ -45,6 +57,18 @@ class FieldSweep():
         return self.gyro
 
     def plot(self, norm=True) -> Figure:
+        """Generate a field sweep plot
+
+        Parameters
+        ----------
+        norm : bool, optional
+            Nomarlisation of the plot to a maximum of 1, by default True
+
+        Returns
+        -------
+        plt.figure
+            matplotlib figure
+        """
 
         if norm is True:
             data = self.data
