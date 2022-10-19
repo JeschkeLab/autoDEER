@@ -582,11 +582,64 @@ class xepr_api:
         return self.get_ELDOR_freq()
 
     def get_video_gain(self) -> int:
+        """Get the video gain in dB
+
+        Returns
+        -------
+        int
+            Video gain in dB
+        """
         return self.cur_exp['VideoGain'].value
 
     def set_video_gain(self, value: int) -> int:
+        """Set the video gain in dB
+
+        Parameters
+        ----------
+        value : int
+            Video gain to be set in dB.
+
+        Returns
+        -------
+        int
+            The adjusted video gain
+        """
         self.cur_exp['VideoGain'].value = value
         return self.get_video_gain()
+
+    def get_config_file(self) -> str:
+        """Get the name of the spectrometer configuration file
+
+        Returns
+        -------
+        str
+            The name of the spectrometer configuration file
+        """
+        return self.hidden['PlsPrgCalDbName'].value
+
+    def set_config_file(self, config_file: str) -> str:
+        """Sets the name of the spectrometer configuration file. If the current
+        configuration file is already correct, nothing changes.
+       
+        Parameters
+        ----------
+        config_file : str
+            The new configuration file name.
+
+        Returns
+        -------
+        str
+            The name of the spectrometer configuration file
+        """
+        if self.get_config_file() != config_file:
+            self.hidden['PlsPrgCalDbName'].value = config_file
+            self.hidden['PlsPrgCalDbLoad']
+            self.hidden['ApplyCfg']
+            hw_log.debug("Changed config file")
+        else:
+            hw_log.debug("Not changed config file")
+
+        return self.get_config_file()
 
 
 # =============================================================================
