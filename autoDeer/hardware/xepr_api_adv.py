@@ -1,3 +1,4 @@
+from ftplib import error_perm
 import numpy as np
 import time
 import os
@@ -7,25 +8,6 @@ from autoDeer.hardware.openepr import dataset
 import logging
 
 hw_log = logging.getLogger('hardware.Xepr')
-
-# =============================================================================
-
-
-# class dataset:
-#     def __init__(self, time: np.ndarray, data: np.ndarray, 
-#                  cur_exp: XeprAPI.Xepr.XeprExperiment = None) -> None:
-
-#         self.time = time
-#         self.data = data
-#         self.dim: int = int(len(time))
-#         self.size = np.shape(data)
-#         if cur_exp is not None:
-#             self.scans_done = cur_exp.getParam("NbScansDone").value
-#             self.scans_todo = cur_exp.getParam("NbScansToDo").value
-#             self.shrt = cur_exp.getParam("ShotRepTime").value
-#             self.shot_p_point = cur_exp.getParam("ShotsPLoop").value
-#         pass
-
 
 # ============================================================================
 
@@ -76,26 +58,34 @@ class xepr_api:
         open_xepr_instances = XeprAPI.getXeprInstances()
 
         if len(open_xepr_instances) < 1:
-            raise RuntimeError("No Open Xepr API Instances, please open one by"
-                               ":\n \"processing\" -> \"XeprAPI\" -> \"Enable "
-                               "Xepr API\"")
-
+            error_msg = "No Open Xepr API Instances, please open one by" +\
+                        ":\n \"processing\" -> \"XeprAPI\" -> \"Enable " +\
+                        "Xepr API\""
+            hw_log.error(error_msg)
+            raise RuntimeError(error_msg)
+            
         if self.Xepr is None:
             try:
                 self.Xepr_local = XeprAPI.Xepr()
             except OSError:
-                print('Xepr API: Could not connect to any Xepr instance.')
+                error_msg = 'Xepr API: Could not connect to any Xepr instance.'
+                hw_log.warning(error_msg)
+                print(error_msg)
             except RuntimeError:
-                raise RuntimeError("There is already a connection from Xepr to"
-                                   "this python Kernel.\n Please use the "
-                                   "correct python object or restart the "
-                                   "kernel ")
+                error_msg = "There is already a connection from Xepr to" +\
+                            "this python Kernel.\n Please use the correct " +\
+                            "python object or restart the kernel "
+                hw_log.warning(error_msg)
+                raise RuntimeError(error_msg)
             except:
-                RuntimeError("Can't connect to Xepr: Please check Xepr is "
-                             "running and open to API")
+                error_msg = "Can't connect to Xepr: Please check Xepr is " +\
+                            "running and open to API"
+                hw_log.warning(error_msg)
+                raise RuntimeError(error_msg)
             else:
                 self._set_Xepr_global(self.Xepr_local)
         else:
+            hw_log.debug('Already Connected to Xepr!')
             print('Already Connected to Xepr!')
 
     def _set_cur_exp_global(self, cur_exp_inst):
@@ -105,26 +95,36 @@ class xepr_api:
         if self.cur_exp is not None:
             return self.cur_exp
         else:
-            raise RuntimeError("Can't find current experiment")
+            error_msg = "Can't find current experiment"
+            hw_log.error(error_msg)
+            raise RuntimeError(error_msg)
 
     def find_cur_exp(self):
         """
         Try and finds the current experiment
         """
         if self.Xepr is None:
-            raise RuntimeError("Please connect API to Xepr")
+            error_msg = "Please connect API to Xepr"
+            hw_log.error(error_msg)
+            raise RuntimeError(error_msg)
 
         try:
             self.cur_exp = self.Xepr.XeprExperiment()
         except:
-            print("Can't find the current experiment. Attempting to load it")
+            warn_msg = \
+                "Can't find the current experiment. Attempting to load it"
+            hw_log.warning(warn_msg)
+            print(warn_msg)
             self.Xepr.XeprCmds.aqExpSelect("Experiment")
             try:
                 self.cur_exp = self.Xepr.XeprExperiment()
-            except:
-                RuntimeError("Can't find the current experiment. Please create" 
-                             "an experiment with name 'Experiment'")
+            except
+                error_msg = "Can't find the current experiment. Please create"\
+                             + "an experiment with the name 'Experiment'"
+                hw_log.error(error_msg)
+                RuntimeError(error_msg)
             else:
+                hw_log.debug("Experiment found")
                 print("Experiment found")
         self._set_cur_exp_global(self.cur_exp)
         return self.cur_exp
@@ -259,6 +259,7 @@ class xepr_api:
 
     def set_PulseSpel_exp_filepath(self, fullpath):
         self.save_PulseSpel_exp()
+        hw_log.info(f"Set PulseSpel experiment file to {fullpath}")
         self.Xepr.XeprCmds.aqPgLoad(fullpath)
 
     def get_PulseSpel_def_filename(self):
@@ -269,31 +270,22 @@ class xepr_api:
 
     def set_PulseSpel_def_filepath(self, fullpath):
         self.save_PulseSpel_def()
+        hw_log.info(f"Set PulseSpel definition file to {fullpath}")
         self.Xepr.XeprCmds.aqPgDefLoad(fullpath)
 
     def get_PulseSpel_phase_cycling(self):
         return self.cur_exp["ftEPR.PlsSPELLISTSlct"].value
 
     def set_PulseSpel_phase_cycling(self, name):
+        hw_log.info(f"Set PulseSpel phase cycle to {name}")
         self.cur_exp["ftEPR.PlsSPELLISTSlct"].value = name
-
-        if self.cur_exp["ftEPR.PlsSPELLISTSlct"].value != name:
-            print("WARNING: Phase cycling did not change")
-            return 0
-        else:
-            return 1
 
     def get_PulseSpel_experiment(self):
         return self.cur_exp["ftEPR.PlsSPELEXPSlct"].value
 
     def set_PulseSpel_experiment(self, name):
+        hw_log.info(f"Set PulseSpel experiment to {name}")
         self.cur_exp["ftEPR.PlsSPELEXPSlct"].value = name
-
-        if self.cur_exp["ftEPR.PlsSPELEXPSlct"].value != name:
-            print("WARNING: Pulse Spel Experiment did not change")
-            return 0
-        else:
-            return 1
 
     def save_PulseSpel_exp(self, name: str = None):
         if name is None:
@@ -302,7 +294,7 @@ class xepr_api:
                 try:
                     os.mkdir('/tmp/autoDeer/')
                     self._tmp_dir = '/tmp/autoDeer/'
-                except:
+                except FileExistsError:
                     self._tmp_dir = '/tmp/autoDeer/'
                     print("temp directory already exists")
             timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -319,7 +311,7 @@ class xepr_api:
                 try:
                     os.mkdir('/tmp/autoDeer/')
                     self._tmp_dir = '/tmp/autoDeer/'
-                except:
+                except FileExistsError:
                     self._tmp_dir = '/tmp/autoDeer/'
                     print("temp directory already exists")
             timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -346,16 +338,19 @@ class xepr_api:
         else:
             print('Acquisition Mode not changed. Input error.')
             return 0
+        hw_log.debug(f"Acquistiton mode set to: {mode}")
 
     def compile_PulseSpel_prg(self):
         self.Xepr.XeprCmds.aqPgShowPrg()
         self.Xepr.XeprCmds.aqPgCompile()
+        hw_log.debug("PulseSpel Exp file compiled")
         time.sleep(0.5)
         pass
 
     def compile_PulseSpel_def(self):
         self.Xepr.XeprCmds.aqPgShowDef()
         self.Xepr.XeprCmds.aqPgCompile()
+        hw_log.debug("PulseSpel Exp file compiled")
         time.sleep(0.5)
         pass
 
@@ -448,7 +443,7 @@ class xepr_api:
         pol_func = np.polynomial.polynomial.Polynomial(f_pol)
         pos = round(pol_func(val))
         self.hidden['Frequency'].value = pos
-        hw_log.info(f'Frequency set to {val} at position {pos}')
+        hw_log.info(f'Bridge Frequency set to {val} at position {pos}')
         return self.hidden['Frequency'].value
 
     def get_freq(self) -> float:
@@ -466,33 +461,6 @@ class xepr_api:
         """
 
         return self.hidden['PlsPrgCalDbName'].value
-
-    def set_spec_config(self, name: str = 'Normal') -> str:
-        """set_spec_config Sets the name of the current spectrometer
-        configuration file
-
-        Parameters
-        ----------
-        name : str, optional
-            The file name of config file. Normal and AWG, shortcut to the
-            standard types, by default 'Normal'
-
-        Returns
-        -------
-        str
-            Returns the name of the current spectrometer configuration file
-        """
-        if name == 'Normal':
-            config_file = 'Q_TWT_Jun21'
-        elif name == 'AWG':
-            config_file = 'Q_awgins2013'
-        else:
-            config_file = name
-        
-        if self.get_spec_config() != config_file:
-            self.hidden['PlsPrgCalDbName'].value = config_file
-            self.hidden['PlsPrgCalDbLoad']
-            self.hidden['ApplyCfg']
 
     def get_attenuator(self, channel: str) -> float:
         if channel == 'Main':
@@ -525,6 +493,7 @@ class xepr_api:
             atten_channel = 'ELDORAtt'
         
         self.hidden[atten_channel].value = value
+        hw_log.debug(f"{channel} Attenuator set to {value} ")
 
         return self.get_attenuator(channel)
 
@@ -555,6 +524,7 @@ class xepr_api:
             phase_channel = 'BrMinYPhase'
 
         self.hidden[phase_channel].value = value
+        hw_log.debug(f"{channel} phase control set to {value} ")
 
         return self.get_attenuator(channel)
 
@@ -578,7 +548,7 @@ class xepr_api:
         """
 
         self.cur_exp['FrequencyA'].value = value
-
+        hw_log.debug(f"ELDOR frequency set to {value}")
         return self.get_ELDOR_freq()
 
     def get_video_gain(self) -> int:
@@ -605,6 +575,7 @@ class xepr_api:
             The adjusted video gain
         """
         self.cur_exp['VideoGain'].value = value
+        hw_log.debug(f"Video gain set to {value}")
         return self.get_video_gain()
 
     def get_config_file(self) -> str:
@@ -641,5 +612,31 @@ class xepr_api:
 
         return self.get_config_file()
 
+    def get_MW_amp(self) -> bool:
+        """Gets the current setting of the microwave amplifier
 
+        Returns
+        -------
+        bool
+            current setting of the microwave amplifier
+        """
+
+        return self.hidden['MWGain']
+
+    def set_MW_amp(self, value: bool) -> bool:
+        """Sets the current setting of the microwave amplifier
+
+        Parameters
+        ----------
+        value : bool
+            New setting of the microwave amplifier
+
+        Returns
+        -------
+        bool
+            Setting of the microwave amplifier
+        """
+        self.hidden['MWGain'] = value
+        hw_log.debug("Microwave amplifier set to {value}")
+        return self.get_MW_amp()
 # =============================================================================
