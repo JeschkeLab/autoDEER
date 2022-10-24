@@ -88,6 +88,8 @@ def std_deer_analysis(
     
     if "pathways" in kwargs:
         pathways = kwargs["pathways"]
+    else:
+        pathways = None
     if tau3 is not None:
         print("5pulse")
         experimentInfo = dl.ex_fwd5pdeer(tau1, tau2, tau3, pathways=pathways)
