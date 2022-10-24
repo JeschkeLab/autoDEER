@@ -1,7 +1,5 @@
-import imp
 from matplotlib.figure import Figure
 import numpy as np
-from deerlab import deerload
 import matplotlib.pyplot as plt
 from autoDeer.hardware.openepr import dataset
 
@@ -49,20 +47,22 @@ class FieldSweep():
 
         if not hasattr(self, "max_field"):
             self.find_max()
-        
+        self.det_frq = det_frq
         self.gyro = det_frq/self.max_field
         hf_x = det_frq - self.gyro*self.axis
         self.fs_x = det_frq + hf_x
         self.fs_x = det_frq - self.gyro*self.axis
         return self.gyro
 
-    def plot(self, norm=True) -> Figure:
+    def plot(self, norm: bool = True, axis: str = "time") -> Figure:
         """Generate a field sweep plot
 
         Parameters
         ----------
         norm : bool, optional
             Nomarlisation of the plot to a maximum of 1, by default True
+        axis : str, optional
+            plot field sweep on either the "time" axis or "freq" axis
 
         Returns
         -------
@@ -74,16 +74,25 @@ class FieldSweep():
             data = self.data
             data /= np.max(np.abs(data))
 
-        fig, ax = plt.subplots()
-        ax.plot(self.axis, np.abs(data), label='real')
-        ax.plot(self.axis, np.real(data), label='real')
-        ax.plot(self.axis, np.imag(data), label='imag')
-        ax.legend()
-        ax.set_xlabel('Field G')
-        ax.set_ylabel('Normalised Amplitude')
-        if hasattr(self, "max_field"):
-            min_value = np.min(np.hstack([np.real(data), np.imag(data)]))
-            max_value = np.min(np.hstack([np.real(data), np.imag(data)]))
-            ax.vlines(self.max_field, min_value, max_value, label="Maximum")
+        if axis.lower() == 'time':
+            fig, ax = plt.subplots()
+            ax.plot(self.axis, np.abs(data), label='abs')
+            ax.plot(self.axis, np.real(data), label='real')
+            ax.plot(self.axis, np.imag(data), label='imag')
+            ax.legend()
+            ax.set_xlabel('Field G')
+            ax.set_ylabel('Normalised Amplitude')
+            if hasattr(self, "max_field"):
+                min_value = np.min(np.hstack([np.real(data), np.imag(data)]))
+                max_value = np.min(np.hstack([np.real(data), np.imag(data)]))
+                ax.vlines(
+                    self.max_field, min_value, max_value, label="Maximum")
+        elif axis.lower() == 'freq':
+            if not hasattr(self, "fs_x"):
+                raise RuntimeError("Please run fieldsweep.calc_gyro() first")
+            fig, ax = plt.subplots()
+            ax.plot(self.fs_x, np.abs(data), label='abs')
+            ax.set_xlabel('Frequency GHz')
+            ax.set_ylabel('Normalised Amplitude')
 
         return fig
