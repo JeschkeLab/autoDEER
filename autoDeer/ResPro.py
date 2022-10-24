@@ -258,7 +258,7 @@ class resonatorProfile:
             matplotlib figure of resonator profile
         """
 
-        frq_axis = self.Q
+        frq_axis = self.frq
         if nu_lims is not None:
             fmin = nu_lims[0]
             fmax = nu_lims[1]
