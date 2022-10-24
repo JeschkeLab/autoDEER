@@ -5,6 +5,11 @@ import matplotlib.pyplot as plt
 from scipy.integrate import cumulative_trapezoid
 import logging
 import importlib
+from autoDeer import FieldSweep
+import scipy.fft as fft
+from deerlab import correctphase
+from scipy.interpolate import interp1d
+
 
 log = logging.getLogger('core.DEER')
 
@@ -256,3 +261,109 @@ def remove_echo(
 
     mask = np.logical_not(mask)
     return mask
+
+
+# =============================================================================
+
+def calc_optimal_deer_frqs(
+        fieldsweep: FieldSweep, pump_length: int, exc_length: int,
+        det_frq: float = None, dt: float = 1):
+
+    total_length = 1024
+    pump_pulse = np.ones(int(pump_length/dt))
+    pad_size = (total_length - pump_pulse.shape[0])/2
+    pump_pulse = np.pad(
+        pump_pulse, (int(np.floor(pad_size)), int(np.ceil(pad_size))))
+
+    exc_pulse = np.ones(int(exc_length/dt))
+    pad_size = (total_length - exc_pulse.shape[0])/2
+    exc_pulse = np.pad(
+        exc_pulse, (int(np.floor(pad_size)), int(np.ceil(pad_size))))
+
+    f_axis = fft.fftshift(fft.fftfreq(total_length, dt))
+    
+    f_pump = np.abs(fft.fftshift(fft.fft(pump_pulse)))
+    f_pump /= f_pump.max()
+    
+    f_exc = np.abs(fft.fftshift(fft.fft(exc_pulse)))
+    f_exc /= f_exc.max()
+
+    if np.iscomplexobj(fieldsweep.data):
+        fs_data = correctphase(fieldsweep.data)
+    fs_data /= fs_data.max()
+
+    if det_frq is not None:
+        fieldsweep.calc_gyro(det_frq)
+    else:
+        det_frq = fieldsweep.det_frq
+    
+    fs_axis = fieldsweep.fs_x
+
+    def calc_overlap_region(x1, y1, x2, y2, new_axis=None):
+
+        # Normalise data
+        # y1 /= np.trapz(y1,x1)
+        # y2 /= np.trapz(y2,x2)
+        # create axis
+        if new_axis is None:
+            min_axis = np.max([np.min(x1), np.min(x2)])
+            max_axis = np.min([np.max(x1), np.max(x2)])
+            axis_mask = (x1 > min_axis) & (x1 < max_axis)
+            x_new = x1[axis_mask]
+            y1_new = y1[axis_mask]
+        else:
+            x_new = new_axis
+            y1_interp = interp1d(x1, y1)
+            y1_new = y1_interp(x_new)
+
+        # Interpolate y2
+        interp_y2 = interp1d(x2, y2)
+        y2_new = interp_y2(x_new)
+
+        return [x_new, np.minimum(y1_new, y2_new)]
+
+    def interp(x1, y1, xnew):
+        y1_interp = interp1d(x1, y1)
+        y1_new = y1_interp(xnew)
+
+        return y1_new
+
+    def calc_optimal(pump_frq, exc_frq):
+        new_axis = np.linspace(-0.27, 0.1, 200)
+        fs_new = interp(fs_axis, fs_data, new_axis)
+        dead_spins = calc_overlap_region(
+            f_axis + pump_frq, f_pump, f_axis + exc_frq, f_exc,
+            new_axis=new_axis)
+
+        total = np.trapz(fs_new, new_axis)
+        num_pump = np.trapz(
+            fs_new * interp(f_axis + pump_frq, f_pump, new_axis)
+            - fs_new * dead_spins[1], new_axis)
+        num_exc = np.trapz(
+            fs_new * interp(f_axis+exc_frq, f_exc, new_axis) 
+            - fs_new * dead_spins[1], new_axis)
+
+        perc_pump = num_pump/total
+        perc_exc = num_exc/total
+        return calc_optimal_perc(perc_pump, perc_exc)
+
+    X = np.linspace(-0.15, 0.05, 100)
+    Y = np.linspace(-0.15, 0.05, 100)
+    optimal_2d = [calc_optimal(y, x) for y in X for x in Y]
+
+    optimal_2d = np.abs(optimal_2d).reshape(100, 100)
+    max_pos = np.unravel_index(optimal_2d.argmax(), (100, 100))
+    print(
+        f"Maxium achievable of {optimal_2d.max()*100:.2f}% optimal at"
+        f"{X[max_pos[0]]*1e3:.1f}MHz pump position and" 
+        f" {Y[max_pos[1]]*1e3:.1f}MHz exc position.")
+
+    if det_frq is None:
+        return [max_pos[0], max_pos[1]]
+    else:
+        return [X[max_pos[0]] + det_frq, Y[max_pos[1]] + det_frq] 
+
+
+def calc_optimal_perc(pump, exc):
+    base_value = 2/3 * np.sqrt(1/3)
+    return (pump * np.sqrt(exc)) / base_value
