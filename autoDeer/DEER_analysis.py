@@ -9,6 +9,7 @@ from autoDeer import FieldSweep
 import scipy.fft as fft
 from deerlab import correctphase
 from scipy.interpolate import interp1d
+import re
 
 
 log = logging.getLogger('core.DEER')
@@ -32,7 +33,7 @@ def calc_identifiability(profile):
 def std_deer_analysis(
         t: np.ndarray, V: np.ndarray, tau1: float, tau2: float,
         tau3: float = None, zerotime: float = 0, num_points: int = 50,
-        compactness: bool = True, precision: str = "Detailed"):
+        compactness: bool = True, precision: str = "Detailed", **kwargs):
     """std_deer_analysis This function conducts the standard deer analysis 
     using deerlab
 
@@ -67,9 +68,10 @@ def std_deer_analysis(
         _description_
     """
 
-    Vexp = dl.correctphase(V)
-    Vexp = Vexp/np.max(Vexp)         # Rescaling (aesthetic)
-    t = t-zerotime
+    if np.iscomplexobj(V):
+        V = dl.correctphase(V)
+    Vexp = V/np.max(V)         # Rescaling (aesthetic)
+    t = t+zerotime
 
     if precision == "Detailed":
         Ltype = 3
@@ -84,13 +86,13 @@ def std_deer_analysis(
     
     r = np.linspace(1, rmax_e, num_points)  # nm  
     
-    experimentInfo = dl.ex_4pdeer(tau1, tau2, pathways=[1, 2, 3])
-    
+    if "pathways" in kwargs:
+        pathways = kwargs["pathways"]
     if tau3 is not None:
         print("5pulse")
-        experimentInfo = dl.ex_fwd5pdeer(tau1, tau2, tau3)
+        experimentInfo = dl.ex_fwd5pdeer(tau1, tau2, tau3, pathways=pathways)
     else:
-        experimentInfo = dl.ex_4pdeer(tau1, tau2, pathways=[1, 2, 3])
+        experimentInfo = dl.ex_4pdeer(tau1, tau2, pathways=pathways)
 
     Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo)
     
@@ -142,13 +144,20 @@ def std_deer_analysis(
     axs['Primary_dist'].legend()
 
     # **** Statistics ****
-    MNR = fit.lam3/fit.noiselvl
+
+    # Find total modulation depth
+    mod_labels = re.findall("(lam\d*)'", str(fit.keys()))
+    lam = 0
+    for mod in mod_labels:
+        lam += getattr(fit, mod)
+    print(lam)
+    MNR = lam/fit.noiselvl
     axs['Primary_time'].text(
-        0.05, 0.05, f"MNR: {fit.lam3/fit.noiselvl:.2f}",
+        0.05, 0.05, f"MNR: {MNR:.2f}",
         transform=fig.transFigure, fontsize="16", color="black")
     if MNR < 10:
         axs['Primary_time'].text(
-            0.05, 0.01, "LOW MNR: More averages requried",
+            0.15, 0.05, "LOW MNR: More averages requried",
             transform=fig.transFigure, fontsize="16", color="red")
 
     ROI_error = (rmax - ROI[1])
@@ -159,18 +168,16 @@ def std_deer_analysis(
         0.55, 0.05, f"ROI: {ROI[0]:.2f}nm to {ROI[1]:.2f}nm",
         transform=fig.transFigure, fontsize="16", color="black")
     axs['Primary_time'].text(
-        0.55, 0.01, rf"Recommended $\\tau_{{max}}$ = {rec_tau_max:.2f}us",
+        0.05, 0.01, rf"Recommended $\tau_{{max}}$ = {rec_tau_max:.2f}us",
         transform=fig.transFigure, fontsize="16", color="black")
 
     if ROI_error < 0.5:
         axs['Primary_time'].text(
             0.55, 0.01,
-            r"ROI is too close to $r_{max}. Increase $\\tau_{max}$",
+            rf"ROI is too close to $r_{{max}}$. Increase $\tau_{{max}}$",
             transform=fig.transFigure, size="x-large", color="red")
 
-    fig.show()
-
-    return fig, ROI, rec_tau_max
+    return fig, ROI, rec_tau_max, fit
 
 # =============================================================================
 
