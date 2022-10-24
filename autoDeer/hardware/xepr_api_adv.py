@@ -705,9 +705,9 @@ class xepr_api:
         bool
             current setting of the microwave amplifier
         """
-        if self.hidden['MWGain'] == 'On':
+        if self.hidden['MWGain'].value == 'On':
             return 1
-        elif self.hidden['MWGain'] == 'Off':
+        elif self.hidden['MWGain'].value == 'Off':
             return 0
         else:
             return self.hidden['MWGain']
@@ -726,9 +726,9 @@ class xepr_api:
             Setting of the microwave amplifier
         """
         if bool:
-            self.hidden['MWGain'] = 'On'
+            self.hidden['MWGain'].value = 'On'
         else:
-            self.hidden['MWGain'] = 'Off'
+            self.hidden['MWGain'].value = 'Off'
         hw_log.debug("Microwave amplifier set to {value}")
         return self.get_MW_amp()
 # =============================================================================
