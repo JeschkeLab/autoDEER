@@ -1,4 +1,3 @@
-from ftplib import error_perm
 import numpy as np
 import time
 import os
@@ -22,6 +21,7 @@ hardware_meta = {  # This dictionary should be moved into a config file
     "AWG":              False,
     "Min Freq":         33,
     "Max Freq":         35,
+    "Freq Cal":         [-67652.70, 2050.203],
  } 
 
 
@@ -118,7 +118,7 @@ class xepr_api:
             self.Xepr.XeprCmds.aqExpSelect("Experiment")
             try:
                 self.cur_exp = self.Xepr.XeprExperiment()
-            except
+            except:
                 error_msg = "Can't find the current experiment. Please create"\
                              + "an experiment with the name 'Experiment'"
                 hw_log.error(error_msg)
@@ -355,17 +355,26 @@ class xepr_api:
         pass
 
     def run_exp(self):
+        """
+        Runs the current experiment.
+        """
         self.cur_exp.aqExpRun()
         hw_log.info('Experiment started')
         time.sleep(5)  # Required
         pass
 
     def stop_exp(self):
+        """
+        Stops the current experiment.
+        """
         self.cur_exp.aqExpStop()
         hw_log.info('Experiment stopped')
         pass
 
     def abort_exp(self):
+        """
+        Aborts the current experiment.
+        """
         self.cur_exp.aqExpAbort()
         hw_log.info('Experiment aborted')
         pass
@@ -399,15 +408,31 @@ class xepr_api:
         time.sleep(0.5)
         pass
 
-    def dataset_save(self):
-        pass
-
     def get_field(self) -> int:
-        """ This returns the central field"""
+        """Gets the magnetic field.
+
+        Returns
+        -------
+        int
+            Field position in Gauss
+        """
         return self.cur_exp['CenterField'].value
 
     def set_field(self, val: int, hold: bool = True) -> int:
-        """ This sets the central field"""
+        """Sets the magentic field.
+
+        Parameters
+        ----------
+        val : int
+            Field position in Gauss
+        hold : bool, optional
+            Wait until Xepr belives the field is stable, by default True
+
+        Returns
+        -------
+        int
+            Field position in Gauss
+        """
         self.cur_exp['CenterField'].value = val
         time.sleep(2)  # Always wait 2s after a field change
         hw_log.info(f'Field position set to {val} G')
@@ -417,38 +442,97 @@ class xepr_api:
         return self.cur_exp['CenterField'].value
 
     def get_counterfreq(self) -> float:
-        """ This returns the current freq counter"""
+        """Gets the frequency counter value.
+
+        Note: There is no equivalent set command 
+
+        Returns
+        -------
+        float
+            The counter frequency in GHz
+        """
         return self.cur_exp['FrequencyMon'].value
 
     def set_sweep_width(self, val: int) -> int:
+        """Sets the field sweep width
+
+        Parameters
+        ----------
+        val : int
+            Field sweep width in Gauss
+
+        Returns
+        -------
+        int
+            Field sweep width in Gauss
+        """
         self.cur_exp['SweepWidth'].value = val
         hw_log.info('Field sweep width set to {val} G')
         return self.cur_exp['SweepWidth'].value
     
     def get_sweep_width(self) -> int:
+        """Gets the field sweep width
+
+        Returns
+        -------
+        int
+            Field sweep width in Gauss.
+        """
         return self.cur_exp['SweepWidth'].value
 
-    def set_freq(self, val: np.float128) -> float:
-        """
-        This sets bridge frequency, and works through a polynomial
-        approximation. This might need to be adjusted
-        for different spectrometers
-        """
-        f_pol = [1.420009750632201e4,
-                 -5.118516287710228e3,
-                 2.092103562165744e2,
-                 -2.034307248428457,
-                 0, 0]
+    def set_freq(self, val: float, pol: list = None) -> float:
+        """Sets the current bridge frequency. The stepper motor value is 
+        calculated through a conversion. 
 
-        pol_func = np.polynomial.polynomial.Polynomial(f_pol)
+        Parameters
+        ----------
+        val : float
+            The frequency in GHz
+        pol : list, optional
+            Conversion polynomal coefficents for freq->Step, by default None
+
+        Returns
+        -------
+        float
+            Frequency in GHz
+        """
+        # f_pol = [1.420009750632201e4,
+        #          -5.118516287710228e3,
+        #          2.092103562165744e2,
+        #          -2.034307248428457,
+        #          0, 0]
+
+        if pol is None:
+            pol = [-67652.70, 2050.203]
+
+        pol_func = np.polynomial.polynomial.Polynomial(pol)
         pos = round(pol_func(val))
         self.hidden['Frequency'].value = pos
         hw_log.info(f'Bridge Frequency set to {val} at position {pos}')
         return self.hidden['Frequency'].value
 
-    def get_freq(self) -> float:
-        """ This returns the current bridge frequency"""
-        return self.hidden['Frequency'].value
+    def get_freq(self, pol: list = None) -> float:
+        """Gets the current bridge frequency. The frequency is calculated
+        through a conversion. 
+
+        Parameters
+        ----------
+        pol : list, optional
+            Conversion polynomal coefficents for freq->Step, by default None
+
+        Returns
+        -------
+        float
+            Frequency in GHz
+        """
+
+        if pol is None:
+            pol = [-67652.70, 2050.203]
+
+        inv_func = np.polynomial.polynomial.Polynomial(
+            [-pol[0]/pol[1], 1/(pol[1])])
+
+        return inv_func(self.hidden['Frequency'].value)
 
     def get_spec_config(self) -> str:
         """get_spec_config Gets the name of the current spectrometer
@@ -479,6 +563,7 @@ class xepr_api:
         return self.hidden[atten_channel].value
 
     def set_attenuator(self, channel: str, value) -> float:
+
         if channel == 'Main':
             atten_channel = 'PowerAtten'
         elif channel == '+<x>':
@@ -620,8 +705,12 @@ class xepr_api:
         bool
             current setting of the microwave amplifier
         """
-
-        return self.hidden['MWGain']
+        if self.hidden['MWGain'] == 'On':
+            return 1
+        elif self.hidden['MWGain'] == 'Off':
+            return 0
+        else:
+            return self.hidden['MWGain']
 
     def set_MW_amp(self, value: bool) -> bool:
         """Sets the current setting of the microwave amplifier
@@ -636,7 +725,10 @@ class xepr_api:
         bool
             Setting of the microwave amplifier
         """
-        self.hidden['MWGain'] = value
+        if bool:
+            self.hidden['MWGain'] = 'On'
+        else:
+            self.hidden['MWGain'] = 'Off'
         hw_log.debug("Microwave amplifier set to {value}")
         return self.get_MW_amp()
 # =============================================================================
