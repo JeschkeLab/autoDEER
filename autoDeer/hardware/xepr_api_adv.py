@@ -3,7 +3,7 @@ import time
 import os
 import XeprAPI
 from autoDeer.hardware.openepr import dataset
-
+from scipy.optimize import minimize_scalar
 import logging
 
 hw_log = logging.getLogger('hardware.Xepr')
@@ -480,7 +480,8 @@ class xepr_api:
         """
         return self.cur_exp['SweepWidth'].value
 
-    def set_freq(self, val: float, pol: list = None) -> float:
+    def set_freq(self, val: float, pol: list = None,
+                 precision: bool = False) -> float:
         """Sets the current bridge frequency. The stepper motor value is 
         calculated through a conversion. 
 
@@ -507,7 +508,21 @@ class xepr_api:
 
         pol_func = np.polynomial.polynomial.Polynomial(pol)
         pos = round(pol_func(val))
-        self.hidden['Frequency'].value = pos
+        if precision:
+            self.hidden['Frequency'].value = pos
+            bounds = [pos-50, pos+50]
+            
+            def objective(x):
+                self.hidden['Frequency'].value = x
+                return self.get_counter_freq()
+            
+            output = minimize_scalar(
+                objective, method='bounded', bounds=bounds,
+                options={'xatol': 1e-3, 'maxiter': 30})
+            pos = round(output.x)
+            self.hidden['Frequency'].value = pos
+        else:
+            self.hidden['Frequency'].value = pos
         hw_log.info(f'Bridge Frequency set to {val} at position {pos}')
         return self.hidden['Frequency'].value
 
