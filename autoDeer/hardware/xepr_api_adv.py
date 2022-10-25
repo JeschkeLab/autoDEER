@@ -514,7 +514,7 @@ class xepr_api:
             
             def objective(x):
                 self.hidden['Frequency'].value = x
-                return self.get_counter_freq()
+                return self.get_counterfreq()
             
             output = minimize_scalar(
                 objective, method='bounded', bounds=bounds,
@@ -746,4 +746,36 @@ class xepr_api:
             self.hidden['MWGain'].value = 'Off'
         hw_log.debug("Microwave amplifier set to {value}")
         return self.get_MW_amp()
+
+    def get_video_bandwidth(self) -> float:
+        """Gets the detection video bandwidth.
+
+        Returns
+        -------
+        float
+            Video bandwidth in MHz
+        """
+        return self.get_video_bandwidth()
+
+    def set_video_bandwidth(self, value: float) -> float:
+        """Sets the detection video bandwidth.
+
+        Parameters
+        ----------
+        value : float
+            Video bandwidth in MHz, options = [200,20].
+
+        Returns
+        -------
+        float
+            Video bandwidth in MHz
+        """
+        options = [200, 20]
+
+        if round(value) not in options:
+            raise ValueError("Video Bandwidth can only be 200MHz or 20MHz")
+
+        self.hidden['VideoBW'] = value
+
+        return self.get_video_bandwidth()
 # =============================================================================
