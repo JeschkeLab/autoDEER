@@ -740,7 +740,7 @@ class xepr_api:
         bool
             Setting of the microwave amplifier
         """
-        if bool:
+        if value:
             self.hidden['MWGain'].value = 'On'
         else:
             self.hidden['MWGain'].value = 'Off'
