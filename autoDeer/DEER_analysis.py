@@ -33,7 +33,8 @@ def calc_identifiability(profile):
 def std_deer_analysis(
         t: np.ndarray, V: np.ndarray, tau1: float, tau2: float,
         tau3: float = None, zerotime: float = 0, num_points: int = 50,
-        compactness: bool = True, precision: str = "Detailed", **kwargs):
+        compactness: bool = True, precision: str = "Detailed",
+        background: bool = False, **kwargs):
     """std_deer_analysis This function conducts the standard deer analysis 
     using deerlab
 
@@ -73,9 +74,9 @@ def std_deer_analysis(
     Vexp = V/np.max(V)         # Rescaling (aesthetic)
     t = t+zerotime
 
-    if precision == "Detailed":
+    if precision.lower() == "detailed":
         Ltype = 3
-    elif precision == "Speed":
+    elif precision.lower() == "speed":
         Ltype = 6
     else:
         print("No Precision set. Ltype = 4nm")
@@ -92,11 +93,34 @@ def std_deer_analysis(
         pathways = None
     if tau3 is not None:
         print("5pulse")
+        pulses = 5
         experimentInfo = dl.ex_fwd5pdeer(tau1, tau2, tau3, pathways=pathways)
+        if pathways is None:
+            pathways = [1, 2, 3, 4, 5, 6, 7, 8]
     else:
+        pulses = 4
         experimentInfo = dl.ex_4pdeer(tau1, tau2, pathways=pathways)
+        if pathways is None:
+            pathways = [1, 2, 3, 4]
 
     Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo)
+
+    if (tau1 == tau2):
+        # Link pathways
+        if (pulses == 5) & (2 in pathways) & (8 in pathways):
+            index2 = pathways.index(2) + 1
+            index8 = pathways.index(8) + 1
+            Vmodel = dl.link(Vmodel, lam28=[f"lam{index2}", f"lam{index8}"])
+            pathways.remove(2)
+            pathways.remove(8)
+            pathways.append(28)
+        if (pulses == 4) & (1 in pathways) & (4 in pathways):
+            index1 = pathways.index(1) + 1
+            index4 = pathways.index(4) + 1
+            Vmodel = dl.link(Vmodel, lam14=[f"lam{index1}", f"lam{index4}"])
+            pathways.remove(1)
+            pathways.remove(4)
+            pathways.append(14)
     
     if compactness:
         compactness_penalty = dl.dipolarpenalty(None, r, 'compactness', 'icc')
@@ -104,6 +128,7 @@ def std_deer_analysis(
         compactness_penalty = None
     
     fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty)
+    mod_labels = re.findall("(lam\d*)'", str(fit.keys()))
     ROI = IdentifyROI(fit.P, r, criterion=0.99)
 
     Vfit = fit.model
@@ -115,11 +140,26 @@ def std_deer_analysis(
     fig.tight_layout(pad=4)
     fig.subplots_adjust(bottom=0.2, hspace=0.4)
 
+    # Calculate background
+    def background_func(t, fit):
+        conc = fit.conc
+        prod = 1
+        scale = 1
+        for i in range(1, len(pathways)+1):
+            reftime = getattr(fit, f"reftime{i}")
+            lam = getattr(fit, f"lam{i}")
+            prod *= dl.bg_hom3d(t-reftime, conc, lam)
+            scale += -1 * lam
+        return fit.P_scale * scale * prod
+
     # Top left Time domain
-    axs['Primary_time'].plot(t, Vexp, '.', color='grey', label='Data')
-    axs['Primary_time'].plot(t, Vfit, linewidth=3, color='orange', label='Fit')
-    axs['Primary_time'].fill_between(
-        t, Vci[:, 0], Vci[:, 1], color='orange', alpha=0.3)
+    axs['Primary_time'].plot(t, Vexp, '.', color='0.7', label='Data')
+    axs['Primary_time'].plot(t, Vfit, linewidth=3, color='C1', label='Fit')
+    axs['Primary_time'].fill_between(t, Vci[:, 0], Vci[:, 1], color='C1',
+                                     alpha=0.3)
+    if background:
+        axs['Primary_time'].plot(t, background_func(t, fit), linewidth=3, color='C0',
+                                 ls=':', label='Unmod. Cont.', alpha=0.5)
 
     # Bfcn = lambda mod,conc: (1-mod)*dl.bg_hom3d(time,conc,mod)
     # Bfit = Bfcn(fit.lam3,fit.conc)
@@ -133,12 +173,12 @@ def std_deer_analysis(
     # Top right distance domain
     Pfit = fit.P
     Pci = fit.PUncert.ci(95)
-    axs['Primary_dist'].plot(r, Pfit, '-', color='orange', label='Fit')
+    axs['Primary_dist'].plot(r, Pfit, '-', color='C1', lw=3, label='Fit')
     axs['Primary_dist'].fill_between(
-        r, Pci[:, 0], Pci[:, 1], color='orange', alpha=0.3, label='95% CI')
+        r, Pci[:, 0], Pci[:, 1], color='C1', alpha=0.3, label='95% CI')
     
     axs['Primary_dist'].fill_betweenx(
-        [0, Pci[:, 1].max()], ROI[0], ROI[1], alpha=0.2, color='green',
+        [0, Pci[:, 1].max()], ROI[0], ROI[1], alpha=0.2, color='C2',
         label="ROI", hatch="/")
     
     axs['Primary_dist'].set_xlabel(r"Distance / $ nm$")
@@ -148,7 +188,6 @@ def std_deer_analysis(
     # **** Statistics ****
 
     # Find total modulation depth
-    mod_labels = re.findall("(lam\d*)'", str(fit.keys()))
     lam = 0
     for mod in mod_labels:
         lam += getattr(fit, mod)
