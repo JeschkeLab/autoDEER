@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import cumulative_trapezoid
 import logging
 import importlib
-from autoDeer import FieldSweep
+from autoDeer import FieldSweep, resonatorProfile
 import scipy.fft as fft
 from deerlab import correctphase
 from scipy.interpolate import interp1d
@@ -110,24 +110,29 @@ def std_deer_analysis(
         if (pulses == 5) & (2 in pathways) & (8 in pathways):
             index2 = pathways.index(2) + 1
             index8 = pathways.index(8) + 1
-            Vmodel = dl.link(Vmodel, lam28=[f"lam{index2}", f"lam{index8}"])
+            links = {"lam28": [f"lam{index2}", f"lam{index8}"]}
+            Vmodel = dl.link(Vmodel, **links)
             pathways.remove(2)
             pathways.remove(8)
-            pathways.append(28)
+            pathways.append([2, 8])
         if (pulses == 4) & (1 in pathways) & (4 in pathways):
             index1 = pathways.index(1) + 1
             index4 = pathways.index(4) + 1
             Vmodel = dl.link(Vmodel, lam14=[f"lam{index1}", f"lam{index4}"])
             pathways.remove(1)
             pathways.remove(4)
-            pathways.append(14)
+            pathways.append([1, 4])
     
     if compactness:
         compactness_penalty = dl.dipolarpenalty(None, r, 'compactness', 'icc')
     else:
         compactness_penalty = None
+
+    if "bootstrap" in kwargs:
+        bootstrap = kwargs["bootstrap"]
     
-    fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty)
+    fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty, 
+                 bootstrap=bootstrap)
     mod_labels = re.findall("(lam\d*)'", str(fit.keys()))
     ROI = IdentifyROI(fit.P, r, criterion=0.99)
 
@@ -145,11 +150,21 @@ def std_deer_analysis(
         conc = fit.conc
         prod = 1
         scale = 1
-        for i in range(1, len(pathways)+1):
-            reftime = getattr(fit, f"reftime{i}")
-            lam = getattr(fit, f"lam{i}")
-            prod *= dl.bg_hom3d(t-reftime, conc, lam)
-            scale += -1 * lam
+        for i in pathways:
+            if type(i) is list:
+                # linked pathway
+                lam = getattr(fit, f"lam{i[0]}{i[1]}")
+                scale += -1 * lam
+                for j in i:
+                    reftime = getattr(fit, f"reftime{pathways.index(j)+1}")
+                    prod *= dl.bg_hom3d(t-reftime, conc, lam)
+
+            else:
+                reftime = getattr(fit, f"reftime{i}")
+                lam = getattr(fit, f"lam{i}")
+                prod *= dl.bg_hom3d(t-reftime, conc, lam)
+                scale += -1 * lam
+
         return fit.P_scale * scale * prod
 
     # Top left Time domain
@@ -161,8 +176,6 @@ def std_deer_analysis(
         axs['Primary_time'].plot(t, background_func(t, fit), linewidth=3, color='C0',
                                  ls=':', label='Unmod. Cont.', alpha=0.5)
 
-    # Bfcn = lambda mod,conc: (1-mod)*dl.bg_hom3d(time,conc,mod)
-    # Bfit = Bfcn(fit.lam3,fit.conc)
     # axs['Primary_time'].plot(time,Bfit,'--',color='blue',label='Backgnd')
 
     axs['Primary_time'].set_xlabel(r"Time / $\mu s$")
@@ -338,6 +351,8 @@ def calc_optimal_deer_frqs(
 
     if np.iscomplexobj(fieldsweep.data):
         fs_data = correctphase(fieldsweep.data)
+    else:
+        fs_data = fieldsweep.data
     fs_data /= fs_data.max()
 
     if det_frq is not None:
@@ -346,35 +361,6 @@ def calc_optimal_deer_frqs(
         det_frq = fieldsweep.det_frq
     
     fs_axis = fieldsweep.fs_x
-
-    def calc_overlap_region(x1, y1, x2, y2, new_axis=None):
-
-        # Normalise data
-        # y1 /= np.trapz(y1,x1)
-        # y2 /= np.trapz(y2,x2)
-        # create axis
-        if new_axis is None:
-            min_axis = np.max([np.min(x1), np.min(x2)])
-            max_axis = np.min([np.max(x1), np.max(x2)])
-            axis_mask = (x1 > min_axis) & (x1 < max_axis)
-            x_new = x1[axis_mask]
-            y1_new = y1[axis_mask]
-        else:
-            x_new = new_axis
-            y1_interp = interp1d(x1, y1)
-            y1_new = y1_interp(x_new)
-
-        # Interpolate y2
-        interp_y2 = interp1d(x2, y2)
-        y2_new = interp_y2(x_new)
-
-        return [x_new, np.minimum(y1_new, y2_new)]
-
-    def interp(x1, y1, xnew):
-        y1_interp = interp1d(x1, y1)
-        y1_new = y1_interp(xnew)
-
-        return y1_new
 
     def calc_optimal(pump_frq, exc_frq):
         new_axis = np.linspace(-0.27, 0.1, 200)
@@ -415,3 +401,113 @@ def calc_optimal_deer_frqs(
 def calc_optimal_perc(pump, exc):
     base_value = 2/3 * np.sqrt(1/3)
     return (pump * np.sqrt(exc)) / base_value
+
+
+def interp(x1, y1, xnew):
+    y1_interp = interp1d(x1, y1)
+    y1_new = y1_interp(xnew)
+
+    return y1_new
+
+
+def calc_overlap_region(x1, y1, x2, y2, new_axis=None):
+
+    # Normalise data
+    # y1 /= np.trapz(y1,x1)
+    # y2 /= np.trapz(y2,x2)
+    # create axis
+    if new_axis is None:
+        min_axis = np.max([np.min(x1), np.min(x2)])
+        max_axis = np.min([np.max(x1), np.max(x2)])
+        axis_mask = (x1 > min_axis) & (x1 < max_axis)
+        x_new = x1[axis_mask]
+        y1_new = y1[axis_mask]
+    else:
+        x_new = new_axis
+        y1_interp = interp1d(x1, y1)
+        y1_new = y1_interp(x_new)
+
+    # Interpolate y2
+    interp_y2 = interp1d(x2, y2)
+    y2_new = interp_y2(x_new)
+
+    return [x_new, np.minimum(y1_new, y2_new)]
+
+
+def plot_optimal_deer_frqs(
+        fieldsweep: FieldSweep, pump_length: int, pump_frq: float,
+        exc_length: int, exc_frq: float, respro: resonatorProfile = None,
+        frq_shift: float = 0, dt: float = 1):
+    """Generate a plot that contains the field sweep, pump and excitation 
+    pulses as well as the resonator profile (optional). This should be used to 
+    check that a DEER measurment is setup correctly and in an optimal
+    configuration
+
+    Parameters
+    ----------
+    fieldsweep : FieldSweep
+        The fieldsweep of the spectrum, with the frequency axis generated using
+        the fieldsweep.calc_gyro(det_frq) command.
+    pump_length : int
+        The pump pulse length in ns.
+    pump_frq : float
+        The pump pulse frequnecy offset, from fieldsweep maximum in GHz
+    exc_length : int
+        The excitation pulse length in ns.
+    exc_frq : float
+        The excitation pulse frequnecy offset, from fieldsweep maximum in GHz
+    respro : resonatorProfile, optional
+        The resonator profile, by default None
+    frq_shift : float, optional
+        The frequency shift between resonator profile and fieldsweep maximum
+        , by default 0
+    dt : float, optional
+        The timestep in ns for generating pulses and their FFT, by default 1
+    """
+    
+    if fieldsweep.data.max() != 1.0:
+        fieldsweep.data /= fieldsweep.data.max()
+
+    # Build the pulses
+    total_length = 1024
+    pump_pulse = np.ones(int(pump_length/dt))
+    pad_size = (total_length - pump_pulse.shape[0])/2
+    pump_pulse = np.pad(
+        pump_pulse, (int(np.floor(pad_size)), int(np.ceil(pad_size))))
+
+    exc_pulse = np.ones(int(exc_length/dt))
+    pad_size = (total_length - exc_pulse.shape[0])/2
+    exc_pulse = np.pad(
+        exc_pulse, (int(np.floor(pad_size)), int(np.ceil(pad_size))))
+
+    f_axis = fft.fftshift(fft.fftfreq(total_length, dt))
+    
+    f_pump = np.abs(fft.fftshift(fft.fft(pump_pulse)))
+    f_pump /= f_pump.max()
+    
+    f_exc = np.abs(fft.fftshift(fft.fft(exc_pulse)))
+    f_exc /= f_exc.max()
+
+    # Now build the plot
+    new_axis = np.linspace(-0.27, 0.1, 200)
+    fs_new = interp(fieldsweep.fs_x, fieldsweep.data, new_axis)
+
+    fig, ax = plt.subplots()
+    ax.plot(new_axis, fs_new, label="Field Sweep")
+    dead_spins = calc_overlap_region(
+        f_axis+pump_frq, f_pump, f_axis+exc_frq, f_exc, new_axis=new_axis)
+
+    ax.fill(dead_spins[0], fs_new * dead_spins[1], color='0.6', label="Dead", 
+            alpha=0.5, lw=0)
+    ax.fill_between(
+        new_axis, fs_new * interp(f_axis+exc_frq, f_exc, new_axis),
+        fs_new * dead_spins[1], label="Exc", color="C1", alpha=0.5, lw=0)
+    ax.fill_between(
+        new_axis, fs_new * interp(f_axis+pump_frq, f_pump, new_axis),
+        fs_new * dead_spins[1], label="Pump", color="C2", alpha=0.5, lw=0)
+    if (respro is not None):
+        ax.plot(respro.frq-respro.fc+frq_shift, respro.labs, label="Res Pro")
+    ax.set_xlim(-0.25, 0.05)
+    ax.legend()
+    ax.set_ylabel(r"% flipped")
+    ax.set_xlabel("Frequency / GHz")

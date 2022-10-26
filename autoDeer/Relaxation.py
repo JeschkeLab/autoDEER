@@ -108,7 +108,7 @@ class Carr_Purcell:
         # Assume 16ns time step
         # dt = 16
         # Target time
-        target_time = 2 * 3600
+        target_time = target_time * 3600
 
         num_avgs = target_time / (shrt * np.floor(2 * self.axis * 1000 / 16))
 
