@@ -69,23 +69,40 @@ def std_deer_analysis(
         _description_
     """
 
+    mask = None
+
     if np.iscomplexobj(V):
-        V = dl.correctphase(V)
+        V, Vim, ph = dl.correctphase(V, full_output=True)
+        if "echos" in kwargs:
+            echos = kwargs["echos"]
+            mask = np.ones(V.shape, dtype=bool)
+            for loc in echos:
+                mask *= remove_echo(V, Vim, loc)
+            
+    if "mask" in kwargs:
+        mask = kwargs["mask"]
+
     Vexp = V/np.max(V)         # Rescaling (aesthetic)
     t = t+zerotime
 
     if precision.lower() == "detailed":
         Ltype = 3
+        regparamrange = [1e-8, 1e3]
     elif precision.lower() == "speed":
         Ltype = 6
+        # regparamrange = [0.1, 1e3]
+        regparamrange = [1e-2, 1e3]
+
     else:
         print("No Precision set. Ltype = 4nm")
         Ltype = 4
+        regparamrange = [1e-8, 1e3]
 
     rmax = Ltype*(t.max()/2)**(1/3)
     rmax_e = np.ceil(rmax)  # Effective rmax
     
-    r = np.linspace(1, rmax_e, num_points)  # nm  
+    r = np.linspace(1.5, rmax_e, num_points)  # nm  
+
     
     if "pathways" in kwargs:
         pathways = kwargs["pathways"]
@@ -125,16 +142,27 @@ def std_deer_analysis(
     
     if compactness:
         compactness_penalty = dl.dipolarpenalty(None, r, 'compactness', 'icc')
+        compactness_penalty.weight.set(lb=5e-3, ub=2e-1)
+        # compactness_penalty.weight.freeze(0.04)
+
     else:
         compactness_penalty = None
 
     if "bootstrap" in kwargs:
         bootstrap = kwargs["bootstrap"]
+    else:
+        bootstrap = 0
     
+    if mask is not None:
+        noiselvl = dl.noiselevel(Vexp[mask])
+    else:
+        noiselvl = dl.noiselevel(Vexp)
+
     fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty, 
-                 bootstrap=bootstrap)
-    mod_labels = re.findall("(lam\d*)'", str(fit.keys()))
-    ROI = IdentifyROI(fit.P, r, criterion=0.99)
+                 bootstrap=bootstrap, mask=mask, noiselvl=noiselvl,
+                 regparamrange=regparamrange)
+    mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
+    ROI = IdentifyROI(fit.P, r, criterion=0.90, method="int")
 
     Vfit = fit.model
     Vci = fit.modelUncert.ci(95)
@@ -168,13 +196,21 @@ def std_deer_analysis(
         return fit.P_scale * scale * prod
 
     # Top left Time domain
-    axs['Primary_time'].plot(t, Vexp, '.', color='0.7', label='Data')
+    if mask is not None:
+        axs['Primary_time'].plot(
+            t[mask], Vexp[mask], '.', color='0.7', label='Data', ms=6)
+        axs['Primary_time'].plot(
+            t[~mask], Vexp[~mask], '.', color='0.8', label='Data', ms=6)
+
+    else:
+        axs['Primary_time'].plot(t, Vexp, '.', color='0.7', label='Data', ms=6)
     axs['Primary_time'].plot(t, Vfit, linewidth=3, color='C1', label='Fit')
-    axs['Primary_time'].fill_between(t, Vci[:, 0], Vci[:, 1], color='C1',
-                                     alpha=0.3)
+    # axs['Primary_time'].fill_between(t, Vci[:, 0], Vci[:, 1], color='C1',
+    #                                  alpha=0.3)
     if background:
-        axs['Primary_time'].plot(t, background_func(t, fit), linewidth=3, color='C0',
-                                 ls=':', label='Unmod. Cont.', alpha=0.5)
+        axs['Primary_time'].plot(
+            t, background_func(t, fit), linewidth=3, color='C0',
+            ls=':', label='Unmod. Cont.', alpha=0.5)
 
     # axs['Primary_time'].plot(time,Bfit,'--',color='blue',label='Backgnd')
 
@@ -231,62 +267,74 @@ def std_deer_analysis(
             rf"ROI is too close to $r_{{max}}$. Increase $\tau_{{max}}$",
             transform=fig.transFigure, size="x-large", color="red")
 
+    # Expand fit object
+    fit.Vmodel = Vmodel
+    fit.r = r
+
     return fig, ROI, rec_tau_max, fit
 
 # =============================================================================
 
 
 def IdentifyROI(
-        dist: np.ndarray, r: np.ndarray, criterion: float = 0.99,
-        plot: bool = False):
+        P: np.ndarray, r: np.ndarray, criterion: float = 0.99,
+        method: str = "gauss"):
     """IdentifyROI _summary_
 
     Parameters
     ----------
-    dist : np.ndarray
+    P : np.ndarray
         The distance distribution.
     r : np.ndarray
         The distance axis
     criterion : float, optional
         The fraction of the distance distribution that must be in the ROI, by 
         default 0.99
-    plot : bool, optional
-        Plot the cumulative graphs, by default False
+    method: str, optional
+        The method used to calculate region of interest.
     """
+    if method.lower() == "int":
+        # Normlaize the distribution
+        dist = P / np.trapz(P, r)
+        # cumulative_dist = cumulative_trapezoid(dist,r,initial=0)
+        # min_dist = r[np.argmin(np.abs(1 - cumulative_dist - criterion))]
+        # max_dist = r[np.argmin(np.abs(cumulative_dist - criterion))]
 
-    # Normlaize the distribution
-    dist = dist / np.trapz(dist, r)
-    # cumulative_dist = cumulative_trapezoid(dist,r,initial=0)
-    # min_dist = r[np.argmin(np.abs(1 - cumulative_dist - criterion))]
-    # max_dist = r[np.argmin(np.abs(cumulative_dist - criterion))]
+        c_trapz_dist = np.zeros((dist.shape[0], dist.shape[0]))
 
-    c_trapz_dist = np.zeros((dist.shape[0], dist.shape[0]))
+        for i in range(0, dist.shape[0]):
+            c_trapz_dist[i, i:] = cumulative_trapezoid(
+                dist[i:], r[i:], initial=0)
 
-    for i in range(0, dist.shape[0]):
-        c_trapz_dist[i, i:] = cumulative_trapezoid(dist[i:], r[i:], initial=0)
+        c_trapz_dist[(c_trapz_dist < criterion)] = 3
+        ind = np.unravel_index(np.argmin(c_trapz_dist), c_trapz_dist.shape)
+        min_dist = r[ind[0]]
+        max_dist = r[ind[1]]
 
-    c_trapz_dist[(c_trapz_dist < criterion)] = 3
-    ind = np.unravel_index(np.argmin(c_trapz_dist), c_trapz_dist.shape)
-    min_dist = r[ind[0]]
-    max_dist = r[ind[1]]
+        # Enlarge ROI
+        width = max_dist - min_dist
+        max_dist = max_dist + width * 0.25
+        min_dist = min_dist - width * 0.25
 
-    # Enlarge ROI
-    width = max_dist - min_dist
-    max_dist = max_dist + width * 0.25
-    min_dist = min_dist - width * 0.25
+    elif method.lower() == "gauss":
 
-    if not plot:
-        return [min_dist, max_dist]
+        # Single gaussian approach
+        Pmodel = dl.dd_gauss
+        Pmodel.mean.par0 = r[P.argmax()]
+        fit2 = dl.fit(Pmodel, P, r)
+        min_dist = fit2.mean - 2.5 * fit2.std
+        max_dist = fit2.mean + 2.5 * fit2.std
 
-    else:
-        pass
+    return [min_dist, max_dist]
+
+
 
 # =============================================================================
 
 
 def remove_echo(
         Vre: np.ndarray, Vim: np.ndarray, loc: int,
-        Criteria: float = 4) -> np.ndarray:
+        criteria: float = 4, extent: int = 3) -> np.ndarray:
     """This function removes crossing echoes. 
     Parameters
     ----------
@@ -295,9 +343,11 @@ def remove_echo(
     Vim : np.ndarray
         The imaginary part of the phase corrected signal.
     loc : int
-        The approximate location of the crossing echo, +- 20 data points
-    Criteria : float, optional
+        The approximate location of the crossing echo, +- 30 data points
+    criteria : float, optional
         The delation criteria, in multiples of the std deviation, by default 4
+    extent : int, optional
+        How many data points either side to remove, by default 3.
 
     Returns
     -------
@@ -308,17 +358,17 @@ def remove_echo(
     search_mask = np.ones(Vre.shape[0], bool)
     search_mask[loc-30:loc+31] = False
 
-    mask = np.abs(Vim) > Criteria * dl.noiselevel(Vre[search_mask])
+    mask = np.abs(Vim-np.mean(Vim)) > criteria * dl.noiselevel(Vre[search_mask])
     mask = mask & np.logical_not(search_mask)
     iskip = -1
     for i in range(len(mask)):
         if i < iskip:
             continue
         if mask[i]:
-            mask[i-3:i] = True
-            if i < len(mask) - 3:
-                mask[i:i+3] = True
-                iskip = i + 3
+            mask[i-extent:i] = True
+            if i < len(mask) - extent:
+                mask[i:i+extent] = True
+                iskip = i + extent
 
     mask = np.logical_not(mask)
     return mask
@@ -392,10 +442,7 @@ def calc_optimal_deer_frqs(
         f"{X[max_pos[0]]*1e3:.1f}MHz pump position and" 
         f" {Y[max_pos[1]]*1e3:.1f}MHz exc position.")
 
-    if det_frq is None:
-        return [max_pos[0], max_pos[1]]
-    else:
-        return [X[max_pos[0]] + det_frq, Y[max_pos[1]] + det_frq] 
+    return [X[max_pos[0]], Y[max_pos[1]]]
 
 
 def calc_optimal_perc(pump, exc):
