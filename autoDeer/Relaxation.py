@@ -1,6 +1,6 @@
 from matplotlib.figure import Figure
 import numpy as np
-from deerlab import deerload, noiselevel
+from deerlab import noiselevel
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from autoDeer.hardware.openepr import dataset
@@ -65,9 +65,10 @@ class Carr_Purcell:
 
         fig, ax = plt.subplots()
         if hasattr(self, "fit_result"):
+            ax.plot(self.axis, data, '.', label='data', color='0.6', ms=6)
             ax.plot(self.axis, self.func(
-                self.axis, *self.fit_result[0]), label='fit')
-            ax.plot(self.axis, data, label='data')
+                self.axis, *self.fit_result[0]), label='fit', color='C1', lw=2)
+
             ax.legend()
         else:
             ax.plot(self.axis, data, label='data')
