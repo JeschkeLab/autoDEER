@@ -104,6 +104,7 @@ well as the sections on the specific hardware APIs.
 
     ./Experiments.rst
     ./Analysis.rst
+    ./Dask.rst
 
 .. toctree::
     :hidden:
@@ -111,3 +112,10 @@ well as the sections on the specific hardware APIs.
     :caption: Hardware Control
 
     ./Bruker.rst
+
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: Developer Guide
+
+    ./Logging.rst

@@ -62,9 +62,8 @@ negative amplitude, as it is refocused along -My.
 
 
 
-
-Two-Pulse ESEEM
-------------------
+Relaxation Experiments
+--------------------------
 
 
 
@@ -75,11 +74,19 @@ Two Dimensional
 
 Auto Tune
 ------------------
-
+All spectrometer require that the input channels power is appropriately tunned
+such that the correct flip angle is obtained by the pulses. The power level
+requried will depend on the resonator position. Non-AWG spectrometers also 
+require that the phases of the channels are tunned so that they have the
+correct relative phase to each other.
 
 MPFU
 ^^^^^^^^^^^^
-
+When using BRUKER spectrometer in rectangular mode only the MPFU channel phase
+can be tunned. This is due to a degree of hysteresis in the main channel.
+Tunning the main phase is done by measuring a Hahn echo at different
+attenuations and phase setting, and using scalar optimisation to find the
+minimum. Here a bounded Brent minimisation is used.
 
 ELDOR
 ^^^^^^^^^^^^

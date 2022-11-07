@@ -21,6 +21,7 @@ gyro_e = 0.00281677
 project = "autodeer"
 sample = "MQ460_H:H_100uM_1_6mm"
 folder = "2022_10_03_autoDEER_rect_FUS_attempt2"
+save_dir = "/home/xuser/xeprFiles/Data/HUKA/2022/"
 
 
 # %%
@@ -67,8 +68,7 @@ fc = xepr.get_counterfreq()
 
 fs.plot()
 xepr.xepr_save(
-    f"/home/xuser/xeprFiles/Data/HUKA/2022/{folder}/({project})_({sample})_"
-    "(EDFS_Q)_init")
+    f"{save_dir}{folder}/({project})_({sample})_(EDFS_Q)_init")
 """0.002816783144203381 """
 
 # %%
@@ -98,16 +98,14 @@ rp.calculate_shape(res_prof, None)
 rp.res_prof_plot([33.8, 34.4])
 
 savedata = {"time": t, "Nutation Data": nutation_data}
-savemat(
-    "/home/xuser/xeprFiles/Data/HUKA/2022/{folder}/({project})_({sample})_"
-    "(ResPro)_init.mat", savedata)
+savemat(f"{save_dir}{folder}/({project})_({sample})_(ResPro)_init.mat",
+        savedata)
 
 # %%
 # Tune ELDOR Channel
 # DEER frequencies
 fpump = fc + 0.01
 fobs = fc - 0.04
-
 # %%
 # DEER time
 
@@ -120,7 +118,7 @@ tune.tune({'+<x>': "R+", '-<x>': "R-"}, tol=1, bounds=[20, 55])
 eltune = exp.ELDORtune(xepr, 650, 32)
 eltune._setup_exp()
 eldor_att = eltune.tune(32)
-xepr.set_attenuator(eldor_att)
+xepr.set_attenuator("ELDOR", eldor_att)
 
 # Setup DEER obs channels
 xepr.set_freq(fobs)
