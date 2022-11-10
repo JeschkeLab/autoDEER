@@ -1,10 +1,11 @@
 import os
 import deerlab as dl
-from matplotlib.pyplot import plot
 import numpy as np
 import logging
 import h5py
 from autoDeer.hardware.openepr import dataset
+from autoDeer.home_built_func import uwb_load
+from scipy.io import loadmat
 
 log = logging.getLogger('core.Tools')
 
@@ -90,7 +91,7 @@ def eprload(
         else:
             exp = f[experiment]
         
-        attrs = (exp.attrs.keys())
+        # attrs = (exp.attrs.keys())
         elements = list(exp.keys())
 
         if all(item in elements for item in ['Axes', 'Data']):
@@ -122,16 +123,24 @@ def eprload(
         return data
 
     elif type == 'MAT':
-        pass
+
+        Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
+        Params = Matfile[Matfile["expname"]]
+        uwb_output = uwb_load(Matfile)
+
+        return dataset(uwb_output.dta_x, uwb_output.dta_ev, Params)        
 
 
-def progress_bar(progress,post=""):
+def progress_bar(progress, post=""):
 
     num_hash = round(progress // 0.05)
     num_space = 20-num_hash
 
-    print("Progress: "+"|"+"#"*num_hash +" "*num_space +"|"+post,end = '\r')
+    print(
+        "Progress: "+"|"+"#"*num_hash + " " * num_space + "|" + post,
+        end='\r')
 
-def progress_bar_frac(num,den):
+
+def progress_bar_frac(num, den):
     
-    progress_bar(num/den,f"{num:d} out of {den:d}")
+    progress_bar(num/den, f"{num:d} out of {den:d}")
