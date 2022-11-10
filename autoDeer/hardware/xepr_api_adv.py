@@ -1,6 +1,7 @@
 import numpy as np
 import time
 import os
+import yaml
 import XeprAPI
 from autoDeer.hardware.openepr import dataset
 from scipy.optimize import minimize_scalar
@@ -11,28 +12,33 @@ hw_log = logging.getLogger('hardware.Xepr')
 # ============================================================================
 
 
-hardware_meta = {  # This dictionary should be moved into a config file 
-    "Type":             "Complete Spectrometer",
-    "Manufacturer":     "Bruker",
-    "Model":            "E600",
-    "Local name":       "C_Floor",
-    "Acq. Resolution":  2,
-    "Pulse Resolution": 2,
-    "AWG":              False,
-    "Min Freq":         33,
-    "Max Freq":         35,
-    "Freq Cal":         [-67652.70, 2050.203],
- } 
-
-
 class xepr_api:
-    def __init__(self) -> None:
+    def __init__(self, config_file: str = None) -> None:
         self.Xepr = None
         self.cur_exp = None
         self.hidden = None
         self._tmp_dir = None
         self.XeprCmds = None
-        self.spec_config = hardware_meta
+        if config_file is not None:
+            with open(config_file, mode='r') as file:
+                config = yaml.safe_load(file)
+                self.config = config
+            self.spec_config = self.config["Spectrometer"]
+            self.bridge_config = self.config["Bridge"]
+            if self.spec_config["Manufacturer"].lower() \
+                    != "bruker":
+                msg = "Only Bruker Spectrometers are supported with this this"\
+                      "API"
+                raise ValueError(msg)
+            
+            self.AWG = self.spec_config["AWG"]
+            self.MPFU = self.spec_config["MPFU"]
+            self.Hybrid = self.spec_config["Hybrid"]
+        else:
+            self.spec_config = {}
+            self.AWG = False
+            self.MPFU = True
+            self.Hybrid = False
         pass
 
     def connect(self) -> None:

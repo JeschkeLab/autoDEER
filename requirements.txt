@@ -5,3 +5,4 @@ matplotlib
 deerlab > 0.14
 XeprAPI
 h5py
+pyyaml
