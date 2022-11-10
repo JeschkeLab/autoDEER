@@ -23,11 +23,10 @@ class dataset:
         params : dict, optional
             A dictionary of experimental parameters, by default None
         """
-
         self.axes = axes
         self.data = data
         self.params = params
-        self.dims = self.axes.ndim
+        self.dims = len(self.axes)
 
         if not np.iscomplexobj(self.data):
             self.data = hilbert(self.data)
