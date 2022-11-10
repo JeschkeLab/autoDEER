@@ -1,2 +1,2 @@
-include autoDeer/PulseSpek/*.def
-include autoDeer/PulseSpek/*.exp
+include autoDeer/PulseSpel/*.def
+include autoDeer/PulseSpel/*.exp
