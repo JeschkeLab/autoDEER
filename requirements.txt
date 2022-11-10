@@ -4,4 +4,4 @@ scipy
 matplotlib
 deerlab > 0.14
 XeprAPI
-pytest
+h5py
