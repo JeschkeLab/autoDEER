@@ -2,4 +2,5 @@
 numpy
 scipy
 matplotlib
-deerlab
+deerlab > 0.14
+XeprAPI
