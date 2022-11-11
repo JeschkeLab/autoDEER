@@ -6,6 +6,7 @@ import XeprAPI
 from autoDeer.hardware.openepr import dataset
 from scipy.optimize import minimize_scalar
 import logging
+import re
 
 hw_log = logging.getLogger('hardware.Xepr')
 
@@ -24,12 +25,15 @@ class xepr_api:
                 config = yaml.safe_load(file)
                 self.config = config
             self.spec_config = self.config["Spectrometer"]
-            self.bridge_config = self.config["Bridge"]
+            self.bridge_config = self.spec_config["Bridge"]
             if self.spec_config["Manufacturer"].lower() \
                     != "bruker":
                 msg = "Only Bruker Spectrometers are supported with this this"\
                       "API"
                 raise ValueError(msg)
+            
+            if "Freq Cal" in self.bridge_config.keys():
+                self.freq_cal = self.bridge_config["Freq Cal"]
             
             self.AWG = self.spec_config["AWG"]
             self.MPFU = self.spec_config["MPFU"]
@@ -231,6 +235,15 @@ class xepr_api:
         experiment is running. These changes take effect at the beginning of 
         the next scan
         """
+
+        if re.search(r"[pd]\d+", variable) is not None:
+            if value % self.bridge_config["Pulse dt"] != 0:
+                msg = "Pulse/delay parameter must be of same resolution as" \
+                    + "patternjet/AWG. Resolution is" \
+                    + f" {self.bridge_config['Pulse dt']} ns"
+
+                raise ValueError(msg)
+
         hw_log.debug(f'Set pulse spell var {str(variable)} to {int(value)}')
         self.cur_exp["ftEpr.PlsSPELSetVar"].value = str(variable) + " = " + \
             str(int(value))
@@ -503,14 +516,20 @@ class xepr_api:
         float
             Frequency in GHz
         """
-        # f_pol = [1.420009750632201e4,
-        #          -5.118516287710228e3,
-        #          2.092103562165744e2,
-        #          -2.034307248428457,
-        #          0, 0]
 
         if pol is None:
-            pol = [-67652.70, 2050.203]
+            if hasattr(self, "freq_cal"):
+                pol = self.freq_cal
+            else:
+                pol = [-67652.70, 2050.203]
+
+        if "Min Freq" in self.bridge_config.keys():
+            if val < self.bridge_config["Min Freq"]:
+                raise RuntimeError("Set Frequency is too low!")
+
+        if "Max Freq" in self.bridge_config.keys():
+            if val > self.bridge_config["Max Freq"]:
+                raise RuntimeError("Set Frequency is too high!")
 
         pol_func = np.polynomial.polynomial.Polynomial(pol)
         pos = round(pol_func(val))
@@ -529,7 +548,9 @@ class xepr_api:
             self.hidden['Frequency'].value = pos
         else:
             self.hidden['Frequency'].value = pos
+        
         hw_log.info(f'Bridge Frequency set to {val} at position {pos}')
+
         return self.hidden['Frequency'].value
 
     def get_freq(self, pol: list = None) -> float:
@@ -643,7 +664,7 @@ class xepr_api:
 
         return self.cur_exp['FrequencyA'].value
 
-    def set_ELDOR_freq(self, value) -> float:
+    def set_ELDOR_freq(self, value: float) -> float:
         """ Sets the freuency of the ELDOR chnannel.
 
         Args:
@@ -652,6 +673,14 @@ class xepr_api:
         Returns:
             float: ELDOR frequency in GHz
         """
+
+        if "Min Freq" in self.bridge_config.keys():
+            if value < self.bridge_config["Min Freq"]:
+                raise RuntimeError("Set ELDOR Frequency is too low!")
+
+        if "Max Freq" in self.bridge_config.keys():
+            if value > self.bridge_config["Max Freq"]:
+                raise RuntimeError("Set ELDOR Frequency is too high!")
 
         self.cur_exp['FrequencyA'].value = value
         hw_log.debug(f"ELDOR frequency set to {value}")
