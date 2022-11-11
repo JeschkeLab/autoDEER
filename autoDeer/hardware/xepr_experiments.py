@@ -6,6 +6,7 @@ import autoDeer.tools as tools
 from scipy.optimize import minimize_scalar, curve_fit
 from autoDeer.hardware import xepr_api
 from deerlab import correctphase
+from numpy.polynomial import Polynomial
 
 MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
 
@@ -238,7 +239,10 @@ def CP_run(
 
 def DEER5p_run(
         api, ps_length, d0, tau2, sweeps=4, deadtime=80, dt=16,
-        num_points=256):
+        num_points=0):
+
+    if num_points == 0:
+        num_points = np.floor((tau2 + tau2 - deadtime)/dt)
 
     run_general(
         api,
@@ -249,6 +253,114 @@ def DEER5p_run(
          "d11": 200, "d3": deadtime, "d30": dt, "d0": d0,
          "dim8": num_points},
         run=False)
+
+
+# =============================================================================
+
+
+class DEER:
+
+    def __init__(self, api, d0, det_frq, pump_frq) -> None:
+        self.api = api
+        self.d0 = d0
+        self.det_frq = det_frq
+        self.pump_frq = pump_frq
+
+        self.mpfu = True
+        self.hybrid = False
+        self.awg = False
+        pass
+
+    def run_5p(
+            self, tau1: float, tau2: float, dt: float = 16,
+            deadtime: float = 80, num_points: int = 0,
+            scans: int = 200) -> None:
+
+        ps_length = 32
+        
+        if num_points == 0:
+            num_points = np.floor((tau2 + tau2 - deadtime)/dt)
+        
+        # Add some selection based on AWG / HYBRID/ MPFU
+
+        if self.awg:
+            print("Bruker AWG are not yet supported")
+        elif self.hybrid:
+            ps_file = "/PulseSpel/HUKA_DEER_AWG"
+            ps_exp = "5pDEER"
+            ps_pc = "DEER run"
+        elif self.mpfu:
+            ps_file = "/PulseSpel/aD_DEER_MPFU"
+            ps_exp = "5p DEER"
+            ps_pc = "DEER run AWG -+<x>"
+
+        run_general(
+            self.api,
+            [ps_file],
+            [ps_exp, ps_pc],
+            {"PhaseCycle": True, "ReplaceMode": False},
+            {"p0": ps_length, "p1": ps_length, "h": 20, "n": scans,
+             "d2": tau2, "d11": 200, "d3": deadtime, "d30": dt, "d0": self.d0,
+             "dim8": num_points},
+            run=True)
+        pass
+
+    def run_4p(
+            self, tau1: float, tau2: float, dt: float = 16,
+            deadtime: float = 80, num_points: int = 0,
+            scans: int = 200) -> None:
+
+        ps_length = 32
+
+        if num_points == 0:
+            num_points = np.floor((tau2 + tau2 - deadtime)/dt)
+        
+        # Add some selection based on AWG / HYBRID/ MPFU
+
+        if self.awg:
+            print("Bruker AWG are not yet supported")
+        elif self.hybrid:
+            ps_file = "/PulseSpel/HUKA_DEER_AWG"
+            ps_exp = "4pDEER"
+            ps_pc = "DEER run"
+        elif self.mpfu:
+            ps_file = "/PulseSpel/aD_DEER_MPFU"
+            ps_exp = "4-DEER AWG"
+            ps_pc = "DEER run AWG -+<x>"
+
+        run_general(
+            self.api,
+            [ps_file],
+            [ps_exp, ps_pc],
+            {"PhaseCycle": True, "ReplaceMode": False},
+            {"p0": ps_length, "p1": ps_length, "h": 20, "n": scans,
+             "d2": tau2, "d11": 200, "d3": deadtime, "d30": dt, "d0": self.d0,
+             "dim8": num_points},
+            run=True)
+        pass
+
+    def run_CP(self, tau: int, dt: int = 50, num_points: int = 200,
+               scans: int = 1) -> None:
+
+        ps_length = 32
+
+        if self.awg:
+            print("Bruker AWG are not yet supported")
+        elif self.hybrid or self.mpfu:
+            ps_file = "/PulseSpel/HUKA_DEER_AWG"
+            ps_exp = "4pDEER"
+            ps_pc = "DEER run"
+
+        run_general(
+            self.api,
+            [ps_file],
+            [ps_exp, ps_pc],
+            {"PhaseCycle": True, "ReplaceMode": False},
+            {"p0": ps_length, "p1": ps_length, "h": 20, "n": scans,
+             "d1": tau, "d30": dt, "d0": self.d0,
+             "dim8": num_points},
+            run=True)
+        pass
 
 # =============================================================================
 
@@ -495,7 +607,7 @@ class ELDORtune:
         Parameters
         ----------
         api : xepr_api
-            The spectrometr API object
+            The spectrometer API object
         d0 : int, optional
             The approximate position of d0, this should be lower than ideal,
              by default 700
@@ -668,3 +780,34 @@ class PulseProfile:
             tools.progress_bar_frac(i+1, n)
         
         return PP_x, PP
+
+# =============================================================================
+
+
+def CalibrateFreq(api: xepr_api, num_points: int = 50, deg: int = 5):
+    """Generate the polynomial parameters for converting from frequency 
+    (in GHz) to Xepr gunn diode stepper value. 0-4095.
+
+    Parameters
+    ----------
+    api : xepr_api
+        The API for the spectrometer
+    num_points : int, optional
+        The number of points to be measured, by default 50
+    deg : int, optional
+        The degree of polynomial fit, by default 5
+    """
+    positions = np.linspace(0, 4095, num_points, endpoint=True)
+    array = np.zeros((2, positions))
+
+    for i, val in enumerate(positions):
+        array[0, i] = val
+        api.hidden['Frequency'] = val
+        time.sleep(0.5)
+        array[1, i] = api.get_counterfreq()
+    
+    pfit = Polynomial.fit(array[1, :], array[0, :], deg)
+
+    return pfit.coef
+
+
