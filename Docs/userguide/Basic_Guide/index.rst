@@ -8,6 +8,7 @@ Basic User Guide
 
     ./Installation.rst
     ./deer_intro.rst
+    ./config_file.rst
 
 .. toctree::
     :hidden:

@@ -28,4 +28,3 @@ Or to install in develop mode. ::
 
     ./userguide/Basic_Guide/index
     ./userguide/Advanced_Guide/index
-    ./userguide/reference.rst
