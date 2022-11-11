@@ -2,9 +2,11 @@ import numpy as np
 import scipy.fft as fft
 from scipy.interpolate import pchip_interpolate
 from scipy.signal import hilbert
+import scipy.signal as signal
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import pickle
+import deerlab as dl
 
 
 class resonatorProfile:
@@ -338,3 +340,103 @@ class resonatorProfile:
     #         self = pickle.load(file)
 
 
+# =============================================================================
+
+class ResonatorProfile:
+
+    def __init__(
+            self, nuts: np.ndarray, freqs: np.ndarray, dt: float) -> None:
+        """Analysis and calculation of resonator profiles.
+
+        Parameters
+        ----------
+        nuts : np.ndarray
+            An array containing the nutation data
+        freqs: np.ndarray
+            The respective frequencies of each nutation.
+        dt : float
+            The time step for the nutations.
+        """
+        if nuts.ndim != 2:
+            raise ValueError(
+                "nuts must be a 2D array where collumn 1 is the frequency")
+        self.nutations = nuts
+        self.frequencies = freqs
+        self.n_files = np.shape(nuts)[0]
+        self.nx = np.shape(nuts)[1] - 1
+        self.dt = dt
+        self.fs = 1/dt
+        pass
+
+    def process_nutations(
+            self, noisedensity: float = None):
+        """ Uses a power series to extract the resonator profile.
+
+        Parameters
+        ----------
+        throwlist : list, optional
+            Specific frequencies to be ignored, by default None
+        noisedensity : tuple, optional
+            If not given the first trace is assumed to be so far off resonance
+            that it is just noise. 
+
+        Returns
+        -------
+        np.ndarray
+            The resonator profile. The first column are bridge frequncies, and
+            the second are the coresponding nutation frequncies.
+        """
+
+        if noisedensity is None:
+            f, Pxx_den = signal.welch(self.nutations[0, :], self.fs)
+
+            noisedensity = np.mean(Pxx_den)
+            
+        threshold = 20 * noisedensity
+        res_prof = np.zeros(self.n_files)
+        for i in range(0, self.n_files):
+            nuts = self.nutations[i, :]
+            f, Pxx_den_sig = signal.welch(nuts, self.fs)
+            nuoff = np.argwhere(Pxx_den_sig > threshold)
+            if nuoff.shape[0] > 0:
+                id = np.argmax(Pxx_den_sig[nuoff])
+                res_prof[i] = np.abs(f[nuoff][id][0])
+            else:
+                res_prof[i] = 0
+        
+        nx_id = np.argwhere(res_prof > 0)
+        self.prof_data = res_prof[nx_id]
+        self.prof_frqs = np.real(self.frequencies[nx_id])
+
+        return self.prof_data
+
+    def fit(self):
+        def lorenz_fcn(x, centre, sigma):
+            y = (0.5*sigma)/((x-centre)**2 + (0.5*sigma)**2)
+            return y
+        self.prof_frqs = np.squeeze(self.prof_frqs)
+        self.prof_data = np.squeeze(self.prof_data)
+
+        lorenz = dl.Model(lorenz_fcn, constants='x')
+        lorenz.centre.par0 = 34
+        lorenz.centre.set(lb=33, ub=35)
+        lorenz.sigma.set(lb=0, ub=2)
+        lorenz.sigma.par0 = 0.1
+
+        dl.dd_gauss.mean.set(par0=34.05, lb=33, ub=35)
+        dl.dd_gauss.std.set(par0=0.3, lb=0.01, ub=10)
+        result_gauss = dl.fit(dl.dd_gauss, self.prof_data, self.prof_frqs)
+        lorenz.centre.par0 = result_gauss.mean
+        result = dl.fit(lorenz, self.prof_data, self.prof_frqs)
+
+        self.fc = result.centre
+        self.sigma = result.sigma
+        self.q = self.fc / result.sigma
+
+        self.profile_x = np.linspace(33, 35, 200)
+        self.profile = lorenz_fcn(self.profile_x, self.fc, self.sigma)
+        
+        norm_prof = self.profile
+        norm_prof /= norm_prof.max()
+        self.pha = np.imag(hilbert(-np.log(self.profile)))
+        pass
