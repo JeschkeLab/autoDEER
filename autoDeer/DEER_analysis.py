@@ -102,7 +102,6 @@ def std_deer_analysis(
     rmax_e = np.ceil(rmax)  # Effective rmax
     
     r = np.linspace(1.5, rmax_e, num_points)  # nm  
-
     
     if "pathways" in kwargs:
         pathways = kwargs["pathways"]
@@ -165,7 +164,7 @@ def std_deer_analysis(
     ROI = IdentifyROI(fit.P, r, criterion=0.90, method="int")
 
     Vfit = fit.model
-    Vci = fit.modelUncert.ci(95)
+    # Vci = fit.modelUncert.ci(95)
 
     fig, axs = plt.subplot_mosaic([
         ['Primary_time', 'Primary_time', 'Primary_dist', 'Primary_dist']
@@ -328,7 +327,6 @@ def IdentifyROI(
     return [min_dist, max_dist]
 
 
-
 # =============================================================================
 
 
@@ -358,7 +356,8 @@ def remove_echo(
     search_mask = np.ones(Vre.shape[0], bool)
     search_mask[loc-30:loc+31] = False
 
-    mask = np.abs(Vim-np.mean(Vim)) > criteria * dl.noiselevel(Vre[search_mask])
+    mask = np.abs(Vim-np.mean(Vim)) > criteria * \
+        dl.noiselevel(Vre[search_mask])
     mask = mask & np.logical_not(search_mask)
     iskip = -1
     for i in range(len(mask)):
