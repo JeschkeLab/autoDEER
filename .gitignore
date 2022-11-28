@@ -158,3 +158,8 @@ autoDeer/PulseSpel/*.exp%
 *.npz
 
 Jupyter_Notebooks/
+.xlsx
+
+*.xlsx
+
+.vscode/

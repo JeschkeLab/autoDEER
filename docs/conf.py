@@ -31,9 +31,9 @@ release = '0.2'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-'sphinx_gallery.gen_gallery',
-'sphinx.ext.autosummary',
-'sphinx.ext.viewcode']
+              'sphinx_gallery.gen_gallery',
+              'sphinx.ext.autosummary',
+              'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 # Configuration of Sphinx-Autosymmary
@@ -57,12 +57,17 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 #
 html_theme = 'pydata_sphinx_theme'
 
+html_theme_options = {
+     "footer_items": ["Copyright"]
+}
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-
+html_logo = "autoDEER_name_purple.svg"
 sphinx_gallery_conf = {
      'examples_dirs': '../examples/scripts/',   # path to your example scripts
-     'gallery_dirs': 'auto_examples',  # path to where to save gallery generated output
+     'gallery_dirs': 'auto_examples',  # path to save gallery 
+     'plot_gallery': False,
 }

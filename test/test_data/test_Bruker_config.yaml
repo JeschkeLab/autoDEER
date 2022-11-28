@@ -1,0 +1,22 @@
+Spectrometer:
+  Type: Complete Spectrometer
+  Manufacturer: Bruker
+  Model: E580
+  Local Name: C243
+
+  AWG: False
+  MPFU: True
+  Hybrid: True
+
+  Bridge:
+    Min Freq: 33 #GHz
+    Max Freq: 35 #GHz
+    Freq Cal: [-67652.70, 2050.203]
+    Pulse dt: 2  #ns
+    Det dt: 0.5  #ns
+    Det res: 8  #bit
+
+  Hybrid:
+    AWG: M8190A
+    IP: 192.168.1.1
+

@@ -25,6 +25,7 @@ d2   = 400
 d12  = 100     
 d14  = 100  
 d16  = 2    ; Nuclear Modulation Averaging
+d29 = 2     ;Nutation value
 
 h    = 4       ; number of shots/loop
 n    = 2       ; number of sweeps to accumulate 

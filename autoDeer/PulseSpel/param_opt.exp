@@ -19,7 +19,12 @@ dim4 s[256]         ; Constant tau1+tau2
 
 dim5 s[300]         ; EDFS
 
-dim6 s[512]
+dim6 s[512]         ; Hahn Echo
+
+dim7 s[128]         ; Eldor Nutation
+
+dim8 s[10]          ;PulseProfile ELDOR
+
 
 end defs
 
@@ -52,6 +57,14 @@ ph3 +<x> +<x> +<x> +<x> +<x> +<x> +<x> +<x> -<x> -<x> -<x> -<x> -<x> -<x> -<x> -
 asg1 +a -a -a +a +a -a -a +a +a -a -a +a +a -a -a +a
 bsg1 +b -b -b +b +b -b -b +b +b -b -b +b +b -b -b +b
 end lists3
+
+begin lists4 "ELDOR nut"
+ph1 ELDOR ELDOR
+ph2 +<x> -<x>
+ph3 +<x> +<x>
+asg1 +a -a
+bsg1 +b -b
+end lists4
 
 
 begin exp "Carr Purcell exp" [INTG QUAD]
@@ -352,3 +365,50 @@ pg=p2                         ; integration gate
 
 
  end exp6
+
+begin exp7 "nutation" [INTG QUAD]         ; QUAD detection\n\
+
+p6 = 2 * p1
+pg = 2 * p6                ; acquisition time
+d30 = d29 * sx              ; Nutation Step Size
+d30 = d30 + 1000            ; Pulse Delay
+for k=1 to n
+  dx=0
+  p20 = 0
+  totscans(n)
+  sweep x=1 to sx
+    shot i=1 to h              ; accumulation loop\n\
+      d9                       ; DAF\n\
+      p20 [ph1]
+      d30
+      p1 [ph2]                 ; 1st pulse and phase program\n\
+      d1                       ; tau                       \n\
+      p6 [ph3]                 ; 2nd pulse and phase program\n\
+      d1                       ; tau\n\
+      d0                       ; constant acquisition delay\n\
+      acq [sg1]                ; acquisition\n\
+    next i                     ; end of accumulation loop\n\
+    dx=dx+d29
+    p20 = p20 +d29
+   next x
+scansdone(k)
+next k
+end exp7
+
+begin exp8 "PulseProfile ELDOR" [INTG QUAD]
+  d10 = 1000
+  sweep x=1 to sx
+    shot i=1 to h              ; accumulation loop
+      d9                       ; DAF
+      p7 [ph1]                 ; ELDOR test pulse
+      d10
+      p1 [ph2]                 ; 1st pulse and phase program
+      d1                       ; tau                       
+      p0 [ph3]                ; 2nd pulse and phase program
+      d1                       ; tau
+      d0                       ; constant acquisition delay
+      acq [sg1]               ; acquisition
+    next i                     ; end of accumulation loop 
+  next x
+
+end exp8
