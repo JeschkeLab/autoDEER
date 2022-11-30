@@ -3,9 +3,10 @@ from scipy.io import loadmat, savemat
 from autoDeer.hardware.openepr import Sequence, Pulse, RectPulse, \
     ChirpPulse, HSPulse, Detection
 import numpy as np
+import os
+import re
 
-
-class ETH_awg:
+class ETH_awg_interface:
 
     def __init__(self, awg_freq=1.5, dig_rate=2) -> None:
         """Connecting to a Andrin Doll style spectrometer, commonly in use at
@@ -35,44 +36,73 @@ class ETH_awg:
         self.workspace = self.engine.workspace
 
     def acquire_dataset(self) -> dict:
-        self.engine.dig_interface('savenow')
-        path = ""
-        loadmat(path, squeeze_me=True)
+        cur_exp = self.workspace['currexp']
+        folder_path = cur_exp['savepath']
+        filename = cur_exp['savename']
+        files = os.listdir(folder_path)
 
-    def launch(self, experiment):
-        self.workspace['exp'] = experiment
-        self.engine.launch('exp', nargout=0)
+        def extract_date_time(str):
+            output = re.findall("(\d{8})_(\d{4})", str)
+            if output != []:
+                date = int(output[0][0])
+                time = int(output[0][1])
+                return date*10000 + time
+            else:
+                return 0
+        
+        newest = max([extract_date_time(file) for file in files])
+        date = newest // 10000
+        time = newest - date * 10000
+        path = folder_path + "\\" + f"{date}_{time}_{filename}.mat"
+        
+        self.engine.dig_interface('savenow')
+        return loadmat(path, simplify_cells=True, squeeze_me=True)
+
+    def launch(self, sequence:Sequence, savename:str, IFgain:int):
+        struct = self._build_exp_struct(sequence)
+        struct['savename'] = savename
+        struct['IFgain'] = IFgain
+        self.cur_exp = struct
+        self.workspace['exp'] = self.cur_exp
+        self.engine.eval('launch(exp)', nargout=0)
 
     def _build_exp_struct(self, sequence) -> dict:
 
         struc = {}
 
-        struc["LO"] = sequence.LO.value - self.awg_freq
-        struc["avgs"] = sequence.averages.value
-        struc["reptime"] = sequence.reptime.value * 1e3
-        struc["shots"] = sequence.shots.value
-
+        struc["LO"] = float(sequence.LO.value - self.awg_freq)
+        struc["avgs"] = float(sequence.averages.value)
+        struc["reptime"] = float(sequence.reptime.value * 1e3)
+        struc["shots"] = float(sequence.shots.value)
+        struc['B'] = float(sequence.B.value)
+        struc['name'] = sequence.name
         # Build pulse/detection events
         struc["events"] = list(map(self._build_pulse, sequence.pulses))
 
+
+        unique_parvars = np.unique(sequence.progTable[0])
         # Build parvars
         struc["parvars"] = []
-        struc["parvars"][0] = self._build_phase_cycle()
+        struc["parvars"].append(self._build_phase_cycle(sequence))
+        for i in unique_parvars:
+            struc["parvars"].append(self._build_parvar(i, sequence))
+        
+        return struc
 
     def _build_pulse(self, pulse) -> dict:
 
         event = {}
-        event["t"] = pulse.t.value
+        event["t"] = float(pulse.t.value)
 
         if type(pulse) is Detection:
-            event["det_pos"] = pulse.t.value
-            event["det_len"] = pulse.tp.value * self.dig_rate
-            pass
+            event["det_len"] = float(pulse.tp.value * self.dig_rate)
+            event["name"] = "det"
+            return event
 
         # Assuming we now have an actual pulse not detection event
         event["pulsedef"] = {}
         event["pulsedef"]["scale"] = pulse.scale.value
-        event["pulsedef"]["tp"] = pulse.tp.value
+        event["pulsedef"]["tp"] = float(pulse.tp.value)
 
         if type(pulse) is RectPulse:
             event["pulsedef"]["type"] = 'chirp'
@@ -108,13 +138,18 @@ class ETH_awg:
 
         parvar = {}
         parvar["reduce"] = 1
-        parvar["ax_id"] = 0
+        parvar["ax_id"] = 1
+        parvar["name"] = "phase_cycle"
 
-        pulse_str = lambda x: f"events{{{x}}}.pulsedef.phase"
+        pulse_str = lambda x: f"events{{{x+1}}}.pulsedef.phase"
         parvar["variables"] = list(map(pulse_str, sequence.pcyc_vars))
 
-        det_id = 0
-        det_str = "events{{{}}}.det_sign".format(det_id)
+        # Find detection pulse
+        for i,pulse in enumerate(sequence.pulses):
+            if type(pulse) == Detection:
+                det_id = i
+
+        det_str = "events{{{}}}.det_sign".format(det_id+1)
         parvar["variables"].append(det_str)
 
         parvar["vec"] = np.vstack([sequence.pcyc_cycles, sequence.pcyc_dets]).T
@@ -126,6 +161,7 @@ class ETH_awg:
         prog_table = sequence.progTable
         prog_table_n = len(prog_table[0])
         parvar = {}
+        parvar["name"] = f"parvar{id+1}"
 
         parvar["variables"] = []
         parvar["vec"] = []
@@ -138,9 +174,9 @@ class ETH_awg:
                 vec = prog_table[3][i]
                 if pulse_num is not None:
                     if var == "t":
-                        pulse_str = f"events{{{pulse_num}}}.t"
+                        pulse_str = f"events{{{pulse_num+1}}}.t"
                     else:
-                        pulse_str = f"events{{{pulse_num}}}.pulsedef.{var}"
+                        pulse_str = f"events{{{pulse_num+1}}}.pulsedef.{var}"
                     
                 else:
                     pulse_str = var

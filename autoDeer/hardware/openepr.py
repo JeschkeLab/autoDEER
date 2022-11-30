@@ -103,8 +103,8 @@ class Sequence:
 
         if "B" in kwargs:
             self.B = Parameter(
-                "Field", kwargs["B"], "Gauss",
-                "The static B0 for the experiment")
+                "B", kwargs["B"], "Gauss",
+                "The static B0 field for the experiment")
         
         if "LO" in kwargs:
             self.LO = Parameter(
@@ -117,14 +117,16 @@ class Sequence:
                 "The shot repetition time")
         
         if "averages" in kwargs:
-            self.reptime = Parameter(
-                "Averages", kwargs["averages"], "None",
+            self.averages = Parameter(
+                "averages", kwargs["averages"], "None",
                 "The number of averages to perform.")
         
         if "shots" in kwargs:
-            self.reptime = Parameter(
-                "Shots", kwargs["shots"], "None",
+            self.shots = Parameter(
+                "shots", kwargs["shots"], "None",
                 "The number of shots per scan.")
+        if "name" in kwargs:
+            self.name = kwargs["name"]
         pass
 
     def plot(self) -> None:
