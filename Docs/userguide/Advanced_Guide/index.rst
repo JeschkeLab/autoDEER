@@ -112,6 +112,8 @@ well as the sections on the specific hardware APIs.
     :caption: Hardware Control
 
     ./Bruker.rst
+    ./Generalised_EPR.rst
+    ./Homebuilt.rst
 
 .. toctree::
     :hidden:

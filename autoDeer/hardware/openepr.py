@@ -97,37 +97,51 @@ class dataset:
 
 class Sequence:
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(
+            self, *, name, B, LO, reptime, averages, shots, **kwargs) -> None:
+        """Represents an experimental pulse sequence.
+
+        Parameters
+        ----------
+        name : str
+            The name of this pulse sequence
+        B : float
+            The magnetic field for this sequence in Gauss.
+        LO : float
+            The central frequency of this sequence. I.e. The frequnecy at which
+            a zero offset pulse is at. 
+        reptime : float
+            The shot repetition time in us.
+        averages : int
+            The number of scans to be accumulated.
+        shots : itn
+            The number of shots per point.
+        """
 
         self.pulses = []
         self.num_pulses = len(self.pulses)
 
-        if "B" in kwargs:
-            self.B = Parameter(
-                "B", kwargs["B"], "Gauss",
-                "The static B0 field for the experiment")
+        self.B = Parameter(
+            "B", B, "Gauss",
+            "The static B0 field for the experiment")
         
-        if "LO" in kwargs:
-            self.LO = Parameter(
-                "LO", kwargs["LO"], "GHz",
-                "The local oscillator frequency.")
+        self.LO = Parameter(
+            "LO", LO, "GHz",
+            "The local oscillator frequency.")
         
-        if "reptime" in kwargs:
-            self.reptime = Parameter(
-                "reptime", kwargs["reptime"], "us",
-                "The shot repetition time")
+        self.reptime = Parameter(
+            "reptime", reptime, "us",
+            "The shot repetition time")
         
-        if "averages" in kwargs:
-            self.averages = Parameter(
-                "averages", kwargs["averages"], "None",
-                "The number of averages to perform.")
+        self.averages = Parameter(
+            "averages", averages, "None",
+            "The number of averages to perform.")
         
-        if "shots" in kwargs:
-            self.shots = Parameter(
-                "shots", kwargs["shots"], "None",
-                "The number of shots per scan.")
-        if "name" in kwargs:
-            self.name = kwargs["name"]
+        self.shots = Parameter(
+            "shots", shots, "None",
+            "The number of shots per scan.")
+            
+        self.name = kwargs["name"]
         pass
 
     def plot(self) -> None:
@@ -135,6 +149,13 @@ class Sequence:
         pass
 
     def addPulse(self, pulse):
+        """Adds a pulse to the next position in the sequence.
+
+        Parameters
+        ----------
+        pulse : Pulse
+            The object describing the pulse.
+        """
         if type(pulse) == Pulse or issubclass(type(pulse), Pulse):
             self.pulses.append(pulse)
         
@@ -198,17 +219,14 @@ class Sequence:
             if type(var) is Parameter:
                 if var.progressive is True:
                     for i in range(0, len(var.prog)):
-                            progTable[0].append(var.prog[i][0]) 
-                            progTable[1].append(None)
-                            progTable[2].append(var_name) 
-                            progTable[3].append(var.prog[i][1]) 
+                        progTable[0].append(var.prog[i][0]) 
+                        progTable[1].append(None)
+                        progTable[2].append(var_name) 
+                        progTable[3].append(var.prog[i][1]) 
 
-
-        #             
         self.progTable = progTable
         return self.progTable
         
-
     def addPulseProg(self, pulse_id, variable, axis_id, axis) -> None:
         if pulse_id is None:
             # Assume it is an experiment/sequence parameter
@@ -247,6 +265,17 @@ class Sequence:
 class Pulse:
 
     def __init__(self, t, tp, scale) -> None:
+        """The class for a general pulse.
+
+        Parameters
+        ----------
+        t : float
+            The pulse start time in ns.
+        tp : float
+            The pulse length in ns.
+        scale : float
+            The arbitary experimental pulse amplitude, 0-1.
+        """
         self.t = Parameter("Time", t, "ns", "Start time of pulse")
         self.tp = Parameter("Length", tp, "ns", "Length of the pulse")
         self.scale = Parameter("Scale", scale, None, "Amplitude of pulse")
@@ -270,6 +299,13 @@ class Pulse:
         return self.AM, self.FM
 
     def plot(self, pad=1000):
+        """Plots the time domain representation of this pulse.
+
+        Parameters
+        ----------
+        pad : int, optional
+            The number of zeros to pad the data with, by default 1000
+        """
         dt = self.ax[1] - self.ax[0]
         tax = self.t.value + self.ax
         fwd_ex = np.linspace(tax[0] - dt * pad, tax[0], pad)
@@ -373,6 +409,28 @@ class Pulse:
 class Parameter:
 
     def __init__(self, name, value, unit=None, description=None) -> None:
+        """A general parameter.
+
+        Parameters
+        ----------
+        name : str
+            The parameter name
+        value : float or int
+            The parameter value
+        unit : str, optional
+            The unit of parameter, by default None. Leave as None if unitless.
+        description : str, optional
+            A brief description of the parameter, by default None
+
+        Attributes
+        ----------
+        progressive : bool
+            Is the parameter used in any progression or is it constant
+        prog : dict
+            A dict containing progressive programs for this parameter. This 
+            list has two elements. 1) The axis_id"s and 2) the "axis" of 
+            values.
+        """
         self.name = name
         self.value = value
         self.unit = unit
@@ -393,6 +451,16 @@ class Parameter:
 class Detection(Pulse):
 
     def __init__(self, t, tp) -> None:
+        """A general detection pulse.
+
+        Parameters
+        ----------
+        t : float
+            The **centre** time of the detection event
+        tp : float
+            The **total** time of the detection event. The detection event will
+            be symetrical about the centre time. 
+        """
         self.t = Parameter("Time", t, "ns", "Start time of pulse")
         self.tp = Parameter("Length", tp, "ns", "Length of the pulse")
         self.Progression = False
@@ -532,20 +600,21 @@ def build_HahnEcho(tau, pulse_tp, freq, LO, B, scale):
     Hahn_echo.addPulse(Detection(tau+pulse_tp*2, 512))
 
     Hahn_echo.addPulsesProg(
-        [1,2],
-        ["t","t"],
+        [1, 2],
+        ["t", "t"],
         0,
-        np.linspace(500,1000,21),
-        multipliers = [1,2])
+        np.linspace(500, 1000, 21),
+        multipliers=[1, 2])
     Hahn_echo._buildProgTable()
 
-    Hahn_echo.pulses[0]._addPhaseCycle([0, np.pi],[1,-1])
+    Hahn_echo.pulses[0]._addPhaseCycle([0, np.pi], [1, -1])
 
     Hahn_echo._buildPhaseCycle()
 
     return Hahn_echo
 
-def build_FieldSweep(pulse, freq, B, Bsweep = 300):
+
+def build_FieldSweep(pulse, freq, B, Bsweep=300):
 
     if type(pulse) is not RectPulse:
         raise RuntimeError("Only rectangular pi/2 pulse are supported here")
@@ -558,7 +627,7 @@ def build_FieldSweep(pulse, freq, B, Bsweep = 300):
     pulse_pi.t.value = tau
     pulse.t.value = 0
 
-    tune= Sequence(
+    tune = Sequence(
         LO=freq, averages=1, reptime=4e3, shots=100, B=B, name="Tune"
         )
 
@@ -575,18 +644,16 @@ def build_FieldSweep(pulse, freq, B, Bsweep = 300):
 
     tune._buildProgTable()
 
-    tune.pulses[0]._addPhaseCycle([0, np.pi],[1,-1])
+    tune.pulses[0]._addPhaseCycle([0, np.pi], [1, -1])
 
     tune._buildPhaseCycle()
 
     return tune
 
 
-
-
 # !! Move to autoDeer !!
 def build_rectDEER(
-        tau1, tau2, f1, f2, LO, B, pulse_tp, scale, step = 16, n_pulses=4,
+        tau1, tau2, f1, f2, LO, B, pulse_tp, scale, step=16, n_pulses=4,
         tau3=200):
 
     if n_pulses == 5:
@@ -604,11 +671,11 @@ def build_rectDEER(
     DEER = Sequence(
        LO=LO, averages=1, reptime=4e3, shots=200, B=B, name="autoDEER")
     
-    DEER.addPulse(RectPulse(0, pulse_tp, f1, scale)) # pi/2
-    DEER.addPulse(extra_pump) # pi pump
-    DEER.addPulse(RectPulse(tau1, pulse_tp, f1, scale*2)) # pi
-    DEER.addPulse(RectPulse(tau1+deadtime, pulse_tp, f2, scale*2)) # pi pump
-    DEER.addPulse(RectPulse(2*tau1+tau2, pulse_tp, f1, scale*2)) # pi
+    DEER.addPulse(RectPulse(0, pulse_tp, f1, scale))  # pi/2
+    DEER.addPulse(extra_pump)  # pi pump
+    DEER.addPulse(RectPulse(tau1, pulse_tp, f1, scale*2))  # pi
+    DEER.addPulse(RectPulse(tau1+deadtime, pulse_tp, f2, scale*2))  # pi pump
+    DEER.addPulse(RectPulse(2*tau1+tau2, pulse_tp, f1, scale*2))  # pi
     DEER.addPulse(Detection(2*(tau1+tau2), 512))
 
     DEER.addPulsesProg(
@@ -620,9 +687,9 @@ def build_rectDEER(
     DEER._buildProgTable()
 
     DEER.pulses[1+shift_pulse]._addPhaseCycle(
-        [0,np.pi/2,np.pi,-np.pi/2],[1,1,1,1])
+        [0, np.pi/2, np.pi, -np.pi/2], [1, 1, 1, 1])
     DEER.pulses[2+shift_pulse]._addPhaseCycle(
-        [0,np.pi/2,np.pi,-np.pi/2],[1,-1,1,-1])
+        [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])
 
     DEER._buildPhaseCycle()
     pass
@@ -632,6 +699,7 @@ def build_AWGDEER(tau1, tau2, f1, f2, n_pulses=4, nDEER=False):
 
     pass
 
+
 def tune_pulse(pulse, freq, B):
 
     if type(pulse) is RectPulse:
@@ -640,7 +708,7 @@ def tune_pulse(pulse, freq, B):
         pulse_pi.tp.value = pulse.tp.value * 2
         pulse_pi.t.value = 500
 
-        tune= Sequence(
+        tune = Sequence(
             LO=freq, averages=1, reptime=4e3, shots=200, B=B, name="Tune"
         )
 
@@ -649,18 +717,19 @@ def tune_pulse(pulse, freq, B):
         tune.addPulse(Detection(1000 + pulse_pi.tp.value, 512))
 
         tune.addPulsesProg(
-            [0,1],
-            ["scale","scale"],
+            [0, 1],
+            ["scale", "scale"],
             0,
-            np.linspace(0,1,51)
+            np.linspace(0, 1, 51)
             )
         tune._buildProgTable()
 
-        tune.pulses[0]._addPhaseCycle([0, np.pi],[1,-1])
+        tune.pulses[0]._addPhaseCycle([0, np.pi], [1, -1])
 
         tune._buildPhaseCycle()
         
         return tune
+
 
 def resonator_profile(pulse, freq, gyro):
 
@@ -670,7 +739,7 @@ def resonator_profile(pulse, freq, gyro):
     tau0 = 5000
     tau = 500
 
-    hard_pulse = RectPulse(0,5.5,0,1.0)
+    hard_pulse = RectPulse(0, 5.5, 0, 1.0)
     pulse.pcyc = None
     pulse_pi = copy.deepcopy(pulse)
     pulse_pi.tp.value = pulse.tp.value * 2
@@ -687,28 +756,27 @@ def resonator_profile(pulse, freq, gyro):
     tune.addPulse(Detection(tau0 + 2*tau + pulse_pi.tp.value, 512))
 
     tune.addPulseProg(
-        pulse_id = 0,
-        variable = 'tp',
-        axis_id = 0,
-        axis = np.linspace(0, 63, 64)
+        pulse_id=0,
+        variable='tp',
+        axis_id=0,
+        axis=np.linspace(0, 63, 64)
     )
 
     tune.addPulsesProg(
-        pulses = [0,1,2],
-        variables = ['freq','freq','freq'],
-        axis_id = 1,
-        axis = np.linspace(-0.4, 0.4, 81)
+        pulses=[0, 1, 2],
+        variables=['freq', 'freq', 'freq'],
+        axis_id=1,
+        axis=np.linspace(-0.4, 0.4, 81)
     )
 
     tune.addPulseProg(
-        pulse_id = None,
-        variable = 'B',
-        axis_id = 1,
-        axis = (np.linspace(-0.4, 0.4, 81)+tune.LO.value)/gyro
+        pulse_id=None,
+        variable='B',
+        axis_id=1,
+        axis=(np.linspace(-0.4, 0.4, 81)+tune.LO.value)/gyro
 
     )
 
     tune._buildProgTable()
-
 
     return tune

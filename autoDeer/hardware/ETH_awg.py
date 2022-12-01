@@ -6,24 +6,46 @@ import numpy as np
 import os
 import re
 
+
 class ETH_awg_interface:
 
     def __init__(self, awg_freq=1.5, dig_rate=2) -> None:
-        """Connecting to a Andrin Doll style spectrometer, commonly in use at
-        ETH Zürich.
+        """An interface for connecting to a Andrin Doll style spectrometer,
+        commonly in use at ETH Zürich.
 
         System Requirments
         -------------------
         - Matlab 2022b or later
         - Matlab engine for python
         - Python (3.10+ recommended)
+
+        Parameters
+        -----------
+        awg_freq : float
+            The normal operating AWG frequency. 
+            Sequence.LO = AWG.LO + AWG.awg_freq 
+
+        dig_rate : float
+            The speed of the digitser in GSa/s
         """
+        
         self.connect()
         self.awg_freq = awg_freq
         self.dig_rate = dig_rate
         pass
 
     def connect(self, session=None):
+        """Connect to a running matlab session. If more than one session has 
+        been started this will choose the first one. It is recomended that only
+        one session is open at one time, or that the engine is started with a
+        known name.
+
+        Parameters
+        ----------
+        session : str, optional
+            The string denoting a specific session to connect to
+            , by default None
+        """
 
         if session is None:
             matlab_sessions = matlab.engine.find_matlab()
@@ -36,13 +58,20 @@ class ETH_awg_interface:
         self.workspace = self.engine.workspace
 
     def acquire_dataset(self) -> dict:
+        """ Acquire and return the current or most recent dataset.
+
+        Returns
+        -------
+        dict
+            The dataset
+        """
         cur_exp = self.workspace['currexp']
         folder_path = cur_exp['savepath']
         filename = cur_exp['savename']
         files = os.listdir(folder_path)
 
         def extract_date_time(str):
-            output = re.findall("(\d{8})_(\d{4})", str)
+            output = re.findall(r"(\d{8})_(\d{4})", str)
             if output != []:
                 date = int(output[0][0])
                 time = int(output[0][1])
@@ -58,8 +87,8 @@ class ETH_awg_interface:
         self.engine.dig_interface('savenow')
         return loadmat(path, simplify_cells=True, squeeze_me=True)
 
-    def launch(self, sequence:Sequence, savename:str, IFgain:int=0):
-        """_summary_
+    def launch(self, sequence: Sequence, savename: str, IFgain: int = 0):
+        """Launch a sequence on the spectrometer.
 
         Parameters
         ----------
@@ -90,8 +119,8 @@ class ETH_awg_interface:
         # Build pulse/detection events
         struc["events"] = list(map(self._build_pulse, sequence.pulses))
 
-
         unique_parvars = np.unique(sequence.progTable[0])
+
         # Build parvars
         struc["parvars"] = []
         if hasattr(sequence,'pcyc_vars'):
