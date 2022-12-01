@@ -53,12 +53,23 @@ class ETH_awg_interface:
         newest = max([extract_date_time(file) for file in files])
         date = newest // 10000
         time = newest - date * 10000
-        path = folder_path + "\\" + f"{date}_{time}_{filename}.mat"
+        path = folder_path + "\\" + f"{date:08d}_{time:04d}_{filename}.mat"
         
         self.engine.dig_interface('savenow')
         return loadmat(path, simplify_cells=True, squeeze_me=True)
 
-    def launch(self, sequence:Sequence, savename:str, IFgain:int):
+    def launch(self, sequence:Sequence, savename:str, IFgain:int=0):
+        """_summary_
+
+        Parameters
+        ----------
+        sequence : Sequence
+            The pulse sequence to launched.
+        savename : str
+            The save name for the file.
+        IFgain : int
+            The IF gain, either [0,1,2], default 0.
+        """
         struct = self._build_exp_struct(sequence)
         struct['savename'] = savename
         struct['IFgain'] = IFgain
@@ -70,11 +81,11 @@ class ETH_awg_interface:
 
         struc = {}
 
-        struc["LO"] = float(sequence.LO.value - self.awg_freq)
+        struc["LO"] = round(float(sequence.LO.value - self.awg_freq),3)
         struc["avgs"] = float(sequence.averages.value)
-        struc["reptime"] = float(sequence.reptime.value * 1e3)
+        struc["reptime"] = round(float(sequence.reptime.value * 1e3),0)
         struc["shots"] = float(sequence.shots.value)
-        struc['B'] = float(sequence.B.value)
+        struc['B'] = round(float(sequence.B.value),0)
         struc['name'] = sequence.name
         # Build pulse/detection events
         struc["events"] = list(map(self._build_pulse, sequence.pulses))
@@ -83,7 +94,8 @@ class ETH_awg_interface:
         unique_parvars = np.unique(sequence.progTable[0])
         # Build parvars
         struc["parvars"] = []
-        struc["parvars"].append(self._build_phase_cycle(sequence))
+        if hasattr(sequence,'pcyc_vars'):
+            struc["parvars"].append(self._build_phase_cycle(sequence))
         for i in unique_parvars:
             struc["parvars"].append(self._build_parvar(i, sequence))
         
@@ -101,7 +113,7 @@ class ETH_awg_interface:
 
         # Assuming we now have an actual pulse not detection event
         event["pulsedef"] = {}
-        event["pulsedef"]["scale"] = pulse.scale.value
+        event["pulsedef"]["scale"] = float(pulse.scale.value)
         event["pulsedef"]["tp"] = float(pulse.tp.value)
 
         if type(pulse) is RectPulse:

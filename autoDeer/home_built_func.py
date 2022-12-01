@@ -207,7 +207,7 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
             np.array(estr["postsigns"]["ids"]).reshape(-1)
         if not (elim_pcyc and cycled[ii]):
             dta_x.append(estr["parvars"][estr["postsigns"]["ids"][ii]-1]
-                         ["axis"].astype(np.int32))
+                         ["axis"].astype(np.float32))
             relevant_parvars.append(estr["postsigns"]["ids"][ii]-1)
             ii_dtax += 1
     
