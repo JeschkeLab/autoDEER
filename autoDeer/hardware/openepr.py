@@ -449,11 +449,11 @@ class ChirpPulse(Pulse):
                 "Bandwidth", kwargs["BW"], "GHz", "Bandwidth of pulse")
             if "init_freq" in kwargs:
                 self.init_freq = Parameter(
-                    "f_init", kwargs["init_freq"], "GHz",
+                    "init_freq", kwargs["init_freq"], "GHz",
                     "Initial frequency of pulse")
             elif "final_freq" in kwargs:
                 self.init_freq = Parameter(
-                    "f_final", kwargs["final_freq"], "GHz",
+                    "final_final", kwargs["final_freq"], "GHz",
                     "Final frequency of pulse")
             else:
                 raise ValueError()

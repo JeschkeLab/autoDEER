@@ -185,11 +185,18 @@ class ETH_awg_interface:
                 var = prog_table[2][i]
                 vec = prog_table[3][i]
                 if pulse_num is not None:
+                    if var in ["freq", "init_freq"]:
+                        vec += self.awg_freq
+                        var =  "nu_init"
+                    if var == "final_freq":
+                        vec += self.awg_freq
+                        var =  "nu_final"
+            
                     if var == "t":
                         pulse_str = f"events{{{pulse_num+1}}}.t"
                     else:
                         pulse_str = f"events{{{pulse_num+1}}}.pulsedef.{var}"
-                    
+
                 else:
                     pulse_str = var
                 
