@@ -4,6 +4,7 @@ from scipy.signal import hilbert
 from scipy.io import savemat
 import os
 from autoDeer import __version__
+import copy
 
 
 # =============================================================================
@@ -176,7 +177,7 @@ class Sequence:
         return self.pcyc_vars, self.pcyc_cycles, self.pcyc_dets
 
     def _buildProgTable(self):
-        #           id, pulse #, variable, axis
+        #           parvarid, pulse #, variable, axis
         progTable = [[], [], [], []]
         for n, pulse in enumerate(self.pulses):
             # Loop over all pulses
@@ -190,16 +191,32 @@ class Sequence:
                             progTable[1].append(n)
                             progTable[2].append(var_name) 
                             progTable[3].append(var.prog[i][1]) 
+        
+        # Sequence/ Experiment Parameters
+        for var_name in vars(self):
+            var = getattr(self, var_name)
+            if type(var) is Parameter:
+                if var.progressive is True:
+                    for i in range(0, len(var.prog)):
+                            progTable[0].append(var.prog[i][0]) 
+                            progTable[1].append(None)
+                            progTable[2].append(var_name) 
+                            progTable[3].append(var.prog[i][1]) 
 
-        # TODO: Add support for non_pulse parameters
+
         #             
         self.progTable = progTable
         return self.progTable
         
 
     def addPulseProg(self, pulse_id, variable, axis_id, axis) -> None:
-        var = getattr(self.pulses[pulse_id], variable)
-        var.add_progression(axis_id, axis)
+        if pulse_id is None:
+            # Assume it is an experiment/sequence parameter
+            var = getattr(self, variable)
+            var.add_progression(axis_id, axis)
+        else:
+            var = getattr(self.pulses[pulse_id], variable)
+            var.add_progression(axis_id, axis)
         pass
     
     def addPulsesProg(
@@ -392,7 +409,7 @@ class RectPulse(Pulse):
 
     def __init__(self, t, tp, freq, scale) -> None:
         Pulse.__init__(self, t, tp, scale)
-        self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
+        self.freq = Parameter("freq", freq, "GHz", "Frequency of the Pulse")
         self.Progression = False
         self.pcyc = None
         self._buildFMAM(self.func)
@@ -507,17 +524,191 @@ class ChorusPulse:
 # Standard Sequences Pulses     !! Move to autoDeer !!
 # =============================================================================
 
-def build_HahnEcho(tau, freq):
+def build_HahnEcho(tau, pulse_tp, freq, LO, B, scale):
+    Hahn_echo = Sequence(
+       LO=LO, averages=1, reptime=4e3, shots=200, B=B, name="Hahn_Echo")
+    Hahn_echo.addPulse(RectPulse(0, pulse_tp, freq, scale))
+    Hahn_echo.addPulse(RectPulse(tau, pulse_tp*2, freq, scale))
+    Hahn_echo.addPulse(Detection(tau+pulse_tp*2, 512))
 
-    pass
+    Hahn_echo.addPulsesProg(
+        [1,2],
+        ["t","t"],
+        0,
+        np.linspace(500,1000,21),
+        multipliers = [1,2])
+    Hahn_echo._buildProgTable()
+
+    Hahn_echo.pulses[0]._addPhaseCycle([0, np.pi],[1,-1])
+
+    Hahn_echo._buildPhaseCycle()
+
+    return Hahn_echo
+
+def build_FieldSweep(pulse, freq, B, Bsweep = 300):
+
+    if type(pulse) is not RectPulse:
+        raise RuntimeError("Only rectangular pi/2 pulse are supported here")
+
+    tau = 500
+
+    pulse.pcyc = None
+    pulse_pi = copy.deepcopy(pulse)
+    pulse_pi.tp.value = pulse.tp.value * 2
+    pulse_pi.t.value = tau
+    pulse.t.value = 0
+
+    tune= Sequence(
+        LO=freq, averages=1, reptime=4e3, shots=100, B=B, name="Tune"
+        )
+
+    tune.addPulse(pulse)
+    tune.addPulse(pulse_pi)
+    tune.addPulse(Detection(2*tau + pulse_pi.tp.value, 512))
+
+    tune.addPulseProg(
+        None,
+        'B',
+        0,
+        np.linspace(B-Bsweep/2, B+Bsweep/2, Bsweep + 1)
+    )
+
+    tune._buildProgTable()
+
+    tune.pulses[0]._addPhaseCycle([0, np.pi],[1,-1])
+
+    tune._buildPhaseCycle()
+
+    return tune
+
+
 
 
 # !! Move to autoDeer !!
-def build_rectDEER(tau1, tau2, f1, f2, n_pulses=4, nDEER=False):
+def build_rectDEER(
+        tau1, tau2, f1, f2, LO, B, pulse_tp, scale, step = 16, n_pulses=4,
+        tau3=200):
 
+    if n_pulses == 5:
+        moving_pulse = [3]
+        shift_pulse = 1
+        extra_pump = RectPulse(tau1-tau3, pulse_tp, f2, scale*2)
+    else:
+        moving_pulse = [2]
+        extra_pump = None
+        shift_pulse = 0
+    
+    deadtime = 100
+    axis = np.arange(tau1+deadtime, tau2 + tau1 + deadtime, step)
+    
+    DEER = Sequence(
+       LO=LO, averages=1, reptime=4e3, shots=200, B=B, name="autoDEER")
+    
+    DEER.addPulse(RectPulse(0, pulse_tp, f1, scale)) # pi/2
+    DEER.addPulse(extra_pump) # pi pump
+    DEER.addPulse(RectPulse(tau1, pulse_tp, f1, scale*2)) # pi
+    DEER.addPulse(RectPulse(tau1+deadtime, pulse_tp, f2, scale*2)) # pi pump
+    DEER.addPulse(RectPulse(2*tau1+tau2, pulse_tp, f1, scale*2)) # pi
+    DEER.addPulse(Detection(2*(tau1+tau2), 512))
+
+    DEER.addPulsesProg(
+        moving_pulse,
+        ["t"],
+        0,
+        axis)
+
+    DEER._buildProgTable()
+
+    DEER.pulses[1+shift_pulse]._addPhaseCycle(
+        [0,np.pi/2,np.pi,-np.pi/2],[1,1,1,1])
+    DEER.pulses[2+shift_pulse]._addPhaseCycle(
+        [0,np.pi/2,np.pi,-np.pi/2],[1,-1,1,-1])
+
+    DEER._buildPhaseCycle()
     pass
 
 
 def build_AWGDEER(tau1, tau2, f1, f2, n_pulses=4, nDEER=False):
 
     pass
+
+def tune_pulse(pulse, freq, B):
+
+    if type(pulse) is RectPulse:
+
+        pulse_pi = copy.deepcopy(pulse)
+        pulse_pi.tp.value = pulse.tp.value * 2
+        pulse_pi.t.value = 500
+
+        tune= Sequence(
+            LO=freq, averages=1, reptime=4e3, shots=200, B=B, name="Tune"
+        )
+
+        tune.addPulse(pulse)
+        tune.addPulse(pulse_pi)
+        tune.addPulse(Detection(1000 + pulse_pi.tp.value, 512))
+
+        tune.addPulsesProg(
+            [0,1],
+            ["scale","scale"],
+            0,
+            np.linspace(0,1,51)
+            )
+        tune._buildProgTable()
+
+        tune.pulses[0]._addPhaseCycle([0, np.pi],[1,-1])
+
+        tune._buildPhaseCycle()
+        
+        return tune
+
+def resonator_profile(pulse, freq, gyro):
+
+    if type(pulse) is not RectPulse:
+        raise RuntimeError("Only rectangular pi/2 pulse are supported here")
+    
+    tau0 = 5000
+    tau = 500
+
+    hard_pulse = RectPulse(0,5.5,0,1.0)
+    pulse.pcyc = None
+    pulse_pi = copy.deepcopy(pulse)
+    pulse_pi.tp.value = pulse.tp.value * 2
+    pulse.t.value = tau0
+    pulse_pi.t.value = tau0 + tau
+
+    tune = Sequence(
+        LO=freq, averages=1, reptime=4e3, shots=100, B=freq/gyro, name="Tune"
+        )
+    
+    tune.addPulse(hard_pulse)
+    tune.addPulse(pulse)
+    tune.addPulse(pulse_pi)
+    tune.addPulse(Detection(tau0 + 2*tau + pulse_pi.tp.value, 512))
+
+    tune.addPulseProg(
+        pulse_id = 0,
+        variable = 'tp',
+        axis_id = 0,
+        axis = np.linspace(0, 63, 64)
+    )
+
+    tune.addPulsesProg(
+        pulses = [0,1,2],
+        variables = ['freq','freq','freq'],
+        axis_id = 1,
+        axis = np.linspace(-0.4, 0.4, 81)
+    )
+
+    tune.addPulseProg(
+        pulse_id = None,
+        variable = 'B',
+        axis_id = 1,
+        axis = (np.linspace(-0.4, 0.4, 81)+tune.LO.value)/gyro
+
+    )
+
+    tune._buildProgTable()
+
+
+    return tune
