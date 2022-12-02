@@ -1,5 +1,5 @@
 import matlab.engine
-from scipy.io import loadmat, savemat
+from scipy.io import loadmat
 from autoDeer.hardware.openepr import Sequence, Pulse, RectPulse, \
     ChirpPulse, HSPulse, Detection
 import numpy as np
@@ -110,11 +110,11 @@ class ETH_awg_interface:
 
         struc = {}
 
-        struc["LO"] = round(float(sequence.LO.value - self.awg_freq),3)
+        struc["LO"] = round(float(sequence.LO.value - self.awg_freq), 3)
         struc["avgs"] = float(sequence.averages.value)
-        struc["reptime"] = round(float(sequence.reptime.value * 1e3),0)
+        struc["reptime"] = round(float(sequence.reptime.value * 1e3), 0)
         struc["shots"] = float(sequence.shots.value)
-        struc['B'] = round(float(sequence.B.value),0)
+        struc['B'] = round(float(sequence.B.value), 0)
         struc['name'] = sequence.name
         # Build pulse/detection events
         struc["events"] = list(map(self._build_pulse, sequence.pulses))
@@ -123,7 +123,7 @@ class ETH_awg_interface:
 
         # Build parvars
         struc["parvars"] = []
-        if hasattr(sequence,'pcyc_vars'):
+        if hasattr(sequence, 'pcyc_vars'):
             struc["parvars"].append(self._build_phase_cycle(sequence))
         for i in unique_parvars:
             struc["parvars"].append(self._build_parvar(i, sequence))
@@ -186,7 +186,7 @@ class ETH_awg_interface:
         parvar["variables"] = list(map(pulse_str, sequence.pcyc_vars))
 
         # Find detection pulse
-        for i,pulse in enumerate(sequence.pulses):
+        for i, pulse in enumerate(sequence.pulses):
             if type(pulse) == Detection:
                 det_id = i
 
@@ -216,10 +216,10 @@ class ETH_awg_interface:
                 if pulse_num is not None:
                     if var in ["freq", "init_freq"]:
                         vec += self.awg_freq
-                        var =  "nu_init"
+                        var = "nu_init"
                     if var == "final_freq":
                         vec += self.awg_freq
-                        var =  "nu_final"
+                        var = "nu_final"
             
                     if var == "t":
                         pulse_str = f"events{{{pulse_num+1}}}.t"

@@ -155,8 +155,9 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
         print("TODO: check uwb_eval")
         raise RuntimeError("This is not implemented yet")
 
-    if estr["postsigns"]["signs"] is not list:
-        estr["postsigns"]["signs"] = [estr["postsigns"]["signs"]]
+
+    if np.isscalar(estr["postsigns"]["signs"]):
+         estr["postsigns"]["signs"] = [estr["postsigns"]["signs"]]
 
     cycled = np.array(list(map(np.size, estr["postsigns"]["signs"]))) > 1
 
@@ -246,10 +247,10 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
                 nu_init_change = 0
                 nu_final_change = 0
                 for jj in range(0, np.size(act_par["variables"])):
-                    if ('events{' + str(frq_pulse) + "}.pulsedef.nu_i") in \
+                    if ('events{' + str(frq_pulse+1) + "}.pulsedef.nu_i") in \
                             act_par["variables"][jj]:
                         nu_init_change = jj
-                    if ('events{' + str(frq_pulse) + "}.pulsedef.nu_f") in \
+                    if ('events{' + str(frq_pulse+1) + "}.pulsedef.nu_f") in \
                             act_par["variables"][jj]:
                         nu_final_change = jj
 
@@ -362,20 +363,26 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
 
     # get the downconversion to LO
     t_ax_full = np.arange(0, len(ran_echomax)) / fsmp
-    LO = np.exp(-2 * np.pi * 1j * t_ax_full * det_frq)
+    if not np.isscalar(det_frq):
+        tf = np.matmul(t_ax_full[:, None], det_frq[None, :])
+        LO = np.exp(-2 * np.pi * 1j * tf)
+    else:
+        LO = np.exp(-2 * np.pi * 1j * t_ax_full * det_frq)
 
     flipback = 0
 
     # 1D or 2D
     if exp_dim == 2:
-        dta_ev = np.zeros((len(dta_x[0]), len(dta_x[1])))
-        dta_avg = np.zeros((len(ran_echomax), len(dta_x[0]), len(dta_x[1])))
-        perm_order = [1, 2, 3]
-        if det_frq_dim == 2:
-            perm_order = [1, 3, 2]
+        dta_ev = np.zeros((len(dta_x[0]), len(dta_x[1])), dtype=np.complex128)
+        dta_avg = np.zeros(
+            (len(ran_echomax), len(dta_x[0]), len(dta_x[1])),
+            dtype=np.complex128)
+        perm_order = [0, 1, 2]
+        if det_frq_dim == 1:
+            perm_order = [0, 2, 1]
             flipback = 1
-            dta_ev = np.transpose(dta_ev, dtype=np.complex128)
-            dta_avg = np.transpose(dta_avg, perm_order, dtype=np.complex128)
+            dta_ev = np.transpose(dta_ev)
+            dta_avg = np.transpose(dta_avg, perm_order)
     elif exp_dim == 1:
         dta_ev = np.zeros((np.size(dta_x[0])), dtype=np.complex128)
         dta_avg = np.zeros((len(ran_echomax), np.size(dta_x[0])),
@@ -388,13 +395,13 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
         # reshape the 2D data
         if exp_dim == 2:
             dta_resort = np.reshape(dta_c, (len(ran_echomax), len(dta_x[0]), 
-                                    len(dta_x[1])))
+                                    len(dta_x[1])), order='F')
             dta_resort = np.transpose(dta_resort, perm_order)
         else:
             dta_resort = dta_c
 
         # downconvert
-        dta_dc = np.transpose(np.transpose(dta_resort) * LO)
+        dta_dc = (dta_resort.T * LO.T).T
 
         # refine the echo position for further evaluation, 
         # based on the first average
@@ -408,7 +415,7 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
             absofsum = np.squeeze(np.abs(np.sum(dta_win, 0)))
 
             # get the strongest echo of that series
-            ref_echo = np.argmax(absofsum)
+            ref_echo = np.argmax(absofsum.flatten('F'))
 
             # use this echo to inform about the digitizer scale
 
@@ -426,9 +433,9 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
                 if best_idx != estr["IFgain"]:
                     print(
                         f"You are currently using {dig_level} of the maximum"
-                        "possible level of the digitizer at an IFgain setting"
+                        f"possible level of the digitizer at an IFgain setting"
                         f"of {estr['IFgain']} \n It may be advantageous to use"
-                        "an IFgain setting of {best_idx} , where the maximum "
+                        f"an IFgain setting of {best_idx} , where the maximum "
                         f"level will be on the order of {best_lev}.")
 
             # for 2D data, only a certain slice may be requested
@@ -473,8 +480,16 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
             # this is where one could use a matched echo shape 
 
             convshape = sig.windows.chebwin(min([100, len(ran_echomax)]), 100) 
-            e_idx = np.argmax(sig.convolve(
-                np.abs(dta_dc[:, ref_echo]), convshape, mode="same"))
+
+            if exp_dim == 2:
+                ref_echo_unravel = np.unravel_index(ref_echo, absofsum.shape)
+                e_idx = np.argmax(sig.convolve(
+                    np.abs(dta_dc[:, ref_echo_unravel[0],
+                    ref_echo_unravel[1]]), convshape, mode="same"))
+
+            else:
+                e_idx = np.argmax(sig.convolve(
+                    np.abs(dta_dc[:, ref_echo]), convshape, mode="same"))
 
             # now get the final echo window, which is centered around the
             # maximum position just found
@@ -502,7 +517,8 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
 
             # get also indices of reference echo in case of 2D data
             if absofsum.ndim == 2:
-                [ii_ref, jj_ref] = np.unravel_index(ref_echo, absofsum.shape)
+                [ii_ref, jj_ref] = np.unravel_index(
+                    ref_echo, absofsum.shape, order='F')
         
         # window the echo
         if exp_dim == 2:
@@ -519,7 +535,7 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
 
         if det_frq_dim != 0:
             if exp_dim == 2:
-                corr_phase = dta_ang[:, :, jj_ref]
+                corr_phase = dta_ang[..., jj_ref]
             else:
                 corr_phase = dta_ang
         else:
@@ -533,13 +549,17 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
         if "phase_all" in options.keys() and options["phase_all"] == 1:
             corr_phase = dta_ang
         
-        dta_pha = np.multiply(dta_win, np.exp(-1j * corr_phase))
-
+        bfunc = lambda x: x * np.exp(-1j * corr_phase)
+        # dta_pha = np.multiply(dta_win, np.exp(-1j * corr_phase))
+        
+        dta_pha = np.apply_along_axis(bfunc, 1, dta_win)
+        
         dta_ev = dta_ev + np.squeeze(np.sum(dta_pha, 0)) / \
             sum(sig.windows.chebwin(evlen, 100))
         if exp_dim == 2:
             dta_avg[0:evlen, :, :] = dta_avg[0:evlen, :, :] + \
-                np.multiply(dta_dc[ran_echo, :, :], np.exp(-1j * corr_phase))
+                np.apply_along_axis(bfunc, 1, dta_win)
+                # np.multiply(dta_dc[ran_echo, :, :], np.exp(-1j * corr_phase))
         else:
             dta_avg[0:evlen, :] = dta_avg[0:evlen, :] + \
                 np.multiply(dta_dc[ran_echo, :], np.exp(-1j * corr_phase))
@@ -548,7 +568,7 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
     # keyboard
     # flip back 2D Data
     if flipback:
-        dta_avg = np.reshape(dta_avg, perm_order)
+        dta_avg = np.transpose(dta_avg, perm_order)
         dta_ev = np.transpose(dta_ev)
 
     output = AWGdata(t_ax, dta_avg)

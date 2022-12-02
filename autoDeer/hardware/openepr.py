@@ -98,7 +98,7 @@ class dataset:
 class Sequence:
 
     def __init__(
-            self, *, name, B, LO, reptime, averages, shots, **kwargs) -> None:
+            self, *, name, B, LO, reptime, averages, shots) -> None:
         """Represents an experimental pulse sequence.
 
         Parameters
@@ -141,7 +141,7 @@ class Sequence:
             "shots", shots, "None",
             "The number of shots per scan.")
             
-        self.name = kwargs["name"]
+        self.name = name
         pass
 
     def plot(self) -> None:
