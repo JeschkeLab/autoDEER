@@ -6,6 +6,8 @@ A Python package designed for the running of automated and optimised DEER/PELDOR
 - Automatic Distance characterisation and DEER parameter determination
 - A generalised pythonic pulse EPR sequencer.
 - Interfaces converting a general pulse sequence to either Matlab Structures or Bruker PulseSpel files 
+- Easy development of new spectrometer interfaces
+- 
 
 ## Dependencies
 1) Numpy
@@ -13,11 +15,17 @@ A Python package designed for the running of automated and optimised DEER/PELDOR
 3) Matplotlib
 4) pytest
 5) h5py
-7) Xepr API for python 3 (https://github.com/OE-FET/XeprAPI)
 8) DeerLab (https://jeschkelab.github.io/DeerLab/)
+
+## Optinal Dependencies
+1) Xepr API for python 3 (https://github.com/OE-FET/XeprAPI)
+2) Matlab engine
 
 ## External Software Dependencies
 1) Bruker Xepr
+2) Matlab
+
+## License
 
 ## Troubleshooting
 - <Can't find any open instances of Xepr>
