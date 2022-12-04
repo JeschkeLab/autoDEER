@@ -1,8 +1,10 @@
 # autoDeer
-A Python package designed for the running of automated and optimised DEER/PELDOR experiments for pulsed EPR. This has been designed to be spectrometer independent and currently functions on both Bruker Elexsys-II and Andrin Doll style Spectrometers. 
+A Python package designed for the running of automated and optimised DEER/PELDOR experiments for pulsed EPR, with minimal user interaction and training. This has been designed to be spectrometer independent and currently functions on both Bruker Elexsys-II and Andrin Doll style Spectrometers. 
 
 ## Features
-- Automated tuning and pulse optimisation
+- Automated tuning and pulse optimisation.
+- Support for both rectangular and shaped pulses
+- Easily runs: 4pulse, 5pulse or nDEER with equal ease.
 - Automatic Distance characterisation and DEER parameter determination
 - A generalised pythonic pulse EPR sequencer.
 - Interfaces converting a general pulse sequence to either Matlab Structures or Bruker PulseSpel files 
