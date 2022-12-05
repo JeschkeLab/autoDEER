@@ -361,7 +361,7 @@ class ResonatorProfile:
             raise ValueError(
                 "nuts must be a 2D array where collumn 1 is the frequency")
         self.nutations = nuts
-        self.frequencies = freqs
+        self.freqs = freqs
         self.n_files = np.shape(nuts)[0]
         self.nx = np.shape(nuts)[1] - 1
         self.dt = dt
@@ -369,35 +369,34 @@ class ResonatorProfile:
         pass
 
     def process_nutations(
-            self, noisedensity: float = None):
+            self, noisedensity: float = None, threshold:int = 20,
+            nfft: int = 1000):
         """ Uses a power series to extract the resonator profile.
 
         Parameters
         ----------
-        throwlist : list, optional
-            Specific frequencies to be ignored, by default None
         noisedensity : tuple, optional
             If not given the first trace is assumed to be so far off resonance
             that it is just noise. 
+        nfft: int, optional
+            The length of the fft to be used, zero padded if requred, default
+            is 1000.
 
         Returns
         -------
-        np.ndarray
-            The resonator profile. The first column are bridge frequncies, and
-            the second are the coresponding nutation frequncies.
         """
 
         if noisedensity is None:
-            f, Pxx_den = signal.welch(self.nutations[0, :], self.fs)
+            f, Pxx_den = signal.welch(self.nutations[0, :], self.fs, nfft=nfft)
 
             noisedensity = np.mean(Pxx_den)
             
-        threshold = 20 * noisedensity
+        threshold_val = threshold * noisedensity
         res_prof = np.zeros(self.n_files)
         for i in range(0, self.n_files):
             nuts = self.nutations[i, :]
-            f, Pxx_den_sig = signal.welch(nuts, self.fs)
-            nuoff = np.argwhere(Pxx_den_sig > threshold)
+            f, Pxx_den_sig = signal.welch(nuts, self.fs, nfft=nfft)
+            nuoff = np.argwhere(Pxx_den_sig > threshold_val)
             if nuoff.shape[0] > 0:
                 id = np.argmax(Pxx_den_sig[nuoff])
                 res_prof[i] = np.abs(f[nuoff][id][0])
@@ -406,9 +405,9 @@ class ResonatorProfile:
         
         nx_id = np.argwhere(res_prof > 0)
         self.prof_data = res_prof[nx_id]
-        self.prof_frqs = np.real(self.frequencies[nx_id])
+        self.prof_frqs = np.real(self.freqs[nx_id])
 
-        return self.prof_data
+        return self.prof_data, self.prof_frqs
 
     def fit(self):
         def lorenz_fcn(x, centre, sigma):
@@ -440,3 +439,23 @@ class ResonatorProfile:
         norm_prof /= norm_prof.max()
         self.pha = np.imag(hilbert(-np.log(self.profile)))
         pass
+
+    def plot(self):
+        fig, ax = plt.subplots(constrained_layout=True)
+        ax.plot(self.prof_frqs, self.prof_data * 1e3)
+        ax.set_xlabel("Frequency / GHz")
+        ax.set_ylabel("Nutation Frequency / MHz")
+
+        def Hz2length(x):
+            return 1 / ((x/1000)*2)
+
+        def length2Hz(x):
+            return 1 / ((x*1000)*2) 
+
+        secax = ax.secondary_yaxis('right', functions=(Hz2length, length2Hz))
+        secax.set_ylabel(r'$\pi/2$ pulse length / ns')
+
+        return fig
+
+
+
