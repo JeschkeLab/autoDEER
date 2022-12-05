@@ -5,7 +5,7 @@ from autoDeer.hardware.openepr import Sequence, Pulse, RectPulse, \
 import numpy as np
 import os
 import re
-
+from autoDeer import eprload
 
 class ETH_awg_interface:
 
@@ -85,7 +85,7 @@ class ETH_awg_interface:
         path = folder_path + "\\" + f"{date:08d}_{time:04d}_{filename}.mat"
         
         self.engine.dig_interface('savenow')
-        return loadmat(path, simplify_cells=True, squeeze_me=True)
+        return eprload(path)
 
     def launch(self, sequence: Sequence, savename: str, IFgain: int = 0):
         """Launch a sequence on the spectrometer.
