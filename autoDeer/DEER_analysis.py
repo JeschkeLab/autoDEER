@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import cumulative_trapezoid
 import logging
 import importlib
-from autoDeer import FieldSweep, resonatorProfile
+from autoDeer import FieldSweep, ResonatorProfile
 import scipy.fft as fft
 from deerlab import correctphase
 from scipy.interpolate import interp1d
@@ -249,7 +249,7 @@ def std_deer_analysis(
             0.15, 0.05, "LOW MNR: More averages requried",
             transform=fig.transFigure, fontsize="16", color="red")
 
-    ROI_error = (rmax - ROI[1])
+    ROI_error = (rmax_e - ROI[1])
     
     rec_tau_max = (ROI[1]/3)**3 * 2
 
@@ -482,7 +482,7 @@ def calc_overlap_region(x1, y1, x2, y2, new_axis=None):
 
 def plot_optimal_deer_frqs(
         fieldsweep: FieldSweep, pump_length: int, pump_frq: float,
-        exc_length: int, exc_frq: float, respro: resonatorProfile = None,
+        exc_length: int, exc_frq: float, respro: ResonatorProfile = None,
         frq_shift: float = 0, dt: float = 1):
     """Generate a plot that contains the field sweep, pump and excitation 
     pulses as well as the resonator profile (optional). This should be used to 
@@ -502,7 +502,7 @@ def plot_optimal_deer_frqs(
         The excitation pulse length in ns.
     exc_frq : float
         The excitation pulse frequnecy offset, from fieldsweep maximum in GHz
-    respro : resonatorProfile, optional
+    respro : ResonatorProfile, optional
         The resonator profile, by default None
     frq_shift : float, optional
         The frequency shift between resonator profile and fieldsweep maximum

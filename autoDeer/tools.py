@@ -127,8 +127,10 @@ def eprload(
         Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
         Params = Matfile[Matfile["expname"]]
         uwb_output = uwb_load(Matfile)
+        axes = np.squeeze(uwb_output.dta_x)
+        data = np.squeeze(uwb_output.dta_ev)
 
-        return dataset(uwb_output.dta_x, uwb_output.dta_ev, Params)        
+        return dataset(axes, data, Params)        
 
 
 def progress_bar(progress, post=""):
