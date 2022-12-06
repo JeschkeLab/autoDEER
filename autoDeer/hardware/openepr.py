@@ -266,6 +266,49 @@ class Sequence:
 
         return test
 
+    def __str__(self):
+
+        header = "#" * 79 + "\n" + "AutoDEER Sequence Definition" + \
+                 "\n" + "#" * 79 + "\n"
+
+        # Sequence Parameters
+        seq_param_string = "Sequence Parameters: \n"
+        seq_param_string += "{:<10} {:<12} {:<10} {:<30} \n".format(
+            'Name', 'Value', 'Unit', 'Description')
+
+        for param_key in vars(self):
+            param = getattr(self, param_key)
+            if type(param) is Parameter:
+                seq_param_string += "{:<10} {:<12} {:<10} {:<30} \n".format(
+                    param.name, param.value, param.unit, param.description)
+        
+        # Pulses
+        pulses_string = "Pulses: \n"
+        pulses_string += "{:<4} {:<12} {:<8} {:<12} \n".format(
+            'iD', 't (ns)', 'tp (ns)', 'Type')
+        for i, pulse in enumerate(self.pulses):
+            pulses_string += "{:<4} {:<12.3E} {:<8} {:<10} \n".format(
+                i, pulse.t.value, pulse.tp.value, type(pulse).__name__)
+
+        # Progressive elements
+        prog_string = "Progression: \n"
+        prog_string += "{:<10} {:<10} {:<10} {:<30} \n".format(
+            'Pulse', 'Prog. Axis', 'Parameter', 'Step')
+        for i in range(0, len(self.progTable[0])):
+            prog_table = self.progTable
+            axis = prog_table[3][i]
+            if len(np.unique(np.diff(axis))) == 1:
+                step = np.unique(np.diff(axis))[0]
+            else:
+                step = "Var"
+            prog_string += "{:<10} {:<10} {:<10} {:<30} \n".format(
+                prog_table[1][i], prog_table[0][i], prog_table[2][i],
+                step)
+
+        footer = "#" * 79 + "\n" +\
+            f"Built by autoDEER Version: {__version__}" + "\n" + "#" * 79
+
+        return header + seq_param_string + pulses_string + prog_string + footer
 
 # =============================================================================
 
