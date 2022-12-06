@@ -193,7 +193,8 @@ class ETH_awg_interface:
         det_str = "events{{{}}}.det_sign".format(det_id+1)
         parvar["variables"].append(det_str)
 
-        parvar["vec"] = np.vstack([sequence.pcyc_cycles, sequence.pcyc_dets]).T
+        parvar["vec"] = np.vstack(
+            [sequence.pcyc_cycles.T, sequence.pcyc_dets]).T
 
         return parvar
 

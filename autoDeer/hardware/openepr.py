@@ -5,6 +5,7 @@ from scipy.io import savemat
 import os
 from autoDeer import __version__
 import copy
+from itertools import product
 
 
 # =============================================================================
@@ -141,7 +142,7 @@ class Sequence:
             "shots", shots, "None",
             "The number of shots per scan.")
             
-        self.name = kwargs["name"]
+        self.name = name
         pass
 
     def plot(self) -> None:
@@ -173,28 +174,35 @@ class Sequence:
         for ix, pulse in enumerate(self.pulses):
             if pulse.pcyc is not None:
                 pcyc_pulses.append(ix)
-                pulse_cycles.append(np.array(pulse.pcyc[0]))
-                det_cycles.append(np.array(pulse.pcyc[1]))
-        
-        # Build expanded phase cycle
-        func = lambda x: np.arange(0, len(x))
-        map(func, pulse_cycles)
-        n_pulses = len(pulse_cycles)
+                # pulse_cycles.append(np.array(pulse.pcyc[0]))
+                # det_cycles.append(np.array(pulse.pcyc[1]))
+                pulse_cycles.append(pulse.pcyc[0])
+                det_cycles.append(pulse.pcyc[1])
 
-        m = list(map(func, pulse_cycles))
-        grids = np.meshgrid(*m, indexing='ij')
-        expanded_cycles = []
-        expanded_dets = []
 
-        for i in range(0, n_pulses):
-            expanded_cycles.append(
-                pulse_cycles[i][grids[i].flatten(order='F')])
-            expanded_dets.append(det_cycles[i][grids[i].flatten(order='F')])
-
+        self.pcyc_cycles = np.array(list(product(*pulse_cycles)))
+        self.pcyc_dets = np.array(list(product(*det_cycles))).prod(axis=1)
         self.pcyc_vars = pcyc_pulses
-        self.pcyc_cycles = np.stack(expanded_cycles)
-        self.pcyc_dets = np.prod(np.stack(expanded_dets), axis=0)
-        self.pcyc_n = self.pcyc_cycles.shape[1]
+
+        # # Build expanded phase cycle
+        # func = lambda x: np.arange(0, len(x))
+        # map(func, pulse_cycles)
+        # n_pulses = len(pulse_cycles)
+
+        # m = list(map(func, pulse_cycles))
+        # grids = np.meshgrid(*m, indexing='ij')
+        # expanded_cycles = []
+        # expanded_dets = []
+
+        # for i in range(0, n_pulses):
+        #     expanded_cycles.append(
+        #         pulse_cycles[i][grids[i].flatten(order='F')])
+        #     expanded_dets.append(det_cycles[i][grids[i].flatten(order='F')])
+
+        # self.pcyc_vars = pcyc_pulses
+        # self.pcyc_cycles = np.stack(expanded_cycles)
+        # self.pcyc_dets = np.prod(np.stack(expanded_dets), axis=0)
+        # self.pcyc_n = self.pcyc_cycles.shape[1]
         return self.pcyc_vars, self.pcyc_cycles, self.pcyc_dets
 
     def _buildProgTable(self):
@@ -653,20 +661,24 @@ def build_FieldSweep(pulse, freq, B, Bsweep=300):
 
 # !! Move to autoDeer !!
 def build_rectDEER(
-        tau1, tau2, f1, f2, LO, B, pulse_tp, scale, step=16, n_pulses=4,
+        *, tau1, tau2, f1, f2, LO, B, pulse_tp, scale, step=16, n_pulses=4,
         tau3=200):
+   
+    deadtime = 100
 
     if n_pulses == 5:
         moving_pulse = [3]
         shift_pulse = 1
         extra_pump = RectPulse(tau1-tau3, pulse_tp, f2, scale*2)
+        axis = np.arange(tau1+deadtime, tau2 + 2*tau1 + deadtime, step)
+
     else:
         moving_pulse = [2]
         extra_pump = None
         shift_pulse = 0
-    
-    deadtime = 100
-    axis = np.arange(tau1+deadtime, tau2 + tau1 + deadtime, step)
+        axis = np.arange(2*tau1-deadtime, tau2 + 2*tau1 + deadtime, step)
+
+    # axis = np.arange(tau1+deadtime, tau2 + tau1 + deadtime, step)
     
     DEER = Sequence(
        LO=LO, averages=1, reptime=4e3, shots=200, B=B, name="autoDEER")
@@ -687,12 +699,13 @@ def build_rectDEER(
     DEER._buildProgTable()
 
     DEER.pulses[1+shift_pulse]._addPhaseCycle(
-        [0, np.pi/2, np.pi, -np.pi/2], [1, 1, 1, 1])
-    DEER.pulses[2+shift_pulse]._addPhaseCycle(
         [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])
+    DEER.pulses[2+shift_pulse]._addPhaseCycle(
+        [0, np.pi/2, np.pi, -np.pi/2], [1, 1, 1, 1])
 
     DEER._buildPhaseCycle()
-    pass
+    
+    return DEER
 
 
 def build_AWGDEER(tau1, tau2, f1, f2, n_pulses=4, nDEER=False):
@@ -747,7 +760,7 @@ def resonator_profile(pulse, freq, gyro):
     pulse_pi.t.value = tau0 + tau
 
     tune = Sequence(
-        LO=freq, averages=1, reptime=4e3, shots=100, B=freq/gyro, name="Tune"
+        LO=freq, averages=1, reptime=3e3, shots=50, B=freq/gyro, name="Tune"
         )
     
     tune.addPulse(hard_pulse)
