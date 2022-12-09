@@ -59,6 +59,8 @@ class dataset:
             ax.set_ylabel('Signal')
             if label is not None:
                 ax.set_xlabel(label[0])
+
+        return fig
         
     def save(self, file: str) -> None:
         """
@@ -91,6 +93,9 @@ class dataset:
                 save_array = np.vstack([self.axes, self.data])
                 np.savetxt(filename, save_array, delimiter=",")
 
+    def add_variable(self, param):
+        setattr(self, param.name)
+        
 
 # =============================================================================
 # Super Classes Pulses
@@ -165,6 +170,19 @@ class Sequence:
                 self.pulses.append(el)
         self.num_pulses = len(self.pulses)
 
+    def _estimate_time(self):
+        """Calculates the estimated experiment time in seconds.
+        """
+        acqs = self.averages.value * self.shots.value
+        if hasattr(self, 'pcyc_dets'):
+            acqs *= self.pcyc_dets.shape[0]
+        if hasattr(self, 'progTable'):
+            _, pos = np.unique(self.progTable[0], return_index=True)
+            for i in pos:
+                acqs *= self.progTable[0][i].shape[0]
+        time = acqs * self.reptime.value * 1e-6
+        return time
+
     def _buildPhaseCycle(self):
         # Identify pulses which are phase cycled
 
@@ -178,7 +196,6 @@ class Sequence:
                 # det_cycles.append(np.array(pulse.pcyc[1]))
                 pulse_cycles.append(pulse.pcyc[0])
                 det_cycles.append(pulse.pcyc[1])
-
 
         self.pcyc_cycles = np.array(list(product(*pulse_cycles)))
         self.pcyc_dets = np.array(list(product(*det_cycles))).prod(axis=1)
@@ -713,13 +730,13 @@ def build_rectDEER(
         moving_pulse = [3]
         shift_pulse = 1
         extra_pump = RectPulse(tau1-tau3, pulse_tp, f2, scale*2)
-        axis = np.arange(tau1+deadtime, tau2 + 2*tau1 + deadtime, step)
+        axis = np.arange(tau1+deadtime, tau2 + 2*tau1 - deadtime, step)
 
     else:
         moving_pulse = [2]
         extra_pump = None
         shift_pulse = 0
-        axis = np.arange(2*tau1-deadtime, tau2 + 2*tau1 + deadtime, step)
+        axis = np.arange(2*tau1-deadtime, tau2 + 2*tau1 - deadtime, step)
 
     # axis = np.arange(tau1+deadtime, tau2 + tau1 + deadtime, step)
     

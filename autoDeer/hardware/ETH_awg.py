@@ -106,6 +106,10 @@ class ETH_awg_interface:
         self.workspace['exp'] = self.cur_exp
         self.engine.eval('launch(exp)', nargout=0)
 
+    def isrunning(self) -> bool:
+        state = bool(self.engine.dig_interface('savenow'))
+        return state
+
     def _build_exp_struct(self, sequence) -> dict:
 
         struc = {}
@@ -213,7 +217,7 @@ class ETH_awg_interface:
             if prog_table[0][i] == id:
                 pulse_num = prog_table[1][i]
                 var = prog_table[2][i]
-                vec = prog_table[3][i]
+                vec = prog_table[3][i].astype(float)
                 if pulse_num is not None:
                     if var in ["freq", "init_freq"]:
                         vec += self.awg_freq

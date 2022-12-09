@@ -239,8 +239,8 @@ def std_deer_analysis(
     lam = 0
     for mod in mod_labels:
         lam += getattr(fit, mod)
-    print(lam)
     MNR = lam/fit.noiselvl
+    fit.MNR = MNR
     axs['Primary_time'].text(
         0.05, 0.05, f"MNR: {MNR:.2f}",
         transform=fig.transFigure, fontsize="16", color="black")
