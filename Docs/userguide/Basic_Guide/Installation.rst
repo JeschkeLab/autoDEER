@@ -106,3 +106,9 @@ In this case it is 3.9.7::
 We then want to set the newly installed pyenv to be default for our directory::
 
     pyenv local 3.9.7
+
+
+FAQs
+******************
+1. Out of date SSL/CA certificates:
+    sudo ./usr/sbin/update-ca-certificates

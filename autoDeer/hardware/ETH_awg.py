@@ -1,11 +1,11 @@
 import matlab.engine
-from scipy.io import loadmat
 from autoDeer.hardware.openepr import Sequence, Pulse, RectPulse, \
     ChirpPulse, HSPulse, Detection
 import numpy as np
 import os
 import re
 from autoDeer import eprload
+
 
 class ETH_awg_interface:
 
