@@ -220,7 +220,8 @@ def get_nutations(api, nu, field, step, ELDOR: bool = True, nx: int = 128):
 
 
 def CP_run(
-        api, d0, num_pulses=3, ps_length=16, sweeps=4, dt=100, num_points=256):
+        api, d0, num_pulses=3, ps_length=16, sweeps=4, dt=100, num_points=256,
+        srt = 6e6):
 
     if num_pulses == 2:
         run_general(
@@ -229,7 +230,7 @@ def CP_run(
             ["5p DEER relax", "DEER run AWG -+<x>"],
             {"PhaseCycle": True},
             {"p0": ps_length, "p1": ps_length, "h": 10, "n": sweeps, "d30": dt,
-             "d0": d0, "dim10": num_points},
+             "d0": d0, "dim10": num_points, "srt": srt},
             False)
     else:
         raise ValueError("Only CP2 is currently implemented")
@@ -239,7 +240,7 @@ def CP_run(
 
 def DEER5p_run(
         api, ps_length, d0, tau2, sweeps=4, deadtime=80, dt=16,
-        num_points=0):
+        num_points=0, srt=6e6):
 
     if num_points == 0:
         num_points = np.floor((tau2 + tau2 - deadtime)/dt)
@@ -251,7 +252,7 @@ def DEER5p_run(
         {"PhaseCycle": True, "ReplaceMode": False},
         {"p0": ps_length, "p1": ps_length, "h": 20, "n": sweeps, "d2": tau2,
          "d11": 200, "d3": deadtime, "d30": dt, "d0": d0,
-         "dim8": num_points},
+         "dim8": num_points, "srt": srt},
         run=False)
 
 
@@ -260,7 +261,7 @@ def DEER5p_run(
 
 class DEER:
 
-    def __init__(self, api, d0, det_frq, pump_frq) -> None:
+    def __init__(self, api, d0, det_frq, pump_frq, srt=6e6) -> None:
         self.api = api
         self.d0 = d0
         self.det_frq = det_frq
@@ -269,6 +270,8 @@ class DEER:
         self.mpfu = True
         self.hybrid = False
         self.awg = False
+        self.srt = srt
+
         pass
 
     def run_5p(
@@ -301,7 +304,7 @@ class DEER:
             {"PhaseCycle": True, "ReplaceMode": False},
             {"p0": ps_length, "p1": ps_length, "h": 20, "n": scans,
              "d2": tau2, "d11": 200, "d3": deadtime, "d30": dt, "d0": self.d0,
-             "dim8": num_points},
+             "dim8": num_points, "srt": self.srt},
             run=True)
         pass
 
@@ -335,7 +338,7 @@ class DEER:
             {"PhaseCycle": True, "ReplaceMode": False},
             {"p0": ps_length, "p1": ps_length, "h": 20, "n": scans,
              "d2": tau2, "d11": 200, "d3": deadtime, "d30": dt, "d0": self.d0,
-             "dim8": num_points},
+             "dim8": num_points, "srt": self.srt},
             run=True)
         pass
 
@@ -358,7 +361,7 @@ class DEER:
             {"PhaseCycle": True, "ReplaceMode": False},
             {"p0": ps_length, "p1": ps_length, "h": 20, "n": scans,
              "d1": tau, "d30": dt, "d0": self.d0,
-             "dim8": num_points},
+             "dim8": num_points, "srt": self.srt},
             run=True)
         pass
 
@@ -369,7 +372,7 @@ class MPFUtune:
     """
     Tuning MPFU channels for optimal attenuation and phase
     """
-    def __init__(self, api, echo="Hahn", ps_length=16, d0=680) -> None:
+    def __init__(self, api, echo="Hahn", ps_length=16, d0=680, srt=6e6) -> None:
         """
         Parameters
         ----------
@@ -387,6 +390,7 @@ class MPFUtune:
         self.hardware_wait = 5  # seconds 
         self.ps_length = ps_length
         self.d0 = d0
+        self.srt = srt
         if echo == "Hahn":
             self._setup_echo("Hahn Echo", tau1=400)
         elif echo == "Refocused":
@@ -403,7 +407,8 @@ class MPFUtune:
                     [echo, "BrXPhase"],
                     {"PhaseCycle": False},
                     {"p0": self.ps_length*2, "p1": self.ps_length, "h": 20,
-                     "n": 1, "d0": self.d0, "d1": tau1, "d2": tau2, "pg": 128},
+                     "n": 1, "d0": self.d0, "d1": tau1, "d2": tau2, "pg": 128,
+                     "srt": self.srt},
                     run=False
                     )
 
@@ -598,7 +603,7 @@ class MPFUtune:
 
 class ELDORtune:
 
-    def __init__(self, api: xepr_api, d0=700, ps_length=16) -> None:
+    def __init__(self, api: xepr_api, d0=700, ps_length=16, srt=6e6) -> None:
         """
         Tuning incoherent ELDOR channel for optimal power using nutation 
         experiments
@@ -618,6 +623,7 @@ class ELDORtune:
         self.d0 = d0
         self.ps_length = ps_length
         self.hardware_wait = 5
+        self.srt = srt
         
         pass
     
@@ -629,7 +635,7 @@ class ELDORtune:
                     {"PhaseCycle": True},
                     {"p0": self.ps_length*2, "p1": self.ps_length, "h": 20,
                      "n": 1, "d0": self.d0, "d1": tau1, "d2": tau2, "pg": 128,
-                     "dim7": 32},
+                     "dim7": 32, "srt": self.srt},
                     run=False
                     )
 
@@ -672,7 +678,7 @@ class ELDORtune:
             dataset = self.api.acquire_scan()
             min = self.find_min(dataset)
 
-            print(f'Atten Setting = {x:.1f} \t pi/2 time = {min:.1f}')
+            print(f'Atten Setting = {x:.1f} \t pi pulse time = {min:.1f} ns')
 
             return abs(min-args[0])
         
@@ -689,7 +695,7 @@ class ELDORtune:
 
 class PulseProfile:
 
-    def __init__(self, api: xepr_api, d0=700, ps_length=16) -> None:
+    def __init__(self, api: xepr_api, d0=700, ps_length=16, srt=4e6) -> None:
         """
         Tuning incoherent ELDOR channel for optimal power using nutation 
         experiments
@@ -709,6 +715,7 @@ class PulseProfile:
         self.d0 = d0
         self.ps_length = ps_length
         self.hardware_wait = 5
+        self.srt = srt
         
         pass
 
@@ -729,7 +736,7 @@ class PulseProfile:
                     {"PhaseCycle": True},
                     {"p0": self.ps_length*2, "p1": self.ps_length, "h": 20,
                      "n": 1, "d0": self.d0, "d1": tau, "pg": 128,
-                     "dim8": 10},
+                     "dim8": 10, "srt": self.srt},
                     run=False
                     )
 
