@@ -269,9 +269,9 @@ class PulseSpel:
     def _ExpDefs(self):
         str = "begin defs \n"
         if len(self.dims) == 1:
-            str += f"exp [{self.dims[0]}] \n"
+            str += f"dim s[{self.dims[0]}] \n"
         elif len(self.dims) == 2:
-            str += f"exp [{self.dims[0]},{self.dims[1]}] \n"
+            str += f"dim s[{self.dims[0]},{self.dims[1]}] \n"
         str += "end defs \n"
         return str
         
@@ -285,9 +285,14 @@ class PulseSpel:
         self.pcyc_hash = self.pcyc.pcyc_hash
 
     def _cmpl_Exp(self):
-        self.exp_file_str = f"begin exp \"{'auto'}\" [TRANS QUAD]\n" +\
+        self.exp_file_str = f"begin exp \"{'auto'}\" [INTG QUAD]\n" +\
              self.exp_file_str
         self.exp_file_str += "end exp\n"
+
+    def _cmpl_def(self):
+        self.def_file_str = f"begin defs \n\n" +\
+             self.def_file_str
+        self.def_file_str += "end defs\n"
 
     def __str__(self) -> str:
         output_str = "DEF File \n" + "#"*79 + "\n"
