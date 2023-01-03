@@ -169,8 +169,7 @@ class Sequence:
             for el in pulse:
                 self.pulses.append(el)
         self.num_pulses = len(self.pulses)
-        self._buildPhaseCycle();
-
+        self._buildPhaseCycle()
 
     def _estimate_time(self):
         """Calculates the estimated experiment time in seconds.
@@ -459,8 +458,8 @@ class Sequence:
 
 class Pulse:
 
-    def __init__(self, *, tp, t, scale=None, flipangle = None, pcyc=None,
-            name= None) -> None:
+    def __init__(self, *, tp, t, scale=None, flipangle=None, pcyc=None,
+                 name=None) -> None:
         """The class for a general pulse.
 
         Parameters
@@ -484,7 +483,8 @@ class Pulse:
         self.name = name
 
         if flipangle is not None:
-            self.flipangle = Parameter("flipangle", flipangle, None,
+            self.flipangle = Parameter(
+                "flipangle", flipangle, None,
                 "The target flip angle of the spins")
         if pcyc is None:
             self.pcyc = None
@@ -736,10 +736,11 @@ class Delay(Pulse):
 
 class RectPulse(Pulse):
 
-    def __init__(self, tp, freq, t=None, flipangle = None, pcyc=None,
-            name= None) -> None:
-        Pulse.__init__(self, tp=tp, t=t, flipangle=flipangle, 
-            pcyc=pcyc, name=name)
+    def __init__(
+            self, tp, freq, t=None, flipangle=None, pcyc=None,
+            name=None) -> None:
+        Pulse.__init__(
+            self, tp=tp, t=t, flipangle=flipangle, pcyc=pcyc, name=name)
         self.freq = Parameter("freq", freq, "GHz", "Frequency of the Pulse")
         self.Progression = False
         self._buildFMAM(self.func)
@@ -857,9 +858,9 @@ class ChorusPulse:
 def build_HahnEcho(tau, pulse_tp, freq, LO, B, scale):
     Hahn_echo = Sequence(
        LO=LO, averages=1, reptime=4e3, shots=200, B=B, name="Hahn_Echo")
-    Hahn_echo.addPulse(RectPulse(0, pulse_tp, freq, scale))
-    Hahn_echo.addPulse(RectPulse(tau, pulse_tp*2, freq, scale))
-    Hahn_echo.addPulse(Detection(tau+pulse_tp*2, 512))
+    Hahn_echo.addPulse(RectPulse(t=0, tp=pulse_tp, freq=freq, scale=scale))
+    Hahn_echo.addPulse(RectPulse(t=tau, tp=pulse_tp*2, freq=freq, scale=scale))
+    Hahn_echo.addPulse(Detection(t=tau+pulse_tp*2, tp=512))
 
     Hahn_echo.addPulsesProg(
         [1, 2],
@@ -895,7 +896,7 @@ def build_FieldSweep(pulse, freq, B, Bsweep=300):
 
     tune.addPulse(pulse)
     tune.addPulse(pulse_pi)
-    tune.addPulse(Detection(2*tau + pulse_pi.tp.value, 512))
+    tune.addPulse(Detection(t=2*tau + pulse_pi.tp.value, tp=512))
 
     tune.addPulseProg(
         None,
@@ -923,7 +924,8 @@ def build_rectDEER(
     if n_pulses == 5:
         moving_pulse = [3]
         shift_pulse = 1
-        extra_pump = RectPulse(tau1-tau3, pulse_tp, f2, scale*2)
+        extra_pump = RectPulse(
+            t=tau1-tau3, tp=pulse_tp, freq=f2, flipangle=np.pi)
         axis = np.arange(tau1+deadtime, tau2 + 2*tau1 - deadtime, step)
 
     else:
@@ -937,12 +939,16 @@ def build_rectDEER(
     DEER = Sequence(
        LO=LO, averages=1, reptime=4e3, shots=200, B=B, name="autoDEER")
     
-    DEER.addPulse(RectPulse(0, pulse_tp, f1, scale))  # pi/2
+    DEER.addPulse(
+        RectPulse(t=0, tp=pulse_tp, freq=f1, flipangle=np.pi/2))
     DEER.addPulse(extra_pump)  # pi pump
-    DEER.addPulse(RectPulse(tau1, pulse_tp, f1, scale*2))  # pi
-    DEER.addPulse(RectPulse(tau1+deadtime, pulse_tp, f2, scale*2))  # pi pump
-    DEER.addPulse(RectPulse(2*tau1+tau2, pulse_tp, f1, scale*2))  # pi
-    DEER.addPulse(Detection(2*(tau1+tau2), 512))
+    DEER.addPulse(RectPulse(t=tau1, tp=pulse_tp, freq=f1, flipangle=np.pi))
+    DEER.addPulse(
+        RectPulse(
+            t=tau1+deadtime, tp=pulse_tp, freq=f2, flipangle=np.pi))  # pi pump
+    DEER.addPulse(
+        RectPulse(t=2*tau1+tau2, tp=pulse_tp, freq=f1, flipangle=np.pi))  # pi
+    DEER.addPulse(Detection(t=2*(tau1+tau2), tp=512))
 
     DEER.addPulsesProg(
         moving_pulse,
@@ -981,7 +987,7 @@ def tune_pulse(pulse, freq, B):
 
         tune.addPulse(pulse)
         tune.addPulse(pulse_pi)
-        tune.addPulse(Detection(1000 + pulse_pi.tp.value, 512))
+        tune.addPulse(Detection(t=1000 + pulse_pi.tp.value, tp=512))
 
         tune.addPulsesProg(
             [0, 1],
@@ -1006,7 +1012,7 @@ def resonator_profile(pulse, freq, gyro):
     tau0 = 5000
     tau = 500
 
-    hard_pulse = RectPulse(0, 5.5, 0, 1.0)
+    hard_pulse = RectPulse(t=0, tp=5.5, freq=0, scale=1.0)
     pulse.pcyc = None
     pulse_pi = copy.deepcopy(pulse)
     pulse_pi.tp.value = pulse.tp.value * 2
@@ -1020,7 +1026,7 @@ def resonator_profile(pulse, freq, gyro):
     tune.addPulse(hard_pulse)
     tune.addPulse(pulse)
     tune.addPulse(pulse_pi)
-    tune.addPulse(Detection(tau0 + 2*tau + pulse_pi.tp.value, 512))
+    tune.addPulse(Detection(t=tau0 + 2*tau + pulse_pi.tp.value, tp=512))
 
     tune.addPulseProg(
         pulse_id=0,
