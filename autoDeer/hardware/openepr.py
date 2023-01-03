@@ -169,6 +169,8 @@ class Sequence:
             for el in pulse:
                 self.pulses.append(el)
         self.num_pulses = len(self.pulses)
+        self._buildPhaseCycle();
+
 
     def _estimate_time(self):
         """Calculates the estimated experiment time in seconds.
@@ -194,8 +196,8 @@ class Sequence:
                 pcyc_pulses.append(ix)
                 # pulse_cycles.append(np.array(pulse.pcyc[0]))
                 # det_cycles.append(np.array(pulse.pcyc[1]))
-                pulse_cycles.append(pulse.pcyc[0])
-                det_cycles.append(pulse.pcyc[1])
+                pulse_cycles.append(pulse.pcyc["Phases"])
+                det_cycles.append(pulse.pcyc["DetSigns"])
 
         self.pcyc_cycles = np.array(list(product(*pulse_cycles)))
         self.pcyc_dets = np.array(list(product(*det_cycles))).prod(axis=1)
@@ -224,7 +226,10 @@ class Sequence:
 
     def _buildProgTable(self):
         #           parvarid, pulse #, variable, axis
-        progTable = [[], [], [], []]
+        # progTable = [[], [], [], []]
+        progTable = {"EventID": [], "Variable": [], "axis": [],
+                     "axID": []}
+
         for n, pulse in enumerate(self.pulses):
             # Loop over all pulses
             for var_name in vars(pulse):
@@ -233,10 +238,10 @@ class Sequence:
                 if type(var) is Parameter:
                     if var.progressive is True:
                         for i in range(0, len(var.prog)):
-                            progTable[0].append(var.prog[i][0]) 
-                            progTable[1].append(n)
-                            progTable[2].append(var_name) 
-                            progTable[3].append(var.prog[i][1]) 
+                            progTable["axID"].append(var.prog[i][0]) 
+                            progTable["EventID"].append(n)
+                            progTable["Variable"].append(var_name) 
+                            progTable["axis"].append(var.prog[i][1]) 
         
         # Sequence/ Experiment Parameters
         for var_name in vars(self):
@@ -244,10 +249,10 @@ class Sequence:
             if type(var) is Parameter:
                 if var.progressive is True:
                     for i in range(0, len(var.prog)):
-                        progTable[0].append(var.prog[i][0]) 
-                        progTable[1].append(None)
-                        progTable[2].append(var_name) 
-                        progTable[3].append(var.prog[i][1]) 
+                        progTable["axID"].append(var.prog[i][0]) 
+                        progTable["EventID"].append(None)
+                        progTable["Variable"].append(var_name) 
+                        progTable["axis"].append(var.prog[i][1]) 
 
         self.progTable = progTable
         return self.progTable
@@ -260,6 +265,8 @@ class Sequence:
         else:
             var = getattr(self.pulses[pulse_id], variable)
             var.add_progression(axis_id, axis)
+        
+        self._buildProgTable()
         pass
     
     def addPulsesProg(
@@ -270,7 +277,119 @@ class Sequence:
 
         for i, pulse in enumerate(pulses):
             self.addPulseProg(pulse, variables[i], axis_id,
-                              axis * multipliers[i])                  
+                              axis * multipliers[i])     
+
+        self._buildProgTable()
+        pass 
+
+    def isPulseFocused(self):
+        test = []
+        for pulse in self.pulses:
+            test.append(pulse.isPulseFocused())
+
+        if np.array(test).all() == True:
+            return True
+        else:
+            return False
+
+    def isDelayFocused(self):   
+        test = []
+        for pulse in self.pulses:
+            test.append(pulse.isDelayFocused())
+        if np.array(test).all() == True:
+            return True
+        else:
+            return False
+
+    def convert(self, *, reduce=True):
+        """Converts the current sequence to either pulse focused or delay
+        focused depending on the current state
+
+        Parameters
+        ----------
+        reduce : bool, optional
+            Reduce to the smallest number of objects, by default True
+        """
+
+        if self.isPulseFocused():
+            self._convert_to_delay()
+        elif self.isDelayFocused():
+            self._convert_to_pulses()
+
+    def _convert_to_delay(self):
+        num_pulses = len(self.pulses)
+
+        # create list of pulse timeing
+        pulse_times = []
+        new_sequence = []
+
+        new_pulse = copy.deepcopy(self.pulses[0])
+        new_pulse.t = None
+        new_sequence.append(new_pulse)
+        pulse_times.append(self.pulses[0].t.value)
+        pulse_hash = {0: 0}
+
+        for i in range(1, num_pulses):
+            t_cur = self.pulses[i].t.value
+            t_prev = self.pulses[i-1].t.value
+            static_delay = t_cur-t_prev
+            tmp_delay = Delay(tp=static_delay)
+            new_sequence.append(tmp_delay)
+            new_pulse = copy.deepcopy(self.pulses[i])
+            new_pulse.t = None
+            new_sequence.append(new_pulse)
+            pulse_hash[i] = new_sequence.index(new_pulse)
+            pulse_times.append(t_cur)
+
+        new_prog_table = {"EventID": [], "Variable": [], "axis": [],
+                          "axID": []}
+
+        def add_prog_table(dic, Element, Variable, axes, ax_id):
+            dic["EventID"].append(Element)
+            dic["Variable"].append(Variable)
+            dic["axis"].append(axes)
+            dic["axID"].append(ax_id)
+            return dic
+        prog_axes = np.unique(self.progTable["axID"])
+        for ax_id in prog_axes:
+            indexs = np.where(np.array(self.progTable["axID"]) == ax_id)[0]
+            for i in indexs:
+                pulse_num = self.progTable["EventID"][i]
+                pulse_times[pulse_num] = self.progTable["axis"][i]
+            for i in range(1, num_pulses):
+                diff = np.atleast_1d(pulse_times[i] - pulse_times[i-1])
+                new_prog_table = add_prog_table(
+                    new_prog_table, int(i*2 - 1), "tp", diff, ax_id)
+        
+        # Change the pcyc_vars
+        new_pcyc_var = []
+        for var in self.pcyc_vars:
+            new_pcyc_var.append(pulse_hash[var])
+        self.pcyc_vars = new_pcyc_var
+
+        self.pulses = new_sequence
+        self.progTable = new_prog_table
+        return self.pulses
+
+    def _convert_to_pulses(self):
+        num_ele = len(self.pulses)
+        new_sequence = []
+
+        new_pulse = copy.deepcopy(self.pulses[0])
+        new_pulse.t = Parameter("t", 0, "ns", "Start time of pulse")
+        new_sequence.append(new_pulse)
+
+        for i in range(1, num_ele):
+            pulse = self.pulses[i]
+            if type(pulse) is not Delay:
+                pos = 0
+                for j in range(0, i):
+                    pos += self.pulses[j].tp.value
+                new_pulse = copy.deepcopy(pulse)
+                new_pulse.t = Parameter("t", pos, "ns", "Start time of pulse")
+                new_sequence.append(new_pulse)
+        self.pulses = new_sequence
+        return self.pulses
 
     def _checkRect(self) -> bool:
         """Checks if all the pulses in the sequence are rectangular.
@@ -301,26 +420,34 @@ class Sequence:
         
         # Pulses
         pulses_string = "Pulses: \n"
-        pulses_string += "{:<4} {:<12} {:<8} {:<12} \n".format(
-            'iD', 't (ns)', 'tp (ns)', 'Type')
-        for i, pulse in enumerate(self.pulses):
-            pulses_string += "{:<4} {:<12.3E} {:<8} {:<10} \n".format(
-                i, pulse.t.value, pulse.tp.value, type(pulse).__name__)
+
+        if self.isPulseFocused():
+            pulses_string += "{:<4} {:<12} {:<8} {:<12} \n".format(
+                'iD', 't (ns)', 'tp (ns)', 'Type')
+            for i, pulse in enumerate(self.pulses):
+                pulses_string += "{:<4} {:<12.3E} {:<8} {:<10} \n".format(
+                    i, pulse.t.value, pulse.tp.value, type(pulse).__name__)
+        elif self.isDelayFocused():
+            pulses_string += "{:<4} {:<8} {:<12} \n".format(
+                'iD', 'tp (ns)', 'Type')
+            for i, pulse in enumerate(self.pulses):
+                pulses_string += "{:<4} {:<8} {:<10} \n".format(
+                    i, pulse.tp.value, type(pulse).__name__)
 
         # Progressive elements
         prog_string = "Progression: \n"
         prog_string += "{:<10} {:<10} {:<10} {:<30} \n".format(
             'Pulse', 'Prog. Axis', 'Parameter', 'Step')
-        for i in range(0, len(self.progTable[0])):
+        for i in range(0, len(self.progTable["axID"])):
             prog_table = self.progTable
-            axis = prog_table[3][i]
+            axis = prog_table["axis"][i]
             if len(np.unique(np.diff(axis))) == 1:
                 step = np.unique(np.diff(axis))[0]
             else:
                 step = "Var"
             prog_string += "{:<10} {:<10} {:<10} {:<30} \n".format(
-                prog_table[1][i], prog_table[0][i], prog_table[2][i],
-                step)
+                prog_table["EventID"][i], prog_table["axID"][i],
+                prog_table["Variable"][i], step)
 
         footer = "#" * 79 + "\n" +\
             f"Built by autoDEER Version: {__version__}" + "\n" + "#" * 79
@@ -332,29 +459,45 @@ class Sequence:
 
 class Pulse:
 
-    def __init__(self, t, tp, scale) -> None:
+    def __init__(self, *, tp, t, scale=None, flipangle = None, pcyc=None,
+            name= None) -> None:
         """The class for a general pulse.
 
         Parameters
         ----------
-        t : float
-            The pulse start time in ns.
         tp : float
             The pulse length in ns.
         scale : float
             The arbitary experimental pulse amplitude, 0-1.
+        t : float, optional
+            The pulse start time in ns.
+
         """
-        self.t = Parameter("Time", t, "ns", "Start time of pulse")
-        self.tp = Parameter("Length", tp, "ns", "Length of the pulse")
-        self.scale = Parameter("Scale", scale, None, "Amplitude of pulse")
+        if t is not None:
+            self.t = Parameter("t", t, "ns", "Start time of pulse")
+        else:
+            self.t = None
+        self.tp = Parameter("tp", tp, "ns", "Length of the pulse")
+        self.scale = Parameter("scale", scale, None, "Amplitude of pulse")
         self.Progression = False
-        self.pcyc = None
+
+        self.name = name
+
+        if flipangle is not None:
+            self.flipangle = Parameter("flipangle", flipangle, None,
+                "The target flip angle of the spins")
+        if pcyc is None:
+            self.pcyc = None
+        elif type(pcyc) is dict:
+            self._addPhaseCycle(pcyc["phases"], detections=pcyc["dets"])
+        else:
+            self._addPhaseCycle(pcyc, detections=None)
         pass
 
     def _addPhaseCycle(self, phases, detections=None):
         if detections is None:
             detections = np.ones(len(phases))
-        self.pcyc = [phases, detections]
+        self.pcyc = {"Phases": list(phases), "DetSigns": list(detections)}
         pass
 
     def _buildFMAM(self, func):
@@ -366,6 +509,18 @@ class Pulse:
         self.AM
         return self.AM, self.FM
 
+    def isDelayFocused(self):
+        if self.t is None:
+            return True
+        else:
+            return False
+    
+    def isPulseFocused(self):
+        if self.t is not None:
+            return True
+        else:
+            return False
+
     def plot(self, pad=1000):
         """Plots the time domain representation of this pulse.
 
@@ -375,7 +530,10 @@ class Pulse:
             The number of zeros to pad the data with, by default 1000
         """
         dt = self.ax[1] - self.ax[0]
-        tax = self.t.value + self.ax
+        if self.isPulseFocused():
+            tax = self.t.value + self.ax
+        else:
+            tax = self.ax
         fwd_ex = np.linspace(tax[0] - dt * pad, tax[0], pad)
         rev_ex = np.linspace(
             tax[-1] + dt, tax[-1] + dt * pad, pad, endpoint=True)
@@ -394,22 +552,33 @@ class Pulse:
 
     def __str__(self):
         # Build header line
-        header = "#" * 79 + "\n" + "OpenEPR Pulse Definition" + \
+        header = "#" * 79 + "\n" + "autoDEER Pulse Definition" + \
                  "\n" + "#" * 79 + "\n"
         
         # Build Overviews
+        if self.isPulseFocused():
+            overview_params = "Time Pos (ns) \tLength (ns) \tScale (0-1)" +\
+                "\tProgressive \n"
             
-        overview_params = "Time Pos (ns) \tLength (ns) \tScale (0-1)" +\
-            "\tProgressive \n"
-        
-        if type(self) is Detection:
-            overview_params += f"{self.t.value}" + "\t\t" + \
-                f"{self.tp.value}" + "\t\t" + "\t\t" +\
-                f"{self.Progression}" + "\n" + "#" * 79 + "\n"        
-        else:
-            overview_params += f"{self.t.value}" + "\t\t" + \
-                f"{self.tp.value}" + "\t\t" + f"{self.scale.value}" + "\t\t" +\
-                f"{self.Progression}" + "\n" + "#" * 79 + "\n"
+            if type(self) is Detection:
+                overview_params += f"{self.t.value}" + "\t\t" + \
+                    f"{self.tp.value}" + "\t\t" + "\t\t" +\
+                    f"{self.Progression}" + "\n" + "#" * 79 + "\n"        
+            else:
+                overview_params += f"{self.t.value}" + "\t\t" + \
+                    f"{self.tp.value}" + "\t\t" + f"{self.scale.value}" + \
+                    "\t\t" + f"{self.Progression}" + "\n" + "#" * 79 + "\n"
+        elif self.isDelayFocused():
+            overview_params = "Length (ns) \tScale (0-1)" +\
+                "\tProgressive \n"
+            
+            if type(self) is Detection:
+                overview_params += f"{self.tp.value}" + "\t\t" + "\t\t" +\
+                    f"{self.Progression}" + "\n" + "#" * 79 + "\n"        
+            else:
+                overview_params += f"{self.tp.value}" + "\t\t" +\
+                    f"{self.scale.value}" + "\t\t" + f"{self.Progression}" +\
+                    "\n" + "#" * 79 + "\n"
 
         # Build Pulse Parameter Table
         param_table = "Name \t\t Value \t Unit \t Description\n"
@@ -434,8 +603,8 @@ class Pulse:
         if self.pcyc is not None:
             pcyc_table = "#" * 79 + "\n" + "Phase Cycle:" + "\t"
             pcyc_table += "["
-            dets = self.pcyc[1]
-            phases = self.pcyc[0]
+            dets = self.pcyc["DetSigns"]
+            phases = self.pcyc["Phases"]
             for i in range(0, len(phases)):
                 if dets[i] == 1:
                     pcyc_table += "+"
@@ -515,26 +684,50 @@ class Parameter:
         axis = np.linspace(start, start + step * length, length)
         return self.add_progression(axis_id, axis)
 
+    def __eq__(self, __o: object) -> bool:
+        if type(__o) is not Parameter:
+            raise ValueError(
+                "Equivalence only works between Parameter classes")
+        return self.value == __o.value
+        
 
 class Detection(Pulse):
 
-    def __init__(self, t, tp) -> None:
+    def __init__(self, *, tp, t) -> None:
         """A general detection pulse.
 
         Parameters
         ----------
-        t : float
-            The **centre** time of the detection event
         tp : float
             The **total** time of the detection event. The detection event will
             be symetrical about the centre time. 
+        t : float, optional
+            The **centre** time of the detection event
+
         """
-        self.t = Parameter("Time", t, "ns", "Start time of pulse")
+        if t is not None:
+            self.t = Parameter("Time", t, "ns", "Start time of pulse")
+        else:
+            self.t = None
         self.tp = Parameter("Length", tp, "ns", "Length of the pulse")
         self.Progression = False
         self.pcyc = None
         self.scale = None
         pass
+
+
+class Delay(Pulse):
+
+    def __init__(self, *, tp, t=None) -> None:
+        
+        if t is not None:
+            self.t = Parameter("Time", t, "ns", "Start time of pulse")
+        else:
+            self.t = None
+        self.tp = Parameter("Length", tp, "ns", "Length of the pulse")
+        self.Progression = False
+        self.pcyc = None
+        self.scale = None
 
 
 # =============================================================================
@@ -543,11 +736,12 @@ class Detection(Pulse):
 
 class RectPulse(Pulse):
 
-    def __init__(self, t, tp, freq, scale) -> None:
-        Pulse.__init__(self, t, tp, scale)
+    def __init__(self, tp, freq, t=None, flipangle = None, pcyc=None,
+            name= None) -> None:
+        Pulse.__init__(self, tp=tp, t=t, flipangle=flipangle, 
+            pcyc=pcyc, name=name)
         self.freq = Parameter("freq", freq, "GHz", "Frequency of the Pulse")
         self.Progression = False
-        self.pcyc = None
         self._buildFMAM(self.func)
         pass
 
@@ -562,8 +756,8 @@ class RectPulse(Pulse):
 
 class HSPulse(Pulse):
 
-    def __init__(self, t, tp, scale, Horder) -> None:
-        Pulse.__init__(self, t, tp, scale)
+    def __init__(self, *, tp, scale, Horder, t) -> None:
+        Pulse.__init__(self, tp=tp, scale=scale, t=t)
         self.order = Parameter("Order", Horder, None, "Order of the HS Pulse")
         self.Progression = False
         self.pcyc = None
@@ -575,8 +769,8 @@ class HSPulse(Pulse):
 
 class ChirpPulse(Pulse):
 
-    def __init__(self, t, tp, scale, **kwargs) -> None:
-        Pulse.__init__(self, t, tp, scale)
+    def __init__(self, *, tp, scale, t, **kwargs) -> None:
+        Pulse.__init__(self, tp=tp, scale=scale, t=t)
 
         # Frequency Infomation
         if "BW" in kwargs:
@@ -631,8 +825,8 @@ class ChirpPulse(Pulse):
 
 class SincPulse(Pulse):
 
-    def __init__(self, t, tp, scale, freq, order, window=None) -> None:
-        Pulse.__init__(self, t, tp, scale)
+    def __init__(self, *, tp, scale, freq, order, t=None, window=None) -> None:
+        Pulse.__init__(self, tp=tp, scale=scale, t=t)
         self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
 
         self.order = Parameter("Order", order, None, "The sinc pulse order")
