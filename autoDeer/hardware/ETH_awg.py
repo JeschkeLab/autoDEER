@@ -5,7 +5,8 @@ import numpy as np
 import os
 import re
 from autoDeer import eprload
-
+import threading
+import time
 
 class ETH_awg_interface:
 
@@ -235,3 +236,39 @@ class ETH_awg_interface:
 
         parvar["vec"] = np.stack(parvar["vec"]).T
         return parvar
+
+
+    def terminate(self):
+        """ Stops the current experiment
+        """
+        self.engine.dig_interface('terminate')
+        pass
+
+    def terminate_at(self, criterion, test_interval = 10):
+        """Terminates the experiment upon a specific condition being
+        satisified. 
+
+        Parameters
+        ----------
+        criterion : _type_
+            The criteria to be tested.
+        test_interval : int, optional
+            How often should the criteria be tested in minutes, by default 10.
+        """
+
+        test_interval_seconds = test_interval * 60
+        condition = False
+
+        start_time = time.time
+
+        while condition is not True:
+            data = self.acquire_dataset
+
+            condition = criterion(data)
+
+            end_time = time.time
+
+            if (end_time - start_time) < test_interval_seconds:
+                time.sleep(test_interval_seconds - (end_time - start_time))
+
+        pass
