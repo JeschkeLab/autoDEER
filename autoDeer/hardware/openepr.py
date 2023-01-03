@@ -164,6 +164,8 @@ class Sequence:
             for el in pulse:
                 self.pulses.append(el)
         self.num_pulses = len(self.pulses)
+        self._buildPhaseCycle();
+
 
     def _buildPhaseCycle(self):
         # Identify pulses which are phase cycled
@@ -245,6 +247,8 @@ class Sequence:
         else:
             var = getattr(self.pulses[pulse_id], variable)
             var.add_progression(axis_id, axis)
+        
+        self._buildProgTable()
         pass
     
     def addPulsesProg(
@@ -255,7 +259,10 @@ class Sequence:
 
         for i, pulse in enumerate(pulses):
             self.addPulseProg(pulse, variables[i], axis_id,
-                              axis * multipliers[i])      
+                              axis * multipliers[i])     
+
+        self._buildProgTable()
+        pass 
 
     def isPulseFocused(self):
         test = []
@@ -434,7 +441,8 @@ class Sequence:
 
 class Pulse:
 
-    def __init__(self, *, tp, scale, t) -> None:
+    def __init__(self, *, tp, t, scale=None, flipangle = None, pcyc=None,
+            name= None) -> None:
         """The class for a general pulse.
 
         Parameters
@@ -448,13 +456,24 @@ class Pulse:
 
         """
         if t is not None:
-            self.t = Parameter("Time", t, "ns", "Start time of pulse")
+            self.t = Parameter("t", t, "ns", "Start time of pulse")
         else:
             self.t = None
-        self.tp = Parameter("Length", tp, "ns", "Length of the pulse")
-        self.scale = Parameter("Scale", scale, None, "Amplitude of pulse")
+        self.tp = Parameter("tp", tp, "ns", "Length of the pulse")
+        self.scale = Parameter("scale", scale, None, "Amplitude of pulse")
         self.Progression = False
-        self.pcyc = None
+
+        self.name = name
+
+        if flipangle is not None:
+            self.flipangle = Parameter("flipangle", flipangle, None,
+                "The target flip angle of the spins")
+        if pcyc is None:
+            self.pcyc = None
+        elif type(pcyc) is dict:
+            self._addPhaseCycle(pcyc["phases"], detections=pcyc["dets"])
+        else:
+            self._addPhaseCycle(pcyc, detections=None)
         pass
 
     def _addPhaseCycle(self, phases, detections=None):
@@ -699,11 +718,12 @@ class Delay(Pulse):
 
 class RectPulse(Pulse):
 
-    def __init__(self, tp, freq, scale, t=None) -> None:
-        Pulse.__init__(self, tp=tp, scale=scale, t=t)
+    def __init__(self, tp, freq, t=None, flipangle = None, pcyc=None,
+            name= None) -> None:
+        Pulse.__init__(self, tp=tp, t=t, flipangle=flipangle, 
+            pcyc=pcyc, name=name)
         self.freq = Parameter("freq", freq, "GHz", "Frequency of the Pulse")
         self.Progression = False
-        self.pcyc = None
         self._buildFMAM(self.func)
         pass
 
