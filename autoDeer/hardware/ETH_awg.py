@@ -5,8 +5,8 @@ import numpy as np
 import os
 import re
 from autoDeer import eprload
-import threading
 import time
+
 
 class ETH_awg_interface:
 
@@ -124,7 +124,7 @@ class ETH_awg_interface:
         # Build pulse/detection events
         struc["events"] = list(map(self._build_pulse, sequence.pulses))
 
-        unique_parvars = np.unique(sequence.progTable[0])
+        unique_parvars = np.unique(sequence.progTable["axID"])
 
         # Build parvars
         struc["parvars"] = []
@@ -206,7 +206,7 @@ class ETH_awg_interface:
     def _build_parvar(self, id, sequence) -> dict:
 
         prog_table = sequence.progTable
-        prog_table_n = len(prog_table[0])
+        prog_table_n = len(prog_table["axID"])
         parvar = {}
         parvar["name"] = f"parvar{id+1}"
 
@@ -215,10 +215,10 @@ class ETH_awg_interface:
 
         for i in range(0, prog_table_n):
 
-            if prog_table[0][i] == id:
-                pulse_num = prog_table[1][i]
-                var = prog_table[2][i]
-                vec = prog_table[3][i].astype(float)
+            if prog_table["axID"][i] == id:
+                pulse_num = prog_table["EventID"][i]
+                var = prog_table["Variable"][i]
+                vec = prog_table["axis"][i].astype(float)
                 if pulse_num is not None:
                     if var in ["freq", "init_freq"]:
                         vec += self.awg_freq
@@ -241,14 +241,13 @@ class ETH_awg_interface:
         parvar["vec"] = np.stack(parvar["vec"]).T
         return parvar
 
-
     def terminate(self):
         """ Stops the current experiment
         """
-        self.engine.dig_interface('terminate')
+        self.engine.dig_interface('terminate', nargout=0)
         pass
 
-    def terminate_at(self, criterion, test_interval = 10):
+    def terminate_at(self, criterion, test_interval=10):
         """Terminates the experiment upon a specific condition being
         satisified. 
 
@@ -263,16 +262,18 @@ class ETH_awg_interface:
         test_interval_seconds = test_interval * 60
         condition = False
 
-        start_time = time.time
+        start_time = time.time()
 
-        while condition is not True:
-            data = self.acquire_dataset
+        while not condition:
+            data = self.acquire_dataset()
 
-            condition = criterion(data)
+            condition = criterion.test(data)
 
-            end_time = time.time
+            if not condition:
+                end_time = time.time()
 
-            if (end_time - start_time) < test_interval_seconds:
-                time.sleep(test_interval_seconds - (end_time - start_time))
+                if (end_time - start_time) < test_interval_seconds:
+                    time.sleep(test_interval_seconds - (end_time - start_time))
 
+        self.terminate()
         pass
