@@ -34,7 +34,7 @@ def std_deer_analysis(
         t: np.ndarray, V: np.ndarray, tau1: float, tau2: float,
         tau3: float = None, zerotime: float = 0, num_points: int = 50,
         compactness: bool = True, precision: str = "Detailed",
-        background: bool = False, **kwargs):
+        background: bool = False, plot: bool = True, **kwargs):
     """std_deer_analysis This function conducts the standard deer analysis 
     using deerlab
 
@@ -62,6 +62,8 @@ def std_deer_analysis(
     precision : str, optional
         How large the rmax should be. "Detailed", for normal work, "Speed" for 
         setup experiments, by default "Detailed"
+    plot: bool, optional
+        Should a figure be generated and returned, by default True.
 
     Returns
     -------
@@ -138,6 +140,8 @@ def std_deer_analysis(
             pathways.remove(1)
             pathways.remove(4)
             pathways.append([1, 4])
+
+    Vmodel.pathways = pathways
     
     if compactness:
         compactness_penalty = dl.dipolarpenalty(None, r, 'compactness', 'icc')
@@ -163,14 +167,41 @@ def std_deer_analysis(
     mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
     ROI = IdentifyROI(fit.P, r, criterion=0.90, method="int")
 
-    Vfit = fit.model
-    # Vci = fit.modelUncert.ci(95)
+    fit.mask = mask
 
-    fig, axs = plt.subplot_mosaic([
-        ['Primary_time', 'Primary_time', 'Primary_dist', 'Primary_dist']
-        ], figsize=(12.5, 6.28))
-    fig.tight_layout(pad=4)
-    fig.subplots_adjust(bottom=0.2, hspace=0.4)
+    # Find total modulation depth
+    lam = 0
+    for mod in mod_labels:
+        lam += getattr(fit, mod)
+    MNR = lam/fit.noiselvl
+    fit.MNR = MNR
+    
+    rec_tau_max = (ROI[1]/3)**3 * 2
+
+    # Expand fit object
+    fit.Vmodel = Vmodel
+    fit.r = r
+    fit.Vexp = Vexp
+    fit.t = t
+
+    if plot:
+        fig = DEER_analysis_plot(fit, background, ROI=ROI)
+        return fit, ROI, rec_tau_max, fig
+    else:
+        return fit, ROI, rec_tau_max
+
+
+# =============================================================================
+
+
+def DEER_analysis_plot(fit, background, ROI=None):
+    mask = fit.mask
+    t = fit.t
+    r = fit.r
+    Vexp = fit.Vexp
+    Vfit = fit.model
+    Vmodel = fit.Vmodel
+    pathways = Vmodel.pathways
 
     # Calculate background
     def background_func(t, fit):
@@ -194,13 +225,19 @@ def std_deer_analysis(
 
         return fit.P_scale * scale * prod
 
-    # Top left Time domain
+    fig, axs = plt.subplot_mosaic([
+        ['Primary_time', 'Primary_time', 'Primary_dist', 'Primary_dist']
+        ], figsize=(12.5, 6.28))
+    fig.tight_layout(pad=4)
+    fig.subplots_adjust(bottom=0.2, hspace=0.4)
+
+    # Time 
+
     if mask is not None:
         axs['Primary_time'].plot(
             t[mask], Vexp[mask], '.', color='0.7', label='Data', ms=6)
         axs['Primary_time'].plot(
             t[~mask], Vexp[~mask], '.', color='0.8', label='Data', ms=6)
-
     else:
         axs['Primary_time'].plot(t, Vexp, '.', color='0.7', label='Data', ms=6)
     axs['Primary_time'].plot(t, Vfit, linewidth=3, color='C1', label='Fit')
@@ -211,69 +248,58 @@ def std_deer_analysis(
             t, background_func(t, fit), linewidth=3, color='C0',
             ls=':', label='Unmod. Cont.', alpha=0.5)
 
-    # axs['Primary_time'].plot(time,Bfit,'--',color='blue',label='Backgnd')
-
     axs['Primary_time'].set_xlabel(r"Time / $\mu s$")
     axs['Primary_time'].set_ylabel(r"A.U.")
 
     axs['Primary_time'].legend()
 
-    # Top right distance domain
+    # Distance Plots
     Pfit = fit.P
     Pci = fit.PUncert.ci(95)
     axs['Primary_dist'].plot(r, Pfit, '-', color='C1', lw=3, label='Fit')
     axs['Primary_dist'].fill_between(
         r, Pci[:, 0], Pci[:, 1], color='C1', alpha=0.3, label='95% CI')
     
-    axs['Primary_dist'].fill_betweenx(
-        [0, Pci[:, 1].max()], ROI[0], ROI[1], alpha=0.2, color='C2',
-        label="ROI", hatch="/")
+    if ROI is not None:
+        axs['Primary_dist'].fill_betweenx(
+            [0, Pci[:, 1].max()], ROI[0], ROI[1], alpha=0.2, color='C2',
+            label="ROI", hatch="/")
     
     axs['Primary_dist'].set_xlabel(r"Distance / $ nm$")
     axs['Primary_dist'].set_ylabel(r"$P(r^{-1})$")
     axs['Primary_dist'].legend()
 
-    # **** Statistics ****
-
-    # Find total modulation depth
-    lam = 0
-    for mod in mod_labels:
-        lam += getattr(fit, mod)
-    MNR = lam/fit.noiselvl
-    fit.MNR = MNR
+    # Analysis
     axs['Primary_time'].text(
-        0.05, 0.05, f"MNR: {MNR:.2f}",
+        0.05, 0.05, f"MNR: {fit.MNR:.2f}",
         transform=fig.transFigure, fontsize="16", color="black")
-    if MNR < 10:
+    if fit.MNR < 10:
         axs['Primary_time'].text(
             0.15, 0.05, "LOW MNR: More averages requried",
             transform=fig.transFigure, fontsize="16", color="red")
 
-    ROI_error = (rmax_e - ROI[1])
+    if ROI is not None:
+        ROI_error = (r.max() - ROI[1])
     
-    rec_tau_max = (ROI[1]/3)**3 * 2
+        rec_tau_max = (ROI[1]/3)**3 * 2
 
-    axs['Primary_time'].text(
-        0.55, 0.05, f"ROI: {ROI[0]:.2f}nm to {ROI[1]:.2f}nm",
-        transform=fig.transFigure, fontsize="16", color="black")
-    axs['Primary_time'].text(
-        0.05, 0.01, rf"Recommended $\tau_{{max}}$ = {rec_tau_max:.2f}us",
-        transform=fig.transFigure, fontsize="16", color="black")
-
-    if ROI_error < 0.5:
         axs['Primary_time'].text(
-            0.55, 0.01,
-            rf"ROI is too close to $r_{{max}}$. Increase $\tau_{{max}}$",
-            transform=fig.transFigure, size="x-large", color="red")
+            0.55, 0.05, f"ROI: {ROI[0]:.2f}nm to {ROI[1]:.2f}nm",
+            transform=fig.transFigure, fontsize="16", color="black")
+        axs['Primary_time'].text(
+            0.05, 0.01, rf"Recommended $\tau_{{max}}$ = {rec_tau_max:.2f}us",
+            transform=fig.transFigure, fontsize="16", color="black")
 
-    # Expand fit object
-    fit.Vmodel = Vmodel
-    fit.r = r
+        if ROI_error < 0.5:
+            axs['Primary_time'].text(
+                0.55, 0.01,
+                rf"ROI is too close to $r_{{max}}$. Increase $\tau_{{max}}$",
+                transform=fig.transFigure, size="x-large", color="red")
 
-    return fig, ROI, rec_tau_max, fit
+    return fig
+
 
 # =============================================================================
-
 
 def IdentifyROI(
         P: np.ndarray, r: np.ndarray, criterion: float = 0.99,
