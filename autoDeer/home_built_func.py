@@ -143,6 +143,8 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
                     # the first
                     if sum(dta[ii-1][:, -1]) == 0 and ii > 1:
                         dta = dta[:-1]
+                    elif sum(dta[ii-1][:, -1]) == 0 and ii == 1:
+                        nAvgs = 0
                     else:
                         nAvgs = ii
         return [dta, nAvgs]
@@ -155,9 +157,8 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
         print("TODO: check uwb_eval")
         raise RuntimeError("This is not implemented yet")
 
-
     if np.isscalar(estr["postsigns"]["signs"]):
-         estr["postsigns"]["signs"] = [estr["postsigns"]["signs"]]
+        estr["postsigns"]["signs"] = [estr["postsigns"]["signs"]]
 
     cycled = np.array(list(map(np.size, estr["postsigns"]["signs"]))) > 1
 

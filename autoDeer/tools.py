@@ -3,7 +3,7 @@ import deerlab as dl
 import numpy as np
 import logging
 import h5py
-from autoDeer.hardware.openepr import dataset
+from autoDeer.hardware.openepr import dataset, Parameter
 from autoDeer.home_built_func import uwb_load
 from scipy.io import loadmat
 
@@ -129,8 +129,9 @@ def eprload(
         uwb_output = uwb_load(Matfile)
         axes = np.squeeze(uwb_output.dta_x)
         data = np.squeeze(uwb_output.dta_ev)
-
-        return dataset(axes, data, Params)        
+        data = dataset(axes, data, Params)
+        data.add_variable(Parameter(name='nAvgs', value=uwb_output.nAvgs))
+        return data 
 
 
 def progress_bar(progress, post=""):

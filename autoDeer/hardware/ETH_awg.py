@@ -7,7 +7,6 @@ import re
 from autoDeer import eprload
 import time
 
-
 class ETH_awg_interface:
 
     def __init__(self, awg_freq=1.5, dig_rate=2) -> None:
@@ -75,19 +74,26 @@ class ETH_awg_interface:
             output = re.findall(r"(\d{8})_(\d{4})", str)
             if output != []:
                 date = int(output[0][0])
-                time = int(output[0][1])
-                return date*10000 + time
+                start_time = int(output[0][1])
+                return date*10000 + start_time
             else:
                 return 0
         
         newest = max([extract_date_time(file) for file in files])
         date = newest // 10000
-        time = newest - date * 10000
-        path = folder_path + "\\" + f"{date:08d}_{time:04d}_{filename}.mat"
+        start_time = newest - date * 10000
+        path = folder_path + "\\" + f"{date:08d}_{start_time:04d}_{filename}.mat"
         
         self.engine.dig_interface('savenow')
-        return eprload(path)
-
+        
+        for i in range(0, 10):
+            try:
+                data = eprload(path)
+            except OSError:
+                time.sleep(10)
+            else:
+                return data
+        
     def launch(self, sequence: Sequence, savename: str, IFgain: int = 0):
         """Launch a sequence on the spectrometer.
 
@@ -266,6 +272,15 @@ class ETH_awg_interface:
 
         while not condition:
             data = self.acquire_dataset()
+            try:
+                nAvgs = data.nAvgs.value
+            except AttributeError:
+                print("WARNING: Dataset missing number of averages(nAvgs)!")
+                nAvgs = 1
+            finally:
+                if nAvgs < 1:
+                    time.sleep(30)
+                    continue
 
             condition = criterion.test(data)
 
