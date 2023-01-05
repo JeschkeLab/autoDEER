@@ -14,7 +14,7 @@ try:
 except ModuleNotFoundError:
     pass
 else:
-    from .Bruker_tools import run_general,change_dimensions
+    from .Bruker_tools import run_general,change_dimensions, PulseSpel
     from .xepr_api_adv import *
     from .Bruker_MPFU import *
 

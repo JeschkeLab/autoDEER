@@ -1,16 +1,57 @@
 import autoDeer.hardware.openepr as autoEPR
 import numpy as np
+import re
+import time
+import importlib
 from autoDeer import __version__
+
+MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
 
 header = "; " + "-" * 79 + "\n"
 header += "; " + \
      f"Auto-generated PulseSpel {{}} file by autoDEER {__version__}\n"
 header += "; " + "-" * 79 + "\n"
 
+# =============================================================================
 
 class PSPhaseCycle:
 
-    def __init__(self, sequence) -> None:
+    def __init__(self, sequence, MPFU=None) -> None:
+        BPhaseCycles = []
+        
+        if MPFU is not None:
+            pulse_dicts = self._MPFU(sequence, MPFU)
+        else:
+            pulse_dicts = self._main(sequence)
+        
+        detect_dicts =self._detect(sequence)
+        
+        BPhaseCycles += pulse_dicts
+        BPhaseCycles += detect_dicts
+
+        self.BPhaseCycles = BPhaseCycles
+
+        self.__str__()
+
+        pass
+
+    def _MPFU(self, sequence, MPFU):
+        BPhaseCycles = []
+        for i,pulse in enumerate(sequence.pulses):
+            if type(pulse) == autoEPR.Delay:
+                continue
+            elif type(pulse) == autoEPR.Detection:
+                continue
+            dict = {}
+            dict["Pulse"] = i
+            dict["Cycle"] = []
+            for j in pulse.pcyc["Channels"]:
+                dict["Cycle"].append(MPFU[j])
+            BPhaseCycles.append(dict)
+        
+        return BPhaseCycles
+    
+    def _main(self, sequence):
         num_pulses = len(sequence.pcyc_vars)
         num_cycles = sequence.pcyc_dets.shape[0]
 
@@ -34,7 +75,13 @@ class PSPhaseCycle:
                 dict["Cycle"].append(B_phase)
             BPhaseCycles.append(dict)
 
-        #  Detection event
+        return BPhaseCycles
+
+    def _detect(self, sequence):
+        num_cycles = sequence.pcyc_dets.shape[0]
+
+        BPhaseCycles = []
+
         asg_dict = {"Cycle": [], "Pulse": 'a'}
         bsg_dict = {"Cycle": [], "Pulse": 'b'}
         for j in range(0, num_cycles):
@@ -56,11 +103,9 @@ class PSPhaseCycle:
 
         BPhaseCycles.append(asg_dict)
         BPhaseCycles.append(bsg_dict)
-        self.BPhaseCycles = BPhaseCycles
+        return BPhaseCycles
 
-        self.__str__()
 
-        pass
 
     def __str__(self) -> str:
         full_str = "begin lists \"auto\" \n"
@@ -82,6 +127,9 @@ class PSPhaseCycle:
         full_str += "end lists \n"
         self.pcyc_hash = pcyc_hash
         return full_str
+
+
+# =============================================================================
 
 
 class PSparvar:
@@ -143,10 +191,12 @@ possible_delays = [
 possible_pulses = [
         "p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10"]
 
+# =============================================================================
+
 
 class PulseSpel:
 
-    def __init__(self, sequence) -> None:
+    def __init__(self, sequence, MPFU=None) -> None:
         self.possible_delays = possible_delays.copy()
         self.possible_pulses = possible_pulses.copy()
         self.sequence = sequence
@@ -154,6 +204,7 @@ class PulseSpel:
         self.def_file_str = ""
         self.exp_file_str = ""
         self.dims = []
+        self.MPFU = MPFU
         
         # Build hash of initial pulses
         for id, pulse in enumerate(sequence.pulses):
@@ -282,7 +333,7 @@ class PulseSpel:
         pass
 
     def _addPhaseCycle(self):
-        self.pcyc = PSPhaseCycle(self.sequence)
+        self.pcyc = PSPhaseCycle(self.sequence, self.MPFU)
         self.pcyc_hash = self.pcyc.pcyc_hash
 
     def _cmpl_Exp(self):
@@ -303,3 +354,170 @@ class PulseSpel:
         output_str += self._ExpDefs() + "\n \n" + self.pcyc.__str__() + "\n \n" + self.exp_file_str
 
         return output_str
+
+# =============================================================================
+# Functions
+# =============================================================================
+
+def run_general(
+        api, ps_file: tuple, exp: tuple, settings: dict, variables: dict,
+        run: bool = True) -> None:
+    """A function to run a general Pulse Spel experiment through autoDeer.
+
+    Parameters
+    ----------
+    api : _type_
+        The current Bruker Xepr class
+    ps_file : tuple
+        A tuple containing the file path to both the ".exp" and ".def" files.
+    exp : tuple
+        A tuple giving the name of the experiment and phase cycle.
+    settings : dict
+        A dictionary containing possible acquisition settings. Options include 
+        ['ReplaceMode','PhaseCycle','Acquisition_mode']
+    variables : dict
+        A dictionary containg pulse spel variables to choose from can, these 
+        can also be dimension of experiment.
+    run : bool, optional
+        Should the experiment run or just compile, by default True
+
+    Raises
+    ------
+    ValueError
+        If an input is of the wrong type.
+    """
+    if os.path.isabs(ps_file[0]):
+        base_path = ""
+    else:
+        base_path = MODULE_DIR
+
+    if len(ps_file) == 1:
+        # Assuming that both the EXP file and the DEF file have the same 
+        # name bar-extention
+        exp_file = base_path + ps_file[0] + ".exp"
+        def_file = base_path + ps_file[0] + ".def"
+
+    elif len(ps_file) == 2:
+        
+        # EXP and DEF file have seperate name
+        exp_file = base_path + ps_file[0] + ".exp"
+        def_file = base_path + ps_file[1] + ".def"
+
+    else:
+        raise ValueError(
+            "ps_file must be of form ['EXP file'] or ['EXP file','DEF file']")
+
+    # Identifying a dimension change in settings
+    r = re.compile("dim([0-9]*)")
+    match_list: list = list(filter(
+        lambda list: list is not None, [r.match(i) for i in variables.keys()]))
+    if len(match_list) >= 1:
+        for i in range(0, len(match_list)):
+            key = match_list[i][0]
+            dim = int(r.findall(key)[0])
+            new_length = int(variables[key])
+            change_dimensions(exp_file, dim, new_length)
+        
+    api.set_PulseSpel_exp_filepath(exp_file)
+    api.set_PulseSpel_def_filepath(def_file)
+    api.compile_PulseSpel_prg()
+    api.compile_PulseSpel_def()   
+
+    if "ReplaceMode" in settings:
+        api.set_ReplaceMode(settings["ReplaceMode"]) 
+    else:
+        api.set_ReplaceMode(False) 
+    
+    if "PhaseCycle" in settings:
+        api.set_PhaseCycle(settings["PhaseCycle"]) 
+    else:
+        api.set_ReplaceMode(True) 
+
+    if "Acquisition_mode" in settings:
+        api.set_Acquisition_mode(settings["Acquisition_mode"])
+    else:    
+        api.set_Acquisition_mode(1)
+
+    # setting PS Variables
+
+    # Some Defaults first, these are overwritten if needed
+
+    api.set_PulseSpel_var("p0", 16)
+    api.set_PulseSpel_var("p1", 32)
+
+    api.set_PulseSpel_var("d0", 400)
+    api.set_PulseSpel_var("d1", 500)
+
+    api.set_PulseSpel_var("d30", 16)
+    api.set_PulseSpel_var("d31", 16)
+
+    api.set_PulseSpel_var("h", 20)
+    api.set_PulseSpel_var("n", 1000)
+    api.set_PulseSpel_var("m", 1)
+
+    # Change all variables
+
+    for var in variables:
+        api.set_PulseSpel_var(var.lower(), variables[var])
+
+    api.set_PulseSpel_experiment(exp[0])
+    api.set_PulseSpel_phase_cycling(exp[1])
+
+    # Compile Defs and Program
+    api.compile_PulseSpel_prg()
+    api.compile_PulseSpel_def()  
+
+    # Run Experiment
+    if run is True:
+        api.run_exp()
+        time.sleep(1)
+    pass
+
+# =============================================================================
+
+
+def change_dimensions(path, dim: int, new_length):    
+    """A function to rewrite a pulseSpel experiment file with a new dimension
+
+    Parameters
+    ----------
+    path : str
+        The full file path.
+    dim : int
+        The experiment number that needs to be changed
+    new_length : int
+        The new length can be a list of two if 2D.
+
+    Raises
+    ------
+    ValueError
+        If there more than 2 dimesnions are supplied. Xepr can not handle 3+D 
+        experiments.
+    """
+    # dim_str = "dim" + str(int(dim))
+    # Open file
+    with open(path, 'r') as file:
+        data = file.readlines()
+
+    # Build Regular expression to search for
+    # This identifies the correct line and extracts the comment.
+    re_search = fr"dim{int(dim)}\s*s\[[0-9]+,*[0-9]*\]" 
+    if type(new_length) == int:
+        new_string = f"dim{int(dim)} s[{int(new_length)}]"
+    elif type(new_length) == list:
+        if len(new_length) == 1:
+            new_string = f"dim{int(dim)} s[{int(new_length[0])}]"
+        elif len(new_length) == 2:
+            new_string = \
+                f"dim{int(dim)} s[{int(new_length[0])},{int(new_length[1])}]"
+        else:
+            raise ValueError("New length can't have more than 2 dimensions")
+    else:
+        raise ValueError("new_length must be either an int or a list")
+
+    data = [re.sub(re_search, new_string, line) for line in data]
+
+    with open(path, 'w') as file:
+        file.writelines(data)
+
+
