@@ -4,6 +4,7 @@ from scipy.signal import hilbert
 from scipy.io import savemat
 import os
 from autoDeer import __version__
+from autoDeer.utils import build_table
 import copy
 from itertools import product
 
@@ -94,7 +95,7 @@ class dataset:
                 np.savetxt(filename, save_array, delimiter=",")
 
     def add_variable(self, param):
-        setattr(self, param.name)
+        setattr(self, param.name, param)
         
 
 # =============================================================================
@@ -421,18 +422,23 @@ class Sequence:
         pulses_string = "Pulses: \n"
 
         if self.isPulseFocused():
-            pulses_string += "{:<4} {:<12} {:<8} {:<12} \n".format(
-                'iD', 't (ns)', 'tp (ns)', 'Type')
-            for i, pulse in enumerate(self.pulses):
-                pulses_string += "{:<4} {:<12.3E} {:<8} {:<10} \n".format(
-                    i, pulse.t.value, pulse.tp.value, type(pulse).__name__)
+            # pulses_string += "{:<4} {:<12} {:<8} {:<12} \n".format(
+            #     'iD', 't (ns)', 'tp (ns)', 'Type')
+            # for i, pulse in enumerate(self.pulses):
+            #     pulses_string += "{:<4} {:<12.3E} {:<8} {:<10} \n".format(
+            #         i, pulse.t.value, pulse.tp.value, type(pulse).__name__)
+            params = ['iD', 't', 'tp', 'scale', 'type']
+            params_widths = ["4", "8", "8", "8", "14"]
         elif self.isDelayFocused():
-            pulses_string += "{:<4} {:<8} {:<12} \n".format(
-                'iD', 'tp (ns)', 'Type')
-            for i, pulse in enumerate(self.pulses):
-                pulses_string += "{:<4} {:<8} {:<10} \n".format(
-                    i, pulse.tp.value, type(pulse).__name__)
-
+            # pulses_string += "{:<4} {:<8} {:<12} \n".format(
+            #     'iD', 'tp (ns)', 'Type')
+            # for i, pulse in enumerate(self.pulses):
+            #     pulses_string += "{:<4} {:<8} {:<10} \n".format(
+            #         i, pulse.tp.value, type(pulse).__name__)
+            params = ['iD', 'tp', 'scale', 'type']
+            params_widths = ["4", "8", "8", "14"]
+        pulses_string += build_table(self.pulses, params, params_widths)
+        
         # Progressive elements
         prog_string = "Progression: \n"
         prog_string += "{:<10} {:<10} {:<10} {:<30} \n".format(
