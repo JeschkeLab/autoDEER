@@ -820,7 +820,7 @@ class Delay(Pulse):
 class RectPulse(Pulse):
 
     def __init__(
-            self, tp, freq, t=None, flipangle=None, pcyc=None,
+            self, tp, freq, t=None, flipangle=None, pcyc=[0],
             name=None) -> None:
         Pulse.__init__(
             self, tp=tp, t=t, flipangle=flipangle, pcyc=pcyc, name=name)
