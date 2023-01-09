@@ -541,7 +541,7 @@ class Sequence:
 
 class Pulse:
 
-    def __init__(self, *, tp, t, scale=None, flipangle=None, pcyc=None,
+    def __init__(self, *, tp, t, scale=None, flipangle=None, pcyc=[0],
                  name=None) -> None:
         """The class for a general pulse.
 
@@ -570,7 +570,7 @@ class Pulse:
                 "flipangle", flipangle, None,
                 "The target flip angle of the spins")
         if pcyc is None:
-            self.pcyc = [0]
+            self.pcyc = None
         elif type(pcyc) is dict:
             self._addPhaseCycle(pcyc["phases"], detections=pcyc["dets"])
         else:
