@@ -1,11 +1,11 @@
-import autoDeer.hardware.openepr as autoEPR
+import autodeer.hardware.openepr as autoEPR
 import numpy as np
 import re
 import time
 import importlib
-from autoDeer import __version__
+from autodeer import __version__
 
-MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
+MODULE_DIR = importlib.util.find_spec('autodeer').submodule_search_locations[0]
 
 header = "; " + "-" * 79 + "\n"
 header += "; " + \
@@ -163,7 +163,11 @@ class PSparvar:
                     parvar["step"].append(0)
                 else:
                     parvar["step"].append(np.unique(np.diff(vec))[0])
-
+        
+        if "B" in parvar["variables"]:
+            self.Bsweep = True
+        else:
+            self.Bsweep = False
         self.ax_step = parvar["step"][0]
         self.init = parvar["vec"][0][0]
         self.dim = parvar["vec"][0].shape[0]
@@ -252,7 +256,11 @@ class PulseSpel:
 
         for i in place_hash.keys():
             self._addExp(f"{place_hash[i]} = {self.var_hash[i]}")
-        self._addExp(f"sweep x=1 to sx")
+        if self.parvars[0].Bsweep:
+            self._addExp(f"bsweep x=1 to sx")
+        else:
+            self._addExp(f"sweep x=1 to sx")
+    
         self._addExp(f"shot i=1 to h")
         self._addExp(f"d9")  # Just a stupid uncessary variable
 
@@ -276,7 +284,8 @@ class PulseSpel:
         self._addExp(f"next i")  # End of shots loop
         for i in place_hash.keys():
             self._addExp(f"{place_hash[i]} = {place_hash[i]} + {step_hash[i]}")
-        self._addExp(f"dx = dx + {dim_step}")
+        if not self.parvars[0].Bsweep:
+            self._addExp(f"dx = dx + {dim_step}")
         self._addExp(f"next x")  # End of scan loop
 
         self._addScanLoop()

@@ -3,9 +3,10 @@ import matplotlib.pyplot as plt
 from scipy.signal import hilbert
 from scipy.io import savemat
 import os
-from autoDeer import __version__
-from autoDeer.utils import build_table
+from autodeer import __version__
+from autodeer.utils import build_table
 import copy
+import time
 from itertools import product
 
 
@@ -99,6 +100,70 @@ class dataset:
         
 
 # =============================================================================
+
+
+class Interface:
+
+    def __init__(self) -> None:
+        pass
+
+    def connect(self) -> None:
+        pass
+
+    def acquire_dataset(self) -> dataset:
+        pass
+
+    def launch(self, sequence, savename: str):
+        pass
+
+    def isrunning(self) -> bool:
+        return False
+
+    def terminate(self) -> None:
+        pass
+
+    def terminate_at(self, criterion, test_interval=10):
+        """Terminates the experiment upon a specific condition being
+        satisified. 
+
+        Parameters
+        ----------
+        criterion : _type_
+            The criteria to be tested.
+        test_interval : int, optional
+            How often should the criteria be tested in minutes, by default 10.
+        """
+
+        test_interval_seconds = test_interval * 60
+        condition = False
+
+        start_time = time.time()
+
+        while not condition:
+            data = self.acquire_dataset()
+            try:
+                nAvgs = data.nAvgs.value
+            except AttributeError:
+                print("WARNING: Dataset missing number of averages(nAvgs)!")
+                nAvgs = 1
+            finally:
+                if nAvgs < 1:
+                    time.sleep(30)
+                    continue
+
+            condition = criterion.test(data)
+
+            if not condition:
+                end_time = time.time()
+
+                if (end_time - start_time) < test_interval_seconds:
+                    time.sleep(test_interval_seconds - (end_time - start_time))
+
+        self.terminate()
+        pass
+
+
+# =============================================================================
 # Super Classes Pulses
 # =============================================================================
 
@@ -147,6 +212,18 @@ class Sequence:
         self.shots = Parameter(
             "shots", shots, "None",
             "The number of shots per scan.")
+
+        if "det_window" in kwargs:
+            self.det_window = Parameter(
+                "det_window", kwargs["det_window"], "None",
+                "The length of the default detection gate"
+            )
+        else:
+            self.det_window = Parameter(
+                "det_window", 128, "None",
+                "The length of the default detection gate"
+            )
+
             
         self.name = name
         pass
