@@ -3,8 +3,8 @@ import deerlab as dl
 import numpy as np
 import logging
 import h5py
-from autoDeer.hardware.openepr import dataset, Parameter
-from autoDeer.home_built_func import uwb_load
+from autodeer.hardware.openepr import dataset, Parameter
+from autodeer.home_built_func import uwb_load
 from scipy.io import loadmat
 
 log = logging.getLogger('core.Tools')

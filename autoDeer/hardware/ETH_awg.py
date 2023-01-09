@@ -4,7 +4,7 @@ from autoDeer.hardware.openepr import Sequence, Pulse, RectPulse, \
 import numpy as np
 import os
 import re
-from autoDeer import eprload
+from autodeer import eprload
 import time
 
 class ETH_awg_interface:

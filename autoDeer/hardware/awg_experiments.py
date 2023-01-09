@@ -1,8 +1,8 @@
 import numpy as np
-from autoDeer.hardware import Interface,Waveform,Sequence,SequenceTable
-from autoDeer.ResPro import resonatorProfile
-import autoDeer.hardware.pulses as pulses
-import autoDeer.tools as tools
+from autodeer.hardware import Interface,Waveform,Sequence,SequenceTable
+from autodeer.ResPro import resonatorProfile
+import autodeer.hardware.pulses as pulses
+import autodeer.tools as tools
 
 
 def sequence_nutation(awg:Interface,p_start:int,p_step:int,nx:int,h:int,IF:float=2):

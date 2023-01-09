@@ -1,4 +1,4 @@
-from autoDeer.hardware.openepr import dataset
+from autodeer.hardware.openepr import dataset
 import time
 import numpy as np
 from deerlab.utils import der_snr

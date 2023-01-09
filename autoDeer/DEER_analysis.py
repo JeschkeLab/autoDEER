@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import cumulative_trapezoid
 import logging
 import importlib
-from autoDeer import FieldSweep, ResonatorProfile
+from autodeer import FieldSweep, ResonatorProfile
 import scipy.fft as fft
 from deerlab import correctphase
 from scipy.interpolate import interp1d
@@ -15,7 +15,7 @@ import re
 log = logging.getLogger('core.DEER')
 
 
-MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations
+MODULE_DIR = importlib.util.find_spec('autodeer').submodule_search_locations
 
 # =============================================================================
 

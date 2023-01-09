@@ -2,13 +2,13 @@ import importlib
 import time
 import numpy as np
 import re
-import autoDeer.tools as tools
+import autodeer.tools as tools
 from scipy.optimize import minimize_scalar, curve_fit
 from autoDeer.hardware import xepr_api
 from deerlab import correctphase
 from numpy.polynomial import Polynomial
 
-MODULE_DIR = importlib.util.find_spec('autoDeer').submodule_search_locations[0]
+MODULE_DIR = importlib.util.find_spec('autodeer').submodule_search_locations[0]
 
 # =============================================================================
 
