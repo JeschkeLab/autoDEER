@@ -1,5 +1,5 @@
 import matlab.engine
-from autoDeer.hardware.openepr import Sequence, Pulse, RectPulse, \
+from autodeer.hardware.openepr import Sequence, Pulse, RectPulse, \
     ChirpPulse, HSPulse, Detection
 import numpy as np
 import os
