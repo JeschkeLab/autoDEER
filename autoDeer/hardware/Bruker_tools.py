@@ -1,4 +1,4 @@
-import autodeer.hardware.openepr as autoEPR
+import autodeer.openepr as autoEPR
 import numpy as np
 import re
 import time

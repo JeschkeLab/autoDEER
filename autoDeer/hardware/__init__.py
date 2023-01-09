@@ -1,7 +1,6 @@
 from .keysight_awg import *
 from .pulses import *
 from .awg_experiments import deer_pulse_5p,sequence_nutation
-from .openepr import *
 try:
     import matlab.engine
 except ModuleNotFoundError:

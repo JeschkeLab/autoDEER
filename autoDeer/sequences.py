@@ -1,4 +1,4 @@
-from autodeer.hardware import Sequence, RectPulse, Pulse, ChirpPulse, \
+from autodeer.openepr import Sequence, RectPulse, Pulse, ChirpPulse, \
     Detection, Delay, Parameter
 import numpy as np
 

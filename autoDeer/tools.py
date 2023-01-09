@@ -3,7 +3,7 @@ import deerlab as dl
 import numpy as np
 import logging
 import h5py
-from autodeer.hardware.openepr import dataset, Parameter
+from autodeer.openepr import dataset, Parameter
 from autodeer.home_built_func import uwb_load
 from scipy.io import loadmat
 
