@@ -172,10 +172,11 @@ class FieldSweepSequence(HahnEchoSequence):
 
     def __init__(self, *, B, LO, Bwidth, reptime, averages, shots, **kwargs) -> None:
         
-        name = "Field Sweep"
         super().__init__(
-            name=name, B=B, LO=LO, reptime=reptime, averages=averages,
+            B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
+        self.name = "Field Sweep"
+
 
         self.Bwidth = Parameter(
             "Bwidth", Bwidth, "Gauss", "Field sweep width"
