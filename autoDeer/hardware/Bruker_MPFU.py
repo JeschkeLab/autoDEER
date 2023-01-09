@@ -32,7 +32,7 @@ class BrukerMPFU(Interface):
         return super().connect()
 
     def acquire_dataset(self) -> dataset:
-        return super().acquire_dataset()
+        return self.api.acquire_dataset()
     
     def launch(self, sequence: Sequence, savename: str):
         

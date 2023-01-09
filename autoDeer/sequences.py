@@ -38,7 +38,9 @@ class DEERSequence(Sequence):
         self.tau3 = tau3
         self.dt = dt
         self.deadtime = 200
-        super().__init__(name, B, LO, reptime, averages, shots, **kwargs)
+        super().__init__(
+            name=name, B=B, LO=LO, reptime=reptime, averages=averages,
+            shots=shots, **kwargs)
 
     def four_pulse(self, tp):
 
@@ -149,7 +151,9 @@ class HahnEchoSequence(Sequence):
         
         name = "Hahn Echo"
 
-        super().__init__(name, B, LO, reptime, averages, shots, **kwargs)
+        super().__init__(
+            name=name, B=B, LO=LO, reptime=reptime, averages=averages,
+            shots=shots, **kwargs)
 
         tau = 500
         tp = 12
@@ -168,8 +172,10 @@ class FieldSweepSequence(HahnEchoSequence):
 
     def __init__(self, *, B, LO, Bwidth, reptime, averages, shots, **kwargs) -> None:
         
-        super().__init__(B, LO, reptime, averages, shots, **kwargs)
-        self.name = "Field Sweep"
+        name = "Field Sweep"
+        super().__init__(
+            name=name, B=B, LO=LO, reptime=reptime, averages=averages,
+            shots=shots, **kwargs)
 
         self.Bwidth = Parameter(
             "Bwidth", Bwidth, "Gauss", "Field sweep width"
@@ -189,4 +195,6 @@ class CarrPurcellSequence(Sequence):
     def __init__(self, *, name, B, LO, reptime, averages, shots, **kwargs) -> None:
         
         name = "Carr-Purcell"
-        super().__init__(name, B, LO, reptime, averages, shots, **kwargs)
+        super().__init__(
+            name=name, B=B, LO=LO, reptime=reptime, averages=averages,
+            shots=shots, **kwargs)
