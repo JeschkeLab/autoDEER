@@ -13,7 +13,7 @@ import numpy as np
 
 class BrukerMPFU(Interface):
 
-    def __init__(self, config_file:str) -> None:
+    def __init__(self, config_file:str, d0=600) -> None:
 
         self.api = xepr_api(config_file)
         self.spec_config = self.api.config["Spectrometer"]
@@ -22,6 +22,8 @@ class BrukerMPFU(Interface):
         self.MPFU = self.bridge_config["MPFU Channels"]
         
         self.temp_dir = tempfile.mkdtemp("autoDEER")
+
+        self.d0 = d0
         
         super().__init__()
 
@@ -52,8 +54,8 @@ class BrukerMPFU(Interface):
         run_general(self.api,
             ps_file= [PSpel_file],
             exp=("auto","auto"),
-            settings={},
-            variables={},
+            settings={"ReplaceMode": False},
+            variables={"d0": self.d0},
             run=False
         )
 
@@ -193,7 +195,7 @@ class MPFUtune:
                     [file_path],
                     ["auto", "auto"],
                     {"PhaseCycle": True},
-                    {"pg": 64, "srt": self.srt},
+                    {"d0":self.d0,"pg": 64, "srt": self.srt},
                     run=False
                     )
 
