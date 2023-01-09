@@ -570,7 +570,7 @@ class Pulse:
                 "flipangle", flipangle, None,
                 "The target flip angle of the spins")
         if pcyc is None:
-            self.pcyc = None
+            self.pcyc = [0]
         elif type(pcyc) is dict:
             self._addPhaseCycle(pcyc["phases"], detections=pcyc["dets"])
         else:
