@@ -4,6 +4,7 @@ import re
 import time
 import importlib
 from autodeer import __version__
+import os
 
 MODULE_DIR = importlib.util.find_spec('autodeer').submodule_search_locations[0]
 

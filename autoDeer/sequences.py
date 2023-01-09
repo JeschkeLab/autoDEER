@@ -166,7 +166,7 @@ class HahnEchoSequence(Sequence):
             t=tau, tp=tp, freq=0, flipangle=np.pi
         ))
 
-        self.addPulse(Detection(t=2*tau, tp=self.det_window))
+        self.addPulse(Detection(t=2*tau, tp=self.det_window.value))
 
 class FieldSweepSequence(HahnEchoSequence):
 

@@ -50,8 +50,10 @@ class BrukerMPFU(Interface):
         PSpel.save(PSpel_file)
 
         run_general(self.api,
-            ps_file=PSpel_file,
+            ps_file= [PSpel_file],
             exp=("auto","auto"),
+            settings={},
+            variables={},
             run=False
         )
 
