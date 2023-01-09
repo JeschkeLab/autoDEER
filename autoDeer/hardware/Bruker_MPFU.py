@@ -1,4 +1,4 @@
-from autodeer.hardware import Interface, dataset, Sequence
+from autodeer.hardware import Interface, dataset, Sequence, Delay, Detection
 from autodeer.hardware.xepr_api_adv import xepr_api
 from autodeer.hardware.Bruker_tools import PulseSpel, run_general
 from autodeer.sequences import HahnEchoSequence
@@ -93,9 +93,9 @@ def _MPFU_channels(sequence):
     channels = []
 
     for iD, pulse in enumerate(sequence.pulses):
-        if type(pulse) is open.Delay:
+        if type(pulse) is Delay:
             continue
-        if type(pulse) is open.Detection:
+        if type(pulse) is Detection:
             continue
         flip_power = pulse.flipangle.value / pulse.tp.value
 
