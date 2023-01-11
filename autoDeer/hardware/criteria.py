@@ -1,4 +1,5 @@
 from autoDeer.hardware.openepr import dataset
+from autoDeer import std_deer_analysis
 import time
 import numpy as np
 from deerlab.utils import der_snr
@@ -74,4 +75,66 @@ class SNRCriteria(Criteria):
             snr = 1/std
             return snr > SNR_target
 
+        super().__init__(name, test_func, description)
+
+
+class DEERCriteria(Criteria):
+
+    def __init__(self, tau1, tau2, tau3=None, mode="Speed") -> None:
+        """Criteria for running DEER experiments.
+
+        Mode
+        ------
+        +------------+--------+------+------+-------+
+        | Parameter  | Speed  | Low  | Med  | High  |
+        +============+========+======+======+=======+
+        | MNR        | 20     | 10   | 50   | 100   |
+        +------------+--------+------+------+-------+
+
+
+        Parameters
+        ----------
+        tau1 : _type_
+            _description_
+        tau2 : _type_
+            _description_
+        tau3 : _type_, optional
+            _description_, by default None
+        mode : str, optional
+            _description_, by default "Speed"
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+        
+        name = "DEERCriteria"
+        description = "Criteria for terminating DEER experiments."
+        if mode.lower() == "speed":
+            MNR_threshold = 20
+
+        elif mode.lower() == "low":
+            MNR_threshold = 10
+
+        elif mode.lower() == "med":
+            MNR_threshold = 50
+
+        elif mode.lower() == "high":
+            MNR_threshold = 100
+        
+        else:
+            MNR_threshold = 50
+
+        def test_func(data: dataset):
+            fit, _, _ = std_deer_analysis(
+                data.axes/1000 - tau1, data.data,
+                tau1, tau2, tau3, num_points=100,
+                Compactness=True, Precision="Speed", plot=False)
+            test = True
+            if fit.MNR < MNR_threshold:
+                test = False
+            
+            return test
+        
         super().__init__(name, test_func, description)
