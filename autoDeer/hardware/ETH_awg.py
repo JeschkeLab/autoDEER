@@ -7,6 +7,7 @@ import re
 from autoDeer import eprload
 import time
 
+
 class ETH_awg_interface:
 
     def __init__(self, awg_freq=1.5, dig_rate=2) -> None:
@@ -82,7 +83,8 @@ class ETH_awg_interface:
         newest = max([extract_date_time(file) for file in files])
         date = newest // 10000
         start_time = newest - date * 10000
-        path = folder_path + "\\" + f"{date:08d}_{start_time:04d}_{filename}.mat"
+        path = folder_path + "\\" \
+            + f"{date:08d}_{start_time:04d}_{filename}.mat"
         
         self.engine.dig_interface('savenow')
         
@@ -267,6 +269,7 @@ class ETH_awg_interface:
 
         test_interval_seconds = test_interval * 60
         condition = False
+        last_scan = 0
 
         start_time = time.time()
 
@@ -279,6 +282,9 @@ class ETH_awg_interface:
                 nAvgs = 1
             finally:
                 if nAvgs < 1:
+                    time.sleep(30)  # Replace with single scan time
+                    continue
+                elif nAvgs <= last_scan:
                     time.sleep(30)
                     continue
 
