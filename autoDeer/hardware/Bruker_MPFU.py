@@ -36,7 +36,7 @@ class BrukerMPFU(Interface):
     def acquire_dataset(self) -> dataset:
         return self.api.acquire_dataset()
     
-    def launch(self, sequence: Sequence, savename: str):
+    def launch(self, sequence: Sequence, savename: str, start=True):
         
         channels = _MPFU_channels(sequence)
 
@@ -58,11 +58,11 @@ class BrukerMPFU(Interface):
             variables={"d0": self.d0},
             run=False
         )
-
-        self.api.run_exp()
+        if start:
+            self.api.run_exp()
         pass
     
-    def tune(self, sequence) -> None:
+    def tune(self, sequence, B0, LO) -> None:
         channels = _MPFU_channels(sequence)
         
         for i,channel in enumerate(channels):
@@ -76,7 +76,7 @@ class BrukerMPFU(Interface):
                 echo = "R-"
             elif (phase == -np.pi/2) or (phase == 3*np.pi/2):
                 echo = "I-"
-            mpfu_tune = MPFUtune(self.api, echo="Hahn",ps_length=ps_length)
+            mpfu_tune = MPFUtune(self.api,B0=B0,LO=LO, echo="Hahn",ps_length=ps_length)
             mpfu_tune.tune({self.MPFU[i]: echo})
         
         pass
@@ -187,6 +187,7 @@ class MPFUtune:
             axis=np.linspace(tau,tau,4)
         )
 
+        self.interface.launch(sequence, savename="autoTUNE", start=False)
         PSpel = PulseSpel(sequence, self.MPFU)
         file_path = self.interface.temp_dir + "/autoDEER_tune"
         PSpel.save(file_path)
