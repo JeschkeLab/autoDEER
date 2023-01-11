@@ -14,8 +14,8 @@ class dataset:
     """
     The container for all experimental data.
     """
-    def __init__(self, axes: np.ndarray, data: np.ndarray, params: dict = None
-                 ) -> None:
+    def __init__(self, axes: np.ndarray, data: np.ndarray, params: dict = None,
+                 scans: np.ndarray = None) -> None:
         """
         Parameters
         ----------
@@ -31,6 +31,7 @@ class dataset:
         self.data = data
         self.params = params
         self.dims = len(self.axes)
+        self.scans = scans
 
         if not np.iscomplexobj(self.data):
             self.data = hilbert(self.data)
@@ -438,7 +439,7 @@ class Sequence:
             params = ['iD', 'tp', 'scale', 'type']
             params_widths = ["4", "8", "8", "14"]
         pulses_string += build_table(self.pulses, params, params_widths)
-        
+
         # Progressive elements
         prog_string = "Progression: \n"
         prog_string += "{:<10} {:<10} {:<10} {:<30} \n".format(

@@ -388,6 +388,7 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
         dta_ev = np.zeros((np.size(dta_x[0])), dtype=np.complex128)
         dta_avg = np.zeros((len(ran_echomax), np.size(dta_x[0])),
                            dtype=np.complex128)
+    dta_scans = np.zeros((len(dta), np.size(dta_x[0])), dtype=np.complex128)
     
     for ii in range(0, len(dta)):
         dta_c = dta[ii][ran_echomax, :]
@@ -555,12 +556,14 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
         
         dta_pha = np.apply_along_axis(bfunc, 1, dta_win)
         
-        dta_ev = dta_ev + np.squeeze(np.sum(dta_pha, 0)) / \
+        dta_this_scan = np.squeeze(np.sum(dta_pha, 0)) / \
             sum(sig.windows.chebwin(evlen, 100))
+        dta_ev = dta_ev + dta_this_scan
+        dta_scans[ii, :] = dta_this_scan  # This will not work for 2D
         if exp_dim == 2:
             dta_avg[0:evlen, :, :] = dta_avg[0:evlen, :, :] + \
                 np.apply_along_axis(bfunc, 1, dta_win)
-                # np.multiply(dta_dc[ran_echo, :, :], np.exp(-1j * corr_phase))
+#                np.multiply(dta_dc[ran_echo, :, :], np.exp(-1j * corr_phase))
         else:
             dta_avg[0:evlen, :] = dta_avg[0:evlen, :] + \
                 np.multiply(dta_dc[ran_echo, :], np.exp(-1j * corr_phase))
@@ -576,6 +579,7 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
     output.nAvgs = nAvgs
     output.dta_x = dta_x
     output.dta_ev = dta_ev
+    output.dta_scans = dta_scans
     output.exp = estr
     output.det_frq = det_frq
     output.echopos = echopos
