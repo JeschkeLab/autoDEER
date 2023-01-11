@@ -1,5 +1,5 @@
-from autoDeer.hardware.openepr import dataset
-from autoDeer import std_deer_analysis
+from autodeer.openepr import dataset
+from autodeer import std_deer_analysis
 import time
 import numpy as np
 from deerlab.utils import der_snr
@@ -9,7 +9,7 @@ class Criteria:
 
     def __init__(
             self, name: str, test, description: str = None) -> None:
-        
+ 
         self.name = name
         self.description = description
         self.test = test
@@ -37,7 +37,7 @@ class TimeCriteria(Criteria):
             now = time.time()
 
             return now > end_time
-                
+
         super().__init__(name, test_func, description)
 
 

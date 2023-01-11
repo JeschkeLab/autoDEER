@@ -12,6 +12,7 @@ Spectrometer:
     Min Freq: 33 #GHz
     Max Freq: 35 #GHz
     Freq Cal: [-67652.70, 2050.203]
+    MPFU Channels: ['+<x>', '-<x>','+<y>', '-<y>']
     Pulse dt: 2  #ns
     Det dt: 0.5  #ns
     Det res: 8  #bit

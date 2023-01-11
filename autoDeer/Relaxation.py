@@ -3,7 +3,7 @@ import numpy as np
 from deerlab import noiselevel
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-from autoDeer.hardware.openepr import dataset
+from autodeer.openepr import dataset
 
 # ===========================================================================
 

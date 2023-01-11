@@ -1,5 +1,5 @@
 import numpy as np
-from autoDeer.ResPro import resonatorProfile
+from autodeer.ResPro import resonatorProfile
 from scipy.integrate import cumulative_trapezoid
 from scipy.interpolate import pchip_interpolate
 from scipy.fft import fft,fftshift,fftfreq

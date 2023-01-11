@@ -1,10 +1,10 @@
 import matlab.engine
-from autoDeer.hardware.openepr import Sequence, Pulse, RectPulse, \
+from autodeer.openepr import Sequence, Pulse, RectPulse, \
     ChirpPulse, HSPulse, Detection
 import numpy as np
 import os
 import re
-from autoDeer import eprload
+from autodeer import eprload
 import time
 
 

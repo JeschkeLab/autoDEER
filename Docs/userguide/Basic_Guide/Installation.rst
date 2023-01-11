@@ -14,13 +14,24 @@ The latest version can **always** be found in the *main* branch ::
 
     git pull origin main
 
-AutoDEER can eiter be installed normally or in develop mode. Develop mode is
-useful if you plan to develop/expand autoDEER. ::
-        
-    python -m pip install .
+Multiple versions of autoDEER exist depending on what hardware you use:
+    
+1. Bruker
+2. Matlab
+3. Docs
+4. Dev (Install all of the above plus pytest)
 
-Or to install in develop mode. ::
-        
+To install the Bruker module, for example::
+
+    python -m pip install .[Bruker]
+
+When using MacOS or any ZSH based shell you need to do::
+
+        python -m pip install ".[Bruker]"
+
+AutoDEER can also be installed in editable mode. Editable mode is
+useful if you plan to develop/expand autoDEER. ::
+
     python -m pip install -e .  
 
 
