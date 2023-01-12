@@ -2,7 +2,6 @@ import os
 import deerlab as dl
 import numpy as np
 import logging
-import h5py
 from autodeer.openepr import dataset, Parameter
 from autodeer.home_built_func import uwb_load
 from scipy.io import loadmat
@@ -78,40 +77,6 @@ def eprload(
             t, V, Params = dl.deerload(
                 path, plot=False, full_output=full_output)
             return dataset(t, V, Params)
-
-    elif type == 'HDF5':
-
-        f = h5py.File(path, 'r')
-        groups = list(f.keys())
-        
-        if experiment is None:
-            if 'Spectrometer' in groups:
-                groups.remove('Spectrometer')
-            exp = f[groups[0]]
-        else:
-            exp = f[experiment]
-        
-        # attrs = (exp.attrs.keys())
-        elements = list(exp.keys())
-
-        if all(item in elements for item in ['Axes', 'Data']):
-            t = exp['Axes']
-            V = exp['Data']
-        else:
-            raise RuntimeError(
-                "HDF5 File is missing the datasets ('Axes','Data') in group"
-                f"{experiment}")
-
-        if 'full_output' in kwargs:
-            full_output = kwargs['full_output']
-        
-            if full_output:
-                Params = dict(exp.attrs.items())
-                return dataset(t, V, Params)   
-            else:
-                return dataset(t, V)
-        else:
-            return dataset(t, V)
 
     elif type == 'TXT':
         if 'full_output' in kwargs:

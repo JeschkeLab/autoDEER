@@ -23,7 +23,6 @@ setup(
         'scipy',
         'matplotlib',
         'deerlab >= 1.0',
-        'h5py',
         'pyyaml'
     ],
     extras_require=extras
