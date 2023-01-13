@@ -155,6 +155,11 @@ def std_deer_analysis(
         bootstrap = kwargs["bootstrap"]
     else:
         bootstrap = 0
+
+    if "bootcores" in kwargs:
+        bootcores = kwargs["bootcores"]
+    else:
+        bootcores = 1
     
     if mask is not None:
         noiselvl = dl.noiselevel(Vexp[mask])
@@ -163,7 +168,8 @@ def std_deer_analysis(
 
     fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty, 
                  bootstrap=bootstrap, mask=mask, noiselvl=noiselvl,
-                 regparamrange=regparamrange)
+                 regparamrange=regparamrange, bootcores=bootcores)
+
     mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
     ROI = IdentifyROI(fit.P, r, criterion=0.90, method="int")
 
