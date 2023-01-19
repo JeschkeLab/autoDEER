@@ -372,6 +372,10 @@ class PulseSpel:
             shape = 1
             init_freq = pulse.freq.value
             final_freq = init_freq
+            if hasattr(pulse,"scale"):
+                amplitude = pulse.scale.value
+            else:
+                amplitude = 0
         
 
         def add_AWG_line(elements, comment=None, indent=2, repeat=1):
@@ -393,7 +397,7 @@ class PulseSpel:
         string = ""
         
         phase = np.round(np.degrees(pulse.pcyc["Phases"]))
-        amplitude = 0
+        
         num_cycles = len(phase)
         
         string += f"begin awg{awg_id}\n"

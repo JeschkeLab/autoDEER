@@ -51,6 +51,11 @@ class BrukerMPFU(Interface):
         PSpel_file = self.temp_dir + "/autoDEER_PulseSpel"
         PSpel.save(PSpel_file)
 
+        self.api.set_field(sequence.B.value)
+        self.api.set_freq(sequence.LO.value)
+        if hasattr(sequence,"Bwidth"):
+            self.api.set_sweep_width(sequence.Bwidth.value)
+        
         run_general(self.api,
             ps_file= [PSpel_file],
             exp=("auto","auto"),
