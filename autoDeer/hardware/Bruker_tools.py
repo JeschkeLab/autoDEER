@@ -17,7 +17,7 @@ header += "; " + "-" * 79 + "\n"
 
 class PSPhaseCycle:
 
-    def __init__(self, sequence, MPFU=None) -> None:
+    def __init__(self, sequence, MPFU=None, OnlyDet=False) -> None:
         BPhaseCycles = []
         
         if MPFU is not None:
@@ -26,8 +26,8 @@ class PSPhaseCycle:
             pulse_dicts = self._main(sequence)
         
         detect_dicts =self._detect(sequence)
-        
-        BPhaseCycles += pulse_dicts
+        if not OnlyDet:
+            BPhaseCycles += pulse_dicts
         BPhaseCycles += detect_dicts
 
         self.BPhaseCycles = BPhaseCycles
@@ -114,7 +114,7 @@ class PSPhaseCycle:
         for i, cycle_dict in enumerate(self.BPhaseCycles):
             cycle = cycle_dict["Cycle"]
             if type(cycle_dict["Pulse"]) != str:
-                pcyc_hash[cycle_dict["Pulse"]] = i+1
+                pcyc_hash[cycle_dict["Pulse"]] = f"ph{i+1}"
                 line_str = f"ph{i+1} "
             elif cycle_dict["Pulse"] == 'a':
                 line_str = f"asg1 "
@@ -201,7 +201,7 @@ possible_pulses = [
 
 class PulseSpel:
 
-    def __init__(self, sequence, MPFU=None) -> None:
+    def __init__(self, sequence, MPFU=None, AWG=False) -> None:
         self.possible_delays = possible_delays.copy()
         self.possible_pulses = possible_pulses.copy()
         self.sequence = sequence
@@ -210,6 +210,8 @@ class PulseSpel:
         self.exp_file_str = ""
         self.dims = []
         self.MPFU = MPFU
+        self.AWG = AWG
+        self.pcyc_str = ""
         
         # Build hash of initial pulses
         for id, pulse in enumerate(sequence.pulses):
@@ -253,7 +255,24 @@ class PulseSpel:
             self.dims.append(parvar.dim)
 
         # Build experiment file
-        self._addPhaseCycle()
+
+        if self.AWG:
+            self.pcyc_hash = {}
+            id = -1
+            for i,pulse in enumerate(sequence.pulses):
+                if (type(pulse) is autoEPR.Delay):
+                    continue
+                elif (type(pulse) is autoEPR.Detection):
+                    continue
+                id += 1
+                awg_id = self._addAWGPulse(pulse, id)
+                self.pcyc_hash[i] = awg_id
+
+            pcyc = PSPhaseCycle(self.sequence, MPFU=None, OnlyDet=True)
+            self.pcyc_str = pcyc.__str__() + self.pcyc_str
+                
+        else:
+            self._addPhaseCycle()
 
         for i in place_hash.keys():
             self._addExp(f"{place_hash[i]} = {self.var_hash[i]}")
@@ -272,7 +291,7 @@ class PulseSpel:
             else:
                 pulse_str = self.var_hash[id]
             if id in self.pcyc_hash:
-                self._addExp(f"{pulse_str} [ph{self.pcyc_hash[id]}]")
+                self._addExp(f"{pulse_str} [{self.pcyc_hash[id]}]")
             elif type(pulse) == autoEPR.Detection:
                 self._addExp(f"d0\nacq [sg1]")
             else:
@@ -345,6 +364,61 @@ class PulseSpel:
     def _addPhaseCycle(self):
         self.pcyc = PSPhaseCycle(self.sequence, self.MPFU)
         self.pcyc_hash = self.pcyc.pcyc_hash
+        self.pcyc_str = self.pcyc.__str__()
+    
+    def _addAWGPulse(self, pulse, id):
+        awg_id = id
+        if type(pulse) is autoEPR.RectPulse:
+            shape = 1
+            init_freq = pulse.freq.value
+            final_freq = init_freq
+            if hasattr(pulse,"scale"):
+                amplitude = pulse.scale.value
+            else:
+                amplitude = 0
+        
+
+        def add_AWG_line(elements, comment=None, indent=2, repeat=1):
+            string = ""
+            string += " "*indent
+            for i in range(0,repeat):
+                if isinstance(elements,list) or isinstance(elements,np.ndarray):
+                    for ele in elements:
+                        string += f"{ele:<4}  "
+                else:
+                    string += f"{elements:<4}  "
+            
+            if comment is not None:
+                string += ";  " + comment
+            
+            string += "\n"
+            return string
+
+        string = ""
+        
+        phase = np.round(np.degrees(pulse.pcyc["Phases"]))
+        
+        num_cycles = len(phase)
+        
+        string += f"begin awg{awg_id}\n"
+        string += add_AWG_line(
+            init_freq, repeat=num_cycles, comment="Initial Frequency [MHz]")
+        string += add_AWG_line(
+            final_freq, repeat=num_cycles, comment="Final Frequency [MHz]")
+        string += add_AWG_line(
+            phase, repeat=1, comment="Phase")
+        string += add_AWG_line(
+            amplitude, repeat=num_cycles, comment="Amplitude")
+        string += add_AWG_line(
+            shape, repeat=num_cycles, comment="Shape")
+        string += f"end awg{awg_id}\n"
+    
+        self.pcyc_str += string
+
+        return f"awg{id}"
+        
+
+
 
     def _cmpl_Exp(self):
         self.exp_file_str = f"begin exp \"{'auto'}\" [INTG QUAD]\n" +\
@@ -361,7 +435,7 @@ class PulseSpel:
         output_str += self.def_file_str
         output_str += "#"*79 + "\n"
         output_str += "EXP File \n" + "#"*79 + "\n"
-        output_str += self._ExpDefs() + "\n \n" + self.pcyc.__str__() + "\n \n" + self.exp_file_str
+        output_str += self._ExpDefs() + "\n \n" + self.pcyc_str + "\n \n" + self.exp_file_str
 
         return output_str
 
