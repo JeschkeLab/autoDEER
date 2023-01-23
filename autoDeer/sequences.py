@@ -55,7 +55,7 @@ class DEERSequence(Sequence):
             t=self.tau1, tp=tp, freq=0, flipangle=np.pi
         ))
         self.addPulse(RectPulse( # Pump 1 pulse
-            t=self.tau1 + self.deadtime, tp=tp, freq=0, flipangle=np.pi
+            t=2*self.tau1 - self.deadtime, tp=tp, freq=0, flipangle=np.pi
         ))
         self.addPulse(RectPulse( # Ref 2 pulse
             t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
@@ -63,7 +63,7 @@ class DEERSequence(Sequence):
         self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
 
         self.addPulsesProg(
-            2,
+            [2],
             ["t"],
             0,
             axis)
@@ -100,21 +100,60 @@ class DEERSequence(Sequence):
             axis)
         pass
 
+    def seven_pulse(self, tp):
+
+        self.name = "7p-DEER"
+
+        axis = np.arange(
+            self.tau1+self.deadtime, self.tau2 + 2*self.tau1 - self.deadtime,
+             self.dt)
+        self.addPulse(RectPulse(  # Exc pulse
+            t=0, tp=tp, freq=0, flipangle=np.pi/2
+        ))
+        self.addPulse(RectPulse( # Pump 1 pulse
+            t=self.tau1 - self.tau3, tp=tp, freq=0, flipangle=np.pi
+        ))
+
+        self.addPulse(RectPulse( # Ref 1 pulse
+            t=self.tau1, tp=tp, freq=0, flipangle=np.pi
+        ))
+        self.addPulse(RectPulse( # Pump 2 pulse
+            t=self.tau1 + self.deadtime, tp=tp, freq=0, flipangle=np.pi
+        ))
+        self.addPulse(RectPulse( # Ref 2 pulse
+            t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
+        ))
+        self.addPulse(RectPulse( # Pump 3 pulse
+            t=self.tau1 + self.deadtime, tp=tp, freq=0, flipangle=np.pi
+        ))
+        self.addPulse(RectPulse( # Ref 3 pulse
+            t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
+        ))
+        self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
+
+        self.addPulsesProg(
+            3,
+            ["t"],
+            0,
+            axis)
+        pass
+
     def select_pcyc(self, option: str):
         """Choose which DEER phase you would like.
 
         .. |xp| replace:: x\ :sub:`p`\
 
-        +---------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
-        | Phase cycle   | Short Code  | DEER_sequence  | Steps  | Pulse Phase Cycle         | Remaining Echoes            | Reference  |
-        +===============+=============+================+========+===========================+=============================+============+
-        | (x)x|xp|x     | DC          | ALL            | 2      | [+(+x) -(-x)]             | PE12rp,SE(PE12)p3,PE12rpr3  |            |
-        +---------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
-        | x[x][|xp|]x   | 16step_4p   | 4 pulse        | 16     | [+(+x) -(+y)+(-x) -(-y)]  | -                           | [1]        |
-        +---------------+-------------+----------------+--------+                           +-----------------------------+------------+
-        | xxp[x][|xp|]x | 16step_5p   | 5 pulse        | 16     | [+(+x) +(+y)+(-x) +(-y)]  | PEp02r3,b PE1p0r2r3b        | [1]        |
-        +---------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
-
+        +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+        | Phase cycle               | Short Code  | DEER_sequence  | Steps  | Pulse Phase Cycle         | Remaining Echoes            | Reference  |
+        +===========================+=============+================+========+===========================+=============================+============+
+        | (x)x|xp|x                 | DC          | ALL            | 2      | [+(+x) -(-x)]             | PE12rp,SE(PE12)p3,PE12rpr3  |            |
+        +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+        | x[x][|xp|]x               | 16step_4p   | 4 pulse        | 16     | [+(+x) -(+y)+(-x) -(-y)]  | -                           | [1]        |
+        +---------------------------+-------------+----------------+--------+                           +-----------------------------+------------+
+        | x|xp|[x][|xp|]x           | 16step_5p   | 5 pulse        | 16     | [+(+x) +(+y)+(-x) +(-y)]  | PEp02r3,b PE1p0r2r3b        | [1]        |
+        +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+        | x[x]|xp|(x)(|xp|)(|xp|)x  | 32step_7p   | 7 pulse        | 32     |                           |                             | [1]        |
+        +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
 
         Parameters
         ----------
@@ -160,7 +199,7 @@ class HahnEchoSequence(Sequence):
 
         name = "Hahn Echo"
         self.addPulse(RectPulse(  # Exc pulse
-            t=0, tp=tp, freq=0, flipangle=np.pi/2, pcyc=([0, np.pi], [1 -1])
+            t=0, tp=tp, freq=0, flipangle=np.pi/2, pcyc={"phases":[0, np.pi], "dets":[1, -1]}
         ))
         self.addPulse(RectPulse( # Pump 1 pulse
             t=tau, tp=tp, freq=0, flipangle=np.pi

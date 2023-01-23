@@ -286,7 +286,7 @@ class MPFUtune:
 
     def tune_power(
             self, channel: str, tol=0.1, maxiter=30,
-            bounds: list[float] = [0, 100]) -> float:
+            bounds=[0, 100]) -> float:
         """Tunes the attenuator of a given channel to a given target using the
         standard scipy optimisation scripts. 
 

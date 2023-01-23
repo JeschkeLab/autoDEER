@@ -96,6 +96,8 @@ def eprload(
         data = np.squeeze(uwb_output.dta_ev)
         data = dataset(axes, data, Params)
         data.add_variable(Parameter(name='nAvgs', value=uwb_output.nAvgs))
+        if hasattr(uwb_output,"dta_scans"):
+            data.scans = uwb_output.dta_scans
         return data 
 
 
