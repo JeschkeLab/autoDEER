@@ -55,7 +55,7 @@ class DEERSequence(Sequence):
             t=self.tau1, tp=tp, freq=0, flipangle=np.pi
         ))
         self.addPulse(RectPulse( # Pump 1 pulse
-            t=self.tau1 + self.deadtime, tp=tp, freq=0, flipangle=np.pi
+            t=2*self.tau1 - self.deadtime, tp=tp, freq=0, flipangle=np.pi
         ))
         self.addPulse(RectPulse( # Ref 2 pulse
             t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
@@ -63,7 +63,7 @@ class DEERSequence(Sequence):
         self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
 
         self.addPulsesProg(
-            2,
+            [2],
             ["t"],
             0,
             axis)

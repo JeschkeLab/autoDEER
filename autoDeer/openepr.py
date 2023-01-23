@@ -31,14 +31,17 @@ class dataset:
         self.axes = axes
         self.data = data
         self.params = params
-        self.dims = len(self.axes)
+        if type(self.axes) is np.ndarray:
+            self.dims = self.axes.ndim
+        else:
+            self.dims = len(self.axes)
         self.scans = scans
 
         if not np.iscomplexobj(self.data):
             self.data = hilbert(self.data)
         pass
 
-    def plot(self, label: list[str] = None, **kwargs) -> plt.figure:
+    def plot(self, label=None, **kwargs) -> plt.figure:
         """
         Produces a standard quick graph of the data. This is a line plot for 
         1D data and a heatmap for 2D data.
@@ -62,6 +65,8 @@ class dataset:
             ax.set_ylabel('Signal')
             if label is not None:
                 ax.set_xlabel(label[0])
+        else:
+            raise RuntimeError("Only Single dimension data is supported")
 
         return fig
         
@@ -147,10 +152,10 @@ class Interface:
             except AttributeError:
                 print("WARNING: Dataset missing number of averages(nAvgs)!")
                 nAvgs = 1
-            finally:
-                if nAvgs < 1:
-                    time.sleep(30)
-                    continue
+            
+            if nAvgs < 1:
+                time.sleep(30)
+                continue
 
             condition = criterion.test(data)
 
@@ -436,8 +441,9 @@ class Sequence:
                 pulse_times[pulse_num] = self.progTable["axis"][i]
             for i in range(1, num_pulses):
                 diff = np.atleast_1d(pulse_times[i] - pulse_times[i-1])
-                new_prog_table = add_prog_table(
-                    new_prog_table, int(i*2 - 1), "tp", diff, ax_id)
+                if diff.shape[0] > 1:
+                    new_prog_table = add_prog_table(
+                        new_prog_table, int(i*2 - 1), "tp", diff, ax_id)
         
         # Change the pcyc_vars
         new_pcyc_var = []

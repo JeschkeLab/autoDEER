@@ -143,6 +143,7 @@ class PSparvar:
         parvar = {}
         self.PulseSpel = True
         parvar["variables"] = []
+        parvar["types"] = []
         self.events = []
         parvar["vec"] = []
         parvar["step"] = []
@@ -154,6 +155,11 @@ class PSparvar:
                 vec = progTable["axis"][i]
                 parvar["variables"].append(var)
                 parvar["vec"].append(vec)
+                if type(sequence.pulses[pulse_num]) is autoEPR.Delay:
+                    parvar["types"].append("d")
+                else:
+                    parvar["types"].append("p")
+                
                 self.events.append(pulse_num)
 
                 if var != "tp":
@@ -247,7 +253,10 @@ class PulseSpel:
                 str = self._new_delay(f"{event}_step")
                 step_hash[event] = str
                 self._addDef(f"{str} = {parvar.parvar['step'][j]}")
-                str = self._new_delay(f"{event}_place")
+                if parvar.parvar['types'][j] == "d":
+                    str = self._new_delay(f"{event}_place")
+                elif parvar.parvar['types'][j] == "p":
+                    str = self._new_pulse(f"{event}_place")
                 place_hash[event] = str
             dim_step = self._new_delay(f"dim{i}_step")
             self._addDef(f"{dim_step} = {parvar.ax_step}")
@@ -259,14 +268,14 @@ class PulseSpel:
         if self.AWG:
             self.pcyc_hash = {}
             id = -1
-            for i,pulse in enumerate(sequence.pulses):
+            for pulse_num,pulse in enumerate(sequence.pulses):
                 if (type(pulse) is autoEPR.Delay):
                     continue
                 elif (type(pulse) is autoEPR.Detection):
                     continue
                 id += 1
-                awg_id = self._addAWGPulse(pulse, id)
-                self.pcyc_hash[i] = awg_id
+                awg_id = self._addAWGPulse(sequence,pulse_num, id)
+                self.pcyc_hash[pulse_num] = awg_id
 
             pcyc = PSPhaseCycle(self.sequence, MPFU=None, OnlyDet=True)
             self.pcyc_str = pcyc.__str__() + self.pcyc_str
@@ -333,7 +342,7 @@ class PulseSpel:
             fexp.write(header.format("experiment"))
             fexp.write(self._ExpDefs())
             fexp.write("\n"*3)
-            fexp.write(self.pcyc.__str__())
+            fexp.write(self.pcyc_str)
             fexp.write("\n"*3)
             fexp.write(self.exp_file_str)
 
@@ -366,10 +375,11 @@ class PulseSpel:
         self.pcyc_hash = self.pcyc.pcyc_hash
         self.pcyc_str = self.pcyc.__str__()
     
-    def _addAWGPulse(self, pulse, id):
+    def _addAWGPulse(self, sequence, pulse_num, id):
         awg_id = id
+        pulse=sequence.pulses[pulse_num]
         if type(pulse) is autoEPR.RectPulse:
-            shape = 1
+            shape = 0
             init_freq = pulse.freq.value
             final_freq = init_freq
             if hasattr(pulse,"scale"):
@@ -396,8 +406,9 @@ class PulseSpel:
 
         string = ""
         
-        phase = np.round(np.degrees(pulse.pcyc["Phases"]))
-        
+        # phase = np.round(np.degrees(pulse.pcyc["Phases"]))
+        phase = np.round(np.degrees(sequence.pcyc_cycles[:,sequence.pcyc_vars.index(pulse_num)]))
+
         num_cycles = len(phase)
         
         string += f"begin awg{awg_id}\n"
@@ -515,7 +526,7 @@ def run_general(
     if "PhaseCycle" in settings:
         api.set_PhaseCycle(settings["PhaseCycle"]) 
     else:
-        api.set_ReplaceMode(True) 
+        api.set_PhaseCycle(True) 
 
     if "Acquisition_mode" in settings:
         api.set_Acquisition_mode(settings["Acquisition_mode"])
@@ -526,18 +537,18 @@ def run_general(
 
     # Some Defaults first, these are overwritten if needed
 
-    api.set_PulseSpel_var("p0", 16)
-    api.set_PulseSpel_var("p1", 32)
+#     api.set_PulseSpel_var("p0", 16)
+#     api.set_PulseSpel_var("p1", 32)
 
-    api.set_PulseSpel_var("d0", 400)
-    api.set_PulseSpel_var("d1", 500)
+#     api.set_PulseSpel_var("d0", 400)
+#     api.set_PulseSpel_var("d1", 500)
 
-    api.set_PulseSpel_var("d30", 16)
-    api.set_PulseSpel_var("d31", 16)
+#     api.set_PulseSpel_var("d30", 16)
+#     api.set_PulseSpel_var("d31", 16)
 
-    api.set_PulseSpel_var("h", 20)
-    api.set_PulseSpel_var("n", 1000)
-    api.set_PulseSpel_var("m", 1)
+#     api.set_PulseSpel_var("h", 20)
+#     api.set_PulseSpel_var("n", 1000)
+#     api.set_PulseSpel_var("m", 1)
 
     # Change all variables
 

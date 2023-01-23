@@ -516,13 +516,6 @@ class xepr_api:
         float
             Frequency in GHz
         """
-
-        if pol is None:
-            if hasattr(self, "freq_cal"):
-                pol = self.freq_cal
-            else:
-                pol = [-67652.70, 2050.203]
-
         if "Min Freq" in self.bridge_config.keys():
             if val < self.bridge_config["Min Freq"]:
                 raise RuntimeError("Set Frequency is too low!")
@@ -530,26 +523,37 @@ class xepr_api:
         if "Max Freq" in self.bridge_config.keys():
             if val > self.bridge_config["Max Freq"]:
                 raise RuntimeError("Set Frequency is too high!")
+                
+        if "Digital Source" in self.bridge_config.keys():
+            if self.bridge_config["Digital Source"]:
+                self.hidden['FineFreq'].value = val
+                hw_log.info(f'Bridge Frequency set to {val}Fset')
+            else:
+                if pol is None:
+                    if hasattr(self, "freq_cal"):
+                        pol = self.freq_cal
+                    else:
+                        pol = [-67652.70, 2050.203]
 
-        pol_func = np.polynomial.polynomial.Polynomial(pol)
-        pos = round(pol_func(val))
-        if precision:
-            self.hidden['Frequency'].value = pos
-            bounds = [pos-50, pos+50]
-            
-            def objective(x):
-                self.hidden['Frequency'].value = x
-                return self.get_counterfreq()
-            
-            output = minimize_scalar(
-                objective, method='bounded', bounds=bounds,
-                options={'xatol': 1e-3, 'maxiter': 30})
-            pos = round(output.x)
-            self.hidden['Frequency'].value = pos
-        else:
-            self.hidden['Frequency'].value = pos
+                pol_func = np.polynomial.polynomial.Polynomial(pol)
+                pos = round(pol_func(val))
+                if precision:
+                    self.hidden['Frequency'].value = pos
+                    bounds = [pos-50, pos+50]
+
+                    def objective(x):
+                        self.hidden['Frequency'].value = x
+                        return self.get_counterfreq()
+
+                    output = minimize_scalar(
+                        objective, method='bounded', bounds=bounds,
+                        options={'xatol': 1e-3, 'maxiter': 30})
+                    pos = round(output.x)
+                    self.hidden['Frequency'].value = pos
+                else:
+                    self.hidden['Frequency'].value = pos
         
-        hw_log.info(f'Bridge Frequency set to {val} at position {pos}')
+                hw_log.info(f'Bridge Frequency set to {val} at position {pos}')
 
         return self.hidden['Frequency'].value
 
@@ -567,14 +571,19 @@ class xepr_api:
         float
             Frequency in GHz
         """
-
-        if pol is None:
-            pol = [-67652.70, 2050.203]
-
-        inv_func = np.polynomial.polynomial.Polynomial(
-            [-pol[0]/pol[1], 1/(pol[1])])
-
-        return inv_func(self.hidden['Frequency'].value)
+        if "Digital Source" in self.bridge_config.keys():
+            if self.bridge_config["Digital Source"]:
+                return self.hidden['FineFreq'].value
+            else:
+                if pol is None:
+                    if hasattr(self, "freq_cal"):
+                        pol = self.freq_cal
+                    else:
+                        pol = [-67652.70, 2050.203]
+                inv_func = np.polynomial.polynomial.Polynomial(
+                    [-pol[0]/pol[1], 1/(pol[1])])
+    
+                return inv_func(self.hidden['Frequency'].value)
 
     def get_spec_config(self) -> str:
         """get_spec_config Gets the name of the current spectrometer
