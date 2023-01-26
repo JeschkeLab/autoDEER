@@ -5,7 +5,7 @@ exec(open('autoDeer/_version.py').read())
 extras={
     "Bruker": ["XeprAPI"],
     "Matlab": ["matlabengine"],
-    "Docs": ["sphinx", "pydata-sphinx-theme", "sphinx-gallery"]
+    "Docs": ["sphinx", "pydata-sphinx-theme", "sphinx-gallery", "sphinx-design"]
 }
 extras["Dev"] = extras["Bruker"] + extras["Matlab"] + extras["Docs"] + \
     ["pytest"]

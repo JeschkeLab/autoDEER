@@ -12,8 +12,31 @@ import numpy as np
 
 
 class BrukerAWG(Interface):
+    """
+    Represents the interface for connecting to AWG based Bruker ELEXSYS-II 
+    Spectrometers.
+    """
 
     def __init__(self, config_file:str, d0=600) -> None:
+        """An interface for connecting to AWG based Bruker ELEXSYS-II 
+        Spectrometers.
+
+        Getting Started
+        ------------------
+        Before a connection can be made an appropriate configuration file first
+        needs to be written. 
+
+        1. Open Xepr
+        2. Processing -> XeprAPI -> Enable XeprAPI
+        3. `BrukerAWG.connect()`
+
+        Parameters
+        ----------
+        config_file : str
+            _description_
+        d0 : int, optional
+            _description_, by default 600
+        """
 
         self.api = xepr_api(config_file)
         self.spec_config = self.api.config["Spectrometer"]
@@ -27,6 +50,10 @@ class BrukerAWG(Interface):
 
 
     def connect(self) -> None:
+        """Opens a connection to Xepr.
+        
+        Xepr can only connect to API at a single time.
+        """
 
         self.api.connect()
         return super().connect()

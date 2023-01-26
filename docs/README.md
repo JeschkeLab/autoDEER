@@ -9,10 +9,15 @@ The autoDeer documentation is built using Spinx and the pydata theme. Please fol
 3) Install Sphinx and extensions
 
         pip install sphinx    
-        pip install pydata-sphinx-theme
+        <!-- pip install pydata-sphinx-theme -->
+        pip install furo
         pip install sphinx-gallery
+        pip install sphinx-design
+        pip install --upgrade myst-parser
+        
 
 ## Building docs
 To build docs please run:
 
+        make clean
         make html

@@ -1,4 +1,4 @@
-Basic User Guide
+autoDEER
 ========================
 
 .. toctree::
@@ -6,7 +6,6 @@ Basic User Guide
     :maxdepth: 2
     :caption: Get started
 
-    ./Installation.rst
     ./deer_intro.rst
     ./config_file.rst
 
@@ -22,5 +21,10 @@ Basic User Guide
     :hidden:
     :maxdepth: 2
     :caption: Post Processing
+
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: API Reference
 
 

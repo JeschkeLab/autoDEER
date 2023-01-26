@@ -9,7 +9,9 @@ import time
 
 
 class ETH_awg_interface:
-
+    """
+    Represents the interface for connecting to Andrin Doll style spectrometers.
+    """
     def __init__(self, awg_freq=1.5, dig_rate=2) -> None:
         """An interface for connecting to a Andrin Doll style spectrometer,
         commonly in use at ETH Zürich.

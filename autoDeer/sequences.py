@@ -3,6 +3,9 @@ from autodeer.openepr import Sequence, RectPulse, Pulse, ChirpPulse, \
 import numpy as np
 
 class DEERSequence(Sequence):
+    """
+    Represents a DEER/PELDOR sequence. 
+    """
 
     def __init__(
         self, *, tau1, tau2, tau3 = None, dt, B, LO, reptime, averages, shots,
@@ -43,6 +46,14 @@ class DEERSequence(Sequence):
             shots=shots, **kwargs)
 
     def four_pulse(self, tp):
+        """
+        Build a four pulse DEER sequence.
+
+        Parameters
+        ----------
+        tp : float
+            Step size in ns
+        """
 
         axis = np.arange(
             2*self.tau1-self.deadtime, self.tau2 + 2*self.tau1 - self.deadtime,
@@ -71,7 +82,14 @@ class DEERSequence(Sequence):
 
         pass
     def five_pulse(self, tp):
+        """
+        Build a five pulse DEER sequence.
 
+        Parameters
+        ----------
+        tp : float
+            Step size in ns
+        """
         axis = np.arange(
             self.tau1+self.deadtime, self.tau2 + 2*self.tau1 - self.deadtime,
              self.dt)
@@ -101,7 +119,14 @@ class DEERSequence(Sequence):
         pass
 
     def seven_pulse(self, tp):
+        """
+        Build a seven pulse DEER sequence.
 
+        Parameters
+        ----------
+        tp : float
+            Step size in ns
+        """
         self.name = "7p-DEER"
 
         axis = np.arange(
@@ -140,20 +165,24 @@ class DEERSequence(Sequence):
 
     def select_pcyc(self, option: str):
         """Choose which DEER phase you would like.
+        
+        .. |xp| replace:: x\ :sub:`p`
 
-        .. |xp| replace:: x\ :sub:`p`\
-
-        +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
-        | Phase cycle               | Short Code  | DEER_sequence  | Steps  | Pulse Phase Cycle         | Remaining Echoes            | Reference  |
-        +===========================+=============+================+========+===========================+=============================+============+
-        | (x)x|xp|x                 | DC          | ALL            | 2      | [+(+x) -(-x)]             | PE12rp,SE(PE12)p3,PE12rpr3  |            |
-        +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
-        | x[x][|xp|]x               | 16step_4p   | 4 pulse        | 16     | [+(+x) -(+y)+(-x) -(-y)]  | -                           | [1]        |
-        +---------------------------+-------------+----------------+--------+                           +-----------------------------+------------+
-        | x|xp|[x][|xp|]x           | 16step_5p   | 5 pulse        | 16     | [+(+x) +(+y)+(-x) +(-y)]  | PEp02r3,b PE1p0r2r3b        | [1]        |
-        +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
-        | x[x]|xp|(x)(|xp|)(|xp|)x  | 32step_7p   | 7 pulse        | 32     |                           |                             | [1]        |
-        +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+        .. table::
+            :width: 150
+            :widths: 10 10 10 5 30 30 5
+ 
+            +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+            | Phase cycle               | Short Code  | Sequence       | Steps  | Pulse Phase Cycle         | Remaining Echoes            | Ref.       |
+            +===========================+=============+================+========+===========================+=============================+============+
+            | (x)x|xp|x                 | DC          | ALL            | 2      | [+(+x)-(-x)]              | PE12rp, SE(PE12)p3, PE12rpr3|            |
+            +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+            | x[x][|xp|]x               | 16step_4p   | 4 pulse        | 16     | [+(+x)-(+y)+(-x)-(-y)]    |                             | [1]        |
+            +---------------------------+-------------+----------------+--------+                           +-----------------------------+------------+
+            | x|xp|[x][|xp|]x           | 16step_5p   | 5 pulse        | 16     | [+(+x)+(+y)+(-x)+(-y)]    | PEp02r3,b PE1p0r2r3b        | [1]        |
+            +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+            | x[x]|xp|(x)(|xp|)(|xp|)x  | 32step_7p   | 7 pulse        | 32     |                           |                             | [1]        |
+            +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
 
         Parameters
         ----------
@@ -185,7 +214,9 @@ class DEERSequence(Sequence):
 
 
 class HahnEchoSequence(Sequence):
-
+    """
+    Represents a Hahn-Echo sequence. 
+    """
     def __init__(self, *, B, LO, reptime, averages, shots, **kwargs) -> None:
         
         name = "Hahn Echo"
@@ -208,7 +239,9 @@ class HahnEchoSequence(Sequence):
         self.addPulse(Detection(t=2*tau, tp=self.det_window.value))
 
 class FieldSweepSequence(HahnEchoSequence):
-
+    """
+    Represents a Field Sweep (EDFS) sequence. 
+    """
     def __init__(self, *, B, LO, Bwidth, reptime, averages, shots, **kwargs) -> None:
         
         super().__init__(
@@ -231,7 +264,9 @@ class FieldSweepSequence(HahnEchoSequence):
 
 
 class CarrPurcellSequence(Sequence):
-
+    """
+    Represents a Carr-Purcell sequence. 
+    """
     def __init__(self, *, name, B, LO, reptime, averages, shots, **kwargs) -> None:
         
         name = "Carr-Purcell"

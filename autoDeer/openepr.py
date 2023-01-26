@@ -13,7 +13,7 @@ from itertools import product
 # =============================================================================
 class dataset:
     """
-    The container for all experimental data.
+    Represents an experimental dataset.
     """
     def __init__(self, axes: np.ndarray, data: np.ndarray, params: dict = None,
                  scans: np.ndarray = None) -> None:
@@ -109,6 +109,8 @@ class dataset:
 
 
 class Interface:
+    """Represents the interface connection from autoEPR to the spectrometer.
+    """
 
     def __init__(self) -> None:
         pass
@@ -117,15 +119,30 @@ class Interface:
         pass
 
     def acquire_dataset(self) -> dataset:
+        """
+        Acquires the dataset.
+        """
         pass
 
     def launch(self, sequence, savename: str):
+        """Launches the experiment and initialises autosaving.
+
+        Parameters
+        ----------
+        sequence : Sequence
+            The sequence to be launched
+        savename : str
+            The savename/path for this measurement.
+        """
         pass
 
     def isrunning(self) -> bool:
         return False
 
     def terminate(self) -> None:
+        """
+        Terminates the experiment immediately. 
+        """
         pass
 
     def terminate_at(self, criterion, test_interval=10):
@@ -174,6 +191,9 @@ class Interface:
 # =============================================================================
 
 class Sequence:
+    """
+    Represents an experimental pulse sequence.
+    """
 
     def __init__(
             self, *, name, B, LO, reptime, averages, shots, **kwargs) -> None:
@@ -256,7 +276,8 @@ class Sequence:
         self._buildPhaseCycle()
 
     def _estimate_time(self):
-        """Calculates the estimated experiment time in seconds.
+        """
+        Calculates the estimated experiment time in seconds.
         """
         acqs = self.averages.value * self.shots.value
         if hasattr(self, 'pcyc_dets'):
@@ -341,6 +362,25 @@ class Sequence:
         return self.progTable
         
     def addPulseProg(self, pulse_id, variable, axis_id, axis) -> None:
+        """Adds a single progessive pulse element to the sequence.
+
+        It is strongly recomeneded that the axis is generated using `np.arange`
+        over `np.linspace`. Most spectrometers do not like inputs with a high
+        number of decimal places. `np.arange` allows control of the step size
+        reducing any risk of conflict with the interface.
+
+        Parameters
+        ----------
+        pulse_id : int
+            The iD of the moving pulse element. If it is a sequence parameter, 
+            such as `B` field, then `None` should be given.
+        variable : str
+            The name of the parameter.
+        axis_id : int
+            The iD of the axis. 
+        axis : np.ndarray
+            An array containing how the pulse element changes.
+        """
         if pulse_id is None:
             # Assume it is an experiment/sequence parameter
             var = getattr(self, variable)
@@ -354,6 +394,32 @@ class Sequence:
     
     def addPulsesProg(
             self, pulses, variables, axis_id, axis, multipliers=None) -> None:
+        """Adds a multiple progessive pulse element to the sequence. This is
+        very useful when multiple elements are changing at the same time with
+        a constant relationship.
+
+        It is strongly recomeneded that the axis is generated using `np.arange`
+        over `np.linspace`. Most spectrometers do not like inputs with a high
+        number of decimal places. `np.arange` allows control of the step size
+        reducing any risk of conflict with the interface.
+
+
+        Parameters
+        ----------
+        pulses : list[int]
+            A list of pulse iDs that are changing
+        variables : list[str]
+            A list of variables that are changing
+        axis_id : int
+            The iD of the axis 
+        axis : np.ndaaray
+            An array containing how the pulse element changes
+        multipliers : list or np.ndaaray, optional
+            How the different variable are proportional to each other, by
+            default None. If `None` is specified then it is assumed that there
+            is a 1:1 relationship. The axs gives the values for the first
+            element.
+        """
         
         if multipliers is None:
             multipliers = np.ones(len(pulses))
@@ -366,6 +432,9 @@ class Sequence:
         pass 
 
     def isPulseFocused(self):
+        """
+        Is the sequence expressed to contain only pulses and no delays?
+        """
         test = []
         for pulse in self.pulses:
             test.append(pulse.isPulseFocused())
@@ -375,7 +444,10 @@ class Sequence:
         else:
             return False
 
-    def isDelayFocused(self):   
+    def isDelayFocused(self):  
+        """
+        Is the sequence expressed to contain both pulses and delays?
+        """ 
         test = []
         for pulse in self.pulses:
             test.append(pulse.isDelayFocused())
@@ -547,6 +619,9 @@ class Sequence:
 
 
 class Pulse:
+    """
+    Represents a general experimental pulse.
+    """
 
     def __init__(self, *, tp, t, scale=None, flipangle=None, pcyc=[0],
                  name=None) -> None:
@@ -600,12 +675,22 @@ class Pulse:
         return self.AM, self.FM
 
     def isDelayFocused(self):
+        """
+        Does the pulse contain a specified time, `t`?
+
+        If so then it is not delay focused.
+        """
         if self.t is None:
             return True
         else:
             return False
     
     def isPulseFocused(self):
+        """
+        Does the pulse contain a specified time, `t`?
+
+        If so then it is delay focused.
+        """
         if self.t is not None:
             return True
         else:
@@ -734,6 +819,9 @@ class Pulse:
         
 
 class Parameter:
+    """
+    Represents a sequence or pulse parameter.
+    """
 
     def __init__(self, name, value, unit=None, description=None) -> None:
         """A general parameter.
@@ -782,6 +870,9 @@ class Parameter:
         
 
 class Detection(Pulse):
+    """
+    Represents a detection pulse.
+    """
 
     def __init__(self, *, tp, t) -> None:
         """A general detection pulse.
@@ -807,6 +898,9 @@ class Detection(Pulse):
 
 
 class Delay(Pulse):
+    """
+    Represents a inter-pulse delay pulse.
+    """
 
     def __init__(self, *, tp, t=None) -> None:
         
@@ -825,6 +919,9 @@ class Delay(Pulse):
 # =============================================================================
 
 class RectPulse(Pulse):
+    """
+    Represents a rectangular monochromatic pulse.
+    """
 
     def __init__(
             self, tp, freq, t=None, flipangle=None, pcyc=[0],
@@ -846,7 +943,9 @@ class RectPulse(Pulse):
 # =============================================================================
 
 class HSPulse(Pulse):
-
+    """
+    Represents a hyperboilc secant frequency-swept pulse.
+    """
     def __init__(self, *, tp, scale, Horder, t) -> None:
         Pulse.__init__(self, tp=tp, scale=scale, t=t)
         self.order = Parameter("Order", Horder, None, "Order of the HS Pulse")
@@ -859,6 +958,9 @@ class HSPulse(Pulse):
 # =============================================================================
 
 class ChirpPulse(Pulse):
+    """
+    Represents a linear frequency-swept pulse.
+    """
 
     def __init__(self, *, tp, scale, t, **kwargs) -> None:
         Pulse.__init__(self, tp=tp, scale=scale, t=t)
@@ -915,6 +1017,9 @@ class ChirpPulse(Pulse):
 # =============================================================================
 
 class SincPulse(Pulse):
+    """
+    Represents a sinc shaped monochromatic pulse.
+    """
 
     def __init__(self, *, tp, scale, freq, order, t=None, window=None) -> None:
         Pulse.__init__(self, tp=tp, scale=scale, t=t)
@@ -933,7 +1038,9 @@ class SincPulse(Pulse):
 
 
 class ChorusPulse:
-
+    """
+    Represents a CHORUS composite pulse.
+    """
     def __init__(self, t, tp, BW, centre_freq, scale) -> None:
         self.t = t
         self.tp = tp
