@@ -208,6 +208,9 @@ possible_pulses = [
 class PulseSpel:
 
     def __init__(self, sequence, MPFU=None, AWG=False) -> None:
+
+        self._check_sequence(sequence)
+
         self.possible_delays = possible_delays.copy()
         self.possible_pulses = possible_pulses.copy()
         self.sequence = sequence
@@ -429,7 +432,15 @@ class PulseSpel:
         return f"awg{id}"
         
 
+    def _check_sequence(self, sequence):
 
+        for i, pulse in enumerate(sequence.pulses):
+            if (type(pulse) is not autoEPR.Delay):
+                continue
+            elif (type(pulse) is not autoEPR.Detection):
+                continue
+            elif pulse.scale is None:
+                raise RuntimeError(f"Missing scale in pulse {i}")
 
     def _cmpl_Exp(self):
         self.exp_file_str = f"begin exp \"{'auto'}\" [INTG QUAD]\n" +\
