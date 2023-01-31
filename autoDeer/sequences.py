@@ -112,7 +112,7 @@ class DEERSequence(Sequence):
         self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
 
         self.addPulsesProg(
-            3,
+            [3],
             ["t"],
             0,
             axis)
@@ -157,7 +157,7 @@ class DEERSequence(Sequence):
         self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
 
         self.addPulsesProg(
-            3,
+            [3],
             ["t"],
             0,
             axis)
@@ -211,8 +211,6 @@ class DEERSequence(Sequence):
         pass
 
 
-
-
 class HahnEchoSequence(Sequence):
     """
     Represents a Hahn-Echo sequence. 
@@ -262,14 +260,114 @@ class FieldSweepSequence(HahnEchoSequence):
         )
         
 
-
 class CarrPurcellSequence(Sequence):
     """
     Represents a Carr-Purcell sequence. 
     """
-    def __init__(self, *, name, B, LO, reptime, averages, shots, **kwargs) -> None:
+    def __init__(self, *, B, LO, reptime, averages, shots, **kwargs) -> None:
         
         name = "Carr-Purcell"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
+
+class ResonatorProfileSequence(Sequence):
+    """
+    Builds nutation based Resonator Profile sequence. 
+    """
+
+    def __init__(self,*,B,LO,reptime,averages,shots,**kwargs) -> None:
+
+        name = "Resonator-Profile"
+        super().__init__(
+            name=name, B=B, LO=LO, reptime=reptime, averages=averages,
+            shots=shots, **kwargs)
+
+        self._build_sequence()
+
+    def _build_sequence(self):
+
+        tau1=2000
+        tau2=500
+
+        self.addPulse(RectPulse(  # Hard pulse
+            t=0, tp=4, freq=0, flipangle="Hard"
+        ))
+
+        self.addPulse(RectPulse(  # pi/2
+            t=tau1, tp=16, freq=0, flipangle=np.pi/2
+        ))
+        self.addPulse(RectPulse(  # pi
+            t=tau1+tau2, tp=32, freq=0, flipangle=np.pi
+        ))
+
+        self.addPulse(Detection(t=tau1+2*tau2, tp=512))
+
+
+        self.pulses[0].scale.value = 1
+        nut_axis = np.arange(0,66,2,)
+        self.addPulsesProg(
+            [0],
+            ["tp"],
+            0,
+            nut_axis)
+
+        # Add frequency sweep
+        width= 0.3
+        axis = np.arange(self.LO.value-width,self.LO.value+width+0.02,0.02)
+        self.addPulsesProg(
+                [None],
+                ["LO"],
+                1,
+                axis)
+
+
+class TWTProfileSequence(Sequence):
+    """
+    Builds TWT based Resonator Profile sequence. 
+    """
+    
+    def __init__(self,*,B,LO,reptime,averages=1,shots=100,**kwargs) -> None:
+
+        name = "TWT-Profile"
+        super().__init__(
+            name=name, B=B, LO=LO, reptime=reptime, averages=averages,
+            shots=shots, **kwargs)
+
+        self._build_sequence()
+
+    def _build_sequence(self,):
+
+        tau1=2000
+        tau2=500
+
+        self.addPulse(RectPulse(  # Hard pulse
+            t=0, tp=4, freq=0, flipangle="Hard"
+        ))
+
+        self.addPulse(RectPulse(  # pi/2
+            t=tau1, tp=16, freq=0, flipangle=np.pi/2
+        ))
+        self.addPulse(RectPulse(  # pi
+            t=tau1+tau2, tp=32, freq=0, flipangle=np.pi
+        ))
+
+        self.addPulse(Detection(t=tau1+2*tau2, tp=512))
+
+
+        self.pulses[0].scale.value = 1
+        nut_axis = np.arange(0,66,2)
+        self.addPulsesProg(
+            [0],
+            ["tp"],
+            0,
+            nut_axis)
+
+        # Add amplitude sweep
+        width= 0.3
+        axis = np.arange(0,1.01,0.01)
+        self.addPulsesProg(
+                [0],
+                ["scale"],
+                1,
+                axis)

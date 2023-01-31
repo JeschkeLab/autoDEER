@@ -1,6 +1,6 @@
 from setuptools import setup
 
-exec(open('autoDeer/_version.py').read())
+exec(open('autodeer/_version.py').read())
 
 extras={
     "Bruker": ["XeprAPI"],
@@ -14,7 +14,7 @@ setup(
     name='autoDEER',
     version=str(__version__),
     author='Hugo Karas, Gunnar Jeschke and other contributors',
-    package_dir={'autodeer': 'autoDeer'},
+    package_dir={'autodeer': 'autodeer'},
     packages=['autodeer','autodeer'],
     url = "https://github.com/HKaras/autoDeer",
     python_requires=">=3.8, <3.11",

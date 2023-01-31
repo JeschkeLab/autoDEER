@@ -4,7 +4,7 @@ import numpy as np
 import re
 import autodeer.tools as tools
 from scipy.optimize import minimize_scalar, curve_fit
-from autoDeer.hardware import xepr_api
+from autodeer.hardware import xepr_api
 from deerlab import correctphase
 from numpy.polynomial import Polynomial
 
