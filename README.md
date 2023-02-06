@@ -15,17 +15,14 @@ A Python package designed for the running of automated and optimised DEER/PELDOR
 1) Numpy
 2) Scipy
 3) Matplotlib
-4) pytest
-5) h5py
-8) DeerLab (https://jeschkelab.github.io/DeerLab/)
-
-## Optinal Dependencies
-1) Xepr API for python 3 (https://github.com/OE-FET/XeprAPI)
-2) Matlab engine
+4) [DeerLab](https://jeschkelab.github.io/DeerLab/) 
+5) pyyaml
+6) [XeprAPI](https://github.com/OE-FET/XeprAPI) [Bruker]
+7) matlab-engine [Matlab]
 
 ## External Software Dependencies
-1) Bruker Xepr
-2) Matlab
+1) Bruker Xepr [Bruker]
+2) Matlab [Matlab based systems]
 
 ## License
 
@@ -34,4 +31,3 @@ Two main methods:
  - Either install from source by cloning this git repository
  - Install from a prebuilt release on the right hand side
 
-Currently autoDEER is not published on any central repository such as pypi or conda. This will only happen after final publication.
