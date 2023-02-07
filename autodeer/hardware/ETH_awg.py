@@ -1,6 +1,5 @@
 import matlab.engine
-from autodeer.openepr import Sequence, Pulse, RectPulse, \
-    ChirpPulse, HSPulse, Detection
+from autodeer.openepr import *
 import numpy as np
 import os
 import re
@@ -55,7 +54,13 @@ class ETH_awg_interface:
 
             if len(matlab_sessions) > 1:
                 print("More than one session, picking the first.")
-            session = matlab_sessions[0]
+                session = matlab_sessions[0]
+            elif len(matlab_sessions) == 0:
+                raise RuntimeError(
+                    "A matlab python session must be started. \n"+
+                    "Please type into matlab session: "
+                    "matlab.engine.shareEngine"
+                    )
         
         self.engine = matlab.engine.connect_matlab(session)
         self.workspace = self.engine.workspace
