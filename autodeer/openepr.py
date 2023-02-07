@@ -571,11 +571,11 @@ class Sequence:
         for param_key in vars(self):
             param = getattr(self, param_key)
             if type(param) is Parameter:
-                seq_param_string += "{:<10} {:<12} {:<10} {:<30} \n".format(
+                seq_param_string += "{:<10} {:<12.5g} {:<10} {:<30} \n".format(
                     param.name, param.value, param.unit, param.description)
         
         # Pulses
-        pulses_string = "Pulses: \n"
+        pulses_string = "Events (Pulses, Delays, etc...): \n"
 
         if self.isPulseFocused():
             # pulses_string += "{:<4} {:<12} {:<8} {:<12} \n".format(
@@ -595,20 +595,44 @@ class Sequence:
             params_widths = ["4", "8", "8", "14"]
         pulses_string += build_table(self.pulses, params, params_widths)
 
+        def print_event_id(i):
+            if prog_table["EventID"][i] is None:
+                return "Seq"
+            else:
+                return str(prog_table["EventID"][i])
+
+        def get_unit(i):
+            pulse_num = prog_table["EventID"][i]
+            if pulse_num is None:
+                param = getattr(self, prog_table["Variable"][i])
+            else:
+                param = getattr(
+                    self.pulses[pulse_num], prog_table["Variable"][i])
+            
+            return param.unit
+
+
+        def test_unique_step(array):
+            diffs = np.diff(array)-np.diff(array)[0]
+            return np.isclose(diffs,np.zeros(diffs.shape)).all()
+
         # Progressive elements
         prog_string = "Progression: \n"
-        prog_string += "{:<10} {:<10} {:<10} {:<30} \n".format(
-            'Pulse', 'Prog. Axis', 'Parameter', 'Step')
+        prog_string += "{:<10} {:<10} {:<10} {:<10} {:<10} \n".format(
+            'Pulse', 'Prog. Axis', 'Parameter', 'Step', 'Unit')
         for i in range(0, len(self.progTable["axID"])):
             prog_table = self.progTable
             axis = prog_table["axis"][i]
-            if len(np.unique(np.diff(axis))) == 1:
+            if test_unique_step(axis):
                 step = np.unique(np.diff(axis))[0]
+                fstring = "{:<10} {:<10} {:<10} {:<10.5g} {:<10} \n"
             else:
                 step = "Var"
-            prog_string += "{:<10} {:<10} {:<10} {:<30} \n".format(
-                prog_table["EventID"][i], prog_table["axID"][i],
-                prog_table["Variable"][i], step)
+                fstring = "{:<10} {:<10} {:<10} {:<10} {:<10} \n"
+             
+            prog_string += fstring.format(
+                print_event_id(i), prog_table["axID"][i],
+                prog_table["Variable"][i], step, get_unit(i))
 
         footer = "#" * 79 + "\n" +\
             f"Built by autoDEER Version: {__version__}" + "\n" + "#" * 79

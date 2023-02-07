@@ -282,6 +282,7 @@ class ResonatorProfileSequence(Sequence):
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
+        self.gyro = LO/B
 
         self._build_sequence()
 
@@ -320,6 +321,12 @@ class ResonatorProfileSequence(Sequence):
                 ["LO"],
                 1,
                 axis)
+   
+        self.addPulsesProg(
+                [None],
+                ["B"],
+                1,
+                axis/self.gyro)
 
 
 class TWTProfileSequence(Sequence):

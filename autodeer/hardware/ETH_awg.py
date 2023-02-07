@@ -103,7 +103,7 @@ class ETH_awg_interface:
             else:
                 return data
         
-    def launch(self, sequence: Sequence, savename: str, IFgain: int = 0):
+    def launch(self, sequence , savename: str, IFgain: int = 0):
         """Launch a sequence on the spectrometer.
 
         Parameters
@@ -144,7 +144,9 @@ class ETH_awg_interface:
         # Build parvars
         struc["parvars"] = []
         if hasattr(sequence, 'pcyc_vars'):
-            struc["parvars"].append(self._build_phase_cycle(sequence))
+            pcyc_parvar = self._build_phase_cycle(sequence)
+            if pcyc_parvar["vec"].shape[0] != 1:
+                struc["parvars"].append(pcyc_parvar)
         for i in unique_parvars:
             struc["parvars"].append(self._build_parvar(i, sequence))
         
@@ -219,6 +221,28 @@ class ETH_awg_interface:
         return parvar
 
     def _build_parvar(self, id, sequence) -> dict:
+        """This interface takes a dictionary called a parvar for all 
+        progressive elements. It is this object that controls how the
+        sequence changes with time.
+
+
+        .. note::
+            This interface interprets any change in `LO` as being a 
+            change in the IF frequency of all pulses and detections.
+             I.e. the physcial LO **does not** change. 
+
+        Parameters
+        ----------
+        id : _type_
+            _description_
+        sequence : _type_
+            _description_
+
+        Returns
+        -------
+        dict
+            _description_
+        """
 
         prog_table = sequence.progTable
         prog_table_n = len(prog_table["axID"])
@@ -238,20 +262,42 @@ class ETH_awg_interface:
                     if var in ["freq", "init_freq"]:
                         vec += self.awg_freq
                         var = "nu_init"
-                    if var == "final_freq":
+                    elif var == "final_freq":
                         vec += self.awg_freq
                         var = "nu_final"
-            
+
                     if var == "t":
                         pulse_str = f"events{{{pulse_num+1}}}.t"
                     else:
                         pulse_str = f"events{{{pulse_num+1}}}.pulsedef.{var}"
+                    
+                    parvar["variables"].append(pulse_str)
+                    parvar["vec"].append(vec)
 
+                elif var == "LO":
+                    # Instead of stepping the LO we will step the frequency
+                    # all the pulses and detection events.
+                    pulse_strings = []
+                    vec = prog_table["axis"][i].astype(float)
+                    vec -= self.awg_freq
+                    vecs = []
+                    pulse_str = lambda i: f"events{{{i+1}}}.pulsedef.nu_init"
+                    for i,pulses in enumerate(sequence.pulses):
+                        if type(pulses) is Delay:
+                            continue
+                        else:
+                            pulse_strings.append(pulse_str(i))
+                            vecs.append(vec)
+
+                    parvar["variables"].extend(pulse_strings)
+                    parvar["vec"].extend(vecs)                
+                
                 else:
                     pulse_str = var
+                    parvar["variables"].append(pulse_str)
+                    parvar["vec"].append(vec)
                 
-                parvar["variables"].append(pulse_str)
-                parvar["vec"].append(vec)
+
 
         parvar["vec"] = np.stack(parvar["vec"]).T
         return parvar
