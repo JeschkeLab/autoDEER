@@ -279,12 +279,19 @@ class ETH_awg_interface:
                     # all the pulses and detection events.
                     pulse_strings = []
                     vec = prog_table["axis"][i].astype(float)
-                    vec -= self.awg_freq
+                    centre_freq = (vec[-1] + vec[0])/2
+                    LO = centre_freq - self.awg_freq
+                    sequence.LO.value = LO
+                    vec = vec - LO
                     vecs = []
                     pulse_str = lambda i: f"events{{{i+1}}}.pulsedef.nu_init"
+                    det_str = lambda i: f"events{{{i+1}}}.det_frq"
                     for i,pulses in enumerate(sequence.pulses):
                         if type(pulses) is Delay:
                             continue
+                        elif type(pulses) is Detection:
+                            pulse_strings.append(det_str(i))
+                            vecs.append(vec)
                         else:
                             pulse_strings.append(pulse_str(i))
                             vecs.append(vec)

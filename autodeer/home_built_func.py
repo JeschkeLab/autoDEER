@@ -388,7 +388,9 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
         dta_ev = np.zeros((np.size(dta_x[0])), dtype=np.complex128)
         dta_avg = np.zeros((len(ran_echomax), np.size(dta_x[0])),
                            dtype=np.complex128)
-    dta_scans = np.zeros((len(dta), np.size(dta_x[0])), dtype=np.complex128)
+
+
+    dta_scans = np.zeros((len(dta),) + dta_ev.shape, dtype=np.complex128)
     
     for ii in range(0, len(dta)):
         dta_c = dta[ii][ran_echomax, :]
@@ -559,7 +561,9 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
         dta_this_scan = np.squeeze(np.sum(dta_pha, 0)) / \
             sum(sig.windows.chebwin(evlen, 100))
         dta_ev = dta_ev + dta_this_scan
+
         dta_scans[ii, :] = dta_this_scan  # This will not work for 2D
+        
         if exp_dim == 2:
             dta_avg[0:evlen, :, :] = dta_avg[0:evlen, :, :] + \
                 np.apply_along_axis(bfunc, 1, dta_win)

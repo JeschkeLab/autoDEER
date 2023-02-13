@@ -92,14 +92,15 @@ def eprload(
         Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
         Params = Matfile[Matfile["expname"]]
         uwb_output = uwb_load(Matfile)
-        axes = np.squeeze(uwb_output.dta_x)
-        data = np.squeeze(uwb_output.dta_ev)
+        axes = uwb_output.dta_x
+        data = uwb_output.dta_ev
+
         data = dataset(axes, data, Params)
         data.add_variable(Parameter(name='nAvgs', value=uwb_output.nAvgs))
         if hasattr(uwb_output,"dta_scans"):
             data.scans = uwb_output.dta_scans
         return data 
-
+        
 
 def progress_bar(progress, post=""):
 

@@ -317,16 +317,20 @@ class ResonatorProfileSequence(Sequence):
         width= 0.3
         axis = np.arange(self.LO.value-width,self.LO.value+width+0.02,0.02)
         self.addPulsesProg(
-                [None],
-                ["LO"],
-                1,
-                axis)
-   
-        self.addPulsesProg(
-                [None],
-                ["B"],
-                1,
-                axis/self.gyro)
+            [None, None],
+            ["LO", "B"],
+            1,
+            axis,
+            multipliers=[1,1/self.gyro])
+
+        # self.addPulsesProg(
+        #     [None],
+        #     ["B"],
+        #     1,
+        #     axis/self.gyro)
+        
+
+
 
 
 class TWTProfileSequence(Sequence):
