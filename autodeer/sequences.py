@@ -264,12 +264,62 @@ class CarrPurcellSequence(Sequence):
     """
     Represents a Carr-Purcell sequence. 
     """
-    def __init__(self, *, B, LO, reptime, averages, shots, **kwargs) -> None:
+    def __init__(self, *, B, LO, reptime, averages, shots,
+            tau, n, **kwargs) -> None:
         
         name = "Carr-Purcell"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
+        self.tau = Parameter(name="tau", value=tau, unit="ns",
+            description="Total sequence length")
+        self.n = Parameter(name="n", value=n,
+            description="The number of pi pulses", unit="None")
+
+        self._build_sequence()
+
+    def _build_sequence(self):
+
+        tau = self.tau.value
+        n = self.n.value
+        step = tau/(2*n)
+        multipliers = [1]
+        multipliers += [1+2*i for i in range(1,n)]
+        multipliers += [2*n]
+        deadtime = 300
+
+        self.addPulse(RectPulse(  # pi/2
+            t=0, tp=16, freq=0, flipangle=np.pi/2,
+            pcyc={"phases":[0, np.pi], "dets": [1, -1]}
+        ))
+
+        for i in range(n):
+            if i==(n-1):
+                phases = [0]
+                dets = [1]
+            elif i == (n-2):
+                phases = [0, np.pi]
+                dets = [1, 1]
+            else:
+                phases = [0, np.pi/2, np.pi, -np.pi/2]
+                dets = [1,-1,1,-1]
+
+            self.addPulse(RectPulse(  # pi
+                t=step*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
+                pcyc={"phases":phases, "dets": dets}
+            ))
+        
+        self.addPulse(Detection(t=tau, tp=512))
+        
+        axis = np.arange(deadtime,tau/(2*n),10)
+        self.addPulsesProg(
+            list(range(1,n+2)),
+            ["t"]*(n+1),
+            0,
+            axis,
+            multipliers=multipliers)
+
+
 
 class ResonatorProfileSequence(Sequence):
     """
@@ -322,15 +372,6 @@ class ResonatorProfileSequence(Sequence):
             1,
             axis,
             multipliers=[1,1/self.gyro])
-
-        # self.addPulsesProg(
-        #     [None],
-        #     ["B"],
-        #     1,
-        #     axis/self.gyro)
-        
-
-
 
 
 class TWTProfileSequence(Sequence):

@@ -18,7 +18,7 @@ def build_table(source, params, params_widths):
             else:
                 title_fmt.append(attr.name + ' (' + attr.unit + ")")
             params_used.append(param)
-        elif param in ['iD', 'type']:
+        elif param in ['iD', 'type' ,'Phase Cycle']:
             line_str += f" {{:<{params_widths[i]}}}"
             tmp = re.findall(r'(\d+)', params_widths[i])[0]
             title_str += f" {{:<{tmp}}}"
@@ -36,6 +36,8 @@ def build_table(source, params, params_widths):
                 elements.append(type(pulse).__name__)
             elif param == "iD":
                 elements.append(i)
+            elif param == 'Phase Cycle':
+                elements.append(pulse._pcyc_str())
             elif hasattr(pulse, param):
                 if getattr(pulse, param) is None:
                     elements.append("N/A")

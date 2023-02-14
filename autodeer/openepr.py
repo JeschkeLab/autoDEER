@@ -50,17 +50,35 @@ class dataset:
         ----------
         label : list[str], optional
             A list contains labels. [x_label,z_label], by default None
+        
+        Optional Kwargs
+        ----------
+        lines : list[str], optional
+            A list of lines to plot. A selection of ["real", "imag","abs"]
+            by default all options are plotted.
 
         Returns
         -------
         plt.figure
             _description_
         """
+
+        if hasattr(kwargs,"lines"):
+            if 'abs' in kwargs["lines"]:
+                abs = True
+            if 'imag' in kwargs["lines"]:
+                imag = True
+            if 'abs' in kwargs["lines"]:
+                real = True
+        else:
+            abs=True
+            real=True
+            imag=True
         if self.dims == 1:
             fig, ax = plt.subplots()
-            ax.plot(self.axes, np.abs(self.data), label='abs')
-            ax.plot(self.axes, np.real(self.data), label='real')
-            ax.plot(self.axes, np.imag(self.data), label='imag')
+            ax.plot(self.axes[0], np.abs(self.data), label='abs')
+            ax.plot(self.axes[0], np.real(self.data), label='real')
+            ax.plot(self.axes[0], np.imag(self.data), label='imag')
             ax.legend()
             ax.set_ylabel('Signal')
             if label is not None:
@@ -274,6 +292,7 @@ class Sequence:
                 self.pulses.append(el)
         self.num_pulses = len(self.pulses)
         self._buildPhaseCycle()
+        self._estimate_time()
 
     def _estimate_time(self):
         """
@@ -283,10 +302,14 @@ class Sequence:
         if hasattr(self, 'pcyc_dets'):
             acqs *= self.pcyc_dets.shape[0]
         if hasattr(self, 'progTable'):
-            _, pos = np.unique(self.progTable[0], return_index=True)
+            _, pos = np.unique(self.progTable['axID'], return_index=True)
             for i in pos:
-                acqs *= self.progTable[0][i].shape[0]
+                acqs *= self.progTable['axis'][i].shape[0]
         time = acqs * self.reptime.value * 1e-6
+
+
+        self.time = Parameter(name="time", value=f"{(time // 3600):.0f}:{(time % 3600) // 60:.0f}:{(time % 60):.0f}", unit="HH:MM:SS",
+        description="Estimated sequence run time")
         return time
 
     def _buildPhaseCycle(self):
@@ -390,6 +413,8 @@ class Sequence:
             var.add_progression(axis_id, axis)
         
         self._buildProgTable()
+        self._estimate_time()
+
         pass
     
     def addPulsesProg(
@@ -571,11 +596,15 @@ class Sequence:
         for param_key in vars(self):
             param = getattr(self, param_key)
             if type(param) is Parameter:
-                seq_param_string += "{:<10} {:<12.5g} {:<10} {:<30} \n".format(
-                    param.name, param.value, param.unit, param.description)
+                if type(param.value) is str:
+                    seq_param_string += "{:<10} {:<12} {:<10} {:<30} \n".format(
+                        param.name, param.value, param.unit, param.description)
+                else:
+                    seq_param_string += "{:<10} {:<12.5g} {:<10} {:<30} \n".format(
+                        param.name, param.value, param.unit, param.description)
         
         # Pulses
-        pulses_string = "Events (Pulses, Delays, etc...): \n"
+        pulses_string = "\nEvents (Pulses, Delays, etc...): \n"
 
         if self.isPulseFocused():
             # pulses_string += "{:<4} {:<12} {:<8} {:<12} \n".format(
@@ -583,8 +612,8 @@ class Sequence:
             # for i, pulse in enumerate(self.pulses):
             #     pulses_string += "{:<4} {:<12.3E} {:<8} {:<10} \n".format(
             #         i, pulse.t.value, pulse.tp.value, type(pulse).__name__)
-            params = ['iD', 't', 'tp', 'scale', 'type']
-            params_widths = ["4", "8", "8", "8", "14"]
+            params = ['iD', 't', 'tp', 'scale', 'type', 'Phase Cycle']
+            params_widths = ["4", "8", "8", "8", "14", "40"]
         elif self.isDelayFocused():
             # pulses_string += "{:<4} {:<8} {:<12} \n".format(
             #     'iD', 'tp (ns)', 'Type')
@@ -617,22 +646,23 @@ class Sequence:
             return np.isclose(diffs,np.zeros(diffs.shape)).all()
 
         # Progressive elements
-        prog_string = "Progression: \n"
-        prog_string += "{:<10} {:<10} {:<10} {:<10} {:<10} \n".format(
-            'Pulse', 'Prog. Axis', 'Parameter', 'Step', 'Unit')
+        prog_string = "\nProgression: \n"
+        prog_string += "{:<10} {:<10} {:<10} {:<10} {:<10} {:<10} \n".format(
+            'Pulse', 'Prog. Axis', 'Parameter', 'Step', 'Dim', 'Unit')
         for i in range(0, len(self.progTable["axID"])):
             prog_table = self.progTable
             axis = prog_table["axis"][i]
             if test_unique_step(axis):
                 step = np.unique(np.diff(axis))[0]
-                fstring = "{:<10} {:<10} {:<10} {:<10.5g} {:<10} \n"
+                fstring = "{:<10} {:<10} {:<10} {:<10.5g} {:<10} {:<10} \n"
             else:
                 step = "Var"
-                fstring = "{:<10} {:<10} {:<10} {:<10} {:<10} \n"
+                fstring = "{:<10} {:<10} {:<10} {:<10} {:<10} {:<10} \n"
              
             prog_string += fstring.format(
                 print_event_id(i), prog_table["axID"][i],
-                prog_table["Variable"][i], step, get_unit(i))
+                prog_table["Variable"][i], step,
+                prog_table["axis"][i].shape[0], get_unit(i))
 
         footer = "#" * 79 + "\n" +\
             f"Built by autoDEER Version: {__version__}" + "\n" + "#" * 79
@@ -749,6 +779,41 @@ class Pulse:
     def plot_fft(self):
         pass
 
+    def _pcyc_str(self):
+    
+        if self.pcyc is not None:
+            pcyc_table = "["
+            dets = self.pcyc["DetSigns"]
+            phases = self.pcyc["Phases"]
+            for i in range(0, len(phases)):
+                if dets[i] == 1:
+                    pcyc_table += "+"
+                elif dets[i] == -1:
+                    pcyc_table += "-"
+                elif dets[i] == 1j:
+                    pcyc_table += "+i"
+                elif dets[i] == -1j:
+                    pcyc_table += "-i"
+
+                if phases[i] == 0:
+                    pcyc_table += "(+x)"
+                elif phases[i] == np.pi:
+                    pcyc_table += "(-x)"
+                elif phases[i] == np.pi/2:
+                    pcyc_table += "(+y)"
+                elif phases[i] == -np.pi/2:
+                    pcyc_table += "(-y)"
+                elif phases[i] == 3*np.pi/2:
+                    pcyc_table += "(-y)"
+                pcyc_table += " "
+            
+            pcyc_table = pcyc_table[:-1]
+            pcyc_table += "]"
+        else:
+            pcyc_table = ""
+
+        return pcyc_table
+
     def __str__(self):
         # Build header line
         header = "#" * 79 + "\n" + "autoDEER Pulse Definition" + \
@@ -801,33 +866,8 @@ class Pulse:
         # Build Pulse Phase Cycle Table
         if self.pcyc is not None:
             pcyc_table = "#" * 79 + "\n" + "Phase Cycle:" + "\t"
-            pcyc_table += "["
-            dets = self.pcyc["DetSigns"]
-            phases = self.pcyc["Phases"]
-            for i in range(0, len(phases)):
-                if dets[i] == 1:
-                    pcyc_table += "+"
-                elif dets[i] == -1:
-                    pcyc_table += "-"
-                elif dets[i] == 1j:
-                    pcyc_table += "+i"
-                elif dets[i] == -1j:
-                    pcyc_table += "-i"
-
-                if phases[i] == 0:
-                    pcyc_table += "(+x)"
-                elif phases[i] == np.pi:
-                    pcyc_table += "(-x)"
-                elif phases[i] == np.pi/2:
-                    pcyc_table += "(+y)"
-                elif phases[i] == -np.pi/2:
-                    pcyc_table += "(-y)"
-                elif phases[i] == 3*np.pi/2:
-                    pcyc_table += "(-y)"
-                pcyc_table += " "
-            
-            pcyc_table = pcyc_table[:-1]
-            pcyc_table += "]\n"
+            pcyc_table += self._pcyc_str()
+            pcyc_table += "\n"
         else:
             pcyc_table = ""
 
