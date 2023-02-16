@@ -160,6 +160,9 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
     if np.isscalar(estr["postsigns"]["signs"]):
         estr["postsigns"]["signs"] = [estr["postsigns"]["signs"]]
 
+    if type(estr["parvars"]) is dict:
+        estr["parvars"] = [estr["parvars"]]
+
     cycled = np.array(list(map(np.size, estr["postsigns"]["signs"]))) > 1
 
     #  decide on wheteher the phase cycle should be eliminated or not
@@ -208,8 +211,11 @@ def uwb_load(matfile: np.ndarray, options: dict = dict()):
         estr["postsigns"]["ids"] = \
             np.array(estr["postsigns"]["ids"]).reshape(-1)
         if not (elim_pcyc and cycled[ii]):
-            dta_x.append(estr["parvars"][estr["postsigns"]["ids"][ii]-1]
-                         ["axis"].astype(np.float32))
+            if type(estr["parvars"]) is list:
+                dta_x.append(estr["parvars"][estr["postsigns"]["ids"][ii]-1]
+                            ["axis"].astype(np.float32))
+            else:
+                dta_x.append(estr["parvars"]["axis"].astype(np.float32))
             relevant_parvars.append(estr["postsigns"]["ids"][ii]-1)
             ii_dtax += 1
     

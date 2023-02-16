@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import hilbert
+from scipy.integrate import cumulative_trapezoid
+import scipy.fft as fft
 from scipy.io import savemat
 import os
 from autodeer import __version__
@@ -63,7 +65,7 @@ class dataset:
             _description_
         """
 
-        if hasattr(kwargs,"lines"):
+        if "lines" in kwargs:
             if 'abs' in kwargs["lines"]:
                 abs = True
             if 'imag' in kwargs["lines"]:
@@ -76,9 +78,12 @@ class dataset:
             imag=True
         if self.dims == 1:
             fig, ax = plt.subplots()
-            ax.plot(self.axes[0], np.abs(self.data), label='abs')
-            ax.plot(self.axes[0], np.real(self.data), label='real')
-            ax.plot(self.axes[0], np.imag(self.data), label='imag')
+            if abs:
+                ax.plot(self.axes[0], np.abs(self.data), label='abs')
+            if real:
+                ax.plot(self.axes[0], np.real(self.data), label='real')
+            if imag:
+                ax.plot(self.axes[0], np.imag(self.data), label='imag')
             ax.legend()
             ax.set_ylabel('Signal')
             if label is not None:
@@ -276,6 +281,33 @@ class Sequence:
 
         pass
 
+    def plot_pulse_exc(self, FieldSweep=None, ResonatorProfile=None):
+
+        for i, pulse in enumerate(self.pulses):
+            if type(pulse) == Delay:
+                continue
+            elif type(pulse) == Detection:
+                continue
+            ax, ft = pulse._calc_fft(1e4)
+            ft /= np.max(np.abs(ft))
+            plt.plot(ax, np.abs(ft), label=f"Pulse id={i}")
+        
+        if FieldSweep is not None:
+            data = FieldSweep.data
+            data /= np.max(np.abs(data))
+            FSwpLO = FieldSweep.det_frq
+            ax = FieldSweep.fs_x
+            plt.plot(ax,data, label="Field Sweep")
+            
+        if ResonatorProfile is not None:
+            data = ResonatorProfile.prof_data / ResonatorProfile.prof_data.max()
+            plt.plot(ResonatorProfile.prof_frqs-self.LO.value, data, label="Resonator Profile")
+        
+        plt.xlabel("Frequency (GHz)")
+        plt.legend()
+
+        pass
+
     def addPulse(self, pulse):
         """Adds a pulse to the next position in the sequence.
 
@@ -298,6 +330,7 @@ class Sequence:
         """
         Calculates the estimated experiment time in seconds.
         """
+        self._buildPhaseCycle()
         acqs = self.averages.value * self.shots.value
         if hasattr(self, 'pcyc_dets'):
             acqs *= self.pcyc_dets.shape[0]
@@ -305,8 +338,8 @@ class Sequence:
             _, pos = np.unique(self.progTable['axID'], return_index=True)
             for i in pos:
                 acqs *= self.progTable['axis'][i].shape[0]
+        
         time = acqs * self.reptime.value * 1e-6
-
 
         self.time = Parameter(name="time", value=f"{(time // 3600):.0f}:{(time % 3600) // 60:.0f}:{(time % 60):.0f}", unit="HH:MM:SS",
         description="Estimated sequence run time")
@@ -349,6 +382,7 @@ class Sequence:
         # self.pcyc_cycles = np.stack(expanded_cycles)
         # self.pcyc_dets = np.prod(np.stack(expanded_dets), axis=0)
         # self.pcyc_n = self.pcyc_cycles.shape[1]
+        
         return self.pcyc_vars, self.pcyc_cycles, self.pcyc_dets
 
     def _buildProgTable(self):
@@ -638,7 +672,10 @@ class Sequence:
                 param = getattr(
                     self.pulses[pulse_num], prog_table["Variable"][i])
             
-            return param.unit
+            if param.unit is None:
+                return "None"
+            else:
+                return param.unit
 
 
         def test_unique_step(array):
@@ -669,6 +706,9 @@ class Sequence:
 
         return header + seq_param_string + pulses_string + prog_string + footer
 
+    def copy(self):
+        return copy.deepcopy(self)
+
 # =============================================================================
 
 
@@ -678,7 +718,7 @@ class Pulse:
     """
 
     def __init__(self, *, tp, t, scale=None, flipangle=None, pcyc=[0],
-                 name=None) -> None:
+                 name=None, **kwargs) -> None:
         """The class for a general pulse.
 
         Parameters
@@ -720,10 +760,11 @@ class Pulse:
         pass
 
     def _buildFMAM(self, func):
-        self.ax = np.linspace(-self.tp.value/2, self.tp.value/2, 1000)
+        self.ax = np.linspace(-self.tp.value/2, self.tp.value/2, 1001)
+        dt = self.ax[1]-self.ax[0]
         self.AM, self.FM = func(self.ax)
-        self.complex = self.AM *\
-            (np.cos(self.FM*self.ax) + 1j * np.sin(self.FM*self.ax))
+        FM_arg = 2*np.pi*cumulative_trapezoid(self.FM, initial=0) * dt
+        self.complex = self.AM * (np.cos(FM_arg) +1j* np.sin(FM_arg))
         self.FM
         self.AM
         return self.AM, self.FM
@@ -775,8 +816,26 @@ class Pulse:
         plt.xlabel("Time (ns)")
         plt.ylabel("Amplitude (A.U.)")
         pass
+    
+    def _calc_fft(self, pad=10000):
 
+        data = np.pad(self.complex, int(pad))
+        pulse_fft = fft.fftshift(fft.fft(data))
+        n = data.shape[0]
+        dt = self.ax[1] -self.ax[0]
+        axis_fft = fft.fftshift(fft.fftfreq(n, dt))
+
+        return axis_fft, pulse_fft
+    
     def plot_fft(self):
+                
+        ax, ft = self._calc_fft(1e4)
+        plt.plot(ax, np.real(ft), label="Re")
+        plt.plot(ax, np.imag(ft), label="Im")
+        plt.plot(ax, np.abs(ft), label="Im")
+        plt.legend()
+        plt.xlabel("Frequency (GHz)")
+        plt.ylabel("Amplitude (A.U.)")
         pass
 
     def _pcyc_str(self):
@@ -880,6 +939,31 @@ class Pulse:
             pcyc_table + footer
 
         return string
+
+    def copy(self, **kwargs):
+        """Creates a deep-copy of the pulse. I.e. Every parameter object is
+        re-created at another memory space.
+
+        Parameter can be chaged at this stage by adding them as keyword-
+        arguments (kwargs).
+
+        Returns
+        -------
+        Pulse
+            A deep copy of the pulse
+        """
+
+        new_pulse = copy.deepcopy(self)
+
+        for arg in kwargs:
+            if hasattr(new_pulse,arg):
+                attr = getattr(new_pulse,arg)
+                if type(attr) is Parameter:
+                    attr.value = kwargs[arg]
+                else:
+                    attr = kwargs[arg]
+        
+        return new_pulse
         
 
 class Parameter:
@@ -931,6 +1015,9 @@ class Parameter:
             raise ValueError(
                 "Equivalence only works between Parameter classes")
         return self.value == __o.value
+    
+    def copy(self):
+        return copy.deepcopy(self)
         
 
 class Detection(Pulse):
@@ -938,7 +1025,7 @@ class Detection(Pulse):
     Represents a detection pulse.
     """
 
-    def __init__(self, *, tp, t) -> None:
+    def __init__(self, *, tp, t=None, freq=0,**kwargs) -> None:
         """A general detection pulse.
 
         Parameters
@@ -948,13 +1035,18 @@ class Detection(Pulse):
             be symetrical about the centre time. 
         t : float, optional
             The **centre** time of the detection event
+        freq: float, optional
+            The detection frequency, not all spectrometer support this 
+            functionality, by default 0 MHz
 
         """
         if t is not None:
-            self.t = Parameter("Time", t, "ns", "Start time of pulse")
+            self.t = Parameter("t", t, "ns", "Start time of pulse")
         else:
             self.t = None
-        self.tp = Parameter("Length", tp, "ns", "Length of the pulse")
+        self.tp = Parameter("tp", tp, "ns", "Length of the pulse")
+        self.freq = Parameter(
+            "freq", freq, "MHz", "The detection frequency offset from the LO")
         self.Progression = False
         self.pcyc = None
         self.scale = None
@@ -988,10 +1080,9 @@ class RectPulse(Pulse):
     """
 
     def __init__(
-            self, tp, freq, t=None, flipangle=None, pcyc=[0],
-            name=None) -> None:
+            self, tp, freq, t=None, flipangle=None, **kwargs) -> None:
         Pulse.__init__(
-            self, tp=tp, t=t, flipangle=flipangle, pcyc=pcyc, name=name)
+            self, tp=tp, t=t, flipangle=flipangle, **kwargs)
         self.freq = Parameter("freq", freq, "GHz", "Frequency of the Pulse")
         self.Progression = False
         self._buildFMAM(self.func)
@@ -1000,7 +1091,7 @@ class RectPulse(Pulse):
     def func(self, ax):
         nx = ax.shape[0]
         AM = np.ones(nx)
-        FM = np.zeros(nx)
+        FM = np.zeros(nx) + self.freq.value
         return AM, FM
 
 
@@ -1010,13 +1101,79 @@ class HSPulse(Pulse):
     """
     Represents a hyperboilc secant frequency-swept pulse.
     """
-    def __init__(self, *, tp, scale, Horder, t) -> None:
-        Pulse.__init__(self, tp=tp, scale=scale, t=t)
-        self.order = Parameter("Order", Horder, None, "Order of the HS Pulse")
-        self.Progression = False
-        self.pcyc = None
+    def __init__(self, *, tp, scale, order1, order2, beta, t, **kwargs) -> None:
+        Pulse.__init__(self, tp=tp, scale=scale, t=t, **kwargs)
+        self.order1 = Parameter(
+            "order1", order1, None, "Order 1 of the HS Pulse")
+        self.order2 = Parameter(
+            "order1", order2, None, "Order 2 of the HS Pulse")
+        self.beta = Parameter("beta", beta, None, "Beta of the HS Pulse")
 
+        # Frequency Infomation
+        if "BW" in kwargs:
+            # Bandwidth + one other
+            self.BW = Parameter(
+                "Bandwidth", kwargs["BW"], "GHz", "Bandwidth of pulse")
+            if "init_freq" in kwargs:
+                self.init_freq = Parameter(
+                    "init_freq", kwargs["init_freq"], "GHz",
+                    "Initial frequency of pulse")
+                self.final_freq = Parameter(
+                    "final_final", self.BW.value + kwargs["init_freq"], "GHz",
+                    "Final frequency of pulse")
+            elif "final_freq" in kwargs:
+                self.final_freq = Parameter(
+                    "final_final", kwargs["final_freq"], "GHz",
+                    "Final frequency of pulse")
+                self.init_freq = Parameter(
+                    "init_freq", kwargs["final_freq"] - self.BW.value, "GHz",
+                    "Initial frequency of pulse")
+            else:
+                raise ValueError()
+        
+        elif ("init_freq" in kwargs) & ("final_freq" in kwargs):
+
+            self.init_freq = Parameter(
+                "f_init", kwargs["init_freq"], "GHz",
+                "Initial frequency of pulse")
+            self.final_freq = Parameter(
+                "f_final", kwargs["final_freq"], "GHz",
+                "Final frequency of pulse")
+            self.BW = Parameter(
+                "Bandwidth", np.abs(kwargs["final_freq"] - kwargs["init_freq"]),
+                 "GHz", "Bandwidth of pulse")
+        
+        else:   
+            raise ValueError()
+        
+        self._buildFMAM(self.func)
         pass
+
+
+    def func(self, ax):
+        beta = self.beta.value
+        order1 = self.order1.value
+        order2 = self.order2.value
+        BW = self.BW.value
+        tp = ax.max() - ax.min()
+        tcent = tp / 2
+        
+        nx = ax.shape[0]
+        beta_exp1 = np.log(beta*0.5**(1-order1)) / np.log(beta)
+        beta_exp2 = np.log(beta*0.5**(1-order2)) / np.log(beta)
+        cut = round(nx/2)
+        AM = np.zeros(nx)
+        AM[0:cut] = 1/np.cosh(
+            beta**beta_exp1 * (ax[0:cut]/tp)**order1)
+        AM[cut:-1] = 1/np.cosh(
+            beta**beta_exp2 * (ax[cut:-1]/tp)**order2)
+
+        FM = BW * cumulative_trapezoid(AM**2,ax,initial=0) /\
+             np.trapz(AM**2,ax) + self.init_freq.value
+
+        return AM, FM
+
+
 
 
 # =============================================================================
@@ -1027,7 +1184,7 @@ class ChirpPulse(Pulse):
     """
 
     def __init__(self, *, tp, scale, t, **kwargs) -> None:
-        Pulse.__init__(self, tp=tp, scale=scale, t=t)
+        Pulse.__init__(self, tp=tp, scale=scale, t=t, **kwargs)
 
         # Frequency Infomation
         if "BW" in kwargs:

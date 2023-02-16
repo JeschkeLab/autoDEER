@@ -45,6 +45,13 @@ class DEERSequence(Sequence):
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
 
+        if "exc_pulse" in kwargs:
+            self.exc_pulse = kwargs["exc_pulse"]
+        if "ref_pulse" in kwargs:
+            self.ref_pulse = kwargs["ref_pulse"]
+        if "pump_pulse" in kwargs:
+            self.pump_pulse = kwargs["pump_pulse"]
+
     def four_pulse(self, tp):
         """
         Build a four pulse DEER sequence.
@@ -59,18 +66,35 @@ class DEERSequence(Sequence):
             2*self.tau1-self.deadtime, self.tau2 + 2*self.tau1 - self.deadtime,
             self.dt)
 
-        self.addPulse(RectPulse(  # Exc pulse
-            t=0, tp=tp, freq=0, flipangle=np.pi/2
-        ))
-        self.addPulse(RectPulse( # Ref 1 pulse
-            t=self.tau1, tp=tp, freq=0, flipangle=np.pi
-        ))
-        self.addPulse(RectPulse( # Pump 1 pulse
-            t=2*self.tau1 - self.deadtime, tp=tp, freq=0, flipangle=np.pi
-        ))
-        self.addPulse(RectPulse( # Ref 2 pulse
-            t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
-        ))
+        if hasattr(self,"exc_pulse"): # Exc pulse
+            self.addPulse(self.exc_pulse.copy(t=0))
+        else:
+            self.addPulse(RectPulse(  
+                t=0, tp=tp, freq=0, flipangle=np.pi/2
+            ))
+        
+        if hasattr(self,"ref_pulse"): # Ref 1 pulse
+            self.addPulse(self.ref_pulse.copy(t=self.tau1))
+        else:
+            self.addPulse(RectPulse( 
+                t=self.tau1, tp=tp, freq=0, flipangle=np.pi
+            ))
+
+        if hasattr(self,"pump_pulse"): # Pump 1 pulse
+            self.addPulse(self.pump_pulse.copy(t=2*self.tau1 - self.deadtime))
+        else:
+            self.addPulse(RectPulse(
+                t=2*self.tau1 - self.deadtime, tp=tp, freq=0, flipangle=np.pi
+            ))
+
+        if hasattr(self,"ref_pulse"): # Ref 2 pulse
+            self.addPulse(self.ref_pulse.copy(t=2*self.tau1 + self.tau2))
+        else:
+            self.addPulse(RectPulse( 
+                t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
+            ))
+
+
         self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
 
         self.addPulsesProg(
@@ -93,22 +117,43 @@ class DEERSequence(Sequence):
         axis = np.arange(
             self.tau1+self.deadtime, self.tau2 + 2*self.tau1 - self.deadtime,
              self.dt)
-        self.addPulse(RectPulse(  # Exc pulse
-            t=0, tp=tp, freq=0, flipangle=np.pi/2
-        ))
-        self.addPulse(RectPulse( # Pump 1 pulse
-            t=self.tau1 - self.tau3, tp=tp, freq=0, flipangle=np.pi
-        ))
 
-        self.addPulse(RectPulse( # Ref 1 pulse
-            t=self.tau1, tp=tp, freq=0, flipangle=np.pi
-        ))
-        self.addPulse(RectPulse( # Pump 2 pulse
-            t=self.tau1 + self.deadtime, tp=tp, freq=0, flipangle=np.pi
-        ))
-        self.addPulse(RectPulse( # Ref 2 pulse
-            t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
-        ))
+
+        if hasattr(self,"exc_pulse"): # Exc pulse
+            self.addPulse(self.exc_pulse.copy(t=0))
+        else:
+            self.addPulse(RectPulse(  
+                t=0, tp=tp, freq=0, flipangle=np.pi/2
+            ))
+
+        if hasattr(self,"pump_pulse"): # Pump 1 pulse
+            self.addPulse(self.pump_pulse.copy(t=self.tau1 - self.tau3))
+        else:
+            self.addPulse(RectPulse(
+                t=self.tau1 - self.tau3, tp=tp, freq=0, flipangle=np.pi
+            ))
+
+        if hasattr(self,"ref_pulse"): # Ref 1 pulse
+            self.addPulse(self.ref_pulse.copy(t=self.tau1))
+        else:
+            self.addPulse(RectPulse( 
+                t=self.tau1, tp=tp, freq=0, flipangle=np.pi
+            ))
+
+        if hasattr(self,"pump_pulse"): # Pump 2 pulse
+            self.addPulse(self.pump_pulse.copy(t=self.tau1 + self.deadtime))
+        else:
+            self.addPulse(RectPulse(
+                t=self.tau1 + self.deadtime, tp=tp, freq=0, flipangle=np.pi
+            ))
+
+        if hasattr(self,"ref_pulse"): # Ref 2 pulse
+            self.addPulse(self.ref_pulse.copy(t=2*self.tau1 + self.tau2))
+        else:
+            self.addPulse(RectPulse( 
+                t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
+            ))
+
         self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
 
         self.addPulsesProg(
@@ -194,16 +239,25 @@ class DEERSequence(Sequence):
             self.pulses[0]._addPhaseCycle([0,np.pi],[1,-1])
         
         elif option == "16step_4p":
+            self.pulses[0]._addPhaseCycle([0],[1])
             self.pulses[1]._addPhaseCycle(
                 [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])
             self.pulses[2]._addPhaseCycle(
                 [0, np.pi/2, np.pi, -np.pi/2], [1, 1, 1, 1])
+            self.pulses[3]._addPhaseCycle([0],[1])
+
             
         elif option == "16step_5p":
+            self.pulses[0]._addPhaseCycle([0],[1])
+            self.pulses[1]._addPhaseCycle([0],[1])
             self.pulses[2]._addPhaseCycle(
                 [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])
             self.pulses[3]._addPhaseCycle(
                 [0, np.pi/2, np.pi, -np.pi/2], [1, 1, 1, 1])
+            self.pulses[4]._addPhaseCycle([0],[1])
+        
+        self._buildPhaseCycle()
+
 
     def simulate(self):
         t = np.arange(0, self.tau1+self.tau2, self.dt)

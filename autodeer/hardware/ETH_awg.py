@@ -159,6 +159,7 @@ class ETH_awg_interface:
 
         if type(pulse) is Detection:
             event["det_len"] = float(pulse.tp.value * self.dig_rate)
+            event["det_frq"] = float(pulse.freq.value) + self.awg_freq
             event["name"] = "det"
             return event
 
@@ -190,7 +191,24 @@ class ETH_awg_interface:
             
         elif type(pulse) is HSPulse:
             event["pulsedef"]["type"] = 'HS'
-            raise RuntimeError("Not yet implemented")
+            if hasattr(pulse, "init_freq"):
+                event["pulsedef"]["nu_init"] = pulse.init_freq.value +\
+                     self.awg_freq
+            else:
+                nu_init = pulse.final_freq.value - pulse.BW.value
+                event["pulsedef"]["nu_init"] = nu_init + self.awg_freq
+            
+            if hasattr(pulse, "final_freq"):
+                event["pulsedef"]["nu_final"] = pulse.final_freq.value +\
+                     self.awg_freq
+            else:
+                nu_final = pulse.init_freq.value + pulse.BW.value
+                event["pulsedef"]["nu_final"] = nu_final + self.awg_freq
+
+            event["pulsedef"]["HSorder"] = float(pulse.order1.value)
+            event["pulsedef"]["HSorder2"] = float(pulse.order2.value)
+            event["pulsedef"]["HSbeta"] = float(pulse.beta.value)
+
         elif type(pulse) is Pulse:
             event["pulsedef"]["type"] = 'FMAM'
             raise RuntimeError("Not yet implemented")

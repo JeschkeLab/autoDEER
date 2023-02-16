@@ -14,7 +14,7 @@ class FieldSweep():
         dataset : dataset
             _description_
         """
-        self.axis = dataset.axes
+        self.axis = dataset.axes[0]
         self.data = dataset.data
         pass
 
