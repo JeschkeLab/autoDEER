@@ -33,7 +33,7 @@ release = '0.4-alpha'
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
-              'sphinx.ext.napoleon',
+              'numpydoc',
               'sphinx.ext.graphviz',
               'myst_parser']
 
@@ -43,10 +43,12 @@ extensions = ['sphinx.ext.autodoc',
 add_module_names = True
 # Turn on sphinx.ext.autosummary
 autosummary_generate = True 
-autodoc_class_signature = "separated"
+# autodoc_class_signature = "separated"
 autoclass_content= "class"
 autodoc_inherit_docstrings=True
-napoleon_numpy_docstring = True
+# napoleon_numpy_docstring = True
+numpydoc_show_inherited_class_members=True
+numpydoc_show_class_members=True
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -66,13 +68,17 @@ source_suffix = {
 # a list of builtin themes.
 #
 html_theme = "furo"
-html_title = ""
+html_title = " "
+html_static_path = ["_static"]
 html_theme_options = {
     "announcement": "Version 0.4 comming soon!",
+    "light_logo": "autoDEER_EPR_light.svg",
+    "dark_logo": "autoDEER_EPR_dark.svg",
+
 }
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
-html_logo = "autoDEER_name_purple.svg"
+# html_static_path = ['_static']
+# html_logo = "autoDEER_name_purple.svg"
 
