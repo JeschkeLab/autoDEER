@@ -149,10 +149,6 @@ dmypy.json
 autoDeer/PulseSpel/*.def%
 autoDeer/PulseSpel/*.exp%
 
-# Any plots
-**/*.png
-**/*.svg
-
 **/auto_examples/**
 **/_autosummary/**
 *.npz
