@@ -18,7 +18,7 @@ class Carr_Purcell:
         dataset : dataset
             _description_
         """
-        self.axis = dataset.axes
+        self.axis = dataset.axes[0]
         self.data = dataset.data
         pass
     
@@ -88,7 +88,7 @@ class Carr_Purcell:
         target_time : float
             The target s
         shrt : float
-            The shot repertition time
+            The shot repertition time in seconds
         averages : int
             The number of averages in the data, both shots and scans
 

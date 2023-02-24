@@ -15,25 +15,38 @@ class DEERSequence(Sequence):
         Parameters
         ----------
         tau1 : int or float
-            The first interpulse delay
+            The first interpulse delay in ns
         tau2 : int or float
-            The second interpulse delay
+            The second interpulse delay in ns
         dt : int or float
-            The time step for DEER measurment
+            The time step for DEER measurment in ns
         B : int or float
             The B0 field, in Guass
         LO : int or float
-            The LO frequency
+            The LO frequency in GHz
         reptime : _type_
-            _description_
+            The shot repetition time in us
         averages : int
             The number of scans.
         shots : int
             The number of shots per point
         tau3 : int or float, optional
             The delay between the first static pump pulse in 5-pulse DEER and 
-            the 1st refocusing pulse, by default None. If the value is None
-            then a 4-pulse sequence is created, otherwise a 5-pulse. 
+            the 1st refocusing pulse in ns, by default None. If the value is 
+            None then a 4-pulse sequence is created, otherwise a 5-pulse. 
+        
+        Optional Parameters
+        -------------------
+        exc_pulse : Pulse
+            An autoEPR Pulse object describing the excitation pi/2 pulse. If
+            not specified a RectPulse will be created instead. 
+        ref_pulse : Pulse
+            An autoEPR Pulse object describing the refocusing pi pulses. If
+            not specified a RectPulse will be created instead. 
+        pump_pulse : Pulse
+            An autoEPR Pulse object describing the pumping pi pulse/s. If
+            not specified a RectPulse will be created instead. 
+
         """
         name = "DEER sequence"
         self.tau1 = tau1
@@ -52,14 +65,14 @@ class DEERSequence(Sequence):
         if "pump_pulse" in kwargs:
             self.pump_pulse = kwargs["pump_pulse"]
 
-    def four_pulse(self, tp):
+    def four_pulse(self, tp=16):
         """
         Build a four pulse DEER sequence.
 
         Parameters
         ----------
         tp : float
-            Step size in ns
+            Length of default RectPulse in ns, by default 16ns.
         """
 
         axis = np.arange(
@@ -112,7 +125,7 @@ class DEERSequence(Sequence):
         Parameters
         ----------
         tp : float
-            Step size in ns
+            Length of default RectPulse in ns, by default 16ns.
         """
         axis = np.arange(
             self.tau1+self.deadtime, self.tau2 + 2*self.tau1 - self.deadtime,
@@ -170,7 +183,7 @@ class DEERSequence(Sequence):
         Parameters
         ----------
         tp : float
-            Step size in ns
+            Length of default RectPulse in ns, by default 16ns.
         """
         self.name = "7p-DEER"
 
@@ -270,8 +283,39 @@ class HahnEchoSequence(Sequence):
     Represents a Hahn-Echo sequence. 
     """
     def __init__(self, *, B, LO, reptime, averages, shots, **kwargs) -> None:
+        """Build a Hahn-Echo sequence using either rectangular pulses or
+        specified pulses. By default no progression is added to this sequence.
+
+        Parameters
+        ----------
+        B : int or float
+            The B0 field, in Guass
+        LO : int or float
+            The LO frequency in GHz
+        reptime : _type_
+            The shot repetition time in us
+        averages : int
+            The number of scans.
+        shots : int
+            The number of shots per point
+        
+        Optional Parameters
+        -------------------
+        pi2_pulse : Pulse
+            An autoEPR Pulse object describing the excitation pi/2 pulse. If
+            not specified a RectPulse will be created instead. 
+        pi_pulse : Pulse
+            An autoEPR Pulse object describing the refocusing pi pulses. If
+            not specified a RectPulse will be created instead. 
+        """
         
         name = "Hahn Echo"
+        
+        if "pi_pulse" in kwargs:
+            self.pi_pulse = kwargs["pi_pulse"]
+        if "pi2_pulse" in kwargs:
+            self.pi2_pulse = kwargs["pi2_pulse"]
+
 
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
@@ -280,13 +324,21 @@ class HahnEchoSequence(Sequence):
         tau = 500
         tp = 12
 
-        name = "Hahn Echo"
-        self.addPulse(RectPulse(  # Exc pulse
-            t=0, tp=tp, freq=0, flipangle=np.pi/2, pcyc={"phases":[0, np.pi], "dets":[1, -1]}
-        ))
-        self.addPulse(RectPulse( # Pump 1 pulse
-            t=tau, tp=tp, freq=0, flipangle=np.pi
-        ))
+        if hasattr(self, "pi2_pulse"):
+            self.addPulse(self.pi2_pulse.copy(
+                t=0, pcyc={"phases":[0, np.pi], "dets": [1, -1]}))
+        else:
+            self.addPulse(RectPulse(  # Exc pulse
+                t=0, tp=tp, freq=0, flipangle=np.pi/2, 
+                pcyc={"phases":[0, np.pi], "dets":[1, -1]}
+            ))
+
+        if hasattr(self, "pi_pulse"):
+            self.addPulse(self.pi_pulse.copy(t=tau))
+        else:
+            self.addPulse(RectPulse( # Pump 1 pulse
+                t=tau, tp=tp, freq=0, flipangle=np.pi
+            ))
 
         self.addPulse(Detection(t=2*tau, tp=self.det_window.value))
 
@@ -295,7 +347,33 @@ class FieldSweepSequence(HahnEchoSequence):
     Represents a Field Sweep (EDFS) sequence. 
     """
     def __init__(self, *, B, LO, Bwidth, reptime, averages, shots, **kwargs) -> None:
+        """Build a Field Sweep (EDFS) sequence using either rectangular pulses or
+        specified pulses.
+
+        Parameters
+        ----------
+        B : int or float
+            The B0 field, in Guass
+        Bwidth: int or float
+            The width of the field sweep, in Gauss
+        LO : int or float
+            The LO frequency in GHz
+        reptime : _type_
+            The shot repetition time in us
+        averages : int
+            The number of scans.
+        shots : int
+            The number of shots per point
         
+        Optional Parameters
+        -------------------
+        pi2_pulse : Pulse
+            An autoEPR Pulse object describing the excitation pi/2 pulse. If
+            not specified a RectPulse will be created instead. 
+        pi_pulse : Pulse
+            An autoEPR Pulse object describing the refocusing pi pulses. If
+            not specified a RectPulse will be created instead. 
+        """
         super().__init__(
             B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
@@ -320,7 +398,36 @@ class CarrPurcellSequence(Sequence):
     """
     def __init__(self, *, B, LO, reptime, averages, shots,
             tau, n, **kwargs) -> None:
-        
+        """Build a Carr-Purcell dynamical decoupling sequence using either 
+        rectangular pulses or specified pulses.
+
+        Parameters
+        ----------
+        B : int or float
+            The B0 field, in Guass
+        LO : int or float
+            The LO frequency in GHz
+        reptime : _type_
+            The shot repetition time in us
+        averages : int
+            The number of scans.
+        shots : int
+            The number of shots per point
+        tau : int
+            The maximum total sequence length in ns
+        n : int
+            The number refocusing pulses
+
+        Optional Parameters
+        -------------------
+        pi2_pulse : Pulse
+            An autoEPR Pulse object describing the excitation pi/2 pulse. If
+            not specified a RectPulse will be created instead. 
+        pi_pulse : Pulse
+            An autoEPR Pulse object describing the refocusing pi pulses. If
+            not specified a RectPulse will be created instead. 
+        """
+
         name = "Carr-Purcell"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
@@ -329,6 +436,11 @@ class CarrPurcellSequence(Sequence):
             description="Total sequence length")
         self.n = Parameter(name="n", value=n,
             description="The number of pi pulses", unit="None")
+
+        if "pi_pulse" in kwargs:
+            self.pi_pulse = kwargs["pi_pulse"]
+        if "pi2_pulse" in kwargs:
+            self.pi2_pulse = kwargs["pi2_pulse"]
 
         self._build_sequence()
 
@@ -342,10 +454,14 @@ class CarrPurcellSequence(Sequence):
         multipliers += [2*n]
         deadtime = 300
 
-        self.addPulse(RectPulse(  # pi/2
-            t=0, tp=16, freq=0, flipangle=np.pi/2,
-            pcyc={"phases":[0, np.pi], "dets": [1, -1]}
-        ))
+        if hasattr(self, "pi2_pulse"):
+            self.addPulse(self.pi2_pulse.copy(
+                t=0, pcyc={"phases":[0, np.pi], "dets": [1, -1]}))
+        else:
+            self.addPulse(RectPulse(  # pi/2
+                t=0, tp=16, freq=0, flipangle=np.pi/2,
+                pcyc={"phases":[0, np.pi], "dets": [1, -1]}
+            ))
 
         for i in range(n):
             if i==(n-1):
@@ -357,11 +473,14 @@ class CarrPurcellSequence(Sequence):
             else:
                 phases = [0, np.pi/2, np.pi, -np.pi/2]
                 dets = [1,-1,1,-1]
-
-            self.addPulse(RectPulse(  # pi
-                t=step*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
-                pcyc={"phases":phases, "dets": dets}
-            ))
+            if hasattr(self, "pi_pulse"):
+                self.addPulse(self.pi_pulse.copy(
+                    t=step*(2*i + 1), pcyc={"phases":phases, "dets": dets}))
+            else:
+                self.addPulse(RectPulse(  # pi
+                    t=step*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
+                    pcyc={"phases":phases, "dets": dets}
+                ))
         
         self.addPulse(Detection(t=tau, tp=512))
         
@@ -380,13 +499,54 @@ class ResonatorProfileSequence(Sequence):
     Builds nutation based Resonator Profile sequence. 
     """
 
-    def __init__(self,*,B,LO,reptime,averages,shots,**kwargs) -> None:
+    def __init__(self, *, B, LO, reptime, averages, shots, fwidth=0.3, **kwargs) -> None:
+        """Build a resonator profile nutation sequence using either 
+        rectangular pulses or specified pulses.
+
+        Parameters
+        ----------
+        B : int or float
+            The B0 field, in Guass
+        Bwidth: int or float
+            The width of the field sweep, in Gauss
+        LO : int or float
+            The LO frequency in GHz
+        reptime : _type_
+            The shot repetition time in us
+        averages : int
+            The number of scans.
+        shots : int
+            The number of shots per point
+        fwidth: float
+            The frequency width of the resonator profile in GHz, 
+            by default 0.3GHz
+        tau1: float
+            The delay between the nutating pulse and the Hahn Echo, 
+            by default 2000 ns
+        tau2: float
+            The interpulse delay in the Hahn Echo, 
+            by default 500 ns
+
+        Optional Parameters
+        -------------------
+        pi2_pulse : Pulse
+            An autoEPR Pulse object describing the excitation pi/2 pulse. If
+            not specified a RectPulse will be created instead. 
+        pi_pulse : Pulse
+            An autoEPR Pulse object describing the refocusing pi pulses. If
+            not specified a RectPulse will be created instead. 
+        """
 
         name = "Resonator-Profile"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
         self.gyro = LO/B
+
+        if "pi_pulse" in kwargs:
+            self.pi_pulse = kwargs["pi_pulse"]
+        if "pi2_pulse" in kwargs:
+            self.pi2_pulse = kwargs["pi2_pulse"]
 
         self._build_sequence()
 
@@ -399,12 +559,22 @@ class ResonatorProfileSequence(Sequence):
             t=0, tp=4, freq=0, flipangle="Hard"
         ))
 
-        self.addPulse(RectPulse(  # pi/2
-            t=tau1, tp=16, freq=0, flipangle=np.pi/2
-        ))
-        self.addPulse(RectPulse(  # pi
-            t=tau1+tau2, tp=32, freq=0, flipangle=np.pi
-        ))
+        if hasattr(self, "pi2_pulse"):
+            self.addPulse(self.pi2_pulse.copy(
+                t=tau1, pcyc={"phases":[0, np.pi], "dets": [1, -1]}))
+        else:
+            self.addPulse(RectPulse(  # pi/2
+            t=tau1, tp=16, freq=0, flipangle=np.pi/2, 
+            pcyc={"phases":[0, np.pi], "dets": [1, -1]}
+            ))
+        
+        if hasattr(self, "pi_pulse"):
+            self.addPulse(self.pi_pulse.copy(
+                t=tau1+tau2))
+        else:
+            self.addPulse(RectPulse(  # pi/2
+            t=tau1+tau2, tp=16, freq=0, flipangle=np.pi/2
+            ))
 
         self.addPulse(Detection(t=tau1+2*tau2, tp=512))
 
