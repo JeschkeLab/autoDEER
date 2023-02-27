@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import cumulative_trapezoid
 import logging
 import importlib
-from autodeer import FieldSweep, ResonatorProfile
+from autodeer import FieldSweepAnalysis, ResonatorProfileAnalysis
 import scipy.fft as fft
 from deerlab import correctphase
 from scipy.interpolate import interp1d
@@ -30,12 +30,12 @@ def calc_identifiability(profile):
 # =============================================================================
 
 
-def std_deer_analysis(
+def DEERanalysis(
         t: np.ndarray, V: np.ndarray, tau1: float, tau2: float,
         tau3: float = None, zerotime: float = 0, num_points: int = 50,
         compactness: bool = True, precision: str = "Detailed",
         background: bool = False, plot: bool = True, **kwargs):
-    """std_deer_analysis This function conducts the standard deer analysis 
+    """DEERanalysis This function conducts the standard deer analysis 
     using deerlab
 
     Parameters
@@ -67,8 +67,15 @@ def std_deer_analysis(
 
     Returns
     -------
-    _type_
-        _description_
+    fit : dict
+        A dictionary like object containing all the DeerLab fit data.
+    ROI : tuple
+        A tuple containing the minimum and maximum distances in the Region of
+        Interest (ROI)
+    rec_tau_max : float
+        The recomeneded dipolar evolution time for this region of interest.
+    fig : Figure
+        A Figure object of a plot, only if plot is True.
     """
 
     mask = None
@@ -93,7 +100,7 @@ def std_deer_analysis(
     elif precision.lower() == "speed":
         Ltype = 6
         # regparamrange = [0.1, 1e3]
-        regparamrange = [1e-2, 1e3]
+        regparamrange = [1e-1, 1e3]
 
     else:
         print("No Precision set. Ltype = 4nm")
@@ -123,23 +130,23 @@ def std_deer_analysis(
 
     Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo)
 
-    if (tau1 == tau2):
-        # Link pathways
-        if (pulses == 5) & (2 in pathways) & (8 in pathways):
-            index2 = pathways.index(2) + 1
-            index8 = pathways.index(8) + 1
-            links = {"lam28": [f"lam{index2}", f"lam{index8}"]}
-            Vmodel = dl.link(Vmodel, **links)
-            pathways.remove(2)
-            pathways.remove(8)
-            pathways.append([2, 8])
-        if (pulses == 4) & (1 in pathways) & (4 in pathways):
-            index1 = pathways.index(1) + 1
-            index4 = pathways.index(4) + 1
-            Vmodel = dl.link(Vmodel, lam14=[f"lam{index1}", f"lam{index4}"])
-            pathways.remove(1)
-            pathways.remove(4)
-            pathways.append([1, 4])
+    # if (tau1 == tau2):
+    #     # Link pathways
+    #     if (pulses == 5) & (2 in pathways) & (8 in pathways):
+    #         index2 = pathways.index(2) + 1
+    #         index8 = pathways.index(8) + 1
+    #         links = {"lam28": [f"lam{index2}", f"lam{index8}"]}
+    #         Vmodel = dl.link(Vmodel, **links)
+    #         pathways.remove(2)
+    #         pathways.remove(8)
+    #         pathways.append([2, 8])
+    #     if (pulses == 4) & (1 in pathways) & (4 in pathways):
+    #         index1 = pathways.index(1) + 1
+    #         index4 = pathways.index(4) + 1
+    #         Vmodel = dl.link(Vmodel, lam14=[f"lam{index1}", f"lam{index4}"])
+    #         pathways.remove(1)
+    #         pathways.remove(4)
+    #         pathways.append([1, 4])
 
     Vmodel.pathways = pathways
     
@@ -200,7 +207,28 @@ def std_deer_analysis(
 # =============================================================================
 
 
-def DEER_analysis_plot(fit, background, ROI=None):
+def DEERanalysis_plot(fit, background:bool, ROI=None):
+    """DEERanalysis_plot Generates a figure showing both the time domain and
+    distance domain data along with extra important infomation such as the 
+    Modulation to Noise Ratio (MNR), Region of Interest (ROI) and the 
+    recommended dipolar evolution time for future experiments based upon the 
+    ROI.
+
+    Parameters
+    ----------
+    fit : Deerlab.FitResult
+        _description_
+    background : bool
+        Should the background fit be plotted.
+    ROI : tuple, optional
+        The minimum and maximum of the Region of Interest (ROI),
+        by default None
+
+    Returns
+    -------
+    Figure
+        A Matplotlib Figure object of the figure. 
+    """
     mask = fit.mask
     t = fit.t
     r = fit.r
@@ -310,7 +338,14 @@ def DEER_analysis_plot(fit, background, ROI=None):
 def IdentifyROI(
         P: np.ndarray, r: np.ndarray, criterion: float = 0.99,
         method: str = "gauss"):
-    """IdentifyROI _summary_
+    """IdentifyROI Identifies the region of interest. Two methods are sypported
+
+    Methods
+    +++++++
+    
+    1. Gaussian fitting ("gauss"):
+
+    2. Intergration ("int"):
 
     Parameters
     ----------
@@ -408,9 +443,28 @@ def remove_echo(
 # =============================================================================
 
 def calc_optimal_deer_frqs(
-        fieldsweep: FieldSweep, pump_length: int, exc_length: int,
+        fieldsweep: FieldSweepAnalysis, pump_length: int, exc_length: int,
         det_frq: float = None, dt: float = 1):
+    """_summary_
 
+    Parameters
+    ----------
+    fieldsweep : FieldSweepAnalysis
+        _description_
+    pump_length : int
+        _description_
+    exc_length : int
+        _description_
+    det_frq : float, optional
+        _description_, by default None
+    dt : float, optional
+        _description_, by default 1
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
     total_length = 1024
     pump_pulse = np.ones(int(pump_length/dt))
     pad_size = (total_length - pump_pulse.shape[0])/2
@@ -513,8 +567,8 @@ def calc_overlap_region(x1, y1, x2, y2, new_axis=None):
 
 
 def plot_optimal_deer_frqs(
-        fieldsweep: FieldSweep, pump_length: int, pump_frq: float,
-        exc_length: int, exc_frq: float, respro: ResonatorProfile = None,
+        fieldsweep: FieldSweepAnalysis, pump_length: int, pump_frq: float,
+        exc_length: int, exc_frq: float, respro: ResonatorProfileAnalysis = None,
         frq_shift: float = 0, dt: float = 1):
     """Generate a plot that contains the field sweep, pump and excitation 
     pulses as well as the resonator profile (optional). This should be used to 
@@ -523,7 +577,7 @@ def plot_optimal_deer_frqs(
 
     Parameters
     ----------
-    fieldsweep : FieldSweep
+    fieldsweep : FieldSweepAnalysis
         The fieldsweep of the spectrum, with the frequency axis generated using
         the fieldsweep.calc_gyro(det_frq) command.
     pump_length : int
@@ -534,7 +588,7 @@ def plot_optimal_deer_frqs(
         The excitation pulse length in ns.
     exc_frq : float
         The excitation pulse frequnecy offset, from fieldsweep maximum in GHz
-    respro : ResonatorProfile, optional
+    respro : ResonatorProfileAnalysis, optional
         The resonator profile, by default None
     frq_shift : float, optional
         The frequency shift between resonator profile and fieldsweep maximum

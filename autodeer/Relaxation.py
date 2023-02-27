@@ -8,7 +8,7 @@ from autodeer.openepr import dataset
 # ===========================================================================
 
 
-class Carr_Purcell:
+class CarrPurcellAnalysis:
 
     def __init__(self, dataset: dataset) -> None:
         """Analysis and calculation of Carr Purcell decay. 

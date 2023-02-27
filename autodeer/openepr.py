@@ -621,7 +621,7 @@ class Sequence:
 
     def __str__(self):
 
-        header = "#" * 79 + "\n" + "AutoDEER Sequence Definition" + \
+        header = "#" * 79 + "\n" + "autoDEER Sequence Definition" + \
                  "\n" + "#" * 79 + "\n"
 
         # Sequence Parameters
@@ -912,7 +912,17 @@ class Pulse:
         for attr_name in dir(self):
             attr = getattr(self, attr_name)
             if type(attr) is Parameter:
-                param_table += f"{attr.name} \t\t {attr.value} \t" +\
+                if attr.name == "flipangle":
+                    if attr.value == np.pi:
+                        value = "π"
+                    elif attr.value == np.pi/2:
+                        value = "π/2"
+                    else:
+                        value = f"{attr.value:>5.5g}"
+                else:
+                    value = f"{attr.value:>5.5g}"
+
+                param_table += f"{attr.name} \t\t {value} \t" +\
                     f"{attr.unit} \t {attr.description} \n"
 
         # Build Pulse Progression Table

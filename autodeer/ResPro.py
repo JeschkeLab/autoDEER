@@ -342,7 +342,7 @@ class resonatorProfile:
 
 # =============================================================================
 
-class ResonatorProfile:
+class ResonatorProfileAnalysis:
 
     def __init__(
             self, nuts: np.ndarray, freqs: np.ndarray, dt: float) -> None:

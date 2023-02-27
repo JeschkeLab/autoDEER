@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from autodeer.openepr import dataset
 
 
-class FieldSweep():
+class FieldSweepAnalysis():
 
     def __init__(self, dataset: dataset) -> None:
         """Analysis and calculation of FieldSweep Experiment. 

@@ -46,6 +46,11 @@ class DEERSequence(Sequence):
         pump_pulse : Pulse
             An autoEPR Pulse object describing the pumping pi pulse/s. If
             not specified a RectPulse will be created instead. 
+        det_event : Pulse
+            An autoEPR Pulse object describing the detection even. If
+            not specified a standard detection event will be created instead,
+            with an offset frequency of 0MHz. 
+
 
         """
         name = "DEER sequence"
@@ -64,6 +69,8 @@ class DEERSequence(Sequence):
             self.ref_pulse = kwargs["ref_pulse"]
         if "pump_pulse" in kwargs:
             self.pump_pulse = kwargs["pump_pulse"]
+        if "det_event" in kwargs:
+            self.det_event = kwargs["det_event"]
 
     def four_pulse(self, tp=16):
         """
@@ -107,8 +114,10 @@ class DEERSequence(Sequence):
                 t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
             ))
 
-
-        self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
+        if hasattr(self, "det_event"):
+            self.addPulse(self.det_event.copy(t=2*(self.tau1+self.tau2)))
+        else:
+            self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
 
         self.addPulsesProg(
             [2],
@@ -167,7 +176,10 @@ class DEERSequence(Sequence):
                 t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
             ))
 
-        self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
+        if hasattr(self, "det_event"):
+            self.addPulse(self.det_event.copy(t=2*(self.tau1+self.tau2)))
+        else:
+            self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
 
         self.addPulsesProg(
             [3],
@@ -307,6 +319,11 @@ class HahnEchoSequence(Sequence):
         pi_pulse : Pulse
             An autoEPR Pulse object describing the refocusing pi pulses. If
             not specified a RectPulse will be created instead. 
+        det_event : Pulse
+            An autoEPR Pulse object describing the detection even. If
+            not specified a standard detection event will be created instead,
+            with an offset frequency of 0MHz. 
+
         """
         
         name = "Hahn Echo"
@@ -315,6 +332,8 @@ class HahnEchoSequence(Sequence):
             self.pi_pulse = kwargs["pi_pulse"]
         if "pi2_pulse" in kwargs:
             self.pi2_pulse = kwargs["pi2_pulse"]
+        if "det_event" in kwargs:
+            self.det_event = kwargs["det_event"]
 
 
         super().__init__(
@@ -340,7 +359,10 @@ class HahnEchoSequence(Sequence):
                 t=tau, tp=tp, freq=0, flipangle=np.pi
             ))
 
-        self.addPulse(Detection(t=2*tau, tp=self.det_window.value))
+        if hasattr(self, "det_event"):
+            self.addPulse(self.det_event.copy(t=2*tau))
+        else:
+            self.addPulse(Detection(t=2*tau, tp=self.det_window.value))
 
 class FieldSweepSequence(HahnEchoSequence):
     """

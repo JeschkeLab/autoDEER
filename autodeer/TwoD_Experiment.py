@@ -9,7 +9,7 @@ import matplotlib.colors as colors
 from deerlab import deerload
 import os
 
-class TwoD_Experiment:
+class TwoDExperimentAnalysis:
     """
     This is a class for loading and processing 2D Decoherence experiments
     """

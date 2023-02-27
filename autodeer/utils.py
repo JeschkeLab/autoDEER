@@ -1,6 +1,5 @@
 import re
 
-
 def build_table(source, params, params_widths):
     string = ""
     params_used = []
@@ -44,9 +43,12 @@ def build_table(source, params, params_widths):
                 elif getattr(pulse, param).value is None:
                     elements.append("None")
                 else:
-                    elements.append(getattr(pulse, param).value)
+                    elements.append(f"{getattr(pulse, param).value:>5.5g}")
             else:
                 elements.append("N/A")
         string += line_str.format(*elements)
 
     return string
+
+
+
