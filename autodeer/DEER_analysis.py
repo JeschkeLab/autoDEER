@@ -514,7 +514,7 @@ def calc_optimal_deer_frqs(
     optimal_2d = np.abs(optimal_2d).reshape(100, 100)
     max_pos = np.unravel_index(optimal_2d.argmax(), (100, 100))
     print(
-        f"Maxium achievable of {optimal_2d.max()*100:.2f}% optimal at"
+        f"Maximum achievable of {optimal_2d.max()*100:.2f}% optimal at"
         f"{X[max_pos[0]]*1e3:.1f}MHz pump position and" 
         f" {Y[max_pos[1]]*1e3:.1f}MHz exc position.")
 
