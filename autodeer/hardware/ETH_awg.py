@@ -15,7 +15,7 @@ class ETH_awg_interface:
         """An interface for connecting to a Andrin Doll style spectrometer,
         commonly in use at ETH Zürich.
 
-        System Requirments
+        System Requirements
         -------------------
         - Matlab 2022b or later
         - Matlab engine for python
@@ -125,6 +125,89 @@ class ETH_awg_interface:
     def isrunning(self) -> bool:
         state = bool(self.engine.dig_interface('savenow'))
         return state
+    
+    def tune(self,*, sequence=None, type="amp", LO=None, gyro=None):
+
+        if type == "rect_tune":
+            if LO is None:
+                raise ValueError("LO must be given for rect_tune")
+            if gyro is None:
+                raise ValueError("gyro must be give")
+            elif gyro >1:
+                raise ValueError("Gyromagnetic ratio must be give in GHz/G")
+            
+            amp_tune =HahnEchoSequence(
+                B=LO/gyro, LO=LO, reptime=2e3, averages=1, shots=400
+            )
+            time = 12
+            amp_tune.pulses[0].tp.value = time
+            amp_tune.pulses[1].tp.value = time*2
+            
+            amp_tune.addPulsesProg(
+                pulses=[0,1],
+                variables=['scale','scale'],
+                axis_id=0,
+                axis=np.arange(0,0.9,0.02),
+            )
+
+            self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+
+            while self.isrunning():
+                time.sleep(10)
+            dataset = self.acquire_dataset()
+            scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
+            if scale > 0.9:
+                raise RuntimeError("Not enough power avaliable.")
+            
+            self.pulses[f"p90_{time}"] = amp_tune.pulses[0].copy(
+                scale=scale, LO=amp_tune.LO)
+            self.pulses[f"p180_{time*2}"] = amp_tune.pulses[1].copy(
+                scale=scale, LO=amp_tune.LO)
+        
+        elif type == "amp_hahn":
+            for pulse in sequence.pulses:
+
+                all_pulses = list(self.pulses.keys())
+                pulse_matches = []
+                for pulse_name in all_pulses:
+                    if not re.match(r"^p180_",pulse_name):
+                        continue
+                    if not np.abs((self.pulses[pulse_name].LO.value + self.pulses[pulse_name].freq.value) - (sequence.LO.value + pulse.freq.value)) < 0.01:
+                        continue
+                    pulse_matches.append(pulse_name)
+                    
+                    ps_length_best =1e6
+                for pulse_name in pulse_matches:
+                    ps_length = int(re.search(r"p180_(\d+)",pulse_name).groups()[0])
+                    if ps_length < ps_length_best:
+                        ps_length_best = ps_length
+                
+                pi_pulse = self.pulses[f"p180_{ps_length_best}"]
+                
+
+                amp_tune =HahnEchoSequence(
+                    B=sequence.B.value, LO=sequence.LO.value, 
+                    reptime=sequence.reptime.value, averages=1, shots=400,
+                    pi2_pulse = pulse, pi_pulse=pi_pulse
+                )
+
+                amp_tune.addPulsesProg(
+                    pulses=[0],
+                    variables=['scale'],
+                    axis_id=0,
+                    axis=np.arange(0,0.9,0.02),
+                )
+
+                self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+
+                while self.isrunning():
+                    time.sleep(10)
+                dataset = self.acquire_dataset()
+                scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
+                pulse.scale = scale
+
+            return sequence
+                    
 
     def _build_exp_struct(self, sequence) -> dict:
 
