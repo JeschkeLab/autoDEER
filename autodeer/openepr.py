@@ -30,7 +30,7 @@ class dataset:
         params : dict, optional
             A dictionary of experimental parameters, by default None
         """
-        self.axes = axes
+        self.axes = np.atleast_2d(axes)
         self.data = data
         self.params = params
         if type(self.axes) is np.ndarray:
@@ -821,7 +821,7 @@ class Pulse:
         pass
     
     def _calc_fft(self, pad=10000):
-
+        self._buildFMAM(self.func)
         data = np.pad(self.complex, int(pad))
         pulse_fft = fft.fftshift(fft.fft(data))
         n = data.shape[0]
@@ -1114,8 +1114,8 @@ class HSPulse(Pulse):
     """
     Represents a hyperboilc secant frequency-swept pulse.
     """
-    def __init__(self, *, tp, scale, order1, order2, beta, t, **kwargs) -> None:
-        Pulse.__init__(self, tp=tp, scale=scale, t=t, **kwargs)
+    def __init__(self, *, tp, order1, order2, beta, **kwargs) -> None:
+        Pulse.__init__(self, tp=tp, **kwargs)
         self.order1 = Parameter(
             "order1", order1, None, "Order 1 of the HS Pulse")
         self.order2 = Parameter(
@@ -1196,8 +1196,8 @@ class ChirpPulse(Pulse):
     Represents a linear frequency-swept pulse.
     """
 
-    def __init__(self, *, tp, scale, t, **kwargs) -> None:
-        Pulse.__init__(self, tp=tp, scale=scale, t=t, **kwargs)
+    def __init__(self, *, tp, **kwargs) -> None:
+        Pulse.__init__(self, tp=tp, **kwargs)
 
         # Frequency Infomation
         if "BW" in kwargs:
@@ -1209,7 +1209,7 @@ class ChirpPulse(Pulse):
                     "init_freq", kwargs["init_freq"], "GHz",
                     "Initial frequency of pulse")
             elif "final_freq" in kwargs:
-                self.init_freq = Parameter(
+                self.final_freq = Parameter(
                     "final_final", kwargs["final_freq"], "GHz",
                     "Final frequency of pulse")
             else:
@@ -1239,7 +1239,7 @@ class ChirpPulse(Pulse):
                 self.init_freq.value, self.init_freq.value + self.BW.value, nx)
         elif hasattr(self, "BW") & hasattr(self, "final_freq"):
             FM = np.linspace(
-                self.init_freq.value - self.BW.value, self.final_freq.value,
+                self.final_freq.value - self.BW.value, self.final_freq.value,
                 nx)
         elif hasattr(self, "init_freq") & hasattr(self, "final_freq"):
             FM = np.linspace(

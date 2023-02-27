@@ -443,45 +443,34 @@ def remove_echo(
 # =============================================================================
 
 def calc_optimal_deer_frqs(
-        fieldsweep: FieldSweepAnalysis, pump_length: int, exc_length: int,
-        det_frq: float = None, dt: float = 1):
-    """_summary_
+        fieldsweep, pump_pulse, exc_pulse):
+    """Calculates the necessary frequency shift to cause the maximal amount 
+    of pump-exc overlap.
 
     Parameters
     ----------
     fieldsweep : FieldSweepAnalysis
-        _description_
-    pump_length : int
-        _description_
-    exc_length : int
-        _description_
-    det_frq : float, optional
-        _description_, by default None
-    dt : float, optional
-        _description_, by default 1
+        The fieldsweep of the spectrum. There is an assumption that the whole
+        spectrum is spin 1/2
+    pump_pulse : Pulse
+        The pump pulse object.
+    exc_pulse : Pulse
+        The excitation pulse object.
 
     Returns
     -------
-    _type_
-        _description_
+    float
+        Frequency shift to make optimal of pump pulse in GHz.
+    float
+        Frequency shift to make optimal of excitation pulse in GHz.
     """
-    total_length = 1024
-    pump_pulse = np.ones(int(pump_length/dt))
-    pad_size = (total_length - pump_pulse.shape[0])/2
-    pump_pulse = np.pad(
-        pump_pulse, (int(np.floor(pad_size)), int(np.ceil(pad_size))))
-
-    exc_pulse = np.ones(int(exc_length/dt))
-    pad_size = (total_length - exc_pulse.shape[0])/2
-    exc_pulse = np.pad(
-        exc_pulse, (int(np.floor(pad_size)), int(np.ceil(pad_size))))
-
-    f_axis = fft.fftshift(fft.fftfreq(total_length, dt))
     
-    f_pump = np.abs(fft.fftshift(fft.fft(pump_pulse)))
+    f_axis,f_pump = pump_pulse._calc_fft(pad=1e4)
+    f_pump = np.abs(f_pump)
     f_pump /= f_pump.max()
     
-    f_exc = np.abs(fft.fftshift(fft.fft(exc_pulse)))
+    _, f_exc = exc_pulse._calc_fft(pad=1e4)
+    f_exc = np.abs(f_exc)
     f_exc /= f_exc.max()
 
     if np.iscomplexobj(fieldsweep.data):
@@ -498,7 +487,9 @@ def calc_optimal_deer_frqs(
     fs_axis = fieldsweep.fs_x
 
     def calc_optimal(pump_frq, exc_frq):
-        new_axis = np.linspace(-0.27, 0.1, 200)
+        axis_min = np.fix(fieldsweep.fs_x.min()*1e2)/1e2
+        axis_max = np.fix(fieldsweep.fs_x.max()*1e2)/1e2
+        new_axis = np.linspace(axis_min, axis_max, 200)
         fs_new = interp(fs_axis, fs_data, new_axis)
         dead_spins = calc_overlap_region(
             f_axis + pump_frq, f_pump, f_axis + exc_frq, f_exc,
@@ -516,8 +507,8 @@ def calc_optimal_deer_frqs(
         perc_exc = num_exc/total
         return calc_optimal_perc(perc_pump, perc_exc)
 
-    X = np.linspace(-0.15, 0.05, 100)
-    Y = np.linspace(-0.15, 0.05, 100)
+    X = np.linspace(-0.3, 0.3, 100)
+    Y = np.linspace(-0.3, 0.3, 100)
     optimal_2d = [calc_optimal(y, x) for y in X for x in Y]
 
     optimal_2d = np.abs(optimal_2d).reshape(100, 100)
@@ -528,7 +519,6 @@ def calc_optimal_deer_frqs(
         f" {Y[max_pos[1]]*1e3:.1f}MHz exc position.")
 
     return [X[max_pos[0]], Y[max_pos[1]]]
-
 
 def calc_optimal_perc(pump, exc):
     base_value = 2/3 * np.sqrt(1/3)
@@ -567,9 +557,9 @@ def calc_overlap_region(x1, y1, x2, y2, new_axis=None):
 
 
 def plot_optimal_deer_frqs(
-        fieldsweep: FieldSweepAnalysis, pump_length: int, pump_frq: float,
-        exc_length: int, exc_frq: float, respro: ResonatorProfileAnalysis = None,
-        frq_shift: float = 0, dt: float = 1):
+        fieldsweep: FieldSweepAnalysis, pump_pulse,
+        exc_pulse, respro: ResonatorProfileAnalysis = None,
+        frq_shift: float = 0):
     """Generate a plot that contains the field sweep, pump and excitation 
     pulses as well as the resonator profile (optional). This should be used to 
     check that a DEER measurment is setup correctly and in an optimal
@@ -580,62 +570,47 @@ def plot_optimal_deer_frqs(
     fieldsweep : FieldSweepAnalysis
         The fieldsweep of the spectrum, with the frequency axis generated using
         the fieldsweep.calc_gyro(det_frq) command.
-    pump_length : int
-        The pump pulse length in ns.
-    pump_frq : float
-        The pump pulse frequnecy offset, from fieldsweep maximum in GHz
-    exc_length : int
-        The excitation pulse length in ns.
-    exc_frq : float
-        The excitation pulse frequnecy offset, from fieldsweep maximum in GHz
+    pump_pulse : Pulse
+        The pump pulse object.
+    exc_pulse : int
+        The excitation pulse object.
     respro : ResonatorProfileAnalysis, optional
         The resonator profile, by default None
     frq_shift : float, optional
         The frequency shift between resonator profile and fieldsweep maximum
         , by default 0
-    dt : float, optional
-        The timestep in ns for generating pulses and their FFT, by default 1
     """
     
     if fieldsweep.data.max() != 1.0:
         fieldsweep.data /= fieldsweep.data.max()
 
     # Build the pulses
-    total_length = 1024
-    pump_pulse = np.ones(int(pump_length/dt))
-    pad_size = (total_length - pump_pulse.shape[0])/2
-    pump_pulse = np.pad(
-        pump_pulse, (int(np.floor(pad_size)), int(np.ceil(pad_size))))
-
-    exc_pulse = np.ones(int(exc_length/dt))
-    pad_size = (total_length - exc_pulse.shape[0])/2
-    exc_pulse = np.pad(
-        exc_pulse, (int(np.floor(pad_size)), int(np.ceil(pad_size))))
-
-    f_axis = fft.fftshift(fft.fftfreq(total_length, dt))
-    
-    f_pump = np.abs(fft.fftshift(fft.fft(pump_pulse)))
+    f_ax_pump,f_pump = pump_pulse._calc_fft(pad=1e4)
+    f_pump = np.abs(f_pump)
     f_pump /= f_pump.max()
     
-    f_exc = np.abs(fft.fftshift(fft.fft(exc_pulse)))
+    f_ax_exc, f_exc = exc_pulse._calc_fft(pad=1e4)
+    f_exc = np.abs(f_exc)
     f_exc /= f_exc.max()
 
     # Now build the plot
-    new_axis = np.linspace(-0.27, 0.1, 200)
-    fs_new = interp(fieldsweep.fs_x, fieldsweep.data, new_axis)
+    axis_min = np.fix(fieldsweep.fs_x.min()*1e2)/1e2
+    axis_max = np.fix(fieldsweep.fs_x.max()*1e2)/1e2
+    new_axis = np.linspace(axis_min, axis_max, 200)
+    fs_new = np.abs(interp(fieldsweep.fs_x, fieldsweep.data, new_axis))
 
     fig, ax = plt.subplots()
     ax.plot(new_axis, fs_new, label="Field Sweep")
     dead_spins = calc_overlap_region(
-        f_axis+pump_frq, f_pump, f_axis+exc_frq, f_exc, new_axis=new_axis)
+        f_ax_pump, f_pump, f_ax_exc, f_exc, new_axis=new_axis)
 
     ax.fill(dead_spins[0], fs_new * dead_spins[1], color='0.6', label="Dead", 
             alpha=0.5, lw=0)
     ax.fill_between(
-        new_axis, fs_new * interp(f_axis+exc_frq, f_exc, new_axis),
+        new_axis, fs_new * interp(f_ax_exc, f_exc, new_axis),
         fs_new * dead_spins[1], label="Exc", color="C1", alpha=0.5, lw=0)
     ax.fill_between(
-        new_axis, fs_new * interp(f_axis+pump_frq, f_pump, new_axis),
+        new_axis, fs_new * interp(f_ax_pump, f_pump, new_axis),
         fs_new * dead_spins[1], label="Pump", color="C2", alpha=0.5, lw=0)
     if (respro is not None):
         ax.plot(respro.frq-respro.fc+frq_shift, respro.labs, label="Res Pro")
@@ -643,3 +618,5 @@ def plot_optimal_deer_frqs(
     ax.legend()
     ax.set_ylabel(r"% flipped")
     ax.set_xlabel("Frequency / GHz")
+    return fig
+
