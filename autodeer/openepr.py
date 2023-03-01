@@ -288,29 +288,92 @@ class Sequence:
 
     def plot_pulse_exc(self, FieldSweep=None, ResonatorProfile=None):
 
+        if FieldSweep is not None:
+            data = FieldSweep.data
+            data /= np.max(np.abs(data))
+            ax = FieldSweep.fs_x
+            plt.plot(ax, data, label="Field Sweep", color='r')
+            
+        if ResonatorProfile is not None:
+            data = ResonatorProfile.prof_data / ResonatorProfile.prof_data.max()
+            plt.plot(ResonatorProfile.prof_frqs-self.LO.value, data, label="Resonator Profile", color='k')
+
+
+        def check_array_new(list,array, return_pos=False):
+            test = True
+            for i, ele in enumerate(list):
+                if np.allclose(
+                    ele,array,rtol=1e-03, atol=1e-03, equal_nan=True):
+                    test = False
+                    if return_pos:
+                        return i
+            return test
+
+        axs = []
+        fts = []
+        labels = []
         for i, pulse in enumerate(self.pulses):
             if type(pulse) == Delay:
                 continue
             elif type(pulse) == Detection:
                 continue
             ax, ft = pulse._calc_fft(1e4)
-            ft /= np.max(np.abs(ft))
-            plt.plot(ax, np.abs(ft), label=f"Pulse id={i}")
+
+            if check_array_new(fts, ft):
+                axs.append(ax)
+                fts.append(ft)
+                labels.append([i])
+            else:
+                j = check_array_new(fts, ft, return_pos=True)
+                labels[j].append(i)
+
+        hatches = ['/', '\\', '|', '-', 'o', '.']
         
-        if FieldSweep is not None:
-            data = FieldSweep.data
-            data /= np.max(np.abs(data))
-            FSwpLO = FieldSweep.det_frq
-            ax = FieldSweep.fs_x
-            plt.plot(ax,data, label="Field Sweep")
-            
-        if ResonatorProfile is not None:
-            data = ResonatorProfile.prof_data / ResonatorProfile.prof_data.max()
-            plt.plot(ResonatorProfile.prof_frqs-self.LO.value, data, label="Resonator Profile")
+        
+        for i in range(0,len(axs)):
+            ft = np.abs(fts[i])
+            ft /= np.max(ft)
+            plt.fill(axs[i],ft, 
+                     label=f"Pulse id={str(labels[i])[1:-1]}",
+                     hatch=hatches.pop(), alpha=0.3)
         
         plt.xlabel("Frequency (GHz)")
         plt.legend()
 
+        # Set correct axis, find mim and max freq
+        
+        for i, pulse in enumerate(self.pulses):
+            if hasattr(pulse, "freq"):
+                p_min = pulse.freq.value
+                p_max = pulse.freq.value
+            elif hasattr(pulse, "init_freq") & hasattr(pulse, "final_freq"):
+                p_min = pulse.init_freq.value
+                p_max = pulse.final_freq.value
+            elif hasattr(pulse, "init_freq") & hasattr(pulse, "BW"):
+                p_min = pulse.init_freq.value
+                p_max = p_min + pulse.BW.value
+            elif hasattr(pulse, "final_freq") & hasattr(pulse, "BW"):
+                p_max = pulse.init_freq.value
+                p_min = p_max - pulse.BW.value
+            # Check p_min < p_max
+            if p_min > p_max:
+                p_temp = p_min
+                p_min = p_max
+                p_max = p_temp
+            if i == 0:
+                min_frq = p_min
+                max_frq = p_max
+            else:
+                if min_frq > p_min:
+                    min_frq = p_min
+                if max_frq < p_max:
+                    max_frq = p_max
+        
+        min_frq = np.floor(min_frq*100)/100 - 0.2
+        max_frq = np.ceil(max_frq*100)/100 + 0.2
+        plt.xlim(min_frq, max_frq)
+        
+        
         pass
 
     def addPulse(self, pulse):
@@ -972,20 +1035,26 @@ class Pulse:
         new_pulse = copy.deepcopy(self)
 
         for arg in kwargs:
-            if hasattr(new_pulse,arg):
+            if (hasattr(new_pulse,arg)) and (getattr(new_pulse,arg) is not None):
                 attr = getattr(new_pulse,arg)
                 if type(attr) is Parameter:
-                    attr.value = kwargs[arg]
+                    attr.value = kwargs[arg]                    
                 else:
                     attr = kwargs[arg]
-        new_pulse.Progression=False
-        for arg in vars(new_pulse):
-            attr= getattr(new_pulse,arg)
-            if type(attr) != Parameter:
-                continue
-            if attr.progressive == True:
-                attr.progressive = False
-                attr.prog = []
+            elif arg == "t":
+                setattr(new_pulse, arg,
+                        Parameter("t", kwargs[arg], "ns",
+                                  "Start time of pulse"))
+            elif arg == "scale":
+                setattr(new_pulse, arg,
+                        Parameter("scale", kwargs[arg], None,
+                                  "Amplitude of pulse"))
+            elif arg == "flipangle":
+                setattr(new_pulse,arg,
+                        Parameter("flipangle", kwargs[arg], None,
+                                  "The target flip angle of the spins"))
+            else:
+                setattr(new_pulse,arg,kwargs[arg])
         
         return new_pulse
         
