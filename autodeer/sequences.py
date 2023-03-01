@@ -127,7 +127,7 @@ class DEERSequence(Sequence):
 
 
         pass
-    def five_pulse(self, tp):
+    def five_pulse(self, tp=16):
         """
         Build a five pulse DEER sequence.
 
@@ -595,7 +595,7 @@ class ResonatorProfileSequence(Sequence):
                 t=tau1+tau2))
         else:
             self.addPulse(RectPulse(  # pi/2
-            t=tau1+tau2, tp=16, freq=0, flipangle=np.pi/2
+            t=tau1+tau2, tp=32, freq=0, flipangle=np.pi
             ))
 
         self.addPulse(Detection(t=tau1+2*tau2, tp=512))

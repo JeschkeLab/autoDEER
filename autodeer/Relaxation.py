@@ -79,7 +79,7 @@ class CarrPurcellAnalysis:
 
     def find_optimal(
             self, target_time: float, shrt: float, averages: int) -> float:
-        """Calculate the optimal inter pulse delay for a given total measurment
+        """Calculate the optimal inter-pulse delay for a given total measurement
         time. 
 
         Parameters
