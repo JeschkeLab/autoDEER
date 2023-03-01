@@ -22,7 +22,7 @@ class dataset:
         """
         Parameters
         ----------
-        axes : np.ndarray
+        axes : list[np.ndarray]
             An array of vectors containing the axes of the dataset
         data : np.ndarray
             The data either as an array of n-dimensions, containing either 
@@ -30,7 +30,10 @@ class dataset:
         params : dict, optional
             A dictionary of experimental parameters, by default None
         """
-        self.axes = np.atleast_2d(axes)
+        if type(axes) != list:
+            self.axes = [self.axes]
+        else:
+            self.axes = axes
         self.data = data
         self.params = params
         if type(self.axes) is np.ndarray:
@@ -975,6 +978,14 @@ class Pulse:
                     attr.value = kwargs[arg]
                 else:
                     attr = kwargs[arg]
+        new_pulse.Progression=False
+        for arg in vars(new_pulse):
+            attr= getattr(new_pulse,arg)
+            if type(attr) != Parameter:
+                continue
+            if attr.progressive == True:
+                attr.progressive = False
+                attr.prog = []
         
         return new_pulse
         
@@ -1022,6 +1033,13 @@ class Parameter:
     def add_step_progression(self, axis_id, length, start, step):
         axis = np.linspace(start, start + step * length, length)
         return self.add_progression(axis_id, axis)
+    
+    def remove_progression(self):
+        """Removes progression from parameter object
+        """
+        self.progressive = False
+        self.prog = []
+        pass
 
     def __eq__(self, __o: object) -> bool:
         if type(__o) is not Parameter:
