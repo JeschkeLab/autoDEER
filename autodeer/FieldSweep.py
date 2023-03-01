@@ -66,7 +66,7 @@ class FieldSweepAnalysis():
 
         Returns
         -------
-        plt.figure
+        Matplotlib.Figure
             matplotlib figure
         """
 

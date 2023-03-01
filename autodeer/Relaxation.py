@@ -3,14 +3,14 @@ import numpy as np
 from deerlab import noiselevel
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-from autodeer.openepr import dataset
+from autodeer.openepr import dataset, Sequence
 
 # ===========================================================================
 
 
 class CarrPurcellAnalysis:
 
-    def __init__(self, dataset: dataset) -> None:
+    def __init__(self, dataset: dataset, sequence: Sequence = None) -> None:
         """Analysis and calculation of Carr Purcell decay. 
 
         Parameters
@@ -20,6 +20,7 @@ class CarrPurcellAnalysis:
         """
         self.axis = dataset.axes[0]
         self.data = dataset.data
+        self.seq = sequence
         pass
     
     def fit(self, type: str = "mono"):
@@ -78,42 +79,48 @@ class CarrPurcellAnalysis:
         return fig
 
     def find_optimal(
-            self, target_time: float, shrt: float, averages: int) -> float:
+            self, averages: int, SNR_target, target_time: float, target_shrt: float, target_step) -> float:
         """Calculate the optimal inter pulse delay for a given total measurment
         time. 
 
         Parameters
         ----------
 
-        target_time : float
-            The target s
-        shrt : float
-            The shot repertition time in seconds
         averages : int
-            The number of averages in the data, both shots and scans
+            The number of averages in the data, shots, scans and phase cycles
+        SNR_target: float,
+            The Signal to Noise ratio target.
+        target_time : float
+            The target time in hours
+        target_shrt : float
+            The shot repettition time of target in seconds
+        target_step: float
+            The target step size in us.
+        
 
         Returns
         -------
         float
-            The calculated optimal time
+            The calculated optimal time in us
         """
         # time_per_point = shrt * averages
-
         data = np.abs(self.data)
         data /= np.max(data)
+        if hasattr(self,"fit_result"):
+            calc_data = self.func(self.axis,*self.fit_result[0])
+        else:
+            calc_data = data
 
+        # averages = self.seq.shots.value * self.seq.averages.value
         self.noise = noiselevel(data)
-        data_snr = data / self.noise
+        data_snr = calc_data / self.noise
         data_snr_avgs = data_snr / np.sqrt(averages)
 
-        # Assume 16ns time step
-        # dt = 16
         # Target time
         target_time = target_time * 3600
 
-        num_avgs = target_time / (shrt * np.floor(2 * self.axis * 1000 / 16))
+        g = (target_time * target_step / target_shrt) * 1/(self.axis)
+        f = (SNR_target/data_snr_avgs)**2
 
-        data_snr_ = data_snr_avgs * np.sqrt(num_avgs)
-
-        self.optimal = self.axis[np.argmin(np.abs(data_snr_-20))]
+        self.optimal = self.axis[np.argmin(np.abs(g-f))]
         return self.optimal

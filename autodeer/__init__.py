@@ -10,4 +10,5 @@ from .DEER_analysis import DEERanalysis, DEERanalysis_plot, IdentifyROI,\
     calc_optimal_deer_frqs, plot_optimal_deer_frqs
 from .Relaxation import CarrPurcellAnalysis
 from .openepr import *
+from .sequences import *
 
