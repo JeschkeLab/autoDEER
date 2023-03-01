@@ -1,5 +1,6 @@
 import matlab.engine
 from autodeer.openepr import *
+from autodeer import HahnEchoSequence
 import numpy as np
 import os
 import re
@@ -34,6 +35,7 @@ class ETH_awg_interface:
         self.connect()
         self.awg_freq = awg_freq
         self.dig_rate = dig_rate
+        self.pulses = {}
         pass
 
     def connect(self, session=None):
@@ -139,9 +141,11 @@ class ETH_awg_interface:
             amp_tune =HahnEchoSequence(
                 B=LO/gyro, LO=LO, reptime=2e3, averages=1, shots=400
             )
-            time = 12
-            amp_tune.pulses[0].tp.value = time
-            amp_tune.pulses[1].tp.value = time*2
+            tp = 12
+            amp_tune.pulses[0].tp.value = tp
+            amp_tune.pulses[0].scale.value = 0
+            amp_tune.pulses[1].tp.value = tp*2
+            amp_tune.pulses[1].scale.value = 0
             
             amp_tune.addPulsesProg(
                 pulses=[0,1],
@@ -159,9 +163,9 @@ class ETH_awg_interface:
             if scale > 0.9:
                 raise RuntimeError("Not enough power avaliable.")
             
-            self.pulses[f"p90_{time}"] = amp_tune.pulses[0].copy(
+            self.pulses[f"p90_{tp}"] = amp_tune.pulses[0].copy(
                 scale=scale, LO=amp_tune.LO)
-            self.pulses[f"p180_{time*2}"] = amp_tune.pulses[1].copy(
+            self.pulses[f"p180_{tp*2}"] = amp_tune.pulses[1].copy(
                 scale=scale, LO=amp_tune.LO)
         
         elif type == "amp_hahn":
