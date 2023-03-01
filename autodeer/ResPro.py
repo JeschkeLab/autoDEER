@@ -369,7 +369,7 @@ class ResonatorProfileAnalysis:
         pass
 
     def process_nutations(
-            self, noisedensity: float = None, threshold:int = 20,
+            self, noisedensity: float = None, threshold:int = 2,
             nfft: int = 1000):
         """ Uses a power series to extract the resonator profile.
 
@@ -381,9 +381,17 @@ class ResonatorProfileAnalysis:
         nfft: int, optional
             The length of the fft to be used, zero padded if requred, default
             is 1000.
+        threshold: int, optional
+            The multiples above the noise a single must be to not be excluded,
+            default is 2.
 
         Returns
         -------
+        prof_data: np.ndarray
+            The resonator profile, give in nutation frequency (GHz) 
+        prof_frqs: np.ndarray
+            The frequency axis in GHz
+
         """
 
         if noisedensity is None:
@@ -440,9 +448,22 @@ class ResonatorProfileAnalysis:
         self.pha = np.imag(hilbert(-np.log(self.profile)))
         pass
 
-    def plot(self):
+    def plot(self, fieldsweep=None):
+        """plot. 
+
+        Parameters
+        ----------
+        fieldsweep : FieldSweepAnalysis, optional
+            Overlays the FieldSweep if provided, by default None
+
+        Returns
+        -------
+        Matplotlib.Figure
+            matplotlib figure object
+        """
         fig, ax = plt.subplots(constrained_layout=True)
-        ax.plot(self.prof_frqs, self.prof_data * 1e3)
+        prof_data = self.prof_data * 1e3 # GHz -MHz
+        ax.plot(self.prof_frqs, prof_data)
         ax.set_xlabel("Frequency / GHz")
         ax.set_ylabel("Nutation Frequency / MHz")
 
@@ -454,6 +475,12 @@ class ResonatorProfileAnalysis:
 
         secax = ax.secondary_yaxis('right', functions=(Hz2length, length2Hz))
         secax.set_ylabel(r'$\pi/2$ pulse length / ns')
+
+        if fieldsweep:
+            fsweep_data = np.abs(fieldsweep.data)
+            fsweep_data /= fsweep_data.max()
+            fsweep_data = fsweep_data * prof_data.max()
+            ax.plot(fieldsweep.fs_x + fieldsweep.det_frq, fsweep_data)
 
         return fig
 
