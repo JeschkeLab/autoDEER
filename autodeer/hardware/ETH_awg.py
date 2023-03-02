@@ -1,11 +1,12 @@
 import matlab.engine
-from autodeer.openepr import *
+from autodeer import Pulse, Delay, Detection, Sequence, RectPulse, ChirpPulse, HSPulse
 from autodeer import HahnEchoSequence
 import numpy as np
 import os
 import re
 from autodeer import eprload
 import time
+from deerlab import correctphase
 
 
 class ETH_awg_interface:
@@ -128,9 +129,206 @@ class ETH_awg_interface:
         state = bool(self.engine.dig_interface('savenow'))
         return state
     
-    def tune(self,*, sequence=None, type="amp", LO=None, gyro=None):
+    def tune_rectpulse(self,*,tp, LO, B, reptime):
+        """Generates a rectangular pi and pi/2 pulse of the given length at 
+        the given field position. This value is stored in the pulse cache. 
 
-        if type == "rect_tune":
+        Parameters
+        ----------
+        tp : float
+            Pulse length in ns
+        LO : float
+            Central frequency of this pulse in GHz
+        B : float
+            Magnetic B0 field position in Gauss
+        reptime: float
+            Shot repetion time in us.
+
+        Returns
+        -------
+        p90: RectPulse
+            A tuned rectangular pi/2 pulse of length tp
+        p180: RectPulse
+            A tuned rectangular pi pulse of length tp
+        """
+
+        amp_tune =HahnEchoSequence(
+            B=B, LO=LO, reptime=reptime, averages=1, shots=400
+        )
+        amp_tune.pulses[0].tp.value = tp
+        amp_tune.pulses[0].scale.value = 0
+        amp_tune.pulses[1].tp.value = tp * 2
+        amp_tune.pulses[1].scale.value = 0
+        
+        amp_tune.addPulsesProg(
+            pulses=[0,1],
+            variables=['scale','scale'],
+            axis_id=0,
+            axis=np.arange(0,0.9,0.02),
+        )
+
+        self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+
+        while self.isrunning():
+            time.sleep(10)
+        dataset = self.acquire_dataset()
+        scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
+        if scale > 0.9:
+            raise RuntimeError("Not enough power avaliable.")
+        
+        self.pulses[f"p90_{tp}"] = amp_tune.pulses[0].copy(
+            scale=scale, LO=amp_tune.LO)
+        self.pulses[f"p180_{tp*2}"] = amp_tune.pulses[1].copy(
+            scale=scale, LO=amp_tune.LO)
+
+        return self.pulses[f"p90_{tp}"], self.pulses[f"p180_{tp*2}"]
+
+    
+    def tune_pulse(self, pulse, mode, LO, B , reptime):
+        """Tunes a single pulse a range of methods.
+
+        Parameters
+        ----------
+        pulse : Pulse
+            The Pulse object in need of tuning.
+        mode : str
+            The method to be used.
+        LO : float
+            The local oscilator frequency in GHz
+        B : float
+            Magnetic B0 field position in Gauss
+        reptime : us
+            Shot repetion time in us.
+
+        Returns
+        -------
+        Tunned Pulse: Pulse
+            The returned pulse object that is now tunned.
+        """
+        # Check pulse is a pulse
+        if type(pulse) == Delay:
+            pass
+        if type(pulse) == Detection:
+            pass
+        
+        # Get absolute central frequency
+        if hasattr(pulse,"freq"):
+            c_frq = pulse.freq.value + LO
+        elif hasattr(pulse, "init_freq") & hasattr(pulse, "BW"):
+            c_frq = pulse.init_freq.value + 0.5*pulse.BW.value + LO
+        elif hasattr(pulse, "final_freq") & hasattr(pulse, "BW"):
+            c_frq = pulse.final_freq.value - 0.5*pulse.BW.value + LO
+        elif hasattr(pulse, "init_freq") & hasattr(pulse, "final_freq"):
+            c_frq = 0.5*(pulse.final_freq.value + pulse.final_freq.value) + LO
+
+        # Find rect pulses
+
+        all_rect_pulses = list(self.pulses.keys())
+        pulse_matches = []
+        for pulse_name in all_rect_pulses:
+            # if not re.match(r"^p180_",pulse_name):
+            #     continue
+            pulse_frq = self.pulses[pulse_name].LO.value + self.pulses[pulse_name].freq.value
+            if not np.abs(pulse_frq - c_frq) < 0.01: #Within 10MHz
+                continue
+            pulse_matches.append(pulse_name)
+        
+        # Find best pi pulse
+        pi_length_best = 1e6
+        for pulse_name in pulse_matches:
+            if re.match(r"^p180_",pulse_name):
+                ps_length = int(re.search(r"p180_(\d+)",pulse_name).groups()[0])
+                if ps_length < pi_length_best:
+                    pi_length_best = ps_length
+        
+        if pi_length_best == 1e6:
+            _, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=LO, reptime=reptime)
+        else:
+            pi_pulse = self.pulses[f"p180_{pi_length_best}"]
+
+        pi2_length_best = 1e6
+        for pulse_name in pulse_matches:
+            if re.match(r"^p90_",pulse_name):
+                ps_length = int(re.search(r"p90_(\d+)",pulse_name).groups()[0])
+                if ps_length < pi2_length_best:
+                    pi2_length_best = ps_length
+        
+        if pi2_length_best == 1e6:
+            pi2_pulse, _ = self.tune_rectpulse(tp=12, B=B, LO=LO,reptime=reptime)
+        else:
+            pi2_pulse = self.pulses[f"p90_{pi2_length_best}"]
+
+
+        if mode == "amp_hahn":
+            amp_tune =HahnEchoSequence(
+                B=B, LO=LO, 
+                reptime=reptime, averages=1, shots=400,
+                pi2_pulse = pulse, pi_pulse=pi_pulse
+            )
+
+            amp_tune.pulses[0].scale.value = 0
+
+            amp_tune.addPulsesProg(
+                pulses=[0],
+                variables=['scale'],
+                axis_id=0,
+                axis=np.arange(0,0.9,0.02),
+            )
+            self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+
+            while self.isrunning():
+                time.sleep(10)
+            dataset = self.acquire_dataset()
+            scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
+            pulse.scale.value = scale
+            return pulse
+
+        elif mode == "amp_nut":
+
+            nut_tune = Sequence(
+                name="nut_tune", B=B, LO=LO, reptime=reptime,
+                averages=1,shots=400
+            )
+            nut_tune.addPulse(pulse.copy(
+                t=0, pcyc={"phases":[0],"dets":[1]}, scale=0))
+            nut_tune.addPulse(
+                pi2_pulse.copy(t=2e3,
+                               pcyc={"phases":[0, np.pi],"dets":[1, -1]},
+                               freq=c_frq-LO))
+            nut_tune.addPulse(
+                pi_pulse.copy(t=2.5e3, pcyc={"phases":[0],"dets":[1]},
+                              freq=c_frq-LO))
+            nut_tune.addPulse(Detection(t=3e3, tp=512, freq=c_frq-LO))
+
+            nut_tune.addPulsesProg(
+                pulses=[0],
+                variables=["scale"],
+                axis_id = 0,
+                axis= np.arange(0,0.9,0.02)
+            )
+            self.launch(nut_tune, "autoDEER_amptune", IFgain=1)
+
+            while self.isrunning():
+                time.sleep(10)
+            dataset = self.acquire_dataset()
+            data = correctphase(dataset.data)
+            if data[np.abs(data).argmax()] < 0:
+                data *= -1
+            if np.isclose(pulse.flipangle.value, np.pi):
+                scale = np.around(dataset.axes[0][data.argmin()],2)
+            elif np.isclose(pulse.flipangle.value, np.pi/2):
+                sign_changes = np.diff(np.sign(np.real(data)))
+                scale = np.around(dataset.axes[0][np.nonzero(sign_changes)[0][0]],2)
+            else:
+                raise RuntimeError("Target pulse can only have a flip angle of either: ",
+                                "pi or pi/2.")
+            pulse.scale.value = scale
+        
+            return pulse
+    
+    def tune(self,*, sequence=None, mode="amp_hahn", LO=None, gyro=None):
+
+        if mode == "rect_tune":
             if LO is None:
                 raise ValueError("LO must be given for rect_tune")
             if gyro is None:
@@ -168,8 +366,12 @@ class ETH_awg_interface:
             self.pulses[f"p180_{tp*2}"] = amp_tune.pulses[1].copy(
                 scale=scale, LO=amp_tune.LO)
         
-        elif type == "amp_hahn":
+        elif mode == "amp_hahn":
             for pulse in sequence.pulses:
+                if type(pulse) == Delay:
+                    continue
+                if type(pulse) == Detection:
+                    continue
 
                 all_pulses = list(self.pulses.keys())
                 pulse_matches = []
@@ -194,6 +396,8 @@ class ETH_awg_interface:
                     reptime=sequence.reptime.value, averages=1, shots=400,
                     pi2_pulse = pulse, pi_pulse=pi_pulse
                 )
+        
+                amp_tune.pulses[0].scale.value = 0
 
                 amp_tune.addPulsesProg(
                     pulses=[0],
@@ -208,7 +412,7 @@ class ETH_awg_interface:
                     time.sleep(10)
                 dataset = self.acquire_dataset()
                 scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
-                pulse.scale = scale
+                pulse.scale.value = scale
 
             return sequence
                     

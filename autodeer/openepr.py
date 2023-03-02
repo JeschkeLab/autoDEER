@@ -1056,6 +1056,11 @@ class Pulse:
             else:
                 setattr(new_pulse,arg,kwargs[arg])
         
+        for arg in vars(new_pulse):
+            attr = getattr(new_pulse,arg)
+            if type(attr) is Parameter and getattr(new_pulse,arg).progressive:
+                getattr(new_pulse,arg).remove_progression()
+                
         return new_pulse
         
 

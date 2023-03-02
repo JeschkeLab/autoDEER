@@ -1,5 +1,5 @@
 from autodeer.openepr import dataset
-from autodeer import std_deer_analysis
+from autodeer import DEERanalysis
 import time
 import numpy as np
 from deerlab.utils import der_snr
@@ -127,7 +127,7 @@ class DEERCriteria(Criteria):
             MNR_threshold = 50
 
         def test_func(data: dataset):
-            fit, _, _ = std_deer_analysis(
+            fit, _, _ = DEERanalysis(
                 data.axes/1000 - tau1, data.data,
                 tau1, tau2, tau3, num_points=100,
                 Compactness=True, Precision="Speed", plot=False)

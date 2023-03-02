@@ -353,7 +353,8 @@ class HahnEchoSequence(Sequence):
             ))
 
         if hasattr(self, "pi_pulse"):
-            self.addPulse(self.pi_pulse.copy(t=tau))
+            self.addPulse(self.pi_pulse.copy(
+                t=tau, pcyc={"phases":[0], "dets": [1]}))
         else:
             self.addPulse(RectPulse( # Pump 1 pulse
                 t=tau, tp=tp, freq=0, flipangle=np.pi
