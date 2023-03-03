@@ -479,11 +479,6 @@ def calc_optimal_deer_frqs(
         fs_data = fieldsweep.data
     fs_data /= fs_data.max()
 
-    if det_frq is not None:
-        fieldsweep.calc_gyro(det_frq)
-    else:
-        det_frq = fieldsweep.det_frq
-    
     fs_axis = fieldsweep.fs_x
 
     def calc_optimal(pump_frq, exc_frq):
@@ -502,9 +497,15 @@ def calc_optimal_deer_frqs(
         num_exc = np.trapz(
             fs_new * interp(f_axis+exc_frq, f_exc, new_axis) 
             - fs_new * dead_spins[1], new_axis)
-
-        perc_pump = num_pump/total
-        perc_exc = num_exc/total
+        if np.isnan(num_exc):
+            raise RuntimeError
+        if np.isnan(num_pump):
+            raise RuntimeError
+        if total== 0:
+            raise RuntimeError
+        
+        perc_pump = np.abs(num_pump)/total
+        perc_exc = np.abs(num_exc)/total
         return calc_optimal_perc(perc_pump, perc_exc)
 
     X = np.linspace(-0.3, 0.3, 100)
@@ -512,7 +513,7 @@ def calc_optimal_deer_frqs(
     optimal_2d = [calc_optimal(y, x) for y in X for x in Y]
 
     optimal_2d = np.abs(optimal_2d).reshape(100, 100)
-    max_pos = np.unravel_index(optimal_2d.argmax(), (100, 100))
+    max_pos = np.unravel_index(np.nanargmax(optimal_2d), (100, 100))
     print(
         f"Maximum achievable of {optimal_2d.max()*100:.2f}% optimal at"
         f"{X[max_pos[0]]*1e3:.1f}MHz pump position and" 
@@ -522,7 +523,10 @@ def calc_optimal_deer_frqs(
 
 def calc_optimal_perc(pump, exc):
     base_value = 2/3 * np.sqrt(1/3)
-    return (pump * np.sqrt(exc)) / base_value
+    perc = (pump * np.sqrt(exc)) / base_value
+    if np.isnan(perc):
+        raise RuntimeError
+    return perc 
 
 
 def interp(x1, y1, xnew):
