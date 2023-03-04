@@ -441,9 +441,54 @@ def remove_echo(
 
 
 # =============================================================================
+def calc_overlap_frac(fieldsweep, pump_pulse, exc_pulse):
+    
+    f_axis,f_pump = pump_pulse._calc_fft(pad=1e4)
+    f_pump = np.abs(f_pump)
+    f_pump /= f_pump.max()
+    
+    _, f_exc = exc_pulse._calc_fft(pad=1e4)
+    f_exc = np.abs(f_exc)
+    f_exc /= f_exc.max()
+
+    if np.iscomplexobj(fieldsweep.data):
+        fs_data = correctphase(fieldsweep.data)
+    else:
+        fs_data = fieldsweep.data
+    fs_data /= fs_data.max()
+
+    fs_axis = fieldsweep.fs_x
+
+    axis_min = np.fix(fieldsweep.fs_x.min()*1e2)/1e2
+    axis_max = np.fix(fieldsweep.fs_x.max()*1e2)/1e2
+    new_axis = np.linspace(axis_min, axis_max, 200)
+    fs_new = interp(fs_axis, fs_data, new_axis)
+    dead_spins = calc_overlap_region(
+        f_axis, f_pump, f_axis, f_exc,
+        new_axis=new_axis)
+
+    total = np.trapz(fs_new, new_axis)
+    num_pump = np.trapz(
+        fs_new * interp(f_axis, f_pump, new_axis)
+        - fs_new * dead_spins[1], new_axis)
+    num_exc = np.trapz(
+        fs_new * interp(f_axis, f_exc, new_axis) 
+        - fs_new * dead_spins[1], new_axis)
+    if np.isnan(num_exc):
+        raise RuntimeError
+    if np.isnan(num_pump):
+        raise RuntimeError
+    if total== 0:
+        raise RuntimeError
+    
+    perc_pump = np.abs(num_pump)/total
+    perc_exc = np.abs(num_exc)/total
+    return calc_optimal_perc(perc_pump, perc_exc)
+
+
 
 def calc_optimal_deer_frqs(
-        fieldsweep, pump_pulse, exc_pulse):
+        fieldsweep, pump_pulse, exc_pulse, pump_limits=None, exc_limits=None):
     """Calculates the necessary frequency shift to cause the maximal amount 
     of pump-exc overlap.
 
@@ -456,12 +501,18 @@ def calc_optimal_deer_frqs(
         The pump pulse object.
     exc_pulse : Pulse
         The excitation pulse object.
+    pump_limits : tuple, optional
+        The lower and upper limit of the pump frequency in GHz, by default 
+        +- 0.3GHz
+    exc_limits : tuple, optional
+        The lower and upper limit of the pump frequency in GHz, by default 
+        +- 0.3GHz
 
     Returns
     -------
-    float
+    pump frequency shift: float
         Frequency shift to make optimal of pump pulse in GHz.
-    float
+    exc frequency shift: float
         Frequency shift to make optimal of excitation pulse in GHz.
     """
     
@@ -508,18 +559,24 @@ def calc_optimal_deer_frqs(
         perc_exc = np.abs(num_exc)/total
         return calc_optimal_perc(perc_pump, perc_exc)
 
-    X = np.linspace(-0.3, 0.3, 100)
-    Y = np.linspace(-0.3, 0.3, 100)
-    optimal_2d = [calc_optimal(y, x) for y in X for x in Y]
+    if pump_limits is not None:
+        Pump_offset = np.linspace(pump_limits[0], pump_limits[1], 100)
+    else:
+        Pump_offset = np.linspace(-0.3, 0.3, 100)
+    if exc_limits is not None:
+        Exc_offset = np.linspace(exc_limits[0], exc_limits[1], 100)
+    else:
+        Exc_offset = np.linspace(-0.3, 0.3, 100)
+    optimal_2d = np.array([[calc_optimal(p, e) for p in Pump_offset] for e in Exc_offset])
 
-    optimal_2d = np.abs(optimal_2d).reshape(100, 100)
-    max_pos = np.unravel_index(np.nanargmax(optimal_2d), (100, 100))
+    # optimal_2d = np.abs(optimal_2d).reshape(100, 100)
+    max_pos = np.unravel_index(np.nanargmax(optimal_2d), (100,100))
     print(
         f"Maximum achievable of {optimal_2d.max()*100:.2f}% optimal at"
-        f"{X[max_pos[0]]*1e3:.1f}MHz pump position and" 
-        f" {Y[max_pos[1]]*1e3:.1f}MHz exc position.")
+        f"{Pump_offset[max_pos[1]]*1e3:.1f}MHz pump position and" 
+        f" {Exc_offset[max_pos[0]]*1e3:.1f}MHz exc position.")
 
-    return [X[max_pos[0]], Y[max_pos[1]]]
+    return [Pump_offset[max_pos[1]], Exc_offset[max_pos[0]]]
 
 def calc_optimal_perc(pump, exc):
     base_value = 2/3 * np.sqrt(1/3)
