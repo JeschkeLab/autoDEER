@@ -6,7 +6,7 @@ import scipy.fft as fft
 from scipy.io import savemat
 import os
 from autodeer import __version__
-from autodeer.utils import build_table
+from autodeer.utils import build_table, sop
 import copy
 import time
 from itertools import product
@@ -31,7 +31,7 @@ class dataset:
             A dictionary of experimental parameters, by default None
         """
         if type(axes) != list:
-            self.axes = [self.axes]
+            self.axes = [axes]
         else:
             self.axes = axes
         self.data = data
@@ -786,7 +786,7 @@ class Pulse:
     Represents a general experimental pulse.
     """
 
-    def __init__(self, *, tp, t, scale=None, flipangle=None, pcyc=[0],
+    def __init__(self, *, tp, t=None, scale=None, flipangle=None, pcyc=[0],
                  name=None, **kwargs) -> None:
         """The class for a general pulse.
 
@@ -895,7 +895,96 @@ class Pulse:
         axis_fft = fft.fftshift(fft.fftfreq(n, dt))
 
         return axis_fft, pulse_fft
-    
+
+    def exciteprofile(self, freqs=None):
+        """Excitation profile
+
+        Generates the exciatation profiles for this pulse.
+
+        This function is ported from EasySpin 
+        (https://easyspin.org/easyspin/documentation/sop.html) [1-2],
+        and based upon the method from Gunnar Jeschke, Stefan Pribitzer and
+        Andrin Doll[3].
+
+        References:
+        +++++++++++
+        [1] Stefan Stoll, Arthur Schweiger
+        EasySpin, a comprehensive software package for spectral simulation and analysis in EPR
+        J. Magn. Reson. 178(1), 42-55 (2006)
+        
+        [2] Stefan Stoll, R. David Britt
+        General and efficient simulation of pulse EPR spectra
+        Phys. Chem. Chem. Phys. 11, 6614-6625 (2009)
+
+        [3] Jeschke, G., Pribitzer, S. & DollA. 
+        Coherence Transfer by Passage Pulses in Electron Paramagnetic 
+        Resonance Spectroscopy. 
+        J. Phys. Chem. B 119, 13570-13582 (2015)
+
+
+        Parameters
+        ----------
+        
+        freqs: np.ndarray, optional
+            The frequency axis. Caution: A larger number of points will linearly
+            increase computation time.
+        
+        Returns
+        -------
+
+        Mx: np.ndarray
+            The magentisation in the X direction.
+        My: np.ndarray
+            The magentisation in the Y direction.
+        Mz: np.ndarray
+            The magentisation in the Z direction.
+        """
+        eye = np.identity(2)
+        # offsets = np.arange(-2*BW,2*BW,0.002)
+
+        if freqs is None:
+            fxs, fs = self._calc_fft()
+            fs = np.abs(fs)
+            points = np.argwhere(fs>(fs.max()*0.5))[:,0]
+            BW = fxs[points[-1]] - fxs[points[0]]
+            c_freq = np.mean([fxs[points[-1]], fxs[points[0]]])
+            offsets = np.linspace(-2*BW, 2*BW, 100) + c_freq
+        else:
+            offsets = freqs
+
+        t = self.ax
+        nOffsets = offsets.shape[0]
+        amp_factor = self.flipangle.value / (2 * np.pi * np.trapz(self.AM,t))
+        ISignal = np.real(self.complex) * amp_factor
+        QSignal = np.imag(self.complex) * amp_factor
+        npoints = ISignal.shape[0]
+        Sx = sop([1/2],"x")
+        Sy = sop([1/2],"y")
+        Sz = sop([1/2],"z")
+        Density0 = -Sz
+        Mag = np.zeros((3,nOffsets), dtype=np.complex128)
+        for iOffset in range(0,nOffsets):
+            UPulse = eye
+            Ham0 = offsets[iOffset]*Sz
+
+            for it in range(0,npoints):
+                Ham = ISignal[it] * Sx + QSignal[it] * Sy + Ham0
+                M = -2j * np.pi * (t[1]-t[0]) * Ham
+                q = np.sqrt(M[0,0] ** 2 - np.abs(M[0,1]) ** 2)
+                if np.abs(q) < 1e-10:
+                    dU = eye + M
+                else:
+                    dU = np.cosh(q)*eye + (np.sinh(q)/q)*M
+                UPulse = dU @ UPulse
+
+            Density = UPulse @ Density0 @ UPulse.conjugate().T
+            Mag[0, iOffset] = -2 * (Sx @ Density.T).sum().real
+            Mag[1, iOffset] = -2 * (Sy @ Density.T).sum().real
+            Mag[2, iOffset] = -2 * (Sz @ Density.T).sum().real
+        
+        return Mag[0,:], Mag[1,:], Mag[2,:] 
+
+
     def plot_fft(self):
                 
         ax, ft = self._calc_fft(1e4)
@@ -1347,15 +1436,26 @@ class SincPulse(Pulse):
     Represents a sinc shaped monochromatic pulse.
     """
 
-    def __init__(self, *, tp, scale, freq, order, t=None, window=None) -> None:
-        Pulse.__init__(self, tp=tp, scale=scale, t=t)
+    def __init__(self, *, tp, freq, order, window=None, **kwargs) -> None:
+        Pulse.__init__(self, tp=tp, **kwargs)
         self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
 
         self.order = Parameter("Order", order, None, "The sinc pulse order")
         self.window = Parameter(
             "Window", window, None, "The type of window function")
 
+        self._buildFMAM(self.func)
         pass
+
+
+    def func(self, ax):
+        nx = ax.shape[0]
+        FM = np.zeros(nx) + self.freq.value
+        AM = np.sinc(self.order.value * ax)
+
+        return AM, FM
+        
+
 
 
 # =============================================================================

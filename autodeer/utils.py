@@ -1,5 +1,6 @@
 import re
-
+import numpy as np
+from scipy.sparse import bsr_array
 def build_table(source, params, params_widths):
     string = ""
     params_used = []
@@ -51,4 +52,72 @@ def build_table(source, params, params_widths):
     return string
 
 
+def sop(spins, comps):
+    """Spin Operator Matricies.
 
+    This function is ported from EasySpin (https://easyspin.org/easyspin/documentation/sop.html) 
+
+    References:
+    +++++++++++
+    [1] Stefan Stoll, Arthur Schweiger
+    EasySpin, a comprehensive software package for spectral simulation and analysis in EPR
+    J. Magn. Reson. 178(1), 42-55 (2006)
+    
+    [2] Stefan Stoll, R. David Britt
+    General and efficient simulation of pulse EPR spectra
+    Phys. Chem. Chem. Phys. 11, 6614-6625 (2009)
+
+    Parameters
+    ----------
+    spins : list
+        A list of each spin and its spin qunatum number
+    comps : str
+        The type of spin operator matrix to create. Options are: x,y,z,+,-,e
+    """
+    
+    num_spins = len(spins)
+    OP=np.array([1])
+
+    for spin_num in range(num_spins):
+        I = spins[spin_num]
+        sop_type = comps[spin_num]
+        n = int(I * 2 + 1)
+        if sop_type == 'x':
+            m = np.arange(1,n)
+            r = np.hstack((m-1,m))
+            c = np.hstack((m,m-1))
+            dia = 0.5 * np.sqrt(m*m[::-1])
+            val = np.hstack((dia,dia))
+        elif sop_type == 'y':
+            m = np.arange(1,n)
+            r = np.hstack((m-1,m))
+            c = np.hstack((m,m-1))
+            dia = -0.5*1j * np.sqrt(m*m[::-1])
+            val = np.hstack((dia,dia))
+        elif sop_type == 'z':
+            m = np.arange(1, n+ 1)
+            r = m - 1
+            c = m - 1
+            val = -m + I + 1
+        elif sop_type == '+':
+            m = np.arange(1,n)
+            r = m -1
+            c = m
+            val = np.sqrt(m * m[::-1])
+        elif  sop_type == '-':
+            m = np.arange(1,n)
+            r = m + 1
+            c = m
+            val = np.sqrt(m * m[::-1])
+        elif  sop_type == 'e':
+            m = np.arange(1,n+1)
+            r = m-1
+            c = m-1
+            val = np.ones(n)
+        else:
+            raise ValueError(f"Incorect specification of comps: ",
+                             f"{sop_type} is not a valid input")
+        M_ = bsr_array((val, (r,c)), shape=(n,n)).toarray()
+        OP = np.kron(OP, M_)
+
+    return OP
