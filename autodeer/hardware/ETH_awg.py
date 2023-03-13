@@ -1,6 +1,6 @@
 import matlab.engine
 from autodeer import Pulse, Delay, Detection, Sequence, RectPulse, ChirpPulse, HSPulse
-from autodeer import HahnEchoSequence
+from autodeer import HahnEchoSequence, Interface
 import numpy as np
 import os
 import re
@@ -9,7 +9,7 @@ import time
 from deerlab import correctphase
 
 
-class ETH_awg_interface:
+class ETH_awg_interface(Interface):
     """
     Represents the interface for connecting to Andrin Doll style spectrometers.
     """
@@ -68,7 +68,7 @@ class ETH_awg_interface:
         self.engine = matlab.engine.connect_matlab(session)
         self.workspace = self.engine.workspace
 
-    def acquire_dataset(self) -> dict:
+    def acquire_dataset(self, options={}) -> dict:
         """ Acquire and return the current or most recent dataset.
 
         Returns
@@ -100,7 +100,7 @@ class ETH_awg_interface:
         
         for i in range(0, 10):
             try:
-                data = eprload(path)
+                data = eprload(path, options=options)
             except OSError:
                 time.sleep(10)
             else:
@@ -622,48 +622,4 @@ class ETH_awg_interface:
         """ Stops the current experiment
         """
         self.engine.dig_interface('terminate', nargout=0)
-        pass
-
-    def terminate_at(self, criterion, test_interval=10):
-        """Terminates the experiment upon a specific condition being
-        satisified. 
-
-        Parameters
-        ----------
-        criterion : _type_
-            The criteria to be tested.
-        test_interval : int, optional
-            How often should the criteria be tested in minutes, by default 10.
-        """
-
-        test_interval_seconds = test_interval * 60
-        condition = False
-        last_scan = 0
-
-        start_time = time.time()
-
-        while not condition:
-            data = self.acquire_dataset()
-            try:
-                nAvgs = data.nAvgs.value
-            except AttributeError:
-                print("WARNING: Dataset missing number of averages(nAvgs)!")
-                nAvgs = 1
-            finally:
-                if nAvgs < 1:
-                    time.sleep(30)  # Replace with single scan time
-                    continue
-                elif nAvgs <= last_scan:
-                    time.sleep(30)
-                    continue
-
-            condition = criterion.test(data)
-
-            if not condition:
-                end_time = time.time()
-
-                if (end_time - start_time) < test_interval_seconds:
-                    time.sleep(test_interval_seconds - (end_time - start_time))
-
-        self.terminate()
         pass

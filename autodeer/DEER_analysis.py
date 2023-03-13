@@ -117,7 +117,6 @@ def DEERanalysis(
     else:
         pathways = None
     if tau3 is not None:
-        print("5pulse")
         pulses = 5
         experimentInfo = dl.ex_fwd5pdeer(tau1, tau2, tau3, pathways=pathways)
         if pathways is None:
@@ -178,7 +177,7 @@ def DEERanalysis(
                  regparamrange=regparamrange, bootcores=bootcores)
 
     mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
-    ROI = IdentifyROI(fit.P, r, criterion=0.90, method="int")
+    ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
 
     fit.mask = mask
 

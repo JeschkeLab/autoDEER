@@ -18,7 +18,8 @@ class Criteria:
 
 class TimeCriteria(Criteria):
     def __init__(
-            self, name: str, end_time: float, description: str = None) -> None:
+            self, name: str, end_time: float, description: str = None,
+            ) -> None:
         """Criteria testing for a specific finishing time. The finishing time 
         is given as absolute time in the locale of the computer, it is *not* 
         how the long the measurment continues for. 
@@ -33,7 +34,7 @@ class TimeCriteria(Criteria):
             _description_, by default None
         """
 
-        def test_func(Data: dataset):
+        def test_func(Data: dataset, verbosity=0):
             now = time.time()
 
             return now > end_time
@@ -68,7 +69,7 @@ class SNRCriteria(Criteria):
         2008, p5.4
         """
 
-        def test_func(data: dataset):
+        def test_func(data: dataset, verbosity=0):
             # Normalise data
             norm_data = data.data / data.data.max()
             std = der_snr(np.abs(norm_data))
@@ -126,14 +127,17 @@ class DEERCriteria(Criteria):
         else:
             MNR_threshold = 50
 
-        def test_func(data: dataset):
+        def test_func(data: dataset, verbosity=0):
             fit, _, _ = DEERanalysis(
-                data.axes/1000 - tau1, data.data,
+                data.axes[0]/1000 - tau1, data.data,
                 tau1, tau2, tau3, num_points=100,
-                Compactness=True, Precision="Speed", plot=False)
+                compactness=True, precision="Speed", plot=False)
             test = True
             if fit.MNR < MNR_threshold:
                 test = False
+            
+            if verbosity > 1:
+                print(f"Test: {test}\t - MNR:{fit.MNR}")
             
             return test
         

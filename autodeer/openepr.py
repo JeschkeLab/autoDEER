@@ -171,7 +171,7 @@ class Interface:
         """
         pass
 
-    def terminate_at(self, criterion, test_interval=10):
+    def terminate_at(self, criterion, test_interval=10, verbosity=0):
         """Terminates the experiment upon a specific condition being
         satisified. 
 
@@ -183,29 +183,41 @@ class Interface:
             How often should the criteria be tested in minutes, by default 10.
         """
 
+
+
         test_interval_seconds = test_interval * 60
         condition = False
+        last_scan = 0
 
-        start_time = time.time()
 
         while not condition:
+            start_time = time.time()
             data = self.acquire_dataset()
             try:
                 nAvgs = data.nAvgs.value
             except AttributeError:
                 print("WARNING: Dataset missing number of averages(nAvgs)!")
                 nAvgs = 1
-            
-            if nAvgs < 1:
-                time.sleep(30)
-                continue
-
-            condition = criterion.test(data)
+            finally:
+                if nAvgs < 1:
+                    time.sleep(30)  # Replace with single scan time
+                    continue
+                elif nAvgs <= last_scan:
+                    time.sleep(30)
+                    continue    
+            last_scan = nAvgs
+            if verbosity > 0:
+                print("Testing")
+            condition = criterion.test(data, verbosity)
 
             if not condition:
+                if not self.isrunning():
+                    msg = "Experiments has finished before criteria met."
+                    raise RuntimeError(msg)
                 end_time = time.time()
-
                 if (end_time - start_time) < test_interval_seconds:
+                    if verbosity > 0:
+                        print("Sleeping")
                     time.sleep(test_interval_seconds - (end_time - start_time))
 
         self.terminate()
