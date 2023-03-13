@@ -487,7 +487,8 @@ def calc_overlap_frac(fieldsweep, pump_pulse, exc_pulse):
 
 
 def calc_optimal_deer_frqs(
-        fieldsweep, pump_pulse, exc_pulse, pump_limits=None, exc_limits=None):
+        fieldsweep, pump_pulse, exc_pulse, pump_limits=None, exc_limits=None,
+        method="density", ):
     """Calculates the necessary frequency shift to cause the maximal amount 
     of pump-exc overlap.
 
@@ -506,6 +507,13 @@ def calc_optimal_deer_frqs(
     exc_limits : tuple, optional
         The lower and upper limit of the pump frequency in GHz, by default 
         +- 0.3GHz
+    method: str, optional
+        Which method to calculate the excitation profiles. Either using
+        a density matrix approach (slower, more accurate) or an FFT approach 
+        (faster, less accurate). Options are "density" or "fft", by default
+        "density"
+    prof_res: float, optional
+        The resolution of the excitation profile in MHz, by default 1.
 
     Returns
     -------
@@ -514,14 +522,21 @@ def calc_optimal_deer_frqs(
     exc frequency shift: float
         Frequency shift to make optimal of excitation pulse in GHz.
     """
-    
-    f_axis,f_pump = pump_pulse._calc_fft(pad=1e4)
-    f_pump = np.abs(f_pump)
-    f_pump /= f_pump.max()
-    
-    _, f_exc = exc_pulse._calc_fft(pad=1e4)
-    f_exc = np.abs(f_exc)
-    f_exc /= f_exc.max()
+
+    if method == "fft":
+        f_axis,f_pump = pump_pulse._calc_fft(pad=1e4)
+        f_pump = np.abs(f_pump)
+        f_pump /= f_pump.max()
+        
+        _, f_exc = exc_pulse._calc_fft(pad=1e4)
+        f_exc = np.abs(f_exc)
+        f_exc /= f_exc.max()
+    elif method == "density":
+        f_axis = np.arange(-1,1,0.005)
+        _,_,f_pump = pump_pulse.exciteprofile(f_axis)
+        f_pump = (f_pump + 1) * -0.5
+        _,_,f_exc = exc_pulse.exciteprofile(f_axis)
+        f_exc = (f_exc + 1) * -0.5
 
     if np.iscomplexobj(fieldsweep.data):
         fs_data = correctphase(fieldsweep.data)
