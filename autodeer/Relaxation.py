@@ -3,19 +3,19 @@ import numpy as np
 from deerlab import noiselevel
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-from autodeer.openepr import dataset, Sequence
+from autodeer.classes import Dataset, Sequence
 
 # ===========================================================================
 
 
 class CarrPurcellAnalysis:
 
-    def __init__(self, dataset: dataset, sequence: Sequence = None) -> None:
+    def __init__(self, dataset: Dataset, sequence: Sequence = None) -> None:
         """Analysis and calculation of Carr Purcell decay. 
 
         Parameters
         ----------
-        dataset : dataset
+        dataset : Dataset
             _description_
         """
         self.axis = dataset.axes[0]

@@ -3,7 +3,7 @@ import time
 import os
 import yaml
 import XeprAPI
-from autodeer.openepr import dataset
+from autodeer import dataset
 from scipy.optimize import minimize_scalar
 import logging
 import re
@@ -13,7 +13,7 @@ hw_log = logging.getLogger('hardware.Xepr')
 # ============================================================================
 
 
-class xepr_api:
+class XeprApiLink:
     def __init__(self, config_file: str = None) -> None:
         self.Xepr = None
         self.cur_exp = None

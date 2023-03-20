@@ -2,7 +2,7 @@ import os
 import deerlab as dl
 import numpy as np
 import logging
-from autodeer import dataset, Parameter
+from autodeer.classes import Dataset, Parameter
 from autodeer.home_built_func import uwb_load
 from scipy.io import loadmat
 
@@ -11,7 +11,7 @@ log = logging.getLogger('core.Tools')
 
 def eprload(
         path: str, experiment: str = None, type: str = None,
-        **kwargs) -> dataset:
+        **kwargs) -> Dataset:
     """ A general versions of eprload
 
     Parameters
@@ -25,7 +25,7 @@ def eprload(
 
     Returns
     -------
-    dataset
+    Dataset
         _description_
 
     Raises
@@ -71,12 +71,12 @@ def eprload(
 
         if full_output is False:    
             t, V = dl.deerload(path, plot=False, full_output=full_output)
-            return dataset(t, V)
+            return Dataset(t, V)
 
         else:
             t, V, Params = dl.deerload(
                 path, plot=False, full_output=full_output)
-            return dataset(t, V, Params)
+            return Dataset(t, V, Params)
 
     elif type == 'TXT':
         if 'full_output' in kwargs:
@@ -98,7 +98,7 @@ def eprload(
         axes = uwb_output.dta_x
         data = uwb_output.dta_ev
 
-        data = dataset(axes, data, Params)
+        data = Dataset(axes, data, Params)
         data.add_variable(Parameter(name='nAvgs', value=uwb_output.nAvgs))
         if hasattr(uwb_output,"dta_scans"):
             data.scans = uwb_output.dta_scans

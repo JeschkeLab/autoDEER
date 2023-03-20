@@ -1,4 +1,4 @@
-from autodeer import Sequence, RectPulse, Pulse, ChirpPulse, \
+from autodeer.classes import Sequence, RectPulse, Pulse, ChirpPulse, \
     Detection, Delay, Parameter
 import numpy as np
 

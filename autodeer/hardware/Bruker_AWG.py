@@ -58,7 +58,7 @@ class BrukerAWG(Interface):
         self.api.connect()
         return super().connect()
 
-    def acquire_dataset(self) -> dataset:
+    def acquire_dataset(self) -> Dataset:
         return self.api.acquire_dataset()
     
     def launch(self, sequence, savename: str, start=True):

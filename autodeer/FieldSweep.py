@@ -1,17 +1,17 @@
 from matplotlib.figure import Figure
 import numpy as np
 import matplotlib.pyplot as plt
-from autodeer.openepr import dataset
+from autodeer.classes import Dataset
 
 
 class FieldSweepAnalysis():
 
-    def __init__(self, dataset: dataset) -> None:
+    def __init__(self, dataset: Dataset) -> None:
         """Analysis and calculation of FieldSweep Experiment. 
 
         Parameters
         ----------
-        dataset : dataset
+        dataset : Dataset
             _description_
         """
         self.axis = dataset.axes[0]

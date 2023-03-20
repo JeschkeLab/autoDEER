@@ -13,7 +13,7 @@ from itertools import product
 
 
 # =============================================================================
-class dataset:
+class Dataset:
     """
     Represents an experimental dataset.
     """
@@ -144,7 +144,7 @@ class Interface:
     def connect(self) -> None:
         pass
 
-    def acquire_dataset(self) -> dataset:
+    def acquire_dataset(self) -> Dataset:
         """
         Acquires the dataset.
         """
