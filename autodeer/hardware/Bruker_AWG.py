@@ -1,4 +1,4 @@
-from autodeer.openepr import Interface, dataset, Sequence, Delay, Detection
+from autodeer import Interface, dataset, Sequence, Delay, Detection
 from autodeer.hardware.xepr_api_adv import xepr_api
 from autodeer.hardware.Bruker_tools import PulseSpel, run_general
 from autodeer.sequences import HahnEchoSequence

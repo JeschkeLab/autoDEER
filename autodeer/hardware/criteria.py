@@ -1,5 +1,4 @@
-from autodeer.openepr import dataset
-from autodeer import DEERanalysis
+from autodeer import dataset, DEERanalysis
 import time
 import numpy as np
 from deerlab.utils import der_snr
@@ -136,7 +135,7 @@ class DEERCriteria(Criteria):
             if fit.MNR < MNR_threshold:
                 test = False
             
-            if verbosity > 1:
+            if verbosity > 0:
                 print(f"Test: {test}\t - MNR:{fit.MNR}")
             
             return test

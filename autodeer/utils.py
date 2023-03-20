@@ -1,6 +1,7 @@
 import re
 import numpy as np
 from scipy.sparse import bsr_array
+
 def build_table(source, params, params_widths):
     string = ""
     params_used = []

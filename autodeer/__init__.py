@@ -9,6 +9,6 @@ from .home_built_func import get_deer, find_AWG_deer_files, uwb_load,\
 from .DEER_analysis import DEERanalysis, DEERanalysis_plot, IdentifyROI,\
     calc_optimal_deer_frqs, plot_optimal_deer_frqs
 from .Relaxation import CarrPurcellAnalysis
-from .openepr import *
+from .classes import *
 from .sequences import *
 

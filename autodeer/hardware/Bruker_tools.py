@@ -1,4 +1,4 @@
-import autodeer.openepr as autoEPR
+import autodeer as ad
 import numpy as np
 import re
 import time
@@ -39,9 +39,9 @@ class PSPhaseCycle:
     def _MPFU(self, sequence, MPFU):
         BPhaseCycles = []
         for i,pulse in enumerate(sequence.pulses):
-            if type(pulse) == autoEPR.Delay:
+            if type(pulse) == ad.Delay:
                 continue
-            elif type(pulse) == autoEPR.Detection:
+            elif type(pulse) == ad.Detection:
                 continue
             dict = {}
             dict["Pulse"] = i
@@ -135,7 +135,7 @@ class PSPhaseCycle:
 
 class PSparvar:
 
-    def __init__(self, sequence: autoEPR.Sequence, id) -> None:
+    def __init__(self, sequence: ad.Sequence, id) -> None:
 
         progTable = sequence.progTable
         progTable_n = len(progTable["EventID"])
@@ -155,7 +155,7 @@ class PSparvar:
                 vec = progTable["axis"][i]
                 parvar["variables"].append(var)
                 parvar["vec"].append(vec)
-                if type(sequence.pulses[pulse_num]) is autoEPR.Delay:
+                if type(sequence.pulses[pulse_num]) is ad.Delay:
                     parvar["types"].append("d")
                 else:
                     parvar["types"].append("p")
@@ -224,10 +224,10 @@ class PulseSpel:
         
         # Build hash of initial pulses
         for id, pulse in enumerate(sequence.pulses):
-            if type(pulse) == autoEPR.Detection:
+            if type(pulse) == ad.Detection:
                 self.var_hash[id] = "pg"
                 self._addDef(f"pg = {int(pulse.tp.value)}")
-            elif type(pulse) == autoEPR.Delay:
+            elif type(pulse) == ad.Delay:
                 str = self._new_delay(id)
                 self._addDef(f"{str} = {int(pulse.tp.value)}")
             else:
@@ -272,9 +272,9 @@ class PulseSpel:
             self.pcyc_hash = {}
             id = -1
             for pulse_num,pulse in enumerate(sequence.pulses):
-                if (type(pulse) is autoEPR.Delay):
+                if (type(pulse) is ad.Delay):
                     continue
-                elif (type(pulse) is autoEPR.Detection):
+                elif (type(pulse) is ad.Detection):
                     continue
                 id += 1
                 awg_id = self._addAWGPulse(sequence,pulse_num, id)
@@ -304,11 +304,11 @@ class PulseSpel:
                 pulse_str = self.var_hash[id]
             if id in self.pcyc_hash:
                 self._addExp(f"{pulse_str} [{self.pcyc_hash[id]}]")
-            elif type(pulse) == autoEPR.Detection:
+            elif type(pulse) == ad.Detection:
                 self._addExp(f"d0\nacq [sg1]")
             else:
                 self._addExp(f"{pulse_str}")
-        # if type(pulse) == autoEPR.Delay:
+        # if type(pulse) == ad.Delay:
         #     self._addExp(f"{}")
         # else:
         #     self._addExp(f"{} [{}]")
@@ -381,7 +381,7 @@ class PulseSpel:
     def _addAWGPulse(self, sequence, pulse_num, id):
         awg_id = id
         pulse=sequence.pulses[pulse_num]
-        if type(pulse) is autoEPR.RectPulse:
+        if type(pulse) is ad.RectPulse:
             shape = 0
             init_freq = pulse.freq.value
             final_freq = init_freq
@@ -435,9 +435,9 @@ class PulseSpel:
     def _check_sequence(self, sequence):
 
         for i, pulse in enumerate(sequence.pulses):
-            if (type(pulse) is not autoEPR.Delay):
+            if (type(pulse) is not ad.Delay):
                 continue
-            elif (type(pulse) is not autoEPR.Detection):
+            elif (type(pulse) is not ad.Detection):
                 continue
             elif pulse.scale is None:
                 raise RuntimeError(f"Missing scale in pulse {i}")
