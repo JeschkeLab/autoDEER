@@ -3,7 +3,7 @@ import deerlab as dl
 import numpy as np
 import logging
 from autodeer.classes import Dataset, Parameter
-from autodeer.home_built_func import uwb_load
+from autodeer.hardware.ETH_awg_load import uwb_load
 from scipy.io import loadmat
 
 log = logging.getLogger('core.Tools')
@@ -90,20 +90,20 @@ def eprload(
     elif type == 'MAT':
 
         Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
-        Params = Matfile[Matfile["expname"]]
+        # Params = Matfile[Matfile["expname"]]
         if "options" in kwargs:
             uwb_output = uwb_load(Matfile, kwargs["options"])
         else:
             uwb_output = uwb_load(Matfile)
-        axes = uwb_output.dta_x
-        data = uwb_output.dta_ev
+        # axes = uwb_output.dta_x
+        # data = uwb_output.dta_ev
 
-        data = Dataset(axes, data, Params)
-        data.add_variable(Parameter(name='nAvgs', value=uwb_output.nAvgs))
-        if hasattr(uwb_output,"dta_scans"):
-            data.scans = uwb_output.dta_scans
-        return data 
-        
+        # data = Dataset(axes, data, Params)
+        # data.add_variable(Parameter(name='nAvgs', value=uwb_output.nAvgs))
+        # if hasattr(uwb_output,"dta_scans"):
+        #     data.scans = uwb_output.dta_scans
+        # return data 
+        return uwb_output        
 
 def progress_bar(progress, post=""):
 

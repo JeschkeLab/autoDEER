@@ -1,11 +1,9 @@
-from autodeer import Interface, dataset, Sequence, Delay, Detection
-from autodeer.hardware.xepr_api_adv import xepr_api
+from autodeer.classes import Interface, Dataset
+from autodeer.hardware.XeprAPI_link import XeprAPILink
 from autodeer.hardware.Bruker_tools import PulseSpel, run_general
-from autodeer.sequences import HahnEchoSequence
 
 import tempfile
 import time
-from scipy.optimize import minimize_scalar, curve_fit
 import numpy as np
 
 # =============================================================================
@@ -38,7 +36,7 @@ class BrukerAWG(Interface):
             _description_, by default 600
         """
 
-        self.api = xepr_api(config_file)
+        self.api = XeprAPILink(config_file)
         self.spec_config = self.api.config["Spectrometer"]
         self.bridge_config = self.api.spec_config["Bridge"]
         

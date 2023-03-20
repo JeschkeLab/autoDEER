@@ -3,7 +3,7 @@
 
 import autoDeer.hardware.xepr_experiments as x_exp
 import re
-from autoDeer.hardware.XeprAPI_link import XeprApiLink 
+from autoDeer.hardware.XeprAPI_link import XeprAPILink 
 import pytest
 
 def test_change_dimensions():
@@ -26,36 +26,36 @@ def test_change_dimensions():
 
 
 def test_create_from_config():
-    xepr = XeprApiLink("test/test_data/test_Bruker_config.yaml")
+    xepr = XeprAPILink("test/test_data/test_Bruker_config.yaml")
 
     assert xepr.AWG is False
 
 
 def test_min_freq():
-    xepr = XeprApiLink("test/test_data/test_Bruker_config.yaml")
+    xepr = XeprAPILink("test/test_data/test_Bruker_config.yaml")
     with pytest.raises(RuntimeError):
         xepr.set_freq(30)
 
 
 def test_max_freq():
-    xepr = XeprApiLink("test/test_data/test_Bruker_config.yaml")
+    xepr = XeprAPILink("test/test_data/test_Bruker_config.yaml")
     with pytest.raises(RuntimeError):
         xepr.set_freq(40)
 
 
 def test_eldor_min_freq():
-    xepr = XeprApiLink("test/test_data/test_Bruker_config.yaml")
+    xepr = XeprAPILink("test/test_data/test_Bruker_config.yaml")
     with pytest.raises(RuntimeError):
         xepr.set_ELDOR_freq(30)
 
 
 def test_eldor_max_freq():
-    xepr = XeprApiLink("test/test_data/test_Bruker_config.yaml")
+    xepr = XeprAPILink("test/test_data/test_Bruker_config.yaml")
     with pytest.raises(RuntimeError):
         xepr.set_ELDOR_freq(40)
 
 
 def test_bridge_dt():
-    xepr = XeprApiLink("test/test_data/test_Bruker_config.yaml")
+    xepr = XeprAPILink("test/test_data/test_Bruker_config.yaml")
     with pytest.raises(ValueError):
         xepr.set_PulseSpel_var("p1", 3)

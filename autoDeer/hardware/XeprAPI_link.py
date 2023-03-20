@@ -3,7 +3,7 @@ import time
 import os
 import yaml
 import XeprAPI
-from autodeer import dataset
+from autodeer.classes import Dataset
 from scipy.optimize import minimize_scalar
 import logging
 import re
@@ -13,7 +13,7 @@ hw_log = logging.getLogger('hardware.Xepr')
 # ============================================================================
 
 
-class XeprApiLink:
+class XeprAPILink:
     def __init__(self, config_file: str = None) -> None:
         self.Xepr = None
         self.cur_exp = None
@@ -146,7 +146,7 @@ class XeprApiLink:
     def is_exp_running(self):
         return self.cur_exp.isRunning
 
-    def acquire_dataset(self) -> dataset:
+    def acquire_dataset(self) -> Dataset:
         """
         This function acquire the dataset, this work both for a running 
         experiment or once it has finished.
@@ -166,13 +166,13 @@ class XeprApiLink:
             # We have a 1D dataset
             t = dataclass.X
             hw_log.debug('Acquired Dataset')
-            return dataset(t, data, params)
+            return Dataset(t, data, params)
         elif data_dim == 2:
             # we have a 2D dataset
             t1 = dataclass.X
             t2 = dataclass.Y
             hw_log.debug('Acquired Dataset')
-            return dataset([t1, t2], data, params)
+            return Dataset([t1, t2], data, params)
 
     def acquire_scan(self):
         """

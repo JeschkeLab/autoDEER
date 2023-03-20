@@ -14,7 +14,7 @@ import deerlab as dl
 import time
 import os
 import random as rand
-from .XeprAPI_link import XeprApiLink,dataset
+from .XeprAPI_link import XeprAPILink,dataset
 
 import logging
 
@@ -34,7 +34,7 @@ hardware_meta = {# This dictionary should be moved into a config file eventually
     "Max Freq":         35,
  } 
 
-class dummy_api(XeprApiLink):
+class dummy_api(XeprAPILink):
 
     def __init__(self) -> None:
         self._tmp_dir = None
