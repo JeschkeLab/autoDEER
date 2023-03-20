@@ -91,7 +91,10 @@ def eprload(
 
         Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
         Params = Matfile[Matfile["expname"]]
-        uwb_output = uwb_load(Matfile)
+        if "options" in kwargs:
+            uwb_output = uwb_load(Matfile, kwargs["options"])
+        else:
+            uwb_output = uwb_load(Matfile)
         axes = uwb_output.dta_x
         data = uwb_output.dta_ev
 
