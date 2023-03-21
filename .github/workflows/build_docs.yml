@@ -34,4 +34,4 @@ jobs:
         python -m pip install numpydoc
     - name: Build with Sphinx
       run: |
-        sphinx-build -E -b html ./docsrc/source ./docs
+        sphinx-build -E -b html ./docsrc ./docs
