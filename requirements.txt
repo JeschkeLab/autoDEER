@@ -2,7 +2,7 @@
 numpy
 scipy
 matplotlib
-deerlab > 1.0
+deerlab >= 1.0
 XeprAPI
 h5py
 pyyaml
