@@ -1,7 +1,7 @@
 # Here is a collection of pytests for the Xepr module. 
 # This is very limited due to the obvious lack of a spectrometer.
 
-import autoDeer.hardware.xepr_experiments as x_exp
+import autodeer.hardware.xepr_experiments as x_exp
 import re
 from autoDeer.hardware.XeprAPI_link import XeprAPILink 
 import pytest

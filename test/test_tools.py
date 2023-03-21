@@ -1,4 +1,4 @@
-from autoDeer.tools import eprload
+from autodeer.tools import eprload
 import numpy as np
 
 

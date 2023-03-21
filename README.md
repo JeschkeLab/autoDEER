@@ -9,9 +9,13 @@ A Python package designed for the running of automated and optimised DEER/PELDOR
 - A generalised pythonic pulse EPR sequencer.
 - Interfaces converting a general pulse sequence to either Matlab Structures or Bruker PulseSpel files 
 - Easy development of new spectrometer interfaces
-- 
 
-## Dependencies
+## Requirements
+AutoDEER is generally compataible with Windows, Mac and Linux and requires Python 3.8, 3.9, or 3.10.
+The specific hardware implememntation may add additional limitation for example,
+when using XeprAPI a Linux OS is needed.
+
+### Dependencies
 1) Numpy
 2) Scipy
 3) Matplotlib
@@ -20,14 +24,15 @@ A Python package designed for the running of automated and optimised DEER/PELDOR
 6) [XeprAPI](https://github.com/OE-FET/XeprAPI) [Bruker]
 7) matlab-engine [Matlab]
 
-## External Software Dependencies
+### External Software Dependencies
 1) Bruker Xepr [Bruker]
 2) Matlab [Matlab based systems]
 
+## Setup
+At this time autoDEER is only avaliable from source. A packaged release will come later. 
+
 ## License
+AutoDEER is licensed under the GNU GPLv3 public license, and is released without
+warrenty or liability.
 
-## Installation
-Two main methods:
- - Either install from source by cloning this git repository
- - Install from a prebuilt release on the right hand side
-
+Copyright © 2021-2023: Hugo Karas, Stefan Stoll, and Gunnar Jeschke

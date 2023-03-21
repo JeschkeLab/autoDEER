@@ -1,17 +1,37 @@
 Interfaces
-================
+==========
 
 Currently, there are two main types of interface. 
-1. A general interface
+1. A General interface
 2. A Bruker interface
 
 A Bruker interface is still just a sub class of the general interface. However,
 it has been specially designed to connect with Xepr. The general interface can
 be expanded to support nearly all home-built spectrometers. 
 
+Custom Interface
+-----------------------
+A key feature of this project is support for custom home-built spectrometer on
+an equal footing to Bruker spectrometers. However, of course we can not provide
+native interfaces for every single spectrometer. Here is a short guide on how
+to interface with a MATLAB based spectrometer. This should give you a flavour 
+of how to build your own.
+
+All interfaces are a sub-class of Interface. This provides the minimum methods
+required for an interface to work. 
+
+Before starting to write an interface, you need to consider: How does my 
+spectrometer read pulse sequences? and How do I convert the autoEPR pulse 
+sequence to what is required?
+
 
 Bruker Interface
 -----------------------
+
+.. caution:: 
+    Due to stability issues development of the Bruker interface has paused,
+    and is not recommended for use at this time. 
+    Please contact the development team for further infomation. 
 
 Most Bruker ELEXSYS-II spectrometer are fundamentally similar and are 
 controlled by the Xepr. This means that we interface with all these
@@ -49,19 +69,3 @@ not need to be repeated at the start of every measuremnt session.
 | MPFU - Amplitude   | MPFU Channels (optional)  |  
 +--------------------+---------------------------+  
 
-
-
-Custom Interface
------------------------
-A key feature of this project is support for custom home-built spectrometer on
-an equal footing to Bruker spectrometers. However, of course we can not provide
-native interfaces for every single spectrometer. Here is a short guide on how
-to interface with a MATLAB based spectrometer. This should give you a flavour 
-of how to build your own.
-
-All interfaces are a sub-class of Interface. This provides the minimum methods
-required for an interface to work. 
-
-Before starting to write an interface, you need to consider: How does my 
-spectrometer read pulse sequences? and How do I convert the autoEPR pulse 
-sequence to what is required?

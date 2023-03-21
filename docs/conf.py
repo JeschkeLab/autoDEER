@@ -33,6 +33,8 @@ release = '0.4-alpha'
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
+              'sphinx_toolbox.collapse',
+              'sphinx_toolbox.code',
               'numpydoc',
               'sphinx.ext.graphviz',
               'myst_parser']

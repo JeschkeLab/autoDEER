@@ -1,4 +1,4 @@
-# Logging: An EPR implementation
+# Logging: 
 When building any large piece of software one of the most important and first features that need to be created in a logging function. This program is no different, and will also have one added. Since this software is primarily written in python we propose using the integrated and built logging module.
 
 The structure of this logging will roughly follow that of the module in general, with a separate hardware log to the core modules.

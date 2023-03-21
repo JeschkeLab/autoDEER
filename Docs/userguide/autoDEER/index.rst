@@ -16,15 +16,20 @@ autoDEER
 
     ./semi_autoDEER.rst
     ./fully_autoDEER.rst
+    ./DEER_variants.rst
 
 .. toctree::
     :hidden:
     :maxdepth: 2
     :caption: Post Processing
 
+    ./analysis.rst
+
 .. toctree::
     :hidden:
     :maxdepth: 2
     :caption: API Reference
+    
+    ./reference.rst
 
 

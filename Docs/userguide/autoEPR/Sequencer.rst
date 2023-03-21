@@ -1,5 +1,5 @@
-Sequencer
-==============
+Creating a Custom Sequence
+==========================
 
 autoEPR can be used to script and develop EPR pulse sequences in Python. 
 

@@ -62,10 +62,10 @@ however, not all spectrometer support all approaches and not all methods work
 for every scenario. 
 
 1. Echo-amplitude (Amplitude sweep)
-2. Echo-amplitude (Pulse duration sweep)
-3. Nutation (Amplitude sweep)
-4. Nutation (Pulse duration sweep)
-5. Pulse-profiles.
+2. Echo-amplitude (Pulse duration sweep) [Coming soon]
+3. Nutation (Amplitude sweep) 
+4. Nutation (Pulse duration sweep) [Coming soon]
+5. Pulse-profiles. [Coming soon]
 
 In this basic example we will tune using the first method. On Bruker 
 spectrometers amplitude sweeps are not avaliable natively however, autoEPR
@@ -73,10 +73,25 @@ solves this by conducting multiple measurements at different amplitudes.
 
 .. code-block:: python
 
-    sequence = interface.tune(sequence, method="Echo-Amplitude")
+    pulse = interface.tune_pulse(sequence, B, LO, reptime, mode="amp_nut")
 
-This returns a modified sequence that now contains the correct scaling values
-for each pulse. The sequence can now be launched.
+This returns a modified pusle that now contains the correct scale value.
+
+If only simple rectangular pulses of equal power are required for a setup 
+experiment this can be done using the `tune_rect` function. These pulses are
+then cached in `interface.pulses` so they can be easily accessed at a later
+time. A set of pi and pi/2 pulses in the cache are required for `tune_pulse`,
+otherwise they will be generated.
+
+.. code-block:: python
+
+    pi2_pulse, pi_pulse = interface.tune_rect(tp, B, LO, reptime)
+
+The cache (`interface.pulses`) is a dictionary. Rectangular pulses added to 
+the dictionary will have keys in the form of "p[90/180]_[tp]_[freq]" e.g 
+"p90_12_34.1". Remember that if the sample is changed or the the resonator
+adjusted the cache needs to be cleared: `interface.clear_cache()`.
+
 
 3. Starting the sequence
 ++++++++++++++++++++++++++++
@@ -138,7 +153,7 @@ the data as required.
 .. code-block:: python
 
     dataset = interface.acquire_dataset()
-    analysis = RelaxationAnalysis(dataset, type="Hahn")
+    analysis = CarrPurcellAnalysis(dataset)
     analysis.fit()
     analysis.plot()
 
