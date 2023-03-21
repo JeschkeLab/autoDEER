@@ -1,34 +1,38 @@
 # autoDeer
-A python package designed for the running of automated and optimised DEER/PELDOR experiments for pulsed EPR. Currently this is built as a python extension to Bruker's Xepr software. 
+A Python package designed for the running of automated and optimised DEER/PELDOR experiments for pulsed EPR, with minimal user interaction and training. This has been designed to be spectrometer independent and currently functions on both Bruker Elexsys-II and Andrin Doll style Spectrometers. 
 
 ## Features
-- Automated Parameter optimization
-- Automated Running of a 2hr DEER experiment with plotting
-- Saving all experiments to a .h5 file
+- Automated tuning and pulse optimisation.
+- Support for both rectangular and shaped pulses
+- Easily runs: 4pulse, 5pulse or nDEER with equal ease.
+- Automatic Distance characterisation and DEER parameter determination
+- A generalised pythonic pulse EPR sequencer.
+- Interfaces converting a general pulse sequence to either Matlab Structures or Bruker PulseSpel files 
+- Easy development of new spectrometer interfaces
 
-## Dependencies
+## Requirements
+AutoDEER is generally compataible with Windows, Mac and Linux and requires Python 3.8, 3.9, or 3.10.
+The specific hardware implememntation may add additional limitation for example,
+when using XeprAPI a Linux OS is needed.
+
+### Dependencies
 1) Numpy
 2) Scipy
 3) Matplotlib
-4) pytest
-5) h5py
-6) pyvisa
-7) Xepr API for python 3 (https://github.com/OE-FET/XeprAPI)
-8) DeerLab (https://jeschkelab.github.io/DeerLab/)
+4) [DeerLab](https://jeschkelab.github.io/DeerLab/) 
+5) pyyaml
+6) [XeprAPI](https://github.com/OE-FET/XeprAPI) [Bruker]
+7) matlab-engine [Matlab]
 
-## External Software Dependencies
-1) Bruker Xepr
-2) Keysight IO Libaries Suite Win/Linux (https://www.keysight.com/gb/en/lib/software-detail/computer-software/io-libraries-suite-downloads-2175637.html)
+### External Software Dependencies
+1) Bruker Xepr [Bruker]
+2) Matlab [Matlab based systems]
 
-## Troubleshooting
-- <Can't find any open instances of Xepr>
-    This has two main causes:
-    1) Xepr API hasn't be started. Please do "Processing" -> "XeprAPI" -> "Enable Xepr API"
-    2) The kernal has recently lost connection, and a background kernal is connected. Please open <htop> in terminal and
-    kill the process of the other python kernal
+## Setup
+At this time autoDEER is only avaliable from source. A packaged release will come later. 
 
-## Acknowledgements 
-In developing the Bruker spectrometer control, insipration and help was gained from previous work by:
-- Spinach by Ilya Kuprov et. al.
-- CustomXepr by San Schott
+## License
+AutoDEER is licensed under the GNU GPLv3 public license, and is released without
+warrenty or liability.
 
+Copyright © 2021-2023: Hugo Karas, Stefan Stoll, and Gunnar Jeschke
