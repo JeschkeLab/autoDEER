@@ -12,8 +12,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-    - name: Setup upterm session
-      uses: lhotari/action-upterm@v1
     - name: Set up Python 3.9
       uses: actions/setup-python@v4
       with:
@@ -36,6 +34,8 @@ jobs:
         python -m pip install numpydoc
         python -m pip install -r requirements.txt      
         python -m pip install .
+    - name: Setup upterm session
+      uses: lhotari/action-upterm@v1
     - name: Build with Sphinx
       run: |
         sphinx-build -E -b html ./docsrc ./docs
