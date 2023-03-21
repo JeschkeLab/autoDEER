@@ -15,4 +15,6 @@ else:
     from .Bruker_MPFU import *
     from .Bruker_AWG import *
 
+from .ETH_awg_load import *
+
 
