@@ -1,4 +1,4 @@
-name: Build Documentation using Spinx
+name: Build Documentation using Sphinx
 
 on:
   pull_request:
