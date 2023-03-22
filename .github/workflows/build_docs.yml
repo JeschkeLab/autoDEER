@@ -33,8 +33,6 @@ jobs:
         python -m pip install sphinx_toolbox
         python -m pip install numpydoc
         python -m pip install .
-    - name: Setup upterm session
-      uses: lhotari/action-upterm@v1
     - name: Build with Sphinx
       run: |
-        sphinx-build -E -b html ./docsrc
+        sphinx-build -E -b html ./docsrc ./docs
