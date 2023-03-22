@@ -34,7 +34,7 @@ jobs:
         python -m pip install numpydoc
         python -m pip install -r requirements.txt
         python -m pip install 'XeprAPI @ git+https://github.com/OE-FET/XeprAPI'
-        python -m pip install .
+        python -m pip install .[Dev]
     - name: Setup upterm session
       uses: lhotari/action-upterm@v1
     - name: Build with Sphinx
