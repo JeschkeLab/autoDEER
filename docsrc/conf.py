@@ -48,6 +48,7 @@ autosummary_generate = True
 # autodoc_class_signature = "separated"
 autoclass_content= "class"
 autodoc_inherit_docstrings=True
+autodoc_mock_imports = ["matlabengine", "matlab.engine"]
 # napoleon_numpy_docstring = True
 numpydoc_show_inherited_class_members=True
 numpydoc_show_class_members=True
