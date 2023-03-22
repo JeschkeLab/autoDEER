@@ -1,0 +1,43 @@
+﻿.. _DEERSequence:
+
+autodeer.sequences.DEERSequence
+===============================
+
+.. currentmodule:: autodeer.sequences
+
+.. autoclass:: DEERSequence
+   :members:                                    <-- add at least this line
+   :show-inheritance:                           <-- plus I want to show inheritance...
+   :inherited-members:                          <-- ...and inherited members too
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DEERSequence.__init__
+      ~DEERSequence.addPulse
+      ~DEERSequence.addPulseProg
+      ~DEERSequence.addPulsesProg
+      ~DEERSequence.convert
+      ~DEERSequence.copy
+      ~DEERSequence.five_pulse
+      ~DEERSequence.four_pulse
+      ~DEERSequence.isDelayFocused
+      ~DEERSequence.isPulseFocused
+      ~DEERSequence.nDEER_CP
+      ~DEERSequence.plot
+      ~DEERSequence.plot_pulse_exc
+      ~DEERSequence.select_pcyc
+      ~DEERSequence.seven_pulse
+      ~DEERSequence.simulate
+      ~DEERSequence.three_pulse
+   
+   
+
+   
+   
+   

@@ -1,0 +1,36 @@
+﻿.. _FieldSweepSequence:
+
+autodeer.sequences.FieldSweepSequence
+=====================================
+
+.. currentmodule:: autodeer.sequences
+
+.. autoclass:: FieldSweepSequence
+   :members:                                    <-- add at least this line
+   :show-inheritance:                           <-- plus I want to show inheritance...
+   :inherited-members:                          <-- ...and inherited members too
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~FieldSweepSequence.__init__
+      ~FieldSweepSequence.addPulse
+      ~FieldSweepSequence.addPulseProg
+      ~FieldSweepSequence.addPulsesProg
+      ~FieldSweepSequence.convert
+      ~FieldSweepSequence.copy
+      ~FieldSweepSequence.isDelayFocused
+      ~FieldSweepSequence.isPulseFocused
+      ~FieldSweepSequence.plot
+      ~FieldSweepSequence.plot_pulse_exc
+   
+   
+
+   
+   
+   

@@ -1,0 +1,459 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
+
+    <!-- Generated with Sphinx 6.1.3 and Furo 2022.12.07 -->
+        <title>autodeer.sequences.HahnEchoSequence - </title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     Version 0.4 comming soon! 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand"> </div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../../_static/autoDEER_EPR_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../../_static/autoDEER_EPR_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text"> </span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../Install_python.html">Installing Python</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../index.html">autoEPR</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Getting_Started.html">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Sequencer.html">Creating a Custom Sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Interface.html">Interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Reference.html">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../autoDEER/index.html">autoDEER</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../autoDEER/deer_intro.html">What is DEER?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../autoDEER/config_file.html">Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../autoDEER/semi_autoDEER.html">Semi - autoDEER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../autoDEER/fully_autoDEER.html">Fully - autoDEER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../autoDEER/DEER_variants.html">DEER Variants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../autoDEER/analysis.html">Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../autoDEER/reference.html">Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../dev_guide/index.html">Developing</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dev_guide/Logging.html">Logging:</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="autodeer-sequences-hahnechosequence">
+<span id="hahnechosequence"></span><h1>autodeer.sequences.HahnEchoSequence<a class="headerlink" href="#autodeer-sequences-hahnechosequence" title="Permalink to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="autodeer.sequences.HahnEchoSequence">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.sequences.</span></span><span class="sig-name descname"><span class="pre">HahnEchoSequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reptime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shots</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/sequences.html#HahnEchoSequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.sequences.HahnEchoSequence" title="Permalink to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="autodeer.classes.Sequence.html#autodeer.classes.Sequence" title="autodeer.classes.Sequence"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a></p>
+<p>Represents a Hahn-Echo sequence.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.sequences.HahnEchoSequence.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reptime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shots</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/autodeer/sequences.html#HahnEchoSequence.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.sequences.HahnEchoSequence.__init__" title="Permalink to this definition">#</a></dt>
+<dd><p>Build a Hahn-Echo sequence using either rectangular pulses or
+specified pulses. By default no progression is added to this sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>B</strong><span class="classifier">int or float</span></dt><dd><p>The B0 field, in Guass</p>
+</dd>
+<dt><strong>LO</strong><span class="classifier">int or float</span></dt><dd><p>The LO frequency in GHz</p>
+</dd>
+<dt><strong>reptime</strong><span class="classifier">_type_</span></dt><dd><p>The shot repetition time in us</p>
+</dd>
+<dt><strong>averages</strong><span class="classifier">int</span></dt><dd><p>The number of scans.</p>
+</dd>
+<dt><strong>shots</strong><span class="classifier">int</span></dt><dd><p>The number of shots per point</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.__init__" title="autodeer.sequences.HahnEchoSequence.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*, B, LO, reptime, averages, shots, ...)</p></td>
+<td><p>Build a Hahn-Echo sequence using either rectangular pulses or specified pulses.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.addPulse" title="autodeer.sequences.HahnEchoSequence.addPulse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">addPulse</span></code></a>(pulse)</p></td>
+<td><p>Adds a pulse to the next position in the sequence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.addPulseProg" title="autodeer.sequences.HahnEchoSequence.addPulseProg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">addPulseProg</span></code></a>(pulse_id, variable, axis_id, axis)</p></td>
+<td><p>Adds a single progessive pulse element to the sequence.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.addPulsesProg" title="autodeer.sequences.HahnEchoSequence.addPulsesProg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">addPulsesProg</span></code></a>(pulses, variables, axis_id, axis)</p></td>
+<td><p>Adds a multiple progessive pulse element to the sequence.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.convert" title="autodeer.sequences.HahnEchoSequence.convert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert</span></code></a>(*[, reduce])</p></td>
+<td><p>Converts the current sequence to either pulse focused or delay focused depending on the current state</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.isDelayFocused" title="autodeer.sequences.HahnEchoSequence.isDelayFocused"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isDelayFocused</span></code></a>()</p></td>
+<td><p>Is the sequence expressed to contain both pulses and delays?</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.isPulseFocused" title="autodeer.sequences.HahnEchoSequence.isPulseFocused"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isPulseFocused</span></code></a>()</p></td>
+<td><p>Is the sequence expressed to contain only pulses and no delays?</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pulse_exc</span></code>([FieldSweep, ResonatorProfile])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.sequences.HahnEchoSequence.addPulse">
+<span class="sig-name descname"><span class="pre">addPulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodeer.sequences.HahnEchoSequence.addPulse" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds a pulse to the next position in the sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>pulse</strong><span class="classifier">Pulse</span></dt><dd><p>The object describing the pulse.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.sequences.HahnEchoSequence.addPulseProg">
+<span class="sig-name descname"><span class="pre">addPulseProg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#autodeer.sequences.HahnEchoSequence.addPulseProg" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds a single progessive pulse element to the sequence.</p>
+<p>It is strongly recomeneded that the axis is generated using <cite>np.arange</cite>
+over <cite>np.linspace</cite>. Most spectrometers do not like inputs with a high
+number of decimal places. <cite>np.arange</cite> allows control of the step size
+reducing any risk of conflict with the interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>pulse_id</strong><span class="classifier">int</span></dt><dd><p>The iD of the moving pulse element. If it is a sequence parameter, 
+such as <cite>B</cite> field, then <cite>None</cite> should be given.</p>
+</dd>
+<dt><strong>variable</strong><span class="classifier">str</span></dt><dd><p>The name of the parameter.</p>
+</dd>
+<dt><strong>axis_id</strong><span class="classifier">int</span></dt><dd><p>The iD of the axis.</p>
+</dd>
+<dt><strong>axis</strong><span class="classifier">np.ndarray</span></dt><dd><p>An array containing how the pulse element changes.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.sequences.HahnEchoSequence.addPulsesProg">
+<span class="sig-name descname"><span class="pre">addPulsesProg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multipliers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#autodeer.sequences.HahnEchoSequence.addPulsesProg" title="Permalink to this definition">#</a></dt>
+<dd><p>Adds a multiple progessive pulse element to the sequence. This is
+very useful when multiple elements are changing at the same time with
+a constant relationship.</p>
+<p>It is strongly recomeneded that the axis is generated using <cite>np.arange</cite>
+over <cite>np.linspace</cite>. Most spectrometers do not like inputs with a high
+number of decimal places. <cite>np.arange</cite> allows control of the step size
+reducing any risk of conflict with the interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>pulses</strong><span class="classifier">list[int]</span></dt><dd><p>A list of pulse iDs that are changing</p>
+</dd>
+<dt><strong>variables</strong><span class="classifier">list[str]</span></dt><dd><p>A list of variables that are changing</p>
+</dd>
+<dt><strong>axis_id</strong><span class="classifier">int</span></dt><dd><p>The iD of the axis</p>
+</dd>
+<dt><strong>axis</strong><span class="classifier">np.ndaaray</span></dt><dd><p>An array containing how the pulse element changes</p>
+</dd>
+<dt><strong>multipliers</strong><span class="classifier">list or np.ndaaray, optional</span></dt><dd><p>How the different variable are proportional to each other, by
+default None. If <cite>None</cite> is specified then it is assumed that there
+is a 1:1 relationship. The axs gives the values for the first
+element.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.sequences.HahnEchoSequence.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#autodeer.sequences.HahnEchoSequence.convert" title="Permalink to this definition">#</a></dt>
+<dd><p>Converts the current sequence to either pulse focused or delay
+focused depending on the current state</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>reduce</strong><span class="classifier">bool, optional</span></dt><dd><p>Reduce to the smallest number of objects, by default True</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.sequences.HahnEchoSequence.isDelayFocused">
+<span class="sig-name descname"><span class="pre">isDelayFocused</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#autodeer.sequences.HahnEchoSequence.isDelayFocused" title="Permalink to this definition">#</a></dt>
+<dd><p>Is the sequence expressed to contain both pulses and delays?</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.sequences.HahnEchoSequence.isPulseFocused">
+<span class="sig-name descname"><span class="pre">isPulseFocused</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#autodeer.sequences.HahnEchoSequence.isPulseFocused" title="Permalink to this definition">#</a></dt>
+<dd><p>Is the sequence expressed to contain only pulses and no delays?</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">autodeer.sequences.HahnEchoSequence</a><ul>
+<li><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence"><code class="docutils literal notranslate"><span class="pre">HahnEchoSequence</span></code></a><ul>
+<li><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.__init__"><code class="docutils literal notranslate"><span class="pre">HahnEchoSequence.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.addPulse"><code class="docutils literal notranslate"><span class="pre">HahnEchoSequence.addPulse()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.addPulseProg"><code class="docutils literal notranslate"><span class="pre">HahnEchoSequence.addPulseProg()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.addPulsesProg"><code class="docutils literal notranslate"><span class="pre">HahnEchoSequence.addPulsesProg()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.convert"><code class="docutils literal notranslate"><span class="pre">HahnEchoSequence.convert()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.isDelayFocused"><code class="docutils literal notranslate"><span class="pre">HahnEchoSequence.isDelayFocused()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.sequences.HahnEchoSequence.isPulseFocused"><code class="docutils literal notranslate"><span class="pre">HahnEchoSequence.isPulseFocused()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/scripts/furo.js"></script>
+    </body>
+</html>

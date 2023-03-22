@@ -1,0 +1,6 @@
+﻿autodeer.DEERanalysis\_plot
+===========================
+
+.. currentmodule:: autodeer
+
+.. autofunction:: DEERanalysis_plot

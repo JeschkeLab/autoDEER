@@ -1,0 +1,6 @@
+﻿autodeer.DEERanalysis
+=====================
+
+.. currentmodule:: autodeer
+
+.. autofunction:: DEERanalysis

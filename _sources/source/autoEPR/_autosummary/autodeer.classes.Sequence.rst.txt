@@ -1,0 +1,36 @@
+﻿.. _Sequence:
+
+autodeer.classes.Sequence
+=========================
+
+.. currentmodule:: autodeer.classes
+
+.. autoclass:: Sequence
+   :members:                                    <-- add at least this line
+   :show-inheritance:                           <-- plus I want to show inheritance...
+   :inherited-members:                          <-- ...and inherited members too
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Sequence.__init__
+      ~Sequence.addPulse
+      ~Sequence.addPulseProg
+      ~Sequence.addPulsesProg
+      ~Sequence.convert
+      ~Sequence.copy
+      ~Sequence.isDelayFocused
+      ~Sequence.isPulseFocused
+      ~Sequence.plot
+      ~Sequence.plot_pulse_exc
+   
+   
+
+   
+   
+   

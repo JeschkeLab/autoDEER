@@ -1,0 +1,36 @@
+﻿.. _CarrPurcellSequence:
+
+autodeer.sequences.CarrPurcellSequence
+======================================
+
+.. currentmodule:: autodeer.sequences
+
+.. autoclass:: CarrPurcellSequence
+   :members:                                    <-- add at least this line
+   :show-inheritance:                           <-- plus I want to show inheritance...
+   :inherited-members:                          <-- ...and inherited members too
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~CarrPurcellSequence.__init__
+      ~CarrPurcellSequence.addPulse
+      ~CarrPurcellSequence.addPulseProg
+      ~CarrPurcellSequence.addPulsesProg
+      ~CarrPurcellSequence.convert
+      ~CarrPurcellSequence.copy
+      ~CarrPurcellSequence.isDelayFocused
+      ~CarrPurcellSequence.isPulseFocused
+      ~CarrPurcellSequence.plot
+      ~CarrPurcellSequence.plot_pulse_exc
+   
+   
+
+   
+   
+   

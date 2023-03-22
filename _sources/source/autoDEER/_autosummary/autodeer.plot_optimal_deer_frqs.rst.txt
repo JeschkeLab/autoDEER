@@ -1,0 +1,6 @@
+﻿autodeer.plot\_optimal\_deer\_frqs
+==================================
+
+.. currentmodule:: autodeer
+
+.. autofunction:: plot_optimal_deer_frqs

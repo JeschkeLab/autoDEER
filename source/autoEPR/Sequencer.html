@@ -1,0 +1,478 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Interfaces" href="Interface.html" /><link rel="prev" title="Getting Started" href="Getting_Started.html" />
+
+    <!-- Generated with Sphinx 6.1.3 and Furo 2022.12.07 -->
+        <title>Creating a Custom Sequence - </title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     Version 0.4 comming soon! 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand"> </div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../_static/autoDEER_EPR_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../_static/autoDEER_EPR_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text"> </span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Install_python.html">Installing Python</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">autoEPR</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Getting_Started.html">Getting Started</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Creating a Custom Sequence</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Interface.html">Interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Reference.html">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../autoDEER/index.html">autoDEER</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../autoDEER/deer_intro.html">What is DEER?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../autoDEER/config_file.html">Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../autoDEER/semi_autoDEER.html">Semi - autoDEER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../autoDEER/fully_autoDEER.html">Fully - autoDEER</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../autoDEER/DEER_variants.html">DEER Variants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../autoDEER/analysis.html">Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../autoDEER/reference.html">Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../dev_guide/index.html">Developing</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../dev_guide/Logging.html">Logging:</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="creating-a-custom-sequence">
+<h1>Creating a Custom Sequence<a class="headerlink" href="#creating-a-custom-sequence" title="Permalink to this heading">#</a></h1>
+<p>autoEPR can be used to script and develop EPR pulse sequences in Python.</p>
+<p>Pulse sequences are built up of two main object: <a class="reference internal" href="_autosummary/autodeer.classes.Sequence.html#sequence"><span class="std std-ref">Sequences</span></a>
+and <a class="reference internal" href="_autosummary/autodeer.classes.Pulse.html#pulse"><span class="std std-ref">Pulses</span></a>. In its simplist form a pulse sequence is just a
+train of pulses. Here, we consider a pulse in its general form. I.e. Pulses are
+not just MW pulses but also delays and detection events.</p>
+<p>A sequence also contains additional infomation about the experiment, such as:
+the LO frequency; the B0 field; Averages and shots; and the shot repetition
+time.</p>
+<p>There are two ways of thinking about and writing down a pulse sequence:</p>
+<ol class="arabic simple">
+<li><p>Delay focused (Like PulseSpel)</p></li>
+<li><p>Pulse focused (Like Tables)</p></li>
+</ol>
+<p>When many EPR spectrometrists think about pulse sequences they think of pulses
+seperated by delays, and these delays increase and decrease in length to change
+the position of the pulses. However, most AWGs and spectrometers think in terms
+of pulses with a time position and it is this time positon that moves. Both of
+these approaches are physically equivalent, and such both approaches can be
+used in autoEPR. However, most interfaces can only take sequences of one type.
+Sequences can be converted between each other with the <cite>Sequence.convert()</cite>
+command.</p>
+<section id="creating-your-first-sequence">
+<h2>Creating your first sequence<a class="headerlink" href="#creating-your-first-sequence" title="Permalink to this heading">#</a></h2>
+<p>Here I will demonstrate how to build a simple Hahn Echo sequence using
+rectangular pulses.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">autodeer</span> <span class="k">as</span> <span class="nn">ad</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">autodeer.openepr</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">RectPulse</span><span class="p">,</span> <span class="n">Detection</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Hahn Echo&quot;</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">12220</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="mf">34.0</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="mf">3e3</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">averages</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="mi">100</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Detection</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>This sequece can also be created using delays.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">autodeer</span> <span class="k">as</span> <span class="nn">ad</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">autodeer.openepr</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">RectPulse</span><span class="p">,</span> <span class="n">Delay</span><span class="p">,</span> <span class="n">Detection</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Hahn Echo&quot;</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">12220</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="mf">34.0</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="mf">3e3</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">averages</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="mi">100</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Delay</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">200</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Delay</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">200</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Detection</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><strong>Adding Progression</strong></p>
+<p>A single static echo is only of limited use. To make a pulse move we need to
+add a progressive axis. In this example we will increase the delays of the
+above sequence from 200ns to 6us in 100ns steps.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulsesProg</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">pulses</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tp&quot;</span><span class="p">,</span><span class="s2">&quot;tp&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">axis_id</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">2e2</span><span class="p">,</span><span class="mf">6e3</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">multipliers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Adding Phase Cycles</strong></p>
+<p>In nearly all EPR pulse sequences a phase cycle is required to remove
+additional unwanted echoes and coherence pathways. This is possible in
+autoEPR without having to multiply out the full cycle, by adding the phase
+cycle indivdually to each pulse.</p>
+<p>This is done by adding an extra dictionary to the pulse delceration. This
+dictionary consitsts of two list: phases (“phases”), detection signs(“dets”).</p>
+<p>For example if we wanted to add the standard DC offset cycle on the first pi/2
+pulse we can simply do.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">tp</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">pcyc</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;phases&quot;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">],</span> <span class="s2">&quot;dets&quot;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]}))</span>
+</pre></div>
+</div>
+<p><strong>Viewing the sequence</strong></p>
+<p>The simplist way to look at a pulse sequence is to print it. Printing a
+Sequence will generate a table containing all the import paramaters and
+infomation.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">HahnEcho</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Standard Sequences</strong></p>
+<p>Since a Hahn Echo is such a standard sequence it comes pre-built as
+<cite>HahnEchoSequence</cite>. A full list of standard sequences can be found
+<a class="reference internal" href="Reference.html#standard-sequences"><span class="std std-ref">here</span></a></p>
+</section>
+<section id="using-shaped-and-chirped-pulses">
+<h2>Using Shaped and Chirped pulses<a class="headerlink" href="#using-shaped-and-chirped-pulses" title="Permalink to this heading">#</a></h2>
+<p>So far we have only looked at monochromatic rectangular pulses. It is often
+advantages to use wideband shaped and chirped pulses. Chirped pulses allows for
+a wider excitation bandwidth at a lower power level, and shaped pulse are used
+to reduce excitation side-lobes.</p>
+<p>Many standard pulses are included, however custom pulses can also be created.
+A full list of standard pulses can be found
+<a class="reference internal" href="Reference.html#standard-sequences"><span class="std std-ref">here</span></a></p>
+<section id="chirped-pulses">
+<h3>Chirped pulses<a class="headerlink" href="#chirped-pulses" title="Permalink to this heading">#</a></h3>
+<p>The simplist type of chirped pulse is a linear chip and it is implemented in
+the  <a class="reference internal" href="_autosummary/autodeer.pulses.ChirpPulse.html#chirppulse"><span class="std std-ref">ChirpPulse</span></a> method. ChirpPulse requires the paramaters
+as RectPulse when being declared as well as two frequency paramaters. Options:
+Bandwidth: <cite>BW</cite>; Initial Frequency <cite>init_freq</cite>; Final Frequency <cite>final_freq</cite>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">autodeer.openepr</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">test_pulse</span> <span class="o">=</span> <span class="n">ChirpPulse</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">tp</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">init_freq</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">BW</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">flipangle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Just like with Sequences, Pulses can also be printed to get a table of the
+import infomation.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">test_pulse</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-pulses">
+<h3>Custom pulses<a class="headerlink" href="#custom-pulses" title="Permalink to this heading">#</a></h3>
+<p>Unlike when making custom sequences it is not recommended that you use an
+instance of the class, instead it is recommended that create a new class which
+inherits from the class <a class="reference internal" href="_autosummary/autodeer.classes.Pulse.html#pulse"><span class="std std-ref">Pulse</span></a>.</p>
+<p>All pulses, have the attributes <cite>AM</cite> and <cite>FM</cite> which describe their shape and
+frequency dependecies. The recommended way of creating these is to create a
+function called <cite>func</cite> and builds <cite>AM</cite> and <cite>FM</cite> for this specific pulse length.
+For a rectangular pulse this is simply:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
+    <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">AM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
+    <span class="n">FM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">AM</span><span class="p">,</span> <span class="n">FM</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">autodeer.openepr</span> <span class="kn">import</span> <span class="n">pulse</span>
+<span class="k">class</span> <span class="nc">new_pulse</span><span class="p">(</span><span class="n">pulse</span><span class="p">):</span>
+
+    <span class="c1"># First we need to create the class init statment</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">tp</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pcyc</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># Next we need to fill the parent-class with its infomation.</span>
+    <span class="n">Pulse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">flipangle</span><span class="p">,</span> <span class="n">pcyc</span><span class="o">=</span><span class="n">pcyc</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+    <span class="c1"># All non standard parameters are now declared</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;freq&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Frequency of the Pulse&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">Progression</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># Here we build the FM and AM using our custom function.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_buildFMAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">pass</span>
+
+    <span class="c1"># Here we define the custom function.</span>
+    <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
+    <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">AM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
+    <span class="n">FM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">AM</span><span class="p">,</span> <span class="n">FM</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="what-is-not-currently-supported">
+<h2>What is not currently supported?<a class="headerlink" href="#what-is-not-currently-supported" title="Permalink to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>RF pulses (No ENDOR or DNP)</p></li>
+</ol>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="Interface.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Interfaces</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="Getting_Started.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Getting Started</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Creating a Custom Sequence</a><ul>
+<li><a class="reference internal" href="#creating-your-first-sequence">Creating your first sequence</a></li>
+<li><a class="reference internal" href="#using-shaped-and-chirped-pulses">Using Shaped and Chirped pulses</a><ul>
+<li><a class="reference internal" href="#chirped-pulses">Chirped pulses</a></li>
+<li><a class="reference internal" href="#custom-pulses">Custom pulses</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#what-is-not-currently-supported">What is not currently supported?</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/scripts/furo.js"></script>
+    </body>
+</html>

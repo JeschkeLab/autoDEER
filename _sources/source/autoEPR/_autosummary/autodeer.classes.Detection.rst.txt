@@ -1,0 +1,33 @@
+﻿.. _Detection:
+
+autodeer.classes.Detection
+==========================
+
+.. currentmodule:: autodeer.classes
+
+.. autoclass:: Detection
+   :members:                                    <-- add at least this line
+   :show-inheritance:                           <-- plus I want to show inheritance...
+   :inherited-members:                          <-- ...and inherited members too
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Detection.__init__
+      ~Detection.copy
+      ~Detection.exciteprofile
+      ~Detection.isDelayFocused
+      ~Detection.isPulseFocused
+      ~Detection.plot
+      ~Detection.plot_fft
+   
+   
+
+   
+   
+   

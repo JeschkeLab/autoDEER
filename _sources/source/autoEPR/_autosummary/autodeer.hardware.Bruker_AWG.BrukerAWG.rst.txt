@@ -1,0 +1,35 @@
+﻿.. _BrukerAWG:
+
+autodeer.hardware.Bruker\_AWG.BrukerAWG
+=======================================
+
+.. currentmodule:: autodeer.hardware.Bruker_AWG
+
+.. autoclass:: BrukerAWG
+   :members:                                    <-- add at least this line
+   :show-inheritance:                           <-- plus I want to show inheritance...
+   :inherited-members:                          <-- ...and inherited members too
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~BrukerAWG.__init__
+      ~BrukerAWG.acquire_dataset
+      ~BrukerAWG.connect
+      ~BrukerAWG.isrunning
+      ~BrukerAWG.launch
+      ~BrukerAWG.terminate
+      ~BrukerAWG.terminate_at
+      ~BrukerAWG.tune
+      ~BrukerAWG.tune_nutation
+   
+   
+
+   
+   
+   

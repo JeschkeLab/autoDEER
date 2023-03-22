@@ -1,0 +1,33 @@
+﻿.. _Pulse:
+
+autodeer.classes.Pulse
+======================
+
+.. currentmodule:: autodeer.classes
+
+.. autoclass:: Pulse
+   :members:                                    <-- add at least this line
+   :show-inheritance:                           <-- plus I want to show inheritance...
+   :inherited-members:                          <-- ...and inherited members too
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Pulse.__init__
+      ~Pulse.copy
+      ~Pulse.exciteprofile
+      ~Pulse.isDelayFocused
+      ~Pulse.isPulseFocused
+      ~Pulse.plot
+      ~Pulse.plot_fft
+   
+   
+
+   
+   
+   
