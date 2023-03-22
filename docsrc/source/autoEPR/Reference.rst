@@ -4,7 +4,7 @@ API Reference
 
 Core Functionality
 +++++++++++++++++++++++
-.. currentmodule:: autodeer.openepr
+.. currentmodule:: autodeer.classes
 
 .. autosummary::
     :toctree: _autosummary
@@ -12,15 +12,19 @@ Core Functionality
     :template: custom_class_template.rst
     :nosignatures:
     
-    dataset
+    Dataset
     Interface
     Sequence
     Pulse
     Parameter
+    Detection
+    Delay
+
 
 
 Default
 ++++++++++++++++++++
+.. currentmodule:: autodeer.Pulses
 
 .. rubric:: Pulses
 .. autosummary::
@@ -29,13 +33,10 @@ Default
     :template: custom_class_template.rst
     :nosignatures:
     
-    Detection
-    Delay
     RectPulse
     HSPulse
     ChirpPulse
     SincPulse
-    ChorusPulse
 
 
 
@@ -66,7 +67,9 @@ Default
     :template: custom_class_template.rst
     :nosignatures:
     
-    ETH_awg_interface
-    BrukerMPFU
-    BrukerAWG
+    ETH_awg.ETH_awg_interface
+    Bruker_MPFU.BrukerMPFU
+    Bruker_AWG.BrukerAWG
+    
+    
     

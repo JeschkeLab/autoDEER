@@ -30,7 +30,7 @@ Features of autoDEER include:
     :hidden:
     :maxdepth: 1
 
-    ./userguide/Install.rst
-    ./userguide/autoEPR/index.rst
-    ./userguide/autoDEER/index.rst
-    ./userguide/dev_guide/index.rst
+    ./source/Install.rst
+    ./source/autoEPR/index.rst
+    ./source/autoDEER/index.rst
+    ./source/dev_guide/index.rst

@@ -20,6 +20,7 @@ Selecting a version
 +++++++++++++++++++
 
 ..  code-block:: python
+    
     sequence = DEERSequence(B=B, LO=LO, reptime=reptime, )
 
 
