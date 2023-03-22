@@ -67,7 +67,6 @@ Default
     :template: custom_class_template.rst
     :nosignatures:
     
-    ETH_awg.ETH_awg_interface
     Bruker_MPFU.BrukerMPFU
     Bruker_AWG.BrukerAWG
     
