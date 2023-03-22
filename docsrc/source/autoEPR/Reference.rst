@@ -24,7 +24,7 @@ Core Functionality
 
 Default
 ++++++++++++++++++++
-.. currentmodule:: autodeer.Pulses
+.. currentmodule:: autodeer.pulses
 
 .. rubric:: Pulses
 .. autosummary::
