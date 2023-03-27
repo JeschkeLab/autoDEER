@@ -1,20 +1,19 @@
 Semi - autoDEER
 ===============
 
-
-What is a semi-autoDEER experiemnt?
+What is a semi-autoDEER experiment?
 -----------------------------------
-A semi-autoDEER experiemnt is an autoDEER experiemnt run inside a Jupyter 
-notebook where each sub-experiment is run individually this allows an experianced
+A semi-autoDEER experiment is an autoDEER experiment run inside a Jupyter 
+notebook where each sub-experiment is run individually this allows an experienced
 user to intercede and take control when necessary or provide slight modifications
-to the script. It has the same form and layout to a fully autoDEER experiment. 
+to the script. It has the same form and layout as a fully autoDEER experiment. 
 
-In this example we show how to run a five-pulse DEER experiment using 
+In this example, we show how to run a five-pulse DEER experiment using 
 rectangular pulses.
 
 Setup
 -----
-First we must import all the necessary packages, and the interface. In this
+First, we must import all the necessary packages and the interface. In this
 example we are using a custom ETH-AWG interface.
 
 .. code-cell:: python
@@ -28,16 +27,16 @@ example we are using a custom ETH-AWG interface.
     import autodeer.hardware.criteria as criteria
     import time
 
-Here we define a few starting parameters as well as initialising the interface.
-It is at this step that a connection between autoDEER and your spectrometer api
+Here we define a few starting parameters as well as initialise the interface.
+It is at this step that a connection between autoDEER and your spectrometer API
 is made.
 
 .. code-cell:: python
     :execution-count: 2
 
-    gyro_N = 0.0028087
-    LO = 34.2172
-    reptime = 2e3 # we can automate this but it might be unnecessary
+    gyro_N = 0.0028087 # This is just an initial guess of the gyromagnetic ratio, a more precise value will be calculated from the field sweep. 
+    LO = 34.2172 # The is the central frequency of your resonator
+    reptime = 2e3 # This should be 3-5e3 when using 50K
     interface = ETH_awg_interface()
 
 Field Sweep
@@ -45,12 +44,12 @@ Field Sweep
 
 An Echo Detected Field Sweep (EDFS) is detected. This allows a more precise 
 gyromagnetic ratio to be calculated. Before we can do this, we must first 
-tune a pair rectangular pulses.
+tune a pair of rectangular pulses.
 
 .. code-cell:: python
     :execution-count: 3
 
-    p90, p180 = interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N,reptime = reptime)
+    p90, p180 = interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime)
 
 .. code-cell:: python
     :execution-count: 4

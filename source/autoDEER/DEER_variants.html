@@ -3,13 +3,14 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Analysis" href="analysis.html" /><link rel="prev" title="Fully - autoDEER" href="fully_autoDEER.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Reference" href="reference.html" /><link rel="prev" title="Fully - autoDEER" href="fully_autoDEER.html" />
 
-    <!-- Generated with Sphinx 6.1.3 and Furo 2022.12.07 -->
+    <!-- Generated with Sphinx 6.1.3 and Furo 2023.03.27 -->
         <title>DEER Variants - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -116,7 +117,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     Version 0.4 comming soon! 
+     Version 0.4 alpha out now! 
   </aside>
 </div>
 
@@ -172,22 +173,19 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../autoEPR/index.html">autoEPR</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../autoEPR/Getting_Started.html">Getting Started</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoEPR/Sequencer.html">Creating a Custom Sequence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../autoEPR/Interface.html">Interfaces</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../autoEPR/Interface.html">Interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../autoEPR/Bruker_interface.html">Bruker Interface</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../autoEPR/Reference.html">API Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">autoDEER</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">autoDEER</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="deer_intro.html">What is DEER?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config_file.html">Configuration File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="semi_autoDEER.html">Semi - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="fully_autoDEER.html">Fully - autoDEER</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">DEER Variants</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference.html">Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../dev_guide/index.html">Developing</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../dev_guide/Logging.html">Logging:</a></li>
 </ul>
 </li>
 </ul>
@@ -227,8 +225,8 @@
           <section id="deer-variants">
 <h1>DEER Variants<a class="headerlink" href="#deer-variants" title="Permalink to this heading">#</a></h1>
 <p>Over the years many different versions of DEER spectroscopy have been
-developed. Initially, it was 3-pulse and the 4-pulse. With the advent of
-high-speed AWGs the number of sequences exanded even more to include 5-pulse,
+developed. Initially, it was 3-pulse and 4-pulse. With the advent of
+high-speed AWGs, the number of sequences expanded, even more, to include 5-pulse,
 7-pulse and nDEER.</p>
 <p>AutoDEER currently supports these variants:</p>
 <ol class="arabic simple">
@@ -241,12 +239,222 @@ high-speed AWGs the number of sequences exanded even more to include 5-pulse,
 to be added to autoDEER, please make a pull request on GitHub.</p>
 <section id="selecting-a-version">
 <h2>Selecting a version<a class="headerlink" href="#selecting-a-version" title="Permalink to this heading">#</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sequence</span> <span class="o">=</span> <span class="n">DEERSequence</span><span class="p">(</span><span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span> <span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sequence</span> <span class="o">=</span> <span class="n">DEERSequence</span><span class="p">(</span>
+    <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro_exp</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="mf">2e3</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">tau1</span><span class="o">=</span><span class="n">tau</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">tau2</span><span class="o">=</span><span class="n">tau</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">tau3</span><span class="o">=</span><span class="mf">0.2</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">exc_pulse</span><span class="o">=</span><span class="n">exc_pulse</span><span class="p">,</span> <span class="n">ref_pulse</span><span class="o">=</span><span class="n">ref_pulse</span><span class="p">,</span>
+    <span class="n">pump_pulse</span><span class="o">=</span><span class="n">pump_pulse</span><span class="p">,</span> <span class="n">det_event</span><span class="o">=</span><span class="n">det_event</span><span class="p">)</span>
+<span class="n">sequence</span><span class="o">.</span><span class="n">five_pulse</span><span class="p">()</span>
+<span class="n">sequence</span><span class="o">.</span><span class="n">select_pcyc</span><span class="p">(</span><span class="s2">&quot;16step_5p&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>It is the <code class="docutils literal notranslate"><span class="pre">sequence.five_pulse()</span></code> that selects which DEER sequence to build,
+and the further command <code class="docutils literal notranslate"><span class="pre">sequence.select_pcyc(&quot;16step_5p&quot;)</span></code> selects the
+phase cycle. Depending on the sequence different inter-pulse delays need to be
+specified, please check the correct table below.</p>
 </section>
+<section id="deer-versions">
+<h2>DEER versions<a class="headerlink" href="#deer-versions" title="Permalink to this heading">#</a></h2>
+<section id="pulse-deer">
+<h3>4-pulse DEER<a class="headerlink" href="#pulse-deer" title="Permalink to this heading">#</a></h3>
+<img alt="../../_images/4pDEER.svg" src="../../_images/4pDEER.svg" /><p>4-pulse DEER was originally called deadtime free DEER. It is formed from a
+refocused echo where a single pump pulse is swept between the two :pi pulses.</p>
+<p>Advantages and Disadvantages</p>
+<ul class="simple">
+<li><p>If set up with narrow selective pulses can return a signal that mostly only contains a single dipolar pathway.</p></li>
+</ul>
+<ul class="simple">
+<li><p>Optimising the first inter-pulse delay (tau1) is time-consuming and often not done. Reducing SNR for many samples.</p></li>
+<li><p>Generally, less signal than other sequences. Extracting moderate to long distances from protonated samples is challenging.</p></li>
+</ul>
+<p><strong>Command:</strong> <code class="docutils literal notranslate"><span class="pre">sequence.four_pulse()</span></code></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>tau1</p></td>
+<td><p>The first excitation frequency inter-pulse delay</p></td>
+</tr>
+<tr class="row-odd"><td><p>tau2</p></td>
+<td><p>The second excitation frequency inter-pulse delay</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id1">
+<h3>5-pulse DEER<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
+<img alt="../../_images/5pDEER.svg" src="../../_images/5pDEER.svg" /><p>5-pulse DEER was developed by Borbat et. al. [1] It is a small modification of 4-pulse DEER by adding an additional fixed pump pulse before the first pi pulse.
+This change moves the primary dipolar pathway to occur at tau3 after the first pi pulse. The effect of this is that a longer dipolar evolution time
+is measurable for a given tau1 + tau2.</p>
+<ul class="simple">
+<li><p>Always gives a higher SNR than 4-pulse DEER for the same dipolar modulation depth.</p></li>
+</ul>
+<ul class="simple">
+<li><p>An additional dipolar pathway is always present</p></li>
+</ul>
+<p><strong>Command:</strong> <code class="docutils literal notranslate"><span class="pre">sequence.five_pulse()</span></code></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>tau1</p></td>
+<td><p>The first excitation frequency inter-pulse delay</p></td>
+</tr>
+<tr class="row-odd"><td><p>tau2</p></td>
+<td><p>The second excitation frequency inter-pulse delay</p></td>
+</tr>
+<tr class="row-even"><td><p>tau3</p></td>
+<td><p>The delay between the first pump_pulse and the first pi pulse. Normally 0.2 or 0.3 us</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="id2">
+<h3>7-pulse DEER<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h3>
+<img alt="../../_images/7pDEER.svg" src="../../_images/7pDEER.svg" /><p>7-pulse DEER was developed by Spindler et. al. [2] It involves extending the Carr-Purcell relaxation sequence and having a total of three pump pulses. Two of these
+pump pulses move together inwards and one if fixed.</p>
+<p><strong>Command:</strong> <code class="docutils literal notranslate"><span class="pre">sequence.seven_pulse()</span></code></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>tau1</p></td>
+<td><p>The first excitation frequency inter-pulse delay</p></td>
+</tr>
+<tr class="row-odd"><td><p>tau2</p></td>
+<td><p>The second excitation frequency inter-pulse delay</p></td>
+</tr>
+<tr class="row-even"><td><p>tau3</p></td>
+<td><p>The third excitation frequency inter-pulse delay</p></td>
+</tr>
+<tr class="row-odd"><td><p>tau4</p></td>
+<td><p>The delay between the second pump_pulse and the second pi pulse. Normally 0.2 or 0.3 us</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="ndeer">
+<h3>nDEER<a class="headerlink" href="#ndeer" title="Permalink to this heading">#</a></h3>
+<p>Non-selective DEER (nDEER) was developed by Doll and Jeschke.[3] The basic premise is that instead of only refocusing the excited spins with
+the excitation pulses, that you excite all spins.</p>
+<p>One version of nDEER allows the pump pulse to be swept through the pi pulses to
+extend the dipolar modulation time whilst keeping a high MNR.</p>
+<img alt="../../_images/nDEER-CP4.svg" src="../../_images/nDEER-CP4.svg" /><p><strong>Command:</strong> <code class="docutils literal notranslate"><span class="pre">sequence.nDEER_CP()</span></code></p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>tau1</p></td>
+<td><p>The first excitation frequency inter-pulse delay</p></td>
+</tr>
+<tr class="row-odd"><td><p>tau2</p></td>
+<td><p>The second excitation frequency inter-pulse delay</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="selecting-a-phase-cycle">
+<h2>Selecting a phase cycle<a class="headerlink" href="#selecting-a-phase-cycle" title="Permalink to this heading">#</a></h2>
+<p>A selection of pre-programmed phase cycles are included. They can be
+chosen with.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sequence</span><span class="o">.</span><span class="n">select_pcyc</span><span class="p">(</span><span class="s2">&quot;[Short Code]&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default" style="width: 150">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 5%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+<col style="width: 5%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Phase cycle</p></th>
+<th class="head"><p>Short Code</p></th>
+<th class="head"><p>Sequence</p></th>
+<th class="head"><p>Steps</p></th>
+<th class="head"><p>Pulse Phase Cycle</p></th>
+<th class="head"><p>Remaining Echoes</p></th>
+<th class="head"><p>Ref.</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>(x)x|xp|x</p></td>
+<td><p>DC</p></td>
+<td><p>ALL</p></td>
+<td><p>2</p></td>
+<td><p>[+(+x)-(-x)]</p></td>
+<td><p>PE12rp, SE(PE12)p3, PE12rpr3</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>(x)[x<sub>p</sub>]x</p></td>
+<td><p>8step_3p</p></td>
+<td><p>3 pulse</p></td>
+<td><p>8</p></td>
+<td><p>[+(+x)-(-x)]</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>x[x][x<sub>p</sub>]x</p></td>
+<td><p>16step_4p</p></td>
+<td><p>4 pulse</p></td>
+<td><p>16</p></td>
+<td rowspan="2"><p>[+(+x)-(+y)+(-x)-(-y)]</p>
+<p>[+(+x)+(+y)+(-x)+(-y)]</p>
+</td>
+<td></td>
+<td><p>[1]</p></td>
+</tr>
+<tr class="row-odd"><td><p>x|xp|[x][x<sub>p</sub>]x</p></td>
+<td><p>16step_5p</p></td>
+<td><p>5 pulse</p></td>
+<td><p>16</p></td>
+<td><p>PEp02r3,b PE1p0r2r3b</p></td>
+<td><p>[1]</p></td>
+</tr>
+<tr class="row-even"><td><p>x[x]|xp|(x)(x<sub>p</sub>)(x<sub>p</sub>)x</p></td>
+<td><p>32step_7p</p></td>
+<td><p>7 pulse</p></td>
+<td><p>32</p></td>
+<td></td>
+<td></td>
+<td><p>[1]</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 <section id="references">
-<h2>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h2>
+<h3>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>Borbat, P. P., Georgieva, E. R. &amp; Freed, J. H. Improved Sensitivity for Long-Distance Measurements in Biomolecules: Five-Pulse Double Electron–Electron Resonance. J. Phys. Chem. Lett. 4, (2013)</p></li>
+<li><p>Spindler, P. E. et al. Carr–Purcell Pulsed Electron Double Resonance with Shaped Inversion Pulses. J. Phys. Chem. Lett. 6, (2015)</p></li>
+<li><p>Doll, A. &amp; Jeschke, G. Double electron–electron resonance with multiple non-selective chirp refocusing. Phys. Chem. Chem. Phys. 19, (2017)</p></li>
+</ol>
+</section>
 </section>
 </section>
 
@@ -255,12 +463,12 @@ to be added to autoDEER, please make a pull request on GitHub.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="analysis.html">
+          <a class="next-page" href="reference.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Analysis</div>
+                <div class="title">Reference</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -307,7 +515,17 @@ to be added to autoDEER, please make a pull request on GitHub.</p>
             <ul>
 <li><a class="reference internal" href="#">DEER Variants</a><ul>
 <li><a class="reference internal" href="#selecting-a-version">Selecting a version</a></li>
+<li><a class="reference internal" href="#deer-versions">DEER versions</a><ul>
+<li><a class="reference internal" href="#pulse-deer">4-pulse DEER</a></li>
+<li><a class="reference internal" href="#id1">5-pulse DEER</a></li>
+<li><a class="reference internal" href="#id2">7-pulse DEER</a></li>
+<li><a class="reference internal" href="#ndeer">nDEER</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#selecting-a-phase-cycle">Selecting a phase cycle</a><ul>
 <li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -323,5 +541,7 @@ to be added to autoDEER, please make a pull request on GitHub.</p>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
     </body>
 </html>

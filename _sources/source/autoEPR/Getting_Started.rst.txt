@@ -5,7 +5,7 @@ autoEPR allows the user to script together multiple EPR sequences and
 measurements along with active-data processing to develop completely automatic
 push-button style experiments.
 
-A simple automated EPR experiment would consists of these main elements:
+A simple automated EPR experiment would consist of these main elements:
 
 1. Defining the Sequence
 2. Pulse Tuning
@@ -23,8 +23,8 @@ correct interface.
 
 ..  code-block:: python
 
-    import autoEPR
-    from autoEPR.hardware import BrukerAWG as interface
+    import autodeer
+    from autodeer.hardware import BrukerAWG as interface
 
 This imports the whole autoEPR which can be accessed with 
 `autoEPR.[class/function]`. Meanwhile we have loaded the 
@@ -35,18 +35,18 @@ This imports the whole autoEPR which can be accessed with
 1. Defining the sequence
 ++++++++++++++++++++++++++++
 The first step is creating a pulse sequence to be run. autoEPR has a built-in
-python based pulse-sequencer. This can be used to easily develop a general 
-spectrometer independent pulse sequence. There is no need to interface with 
+python-based pulse-sequencer. This can be used to easily develop a general 
+spectrometer-independent pulse sequence. There is no need to interface with 
 Domain Specific Languages (DSL) such as PulseSpel.
 
-Whilst you can always write your own, many common sequence come as default in
-autoEPR. For a full list of standard sequences see the 
+Whilst you can always write your own, many common sequences come as default in
+autoEPR. For a full list of standard sequences sees the 
 :doc:`API Reference <Reference>`. Here we will look at a simple Hahn-Echo 
 experiment. 
 
 .. code-block:: python
 
-    sequence = autoEPR.HahnEchoSequence(
+    sequence = autodeer.HahnEchoSequence(
         B = 12220, LO=34.01, reptime=3e3, averages=1e3, shots=100
     )
 
@@ -55,33 +55,33 @@ experiment.
 
 2. Tuning for the sequence
 ++++++++++++++++++++++++++++
-Before the sequence can be run additional tuning infomation must be added. This
+Before the sequence can be run additional tuning information must be added. This
 comes in the form of adding a scale value to each pulse in the sequence. There
 are a few ways of tuning a pulse in EPR. autoEPR supports a selection of these
-however, not all spectrometer support all approaches and not all methods work 
+, however, not all spectrometer support all approaches and not all methods work 
 for every scenario. 
 
 1. Echo-amplitude (Amplitude sweep)
 2. Echo-amplitude (Pulse duration sweep) [Coming soon]
 3. Nutation (Amplitude sweep) 
 4. Nutation (Pulse duration sweep) [Coming soon]
-5. Pulse-profiles. [Coming soon]
+5. Pulse profiles. [Coming soon]
 
-In this basic example we will tune using the first method. On Bruker 
-spectrometers amplitude sweeps are not avaliable natively however, autoEPR
+In this basic example, we will tune using the first method. On Bruker 
+spectrometers amplitude sweeps are not available natively however, autoEPR
 solves this by conducting multiple measurements at different amplitudes.
 
 .. code-block:: python
 
-    pulse = interface.tune_pulse(sequence, B, LO, reptime, mode="amp_nut")
+    pulse = interface.tune_pulse(sequence.pulses[0], B, LO, reptime, mode="amp_nut")
 
-This returns a modified pusle that now contains the correct scale value.
+This returns a modified pulse that now contains the correct scale value.
 
 If only simple rectangular pulses of equal power are required for a setup 
 experiment this can be done using the `tune_rect` function. These pulses are
 then cached in `interface.pulses` so they can be easily accessed at a later
 time. A set of pi and pi/2 pulses in the cache are required for `tune_pulse`,
-otherwise they will be generated.
+otherwise, they will be generated.
 
 .. code-block:: python
 
@@ -89,16 +89,14 @@ otherwise they will be generated.
 
 The cache (`interface.pulses`) is a dictionary. Rectangular pulses added to 
 the dictionary will have keys in the form of "p[90/180]_[tp]_[freq]" e.g 
-"p90_12_34.1". Remember that if the sample is changed or the the resonator
+"p90_12_34.1". Remember that if the sample is changed or the resonator
 adjusted the cache needs to be cleared: `interface.clear_cache()`.
-
 
 3. Starting the sequence
 ++++++++++++++++++++++++++++
 Now that spectrometer is tuned and the sequence has the appropriate scaling
-infomation we can now launch the actual sequence. Only one piece of infomation
+information we can now launch the actual sequence. Only one piece of information
 is needed, a file name.
-
 .. code-block:: python
     
     interface.launch(sequence, savename="My First Sequence")
@@ -115,29 +113,28 @@ This returns a :ref:`dataset<dataset>` object that contains not only the `data`,
 
 4. Stopping the sequence
 ++++++++++++++++++++++++++++
-Deciding when to stop a measurment is much more involved then when to start. 
+Deciding when to stop a measurement is much more involved than when to start. 
 Normally, this is done by either time or a set number of scans. Both of these
-are normally decided before the measurment has started and before the quality
+are normally decided before the measurement has started and before the quality
 of the sample is truly known. autoEPR allows for more accurate criteria to be
-set such as, Signal to Noise(SNR) or for dynamic criteria to be used. An 
+set such as Signal to Noise(SNR) or for dynamic criteria to be used. An 
 example of such dynamical criteria would be in autoDEER where the distance 
 distribution after data processing is used.
 
-Setting a termination criteria is trivally simple with autoEPR. Here is an 
-example where we are using a SNR criteria of 30.
+Setting termination criteria is trivially simple with autoEPR. Here is an 
+example where we are using SNR criteria of 30.
 
 .. code-block:: python
 
-    criteria = autoEPR.SNRCriteria(threshold=30)
+    criteria = autodeer.SNRCriteria(threshold=30)
     interface.terminate_at(criteria)
-
-This will test the measurment every 10 minutes to see if the threshold has been
+    
+This will test the measurement every 10 minutes to see if the threshold has been
 reached and then it will terminate the experiment. If a more regular or less 
 regular interval is required, this can be specified by passing the argument 
 `test_interval=` with the time period given in minutes.
 
 If you want to terminate the experiment immediately, this is also possible.
-
 .. code-block:: python
 
     interface.terminate()

@@ -5,11 +5,12 @@
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Creating a Custom Sequence" href="Sequencer.html" /><link rel="prev" title="autoEPR" href="index.html" />
 
-    <!-- Generated with Sphinx 6.1.3 and Furo 2022.12.07 -->
+    <!-- Generated with Sphinx 6.1.3 and Furo 2023.03.27 -->
         <title>Getting Started - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -116,7 +117,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     Version 0.4 comming soon! 
+     Version 0.4 alpha out now! 
   </aside>
 </div>
 
@@ -172,22 +173,19 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">autoEPR</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Getting Started</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Sequencer.html">Creating a Custom Sequence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Interface.html">Interfaces</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="Interface.html">Interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="Bruker_interface.html">Bruker Interface</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="Reference.html">API Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../autoDEER/index.html">autoDEER</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../autoDEER/index.html">autoDEER</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/deer_intro.html">What is DEER?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../autoDEER/config_file.html">Configuration File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/semi_autoDEER.html">Semi - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/fully_autoDEER.html">Fully - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/DEER_variants.html">DEER Variants</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../autoDEER/analysis.html">Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/reference.html">Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../dev_guide/index.html">Developing</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../dev_guide/Logging.html">Logging:</a></li>
 </ul>
 </li>
 </ul>
@@ -229,7 +227,7 @@
 <p>autoEPR allows the user to script together multiple EPR sequences and
 measurements along with active-data processing to develop completely automatic
 push-button style experiments.</p>
-<p>A simple automated EPR experiment would consists of these main elements:</p>
+<p>A simple automated EPR experiment would consist of these main elements:</p>
 <ol class="arabic simple">
 <li><p>Defining the Sequence</p></li>
 <li><p>Pulse Tuning</p></li>
@@ -243,8 +241,8 @@ active data analysis whilst the sequence is still running.</p>
 <h2>Setting up your script<a class="headerlink" href="#setting-up-your-script" title="Permalink to this heading">#</a></h2>
 <p>autoEPR is a python package. Before use, it must be imported along with the
 correct interface.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">autoEPR</span>
-<span class="kn">from</span> <span class="nn">autoEPR.hardware</span> <span class="kn">import</span> <span class="n">BrukerAWG</span> <span class="k">as</span> <span class="n">interface</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">autodeer</span>
+<span class="kn">from</span> <span class="nn">autodeer.hardware</span> <span class="kn">import</span> <span class="n">BrukerAWG</span> <span class="k">as</span> <span class="n">interface</span>
 </pre></div>
 </div>
 <p>This imports the whole autoEPR which can be accessed with
@@ -254,14 +252,14 @@ correct interface.</p>
 <section id="defining-the-sequence">
 <h3>1. Defining the sequence<a class="headerlink" href="#defining-the-sequence" title="Permalink to this heading">#</a></h3>
 <p>The first step is creating a pulse sequence to be run. autoEPR has a built-in
-python based pulse-sequencer. This can be used to easily develop a general
-spectrometer independent pulse sequence. There is no need to interface with
+python-based pulse-sequencer. This can be used to easily develop a general
+spectrometer-independent pulse sequence. There is no need to interface with
 Domain Specific Languages (DSL) such as PulseSpel.</p>
-<p>Whilst you can always write your own, many common sequence come as default in
-autoEPR. For a full list of standard sequences see the
+<p>Whilst you can always write your own, many common sequences come as default in
+autoEPR. For a full list of standard sequences sees the
 <a class="reference internal" href="Reference.html"><span class="doc">API Reference</span></a>. Here we will look at a simple Hahn-Echo
 experiment.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sequence</span> <span class="o">=</span> <span class="n">autoEPR</span><span class="o">.</span><span class="n">HahnEchoSequence</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sequence</span> <span class="o">=</span> <span class="n">autodeer</span><span class="o">.</span><span class="n">HahnEchoSequence</span><span class="p">(</span>
     <span class="n">B</span> <span class="o">=</span> <span class="mi">12220</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="mf">34.01</span><span class="p">,</span> <span class="n">reptime</span><span class="o">=</span><span class="mf">3e3</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="mi">100</span>
 <span class="p">)</span>
 
@@ -272,46 +270,47 @@ experiment.</p>
 </section>
 <section id="tuning-for-the-sequence">
 <h3>2. Tuning for the sequence<a class="headerlink" href="#tuning-for-the-sequence" title="Permalink to this heading">#</a></h3>
-<p>Before the sequence can be run additional tuning infomation must be added. This
+<p>Before the sequence can be run additional tuning information must be added. This
 comes in the form of adding a scale value to each pulse in the sequence. There
 are a few ways of tuning a pulse in EPR. autoEPR supports a selection of these
-however, not all spectrometer support all approaches and not all methods work
+, however, not all spectrometer support all approaches and not all methods work
 for every scenario.</p>
 <ol class="arabic simple">
 <li><p>Echo-amplitude (Amplitude sweep)</p></li>
 <li><p>Echo-amplitude (Pulse duration sweep) [Coming soon]</p></li>
 <li><p>Nutation (Amplitude sweep)</p></li>
 <li><p>Nutation (Pulse duration sweep) [Coming soon]</p></li>
-<li><p>Pulse-profiles. [Coming soon]</p></li>
+<li><p>Pulse profiles. [Coming soon]</p></li>
 </ol>
-<p>In this basic example we will tune using the first method. On Bruker
-spectrometers amplitude sweeps are not avaliable natively however, autoEPR
+<p>In this basic example, we will tune using the first method. On Bruker
+spectrometers amplitude sweeps are not available natively however, autoEPR
 solves this by conducting multiple measurements at different amplitudes.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pulse</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">tune_pulse</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;amp_nut&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pulse</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">tune_pulse</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;amp_nut&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This returns a modified pusle that now contains the correct scale value.</p>
+<p>This returns a modified pulse that now contains the correct scale value.</p>
 <p>If only simple rectangular pulses of equal power are required for a setup
 experiment this can be done using the <cite>tune_rect</cite> function. These pulses are
 then cached in <cite>interface.pulses</cite> so they can be easily accessed at a later
 time. A set of pi and pi/2 pulses in the cache are required for <cite>tune_pulse</cite>,
-otherwise they will be generated.</p>
+otherwise, they will be generated.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pi2_pulse</span><span class="p">,</span> <span class="n">pi_pulse</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">tune_rect</span><span class="p">(</span><span class="n">tp</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The cache (<cite>interface.pulses</cite>) is a dictionary. Rectangular pulses added to
 the dictionary will have keys in the form of “p[90/180]_[tp]_[freq]” e.g
-“p90_12_34.1”. Remember that if the sample is changed or the the resonator
+“p90_12_34.1”. Remember that if the sample is changed or the resonator
 adjusted the cache needs to be cleared: <cite>interface.clear_cache()</cite>.</p>
 </section>
 <section id="starting-the-sequence">
 <h3>3. Starting the sequence<a class="headerlink" href="#starting-the-sequence" title="Permalink to this heading">#</a></h3>
 <p>Now that spectrometer is tuned and the sequence has the appropriate scaling
-infomation we can now launch the actual sequence. Only one piece of infomation
-is needed, a file name.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">savename</span><span class="o">=</span><span class="s2">&quot;My First Sequence&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
+information we can now launch the actual sequence. Only one piece of information
+is needed, a file name.
+.. code-block:: python</p>
+<blockquote>
+<div><p>interface.launch(sequence, savename=”My First Sequence”)</p>
+</div></blockquote>
 <p>Acquiring data from the spectrometer is trivally simple.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">acquire_dataset</span><span class="p">()</span>
 </pre></div>
@@ -321,27 +320,28 @@ is needed, a file name.</p>
 </section>
 <section id="stopping-the-sequence">
 <h3>4. Stopping the sequence<a class="headerlink" href="#stopping-the-sequence" title="Permalink to this heading">#</a></h3>
-<p>Deciding when to stop a measurment is much more involved then when to start.
+<p>Deciding when to stop a measurement is much more involved than when to start.
 Normally, this is done by either time or a set number of scans. Both of these
-are normally decided before the measurment has started and before the quality
+are normally decided before the measurement has started and before the quality
 of the sample is truly known. autoEPR allows for more accurate criteria to be
-set such as, Signal to Noise(SNR) or for dynamic criteria to be used. An
+set such as Signal to Noise(SNR) or for dynamic criteria to be used. An
 example of such dynamical criteria would be in autoDEER where the distance
 distribution after data processing is used.</p>
-<p>Setting a termination criteria is trivally simple with autoEPR. Here is an
-example where we are using a SNR criteria of 30.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">criteria</span> <span class="o">=</span> <span class="n">autoEPR</span><span class="o">.</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<p>Setting termination criteria is trivially simple with autoEPR. Here is an
+example where we are using SNR criteria of 30.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">criteria</span> <span class="o">=</span> <span class="n">autodeer</span><span class="o">.</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
 <span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">criteria</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This will test the measurment every 10 minutes to see if the threshold has been
+<p>This will test the measurement every 10 minutes to see if the threshold has been
 reached and then it will terminate the experiment. If a more regular or less
 regular interval is required, this can be specified by passing the argument
 <cite>test_interval=</cite> with the time period given in minutes.</p>
-<p>If you want to terminate the experiment immediately, this is also possible.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">interface</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
-</pre></div>
-</div>
+<p>If you want to terminate the experiment immediately, this is also possible.
+.. code-block:: python</p>
+<blockquote>
+<div><p>interface.terminate()</p>
+</div></blockquote>
 </section>
 <section id="data-analysis">
 <h3>5. Data analysis<a class="headerlink" href="#data-analysis" title="Permalink to this heading">#</a></h3>
@@ -449,5 +449,7 @@ pulse sequence into one script.</p>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
     </body>
 </html>

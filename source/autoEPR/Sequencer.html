@@ -5,11 +5,12 @@
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Interfaces" href="Interface.html" /><link rel="prev" title="Getting Started" href="Getting_Started.html" />
 
-    <!-- Generated with Sphinx 6.1.3 and Furo 2022.12.07 -->
+    <!-- Generated with Sphinx 6.1.3 and Furo 2023.03.27 -->
         <title>Creating a Custom Sequence - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -116,7 +117,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     Version 0.4 comming soon! 
+     Version 0.4 alpha out now! 
   </aside>
 </div>
 
@@ -172,22 +173,19 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">autoEPR</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="Getting_Started.html">Getting Started</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Creating a Custom Sequence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Interface.html">Interfaces</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="Interface.html">Interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="Bruker_interface.html">Bruker Interface</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="Reference.html">API Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../autoDEER/index.html">autoDEER</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../autoDEER/index.html">autoDEER</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/deer_intro.html">What is DEER?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../autoDEER/config_file.html">Configuration File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/semi_autoDEER.html">Semi - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/fully_autoDEER.html">Fully - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/DEER_variants.html">DEER Variants</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../autoDEER/analysis.html">Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/reference.html">Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../dev_guide/index.html">Developing</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../dev_guide/Logging.html">Logging:</a></li>
 </ul>
 </li>
 </ul>
@@ -228,22 +226,22 @@
 <h1>Creating a Custom Sequence<a class="headerlink" href="#creating-a-custom-sequence" title="Permalink to this heading">#</a></h1>
 <p>autoEPR can be used to script and develop EPR pulse sequences in Python.</p>
 <p>Pulse sequences are built up of two main object: <a class="reference internal" href="_autosummary/autodeer.classes.Sequence.html#sequence"><span class="std std-ref">Sequences</span></a>
-and <a class="reference internal" href="_autosummary/autodeer.classes.Pulse.html#pulse"><span class="std std-ref">Pulses</span></a>. In its simplist form a pulse sequence is just a
+and <a class="reference internal" href="_autosummary/autodeer.classes.Pulse.html#pulse"><span class="std std-ref">Pulses</span></a>. In its simplest form, a pulse sequence is just a
 train of pulses. Here, we consider a pulse in its general form. I.e. Pulses are
 not just MW pulses but also delays and detection events.</p>
-<p>A sequence also contains additional infomation about the experiment, such as:
+<p>A sequence also contains additional information about the experiment, such as:
 the LO frequency; the B0 field; Averages and shots; and the shot repetition
 time.</p>
 <p>There are two ways of thinking about and writing down a pulse sequence:</p>
 <ol class="arabic simple">
-<li><p>Delay focused (Like PulseSpel)</p></li>
-<li><p>Pulse focused (Like Tables)</p></li>
+<li><p>Delay-focused (Like PulseSpel)</p></li>
+<li><p>Pulse-focused (Like Tables)</p></li>
 </ol>
 <p>When many EPR spectrometrists think about pulse sequences they think of pulses
-seperated by delays, and these delays increase and decrease in length to change
+separated by delays, and these delays increase and decrease in length to change
 the position of the pulses. However, most AWGs and spectrometers think in terms
-of pulses with a time position and it is this time positon that moves. Both of
-these approaches are physically equivalent, and such both approaches can be
+of pulses with a time position and it is this time position that moves. Both of
+these approaches are physically equivalent, and both approaches can be
 used in autoEPR. However, most interfaces can only take sequences of one type.
 Sequences can be converted between each other with the <cite>Sequence.convert()</cite>
 command.</p>
@@ -251,108 +249,106 @@ command.</p>
 <h2>Creating your first sequence<a class="headerlink" href="#creating-your-first-sequence" title="Permalink to this heading">#</a></h2>
 <p>Here I will demonstrate how to build a simple Hahn Echo sequence using
 rectangular pulses.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">autodeer</span> <span class="k">as</span> <span class="nn">ad</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">autodeer.openepr</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">RectPulse</span><span class="p">,</span> <span class="n">Detection</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Hahn Echo&quot;</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">12220</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="mf">34.0</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="mf">3e3</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">averages</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="mi">100</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Detection</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">autodeer</span> <span class="k">as</span> <span class="nn">ad</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">autodeer</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">RectPulse</span><span class="p">,</span> <span class="n">Detection</span>
+<span class="n">HahnEcho</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Hahn Echo&quot;</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">12220</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="mf">34.0</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="mf">3e3</span><span class="p">,</span>
+    <span class="n">averages</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="mi">100</span>
+    <span class="p">)</span>
+<span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+<span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Detection</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>This sequece can also be created using delays.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">autodeer</span> <span class="k">as</span> <span class="nn">ad</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">autodeer.openepr</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">RectPulse</span><span class="p">,</span> <span class="n">Delay</span><span class="p">,</span> <span class="n">Detection</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Hahn Echo&quot;</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">12220</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="mf">34.0</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="mf">3e3</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">averages</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="mi">100</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Delay</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">200</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Delay</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">200</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Detection</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">autodeer</span> <span class="k">as</span> <span class="nn">ad</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">autodeer</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">RectPulse</span><span class="p">,</span> <span class="n">Delay</span><span class="p">,</span> <span class="n">Detection</span>
+<span class="n">HahnEcho</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Hahn Echo&quot;</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">12220</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="mf">34.0</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="mf">3e3</span><span class="p">,</span>
+    <span class="n">averages</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="mi">100</span>
+    <span class="p">)</span>
+<span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Delay</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">200</span><span class="p">))</span>
+<span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+<span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Delay</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">200</span><span class="p">))</span>
+<span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Detection</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">))</span>
 </pre></div>
 </div>
 <p><strong>Adding Progression</strong></p>
 <p>A single static echo is only of limited use. To make a pulse move we need to
-add a progressive axis. In this example we will increase the delays of the
+add a progressive axis. In this example, we will increase the delays of the
 above sequence from 200ns to 6us in 100ns steps.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulsesProg</span><span class="p">(</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">pulses</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tp&quot;</span><span class="p">,</span><span class="s2">&quot;tp&quot;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">axis_id</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">2e2</span><span class="p">,</span><span class="mf">6e3</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">multipliers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulsesProg</span><span class="p">(</span>
+    <span class="n">pulses</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
+    <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tp&quot;</span><span class="p">,</span><span class="s2">&quot;tp&quot;</span><span class="p">]</span>
+    <span class="n">axis_id</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">2e2</span><span class="p">,</span><span class="mf">6e3</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">multipliers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Adding Phase Cycles</strong></p>
 <p>In nearly all EPR pulse sequences a phase cycle is required to remove
 additional unwanted echoes and coherence pathways. This is possible in
 autoEPR without having to multiply out the full cycle, by adding the phase
-cycle indivdually to each pulse.</p>
-<p>This is done by adding an extra dictionary to the pulse delceration. This
-dictionary consitsts of two list: phases (“phases”), detection signs(“dets”).</p>
-<p>For example if we wanted to add the standard DC offset cycle on the first pi/2
+cycle individually to each pulse.</p>
+<p>This is done by adding an extra dictionary to the pulse declaration. This
+dictionary consists of two lists: phases (“phases”), detection signs(“dets”).</p>
+<p>For example, if we wanted to add the standard DC offset cycle on the first pi/2
 pulse we can simply do.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">tp</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">pcyc</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;phases&quot;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">],</span> <span class="s2">&quot;dets&quot;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]}))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">HahnEcho</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span>
+    <span class="n">tp</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">pcyc</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;phases&quot;</span><span class="p">:[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">],</span> <span class="s2">&quot;dets&quot;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]}))</span>
 </pre></div>
 </div>
 <p><strong>Viewing the sequence</strong></p>
 <p>The simplist way to look at a pulse sequence is to print it. Printing a
 Sequence will generate a table containing all the import paramaters and
 infomation.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">HahnEcho</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">HahnEcho</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Standard Sequences</strong></p>
 <p>Since a Hahn Echo is such a standard sequence it comes pre-built as
-<cite>HahnEchoSequence</cite>. A full list of standard sequences can be found
-<a class="reference internal" href="Reference.html#standard-sequences"><span class="std std-ref">here</span></a></p>
+<cite>HahnEchoSequence</cite>. A full list of standard sequences can be found <a class="reference internal" href="Reference.html#standard-sequences"><span class="std std-ref">here</span></a></p>
 </section>
 <section id="using-shaped-and-chirped-pulses">
 <h2>Using Shaped and Chirped pulses<a class="headerlink" href="#using-shaped-and-chirped-pulses" title="Permalink to this heading">#</a></h2>
 <p>So far we have only looked at monochromatic rectangular pulses. It is often
-advantages to use wideband shaped and chirped pulses. Chirped pulses allows for
-a wider excitation bandwidth at a lower power level, and shaped pulse are used
+advantageous to use wideband-shaped and chirped pulses. Chirped pulses allow for
+a wider excitation bandwidth at a lower power level, and shaped pulse is used
 to reduce excitation side-lobes.</p>
-<p>Many standard pulses are included, however custom pulses can also be created.
-A full list of standard pulses can be found
-<a class="reference internal" href="Reference.html#standard-sequences"><span class="std std-ref">here</span></a></p>
+<p>Many standard pulses are included, however, custom pulses can also be created.
+A full list of standard pulses can be found <a class="reference internal" href="Reference.html#standard-sequences"><span class="std std-ref">here</span></a></p>
 <section id="chirped-pulses">
 <h3>Chirped pulses<a class="headerlink" href="#chirped-pulses" title="Permalink to this heading">#</a></h3>
-<p>The simplist type of chirped pulse is a linear chip and it is implemented in
-the  <a class="reference internal" href="_autosummary/autodeer.pulses.ChirpPulse.html#chirppulse"><span class="std std-ref">ChirpPulse</span></a> method. ChirpPulse requires the paramaters
-as RectPulse when being declared as well as two frequency paramaters. Options:
+<p>The simplest type of chirped pulse is a linear chip and it is implemented in
+the:ref:<cite>ChirpPulse &lt;ChirpPulse&gt;</cite> method. ChirpPulse requires the parameters
+as RectPulse when being declared as well as two frequency parameters. Options:
 Bandwidth: <cite>BW</cite>; Initial Frequency <cite>init_freq</cite>; Final Frequency <cite>final_freq</cite>.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">autodeer.openepr</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">test_pulse</span> <span class="o">=</span> <span class="n">ChirpPulse</span><span class="p">(</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">tp</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">init_freq</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">BW</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">flipangle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">autodeer</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="n">test_pulse</span> <span class="o">=</span> <span class="n">ChirpPulse</span><span class="p">(</span>
+    <span class="n">tp</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">init_freq</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">BW</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">flipangle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 <p>Just like with Sequences, Pulses can also be printed to get a table of the
 import infomation.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">test_pulse</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">test_pulse</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="custom-pulses">
 <h3>Custom pulses<a class="headerlink" href="#custom-pulses" title="Permalink to this heading">#</a></h3>
 <p>Unlike when making custom sequences it is not recommended that you use an
-instance of the class, instead it is recommended that create a new class which
+an instance of the class, instead it is recommended that create a new class which
 inherits from the class <a class="reference internal" href="_autosummary/autodeer.classes.Pulse.html#pulse"><span class="std std-ref">Pulse</span></a>.</p>
-<p>All pulses, have the attributes <cite>AM</cite> and <cite>FM</cite> which describe their shape and
-frequency dependecies. The recommended way of creating these is to create a
-function called <cite>func</cite> and builds <cite>AM</cite> and <cite>FM</cite> for this specific pulse length.
+<p>All pulses have the attributes <cite>AM</cite> and <cite>FM</cite> which describe their shape and
+frequency dependencies. The recommended way of creating these is to create a
+function called <cite>func</cite> and build <cite>AM</cite> and <cite>FM</cite> for this specific pulse length.
 For a rectangular pulse this is simply:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
     <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -361,8 +357,8 @@ For a rectangular pulse this is simply:</p>
     <span class="k">return</span> <span class="n">AM</span><span class="p">,</span> <span class="n">FM</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">autodeer.openepr</span> <span class="kn">import</span> <span class="n">pulse</span>
-<span class="k">class</span> <span class="nc">new_pulse</span><span class="p">(</span><span class="n">pulse</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">autodeer</span> <span class="kn">import</span> <span class="n">Pulse</span>
+<span class="k">class</span> <span class="nc">new_pulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 
     <span class="c1"># First we need to create the class init statment</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -474,5 +470,7 @@ For a rectangular pulse this is simply:</p>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
     </body>
 </html>

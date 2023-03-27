@@ -3,13 +3,14 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Fully - autoDEER" href="fully_autoDEER.html" /><link rel="prev" title="Configuration File" href="config_file.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Fully - autoDEER" href="fully_autoDEER.html" /><link rel="prev" title="What is DEER?" href="deer_intro.html" />
 
-    <!-- Generated with Sphinx 6.1.3 and Furo 2022.12.07 -->
+    <!-- Generated with Sphinx 6.1.3 and Furo 2023.03.27 -->
         <title>Semi - autoDEER - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -116,7 +117,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     Version 0.4 comming soon! 
+     Version 0.4 alpha out now! 
   </aside>
 </div>
 
@@ -172,22 +173,19 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../autoEPR/index.html">autoEPR</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../autoEPR/Getting_Started.html">Getting Started</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoEPR/Sequencer.html">Creating a Custom Sequence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../autoEPR/Interface.html">Interfaces</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../autoEPR/Interface.html">Interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../autoEPR/Bruker_interface.html">Bruker Interface</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../autoEPR/Reference.html">API Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">autoDEER</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">autoDEER</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="deer_intro.html">What is DEER?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config_file.html">Configuration File</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Semi - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="fully_autoDEER.html">Fully - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DEER_variants.html">DEER Variants</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference.html">Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../dev_guide/index.html">Developing</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../dev_guide/Logging.html">Logging:</a></li>
 </ul>
 </li>
 </ul>
@@ -226,18 +224,18 @@
         <article role="main">
           <section id="semi-autodeer">
 <h1>Semi - autoDEER<a class="headerlink" href="#semi-autodeer" title="Permalink to this heading">#</a></h1>
-<section id="what-is-a-semi-autodeer-experiemnt">
-<h2>What is a semi-autoDEER experiemnt?<a class="headerlink" href="#what-is-a-semi-autodeer-experiemnt" title="Permalink to this heading">#</a></h2>
-<p>A semi-autoDEER experiemnt is an autoDEER experiemnt run inside a Jupyter
-notebook where each sub-experiment is run individually this allows an experianced
+<section id="what-is-a-semi-autodeer-experiment">
+<h2>What is a semi-autoDEER experiment?<a class="headerlink" href="#what-is-a-semi-autodeer-experiment" title="Permalink to this heading">#</a></h2>
+<p>A semi-autoDEER experiment is an autoDEER experiment run inside a Jupyter
+notebook where each sub-experiment is run individually this allows an experienced
 user to intercede and take control when necessary or provide slight modifications
-to the script. It has the same form and layout to a fully autoDEER experiment.</p>
-<p>In this example we show how to run a five-pulse DEER experiment using
+to the script. It has the same form and layout as a fully autoDEER experiment.</p>
+<p>In this example, we show how to run a five-pulse DEER experiment using
 rectangular pulses.</p>
 </section>
 <section id="setup">
 <h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading">#</a></h2>
-<p>First we must import all the necessary packages, and the interface. In this
+<p>First, we must import all the necessary packages and the interface. In this
 example we are using a custom ETH-AWG interface.</p>
 <div class="code-cell docutils container">
 <div class="prompt code-cell-prompt notranslate">In [1]:</div>
@@ -251,14 +249,14 @@ example we are using a custom ETH-AWG interface.</p>
 </pre></div>
 </div>
 </div>
-<p>Here we define a few starting parameters as well as initialising the interface.
-It is at this step that a connection between autoDEER and your spectrometer api
+<p>Here we define a few starting parameters as well as initialise the interface.
+It is at this step that a connection between autoDEER and your spectrometer API
 is made.</p>
 <div class="code-cell docutils container">
 <div class="prompt code-cell-prompt notranslate">In [2]:</div>
-<div class="code-cell-code highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gyro_N</span> <span class="o">=</span> <span class="mf">0.0028087</span>
-<span class="n">LO</span> <span class="o">=</span> <span class="mf">34.2172</span>
-<span class="n">reptime</span> <span class="o">=</span> <span class="mf">2e3</span> <span class="c1"># we can automate this but it might be unnecessary</span>
+<div class="code-cell-code highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gyro_N</span> <span class="o">=</span> <span class="mf">0.0028087</span> <span class="c1"># This is just an initial guess of the gyromagnetic ratio, a more precise value will be calculated from the field sweep.</span>
+<span class="n">LO</span> <span class="o">=</span> <span class="mf">34.2172</span> <span class="c1"># The is the central frequency of your resonator</span>
+<span class="n">reptime</span> <span class="o">=</span> <span class="mf">2e3</span> <span class="c1"># This should be 3-5e3 when using 50K</span>
 <span class="n">interface</span> <span class="o">=</span> <span class="n">ETH_awg_interface</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -268,10 +266,10 @@ is made.</p>
 <h2>Field Sweep<a class="headerlink" href="#field-sweep" title="Permalink to this heading">#</a></h2>
 <p>An Echo Detected Field Sweep (EDFS) is detected. This allows a more precise
 gyromagnetic ratio to be calculated. Before we can do this, we must first
-tune a pair rectangular pulses.</p>
+tune a pair of rectangular pulses.</p>
 <div class="code-cell docutils container">
 <div class="prompt code-cell-prompt notranslate">In [3]:</div>
-<div class="code-cell-code highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p90</span><span class="p">,</span> <span class="n">p180</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">tune_rectpulse</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro_N</span><span class="p">,</span><span class="n">reptime</span> <span class="o">=</span> <span class="n">reptime</span><span class="p">)</span>
+<div class="code-cell-code highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p90</span><span class="p">,</span> <span class="n">p180</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">tune_rectpulse</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro_N</span><span class="p">,</span> <span class="n">reptime</span> <span class="o">=</span> <span class="n">reptime</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -639,14 +637,14 @@ be a frequency seperation between the excitation pulse and the pump pulse.</p>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="config_file.html">
+          <a class="prev-page" href="deer_intro.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Configuration File</div>
+                <div class="title">What is DEER?</div>
                 
               </div>
             </a>
@@ -681,7 +679,7 @@ be a frequency seperation between the excitation pulse and the pump pulse.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Semi - autoDEER</a><ul>
-<li><a class="reference internal" href="#what-is-a-semi-autodeer-experiemnt">What is a semi-autoDEER experiemnt?</a></li>
+<li><a class="reference internal" href="#what-is-a-semi-autodeer-experiment">What is a semi-autoDEER experiment?</a></li>
 <li><a class="reference internal" href="#setup">Setup</a></li>
 <li><a class="reference internal" href="#field-sweep">Field Sweep</a></li>
 <li><a class="reference internal" href="#resonator-profile">Resonator Profile</a></li>
@@ -701,5 +699,7 @@ be a frequency seperation between the excitation pulse and the pump pulse.</p>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
     </body>
 </html>

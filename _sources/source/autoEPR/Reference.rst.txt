@@ -11,7 +11,7 @@ Core Functionality
         :maxdepth: 1
     :template: custom_class_template.rst
     :nosignatures:
-    
+
     Dataset
     Interface
     Sequence

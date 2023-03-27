@@ -3,13 +3,14 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="API Reference" href="Reference.html" /><link rel="prev" title="Creating a Custom Sequence" href="Sequencer.html" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Bruker Interface" href="Bruker_interface.html" /><link rel="prev" title="Creating a Custom Sequence" href="Sequencer.html" />
 
-    <!-- Generated with Sphinx 6.1.3 and Furo 2022.12.07 -->
+    <!-- Generated with Sphinx 6.1.3 and Furo 2023.03.27 -->
         <title>Interfaces - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -116,7 +117,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     Version 0.4 comming soon! 
+     Version 0.4 alpha out now! 
   </aside>
 </div>
 
@@ -172,22 +173,19 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">autoEPR</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="Getting_Started.html">Getting Started</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Sequencer.html">Creating a Custom Sequence</a></li>
-<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Interfaces</a></li>
+<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">Interfaces</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="Bruker_interface.html">Bruker Interface</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="Reference.html">API Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../autoDEER/index.html">autoDEER</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../autoDEER/index.html">autoDEER</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/deer_intro.html">What is DEER?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../autoDEER/config_file.html">Configuration File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/semi_autoDEER.html">Semi - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/fully_autoDEER.html">Fully - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/DEER_variants.html">DEER Variants</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../autoDEER/analysis.html">Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/reference.html">Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../dev_guide/index.html">Developing</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../dev_guide/Logging.html">Logging:</a></li>
 </ul>
 </li>
 </ul>
@@ -227,17 +225,18 @@
           <section id="interfaces">
 <h1>Interfaces<a class="headerlink" href="#interfaces" title="Permalink to this heading">#</a></h1>
 <p>Currently, there are two main types of interface.
-1. A General interface
+1. A General Interface
 2. A Bruker interface</p>
-<p>A Bruker interface is still just a sub class of the general interface. However,
+<p>A Bruker interface is still just a subclass of the general interface. However,
 it has been specially designed to connect with Xepr. The general interface can
 be expanded to support nearly all home-built spectrometers.</p>
+<a class="reference internal image-reference" href="../../_images/Spectrometer_interfaces.svg"><img alt="../../_images/Spectrometer_interfaces.svg" class="align-center" src="../../_images/Spectrometer_interfaces.svg" width="65%" /></a>
 <section id="custom-interface">
 <h2>Custom Interface<a class="headerlink" href="#custom-interface" title="Permalink to this heading">#</a></h2>
-<p>A key feature of this project is support for custom home-built spectrometer on
-an equal footing to Bruker spectrometers. However, of course we can not provide
+<p>A key feature of this project is support for custom home-built spectrometers on
+an equal footing to Bruker spectrometers. However, of course, we can not provide
 native interfaces for every single spectrometer. Here is a short guide on how
-to interface with a MATLAB based spectrometer. This should give you a flavour
+to interface with a MATLAB-based spectrometer. This should give you a flavour
 of how to build your own.</p>
 <p>All interfaces are a sub-class of Interface. This provides the minimum methods
 required for an interface to work.</p>
@@ -253,23 +252,23 @@ sequence to what is required?</p>
 and is not recommended for use at this time.
 Please contact the development team for further infomation.</p>
 </div>
-<p>Most Bruker ELEXSYS-II spectrometer are fundamentally similar and are
+<p>Most Bruker ELEXSYS-II spectrometers are fundamentally similar and are
 controlled by the Xepr. This means that we interface with all these
 spectrometers in a similar fashion. Nonetheless, we still split them into
 two classes: MPFU-based and AWG-based.</p>
 <p><strong>Basic Approach</strong></p>
-<p>Both of these interfaces are based upon the XeprAPI, this allows Python nearly
+<p>Both of these interfaces are based upon the XeprAPI, which allows Python nearly
 full control of Xepr with a couple of significant caveats.</p>
 <p>Most of the interface is done through the auto-generation of custom PulseSpel
-scripts. This is done by the class PulseSpel, and can be used seperately if
+scripts. This is done by the class PulseSpel and can be used separately if
 needed.</p>
 <p><strong>The need for calibration</strong></p>
-<p>Like all spectrometers there is a need to perform a few calibration measurements
-initially. On nearly-all spectrometer: a resonator profile and a TWT-profile
-are strongly recommended. However, on Bruker spectrometers there are additional
-requirements depending on your specifici spectrometer. Many of these are caused
-by non-digital components or non-linear components in the bridge, and only do
-not need to be repeated at the start of every measuremnt session.</p>
+<p>Like all spectrometers, there is a need to perform a few calibration measurements
+initially. On nearly-all spectrometers: a resonator profile and a TWT-profile
+are strongly recommended. However, on Bruker spectrometers, there are additional
+requirements depending on your specific spectrometer. Many of these are caused
+by non-digital components or non-linear components in the bridge and do not
+need to be done at the start of every measurement session.</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -279,19 +278,19 @@ not need to be repeated at the start of every measuremnt session.</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Resonator Profile</p></td>
-<td><p>Always</p></td>
+<td><p>Often</p></td>
 </tr>
-<tr class="row-odd"><td><p>TWT Profile</p></td>
-<td><p>Always</p></td>
-</tr>
-<tr class="row-even"><td><p>LO - Frequency</p></td>
+<tr class="row-odd"><td><p>LO - Frequency</p></td>
 <td><p>Analogue Source</p></td>
-</tr>
-<tr class="row-odd"><td><p>MPFU - Amplitude</p></td>
-<td><p>MPFU Channels (optional)</p></td>
 </tr>
 </tbody>
 </table>
+</div>
+<p>For more information please go to:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Bruker_interface.html">Bruker Interface</a></li>
+</ul>
 </div>
 </section>
 </section>
@@ -301,12 +300,12 @@ not need to be repeated at the start of every measuremnt session.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="Reference.html">
+          <a class="next-page" href="Bruker_interface.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">API Reference</div>
+                <div class="title">Bruker Interface</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -369,5 +368,7 @@ not need to be repeated at the start of every measuremnt session.</p>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
     </body>
 </html>

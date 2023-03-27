@@ -5,11 +5,12 @@
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="What is DEER?" href="deer_intro.html" /><link rel="prev" title="API Reference" href="../autoEPR/Reference.html" />
 
-    <!-- Generated with Sphinx 6.1.3 and Furo 2022.12.07 -->
+    <!-- Generated with Sphinx 6.1.3 and Furo 2023.03.27 -->
         <title>autoDEER - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -116,7 +117,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     Version 0.4 comming soon! 
+     Version 0.4 alpha out now! 
   </aside>
 </div>
 
@@ -172,22 +173,19 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../autoEPR/index.html">autoEPR</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../autoEPR/Getting_Started.html">Getting Started</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoEPR/Sequencer.html">Creating a Custom Sequence</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../autoEPR/Interface.html">Interfaces</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../autoEPR/Interface.html">Interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../autoEPR/Bruker_interface.html">Bruker Interface</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../autoEPR/Reference.html">API Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">autoDEER</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">autoDEER</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="deer_intro.html">What is DEER?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config_file.html">Configuration File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="semi_autoDEER.html">Semi - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="fully_autoDEER.html">Fully - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DEER_variants.html">DEER Variants</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference.html">Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../dev_guide/index.html">Developing</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../dev_guide/Logging.html">Logging:</a></li>
 </ul>
 </li>
 </ul>
@@ -226,6 +224,20 @@
         <article role="main">
           <section id="autodeer">
 <h1>autoDEER<a class="headerlink" href="#autodeer" title="Permalink to this heading">#</a></h1>
+<p>AutoDEER has been designed to automate and simplify
+Double-Electron-Electron-Resonance (DEER), also known as
+Pulsed-Electron-Double-Resonance (PELDOR), experiments. DEER (or PELDOR) are
+a technique used to measure the distance between electron spin centres. This is
+normally applied to biological systems, by adding electron spin labels to specific
+sites in a protein.</p>
+<p>Features of autoDEER include:</p>
+<ul class="simple">
+<li><p><strong>Fully automated control:</strong> A fully automated push-button mode controls the entire spectrometer, allowing the user to walk away. There also exists an advanced mode that allows the user to write their own automation scripts or to progress step by step. This gives an experienced user the ability to precisely control the measurement whilst still remaining easy and simple to use.</p></li>
+<li><p><strong>Support for a variety of DEER variants:</strong> When run in push-button mode, the software will select a DEER sequence for the user. However, when using the advanced mode, the user can select a wide range of DEER variants, such as four-pulse, five-pulse, seven-pulse DEER and nDEER.</p></li>
+<li><p><strong>Integrated analysis:</strong> Both during and after a DEER measurement, the software actively processes and analyses the data using a tuned and optimised DeerLab-based implementation. [1]</p></li>
+<li><p><strong>Parameter optimisation:</strong> Sequence parameters are determined and optimised from the integrated analysis. This includes inter-pulse delays, pulse excitation bands, and pulse amplitudes.</p></li>
+<li><p><strong>Hardware independence:</strong> autoDEER controls the spectrometer through a new Python-based EPR automation toolbox. This toolbox is spectrometer independent and supports both modern Bruker Elexsys-II (using the XeprAPI) and home-built spectrometers. Both traditional systems with multiple pulse forming units (MPFU) and modern AWG-based systems are supported. For Bruker systems, autoDEER can automatically write PulseSpel scripts, allowing the entire experiment to be written in Python.</p></li>
+</ul>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">
@@ -307,5 +319,7 @@
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
     </body>
 </html>
