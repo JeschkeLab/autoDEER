@@ -480,7 +480,7 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0):
     output = Dataset(
         axes=dta_x,
         data=dta_ev,
-        Params=estr)
+        params=estr)
     
     output.scans = dta_scans
     output.add_variable(Parameter(name='nAvgs', value=nAvgs))

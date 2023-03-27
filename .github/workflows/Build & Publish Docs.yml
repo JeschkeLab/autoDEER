@@ -31,6 +31,7 @@ jobs:
         python -m pip install sphinx-design
         python -m pip install --upgrade myst-parser
         python -m pip install sphinx_toolbox
+        python3 -m pip install sphinx-copybutton
         python -m pip install numpydoc
         python -m pip install .
     - name: Build with Sphinx

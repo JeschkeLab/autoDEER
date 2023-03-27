@@ -30,11 +30,12 @@ release = '0.4-alpha'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
+extensions = [# 'sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
               'sphinx_toolbox.collapse',
               'sphinx_toolbox.code',
+              'sphinx_copybutton',
               'numpydoc',
               'sphinx.ext.graphviz',
               'myst_parser']
@@ -74,7 +75,7 @@ html_theme = "furo"
 html_title = " "
 html_static_path = ["_static"]
 html_theme_options = {
-    "announcement": "Version 0.4 comming soon!",
+    "announcement": "Version 0.4 alpha out now!",
     "light_logo": "autoDEER_EPR_light.svg",
     "dark_logo": "autoDEER_EPR_dark.svg",
 
