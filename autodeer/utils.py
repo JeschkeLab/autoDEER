@@ -118,7 +118,21 @@ def sop(spins, comps):
         else:
             raise ValueError(f"Incorect specification of comps: ",
                              f"{sop_type} is not a valid input")
-        M_ = bsr_array((val, (r,c)), shape=(n,n)).toarray()
+        M_ = bsr_array((val, (r,c)), shape=(n,n)).toarrßay()
         OP = np.kron(OP, M_)
 
     return OP
+
+def transpose_dict_of_list(d):
+    """Turns a dictionary of lists into a list of dictionaries.
+    """
+    return [dict(zip(d, col)) for col in zip(*d.values())]
+
+def transpose_list_of_dicts(d):
+    """Turns a list of dictionaries into a dictionary of lists.
+    """
+    return {key: [i[key] for i in d] for key in d[0]}
+
+def save_file(path, str):
+    with open(path, "w") as file:
+        file.write(str)

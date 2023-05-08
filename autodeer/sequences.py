@@ -1,4 +1,4 @@
-from autodeer.classes import Sequence, Detection, Parameter
+from autodeer.classes import Sequence, Detection, Parameter, Delay
 from autodeer.pulses import RectPulse
 import numpy as np
 
@@ -8,8 +8,8 @@ class DEERSequence(Sequence):
     """
 
     def __init__(
-        self, *, tau1, tau2, tau3 = None, tau4=None, dt, B, LO, reptime, averages, shots,
-        **kwargs) -> None:
+        self, *, tau1, tau2, tau3 = None, tau4=None, dt, B, LO, reptime,
+        averages, shots, ESEEM_avg=None, **kwargs) -> None:
         """Build a DEER sequence using rectangular pulses
 
         Parameters
@@ -34,6 +34,13 @@ class DEERSequence(Sequence):
             The delay between the first static pump pulse in 5-pulse DEER and 
             the 1st refocusing pulse in us, by default None. If the value is 
             None then a 4-pulse sequence is created, otherwise a 5-pulse. 
+        ESEEM_avg: str
+            Selecting the ESEEM averaging required. ESEEM averaging works by 
+            introducing small stepping in the first tau delay and averaging 
+            across them all. Options:
+            * `proton` - 8 small steps of 8ns
+            * `deuteron` - 8 small steps of 16ns
+            * None - default
         
         Optional Parameters
         -------------------
@@ -51,7 +58,6 @@ class DEERSequence(Sequence):
             not specified a standard detection event will be created instead,
             with an offset frequency of 0MHz. 
 
-
         """
         name = "DEER sequence"
         self.tau1 = tau1 * 1e3
@@ -62,6 +68,7 @@ class DEERSequence(Sequence):
             self.tau4 = tau4 * 1e3
         self.dt = dt
         self.deadtime = 200
+        self.ESEEM_avg = ESEEM_avg
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
@@ -117,10 +124,25 @@ class DEERSequence(Sequence):
             self.addPulse(Detection(t=2*self.tau1, tp=512))
 
         self.addPulsesProg(
-            [2],
+            [1],
             ["t"],
             0,
             axis)
+        
+        if self.ESEEM_avg.lower() == "proton":
+            ESEEM_axis = np.arange(0,8) * 8
+            self.addPulsesProg(
+                [2, 3],
+                ["t"],
+                1,
+                [self.tau1+ ESEEM_axis, 2*(self.tau1+ ESEEM_axis)])
+        elif self.ESEEM_avg.lower() == "deuteron":
+            ESEEM_axis = np.arange(0,8) * 16
+            self.addPulsesProg(
+                [2, 3],
+                ["t"],
+                1,
+                [self.tau1+ ESEEM_axis, 2*(self.tau1+ ESEEM_axis)])
 
         pass
 
@@ -137,6 +159,9 @@ class DEERSequence(Sequence):
         axis = np.arange(
             2*self.tau1-self.deadtime, self.tau2 + 2*self.tau1 - self.deadtime,
             self.dt)
+        
+        d1 = Delay(self.tau1)
+        d2 = Delay(self.tau2)
 
         if hasattr(self,"exc_pulse"): # Exc pulse
             self.addPulse(self.exc_pulse.copy(t=0))
@@ -145,38 +170,53 @@ class DEERSequence(Sequence):
                 t=0, tp=tp, freq=0, flipangle=np.pi/2
             ))
         
+        self.addPulse(d1)
+        
         if hasattr(self,"ref_pulse"): # Ref 1 pulse
-            self.addPulse(self.ref_pulse.copy(t=self.tau1))
+            self.addPulse(self.ref_pulse.copy(t=None))
         else:
-            self.addPulse(RectPulse( 
-                t=self.tau1, tp=tp, freq=0, flipangle=np.pi
-            ))
+            self.addPulse(RectPulse(tp=tp, freq=0, flipangle=np.pi))
+        
+        p1 = 2*self.tau1 - self.deadtime
+        self.addPulse(Delay(tp=p1))
 
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=2*self.tau1 - self.deadtime))
+            self.addPulse(self.pump_pulse.copy(t=None))
         else:
-            self.addPulse(RectPulse(
-                t=2*self.tau1 - self.deadtime, tp=tp, freq=0, flipangle=np.pi
-            ))
+            self.addPulse(RectPulse(tp=tp, freq=0, flipangle=np.pi))
+
+        r2 = 2*self.tau1 + self.tau2
+        self.addPulse(Delay(tp=r2))
 
         if hasattr(self,"ref_pulse"): # Ref 2 pulse
-            self.addPulse(self.ref_pulse.copy(t=2*self.tau1 + self.tau2))
+            
+            self.addPulse(self.ref_pulse.copy(t=None))
         else:
-            self.addPulse(RectPulse( 
-                t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
-            ))
+            self.addPulse(RectPulse(tp=tp, freq=0, flipangle=np.pi))
+
+        d = 2*(self.tau1+self.tau2)
 
         if hasattr(self, "det_event"):
-            self.addPulse(self.det_event.copy(t=2*(self.tau1+self.tau2)))
+            self.addPulse(self.det_event.copy(t=cd))
         else:
-            self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
+            self.addPulse(Detection(t=d, tp=512))
 
         self.addPulsesProg(
             [2],
             ["t"],
             0,
             axis)
-
+        
+        if self.ESEEM_avg is not None:
+            if self.ESEEM_avg.lower() == "proton":
+                ESEEM_axis = np.arange(0,8) * 8
+            elif self.ESEEM_avg.lower() == "deuteron":
+                ESEEM_axis = np.arange(0,8) * 16
+            self.addPulsesProg(
+                [1, 3, 4],
+                ["t"],
+                1,
+                [r1+ ESEEM_axis, r2 + 2*ESEEM_axis, d + 2*ESEEM_axis])
         pass
 
 
@@ -201,44 +241,58 @@ class DEERSequence(Sequence):
                 t=0, tp=tp, freq=0, flipangle=np.pi/2
             ))
 
+        p1 = self.tau1 - self.tau3
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=self.tau1 - self.tau3))
+            self.addPulse(self.pump_pulse.copy(t=p1))
         else:
-            self.addPulse(RectPulse(
-                t=self.tau1 - self.tau3, tp=tp, freq=0, flipangle=np.pi
-            ))
+            self.addPulse(RectPulse(t=p1, tp=tp, freq=0, flipangle=np.pi))
 
+        r1 = self.tau1
         if hasattr(self,"ref_pulse"): # Ref 1 pulse
-            self.addPulse(self.ref_pulse.copy(t=self.tau1))
+            self.addPulse(self.ref_pulse.copy(t=r1))
         else:
-            self.addPulse(RectPulse( 
-                t=self.tau1, tp=tp, freq=0, flipangle=np.pi
-            ))
-
+            self.addPulse(RectPulse(t=r1, tp=tp, freq=0, flipangle=np.pi))
+        
+        p2 = self.tau1 + self.deadtime
         if hasattr(self,"pump_pulse"): # Pump 2 pulse
-            self.addPulse(self.pump_pulse.copy(t=self.tau1 + self.deadtime))
+            self.addPulse(self.pump_pulse.copy(t=p2))
         else:
-            self.addPulse(RectPulse(
-                t=self.tau1 + self.deadtime, tp=tp, freq=0, flipangle=np.pi
-            ))
+            self.addPulse(RectPulse(t=p2, tp=tp, freq=0, flipangle=np.pi))
 
+        r2 = 2*self.tau1 + self.tau2
         if hasattr(self,"ref_pulse"): # Ref 2 pulse
-            self.addPulse(self.ref_pulse.copy(t=2*self.tau1 + self.tau2))
+            self.addPulse(self.ref_pulse.copy(t=r2))
         else:
-            self.addPulse(RectPulse( 
-                t=2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
-            ))
+            self.addPulse(RectPulse(t=r2, tp=tp, freq=0, flipangle=np.pi))
 
+        d = 2*(self.tau1+self.tau2)
         if hasattr(self, "det_event"):
-            self.addPulse(self.det_event.copy(t=2*(self.tau1+self.tau2)))
+            self.addPulse(self.det_event.copy(t=d))
         else:
-            self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
+            self.addPulse(Detection(t=d, tp=512))
 
         self.addPulsesProg(
             [3],
             ["t"],
             0,
             axis)
+        
+        if self.ESEEM_avg is not None:
+            # This is not quite a perfect ESEEM average. I am not sure if this
+            # is possible with a pulse based scripting. I think only following
+            # a delay based model can you easily describe two axes acting on 
+            # the same pulse. 
+            if self.ESEEM_avg.lower() == "proton":
+                ESEEM_axis = np.arange(0,8) * 8
+            elif self.ESEEM_avg.lower() == "deuteron":
+                ESEEM_axis = np.arange(0,8) * 16
+            self.addPulsesProg(
+                [1, 2, 4, 5],
+                ["t"],
+                1,
+                [p1 - ESEEM_axis, r1 + 1*ESEEM_axis, r2 + 2*ESEEM_axis,
+                 d + 2*ESEEM_axis])
+
         pass
 
     def seven_pulse(self, tp=16):

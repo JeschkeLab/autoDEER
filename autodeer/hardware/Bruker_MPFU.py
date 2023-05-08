@@ -128,7 +128,17 @@ def _MPFU_channels(sequence):
             continue
         if type(pulse) is Detection:
             continue
-        flip_power = pulse.flipangle.value / pulse.tp.value
+
+        if pulse.tp.value == 0:
+            flip_power = np.inf
+        else:
+            flip_power = pulse.flipangle.value / pulse.tp.value
+
+        if (pulse.freq.value != 0):
+            # This is an ELDOR pulse
+            pulse.pcyc["Channels"] = "ELDOR"
+            channels.append("ELDOR")
+            continue
 
         if not "Channels" in pulse.pcyc:
             pulse.pcyc["Channels"] = []

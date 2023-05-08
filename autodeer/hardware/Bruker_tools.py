@@ -47,8 +47,11 @@ class PSPhaseCycle:
             dict = {}
             dict["Pulse"] = i
             dict["Cycle"] = []
-            for j in pulse.pcyc["Channels"]:
-                dict["Cycle"].append(MPFU[j])
+            if pulse.pcyc["Channels"] == "ELDOR":
+                dict["Cycle"].append("ELDOR")
+            else:
+                for j in pulse.pcyc["Channels"]:
+                    dict["Cycle"].append(MPFU[j])
             BPhaseCycles.append(dict)
         
         return BPhaseCycles
@@ -222,6 +225,7 @@ class PulseSpel:
         self.MPFU = MPFU
         self.AWG = AWG
         self.pcyc_str = ""
+
         
         # Build hash of initial pulses
         for id, pulse in enumerate(sequence.pulses):
@@ -235,6 +239,11 @@ class PulseSpel:
                 str = self._new_pulse(id)
                 self._addDef(f"{str} = {int(pulse.tp.value)}")
 
+        self._addDef(f"h = {sequence.shots.value}")
+        self._addDef(f"n = {sequence.averages.value}")
+        self._addDef(f"srt = {sequence.reptime.value:.0f} * srtu")
+
+
         # Build table of parvars
         unique_parvars = np.unique(sequence.progTable["axID"])
         self.parvars = []
@@ -242,9 +251,6 @@ class PulseSpel:
             parvar = PSparvar(sequence, i)
             self.parvars.append(parvar)
         
-        self._addDef(f"h = {sequence.shots.value}")
-        self._addDef(f"n = {sequence.averages.value}")
-        self._addDef(f"srt = {sequence.reptime.value:.0f} * srtu")
 
         # TODO: Add checker that the only the first two parvars are bruker 
         # compatible.
@@ -627,4 +633,323 @@ def change_dimensions(path, dim: int, new_length):
     with open(path, 'w') as file:
         file.writelines(data)
 
+def _addAWGPulse(sequence, pulse_num, id, pcyc_str):
+    awg_id = id
+    pulse=sequence.pulses[pulse_num]
+    if type(pulse) is RectPulse:
+        shape = 0
+        init_freq = pulse.freq.value
+        final_freq = init_freq
+        if hasattr(pulse,"scale"):
+            amplitude = pulse.scale.value
+        else:
+            amplitude = 0
+    
 
+    def add_AWG_line(elements, comment=None, indent=2, repeat=1):
+        string = ""
+        string += " "*indent
+        for i in range(0,repeat):
+            if isinstance(elements,list) or isinstance(elements,np.ndarray):
+                for ele in elements:
+                    string += f"{ele:<4}  "
+            else:
+                string += f"{elements:<4}  "
+        
+        if comment is not None:
+            string += ";  " + comment
+        
+        string += "\n"
+        return string
+
+    string = ""
+    
+    # phase = np.round(np.degrees(pulse.pcyc["Phases"]))
+    phase = np.round(np.degrees(sequence.pcyc_cycles[:,sequence.pcyc_vars.index(pulse_num)]))
+
+    num_cycles = len(phase)
+    
+    string += f"begin awg{awg_id}\n"
+    string += add_AWG_line(
+        init_freq, repeat=num_cycles, comment="Initial Frequency [MHz]")
+    string += add_AWG_line(
+        final_freq, repeat=num_cycles, comment="Final Frequency [MHz]")
+    string += add_AWG_line(
+        phase, repeat=1, comment="Phase")
+    string += add_AWG_line(
+        amplitude, repeat=num_cycles, comment="Amplitude")
+    string += add_AWG_line(
+        shape, repeat=num_cycles, comment="Shape")
+    string += f"end awg{awg_id}\n"
+
+    pcyc_str += string
+
+    return pcyc_str, f"awg{id}"
+
+def get_arange(array):
+    if np.ndim(array) > 1:
+        raise ValueError("The array must be 1D")
+
+    unique_diff = np.unique(np.diff(array))
+    step = unique_diff[0]
+    start = array[0]
+    stop = array[-1]
+
+    return start,stop+step, step
+
+def build_unique_progtable(seq):
+    progtable = seq.progtable
+    unique_axs = np.unique(progtable["axID"])
+    u_progtable = []
+    d_shifts=[]
+    for axID in unique_axs:
+        axes = []
+        variables = []
+        for i,j in enumerate(progtable["axID"]):
+            if axID != j:
+                continue
+            axes.append(progtable["axis"][i])
+            variables.append((progtable["EventID"][i], progtable["Variable"][i]))
+        
+        # Find unique axis
+        steps = []
+        for axis in axes:
+            start,_, step = get_arange(axis)
+            steps.append(step)
+        common_step = np.gcd.reduce(steps)
+        index = progtable["axID"].index(axID)
+        common_axis={"start":start,"dim":np.shape(axes[0])[0],"step":common_step,"reduce":progtable["reduce"][index]}
+        multipliers = np.array(steps)/common_step
+        n_steps = len(steps)
+        vars = [{"variable": variables[i],"multiplier":multipliers[i]} for i in range(n_steps)]
+        u_progtable.append({"axID":axID,"axis":common_axis,"variables":vars})
+
+        n_pulses = len(seq.pulses)
+        t_shift = np.zeros(n_pulses)
+        for var,mul in zip(variables,multipliers):
+            if var[1] != 't':
+                continue
+            t_shift[var[0]] = mul
+        
+        d_shift = {"axID":axID, "delay_shifts": np.diff(t_shift,prepend=0), "axis":common_axis}
+        d_shifts.append(d_shift) 
+
+
+    return u_progtable, d_shifts
+
+def _addAWGPulse(self, sequence, pulse_num, id):
+    awg_id = id
+    pulse=sequence.pulses[pulse_num]
+    if type(pulse) is RectPulse:
+        shape = 0
+        init_freq = pulse.freq.value
+        final_freq = init_freq
+        if hasattr(pulse,"scale"):
+            amplitude = pulse.scale.value
+        else:
+            amplitude = 0
+    
+
+    def add_AWG_line(elements, comment=None, indent=2, repeat=1):
+        string = ""
+        string += " "*indent
+        for i in range(0,repeat):
+            if isinstance(elements,list) or isinstance(elements,np.ndarray):
+                for ele in elements:
+                    string += f"{ele:<4}  "
+            else:
+                string += f"{elements:<4}  "
+        
+        if comment is not None:
+            string += ";  " + comment
+        
+        string += "\n"
+        return string
+
+    string = ""
+    
+    # phase = np.round(np.degrees(pulse.pcyc["Phases"]))
+    phase = np.round(np.degrees(sequence.pcyc_cycles[:,sequence.pcyc_vars.index(pulse_num)]))
+
+    num_cycles = len(phase)
+    
+    string += f"begin awg{awg_id}\n"
+    string += add_AWG_line(
+        init_freq, repeat=num_cycles, comment="Initial Frequency [MHz]")
+    string += add_AWG_line(
+        final_freq, repeat=num_cycles, comment="Final Frequency [MHz]")
+    string += add_AWG_line(
+        phase, repeat=1, comment="Phase")
+    string += add_AWG_line(
+        amplitude, repeat=num_cycles, comment="Amplitude")
+    string += add_AWG_line(
+        shape, repeat=num_cycles, comment="Shape")
+    string += f"end awg{awg_id}\n"
+
+    self.pcyc_str += string
+
+    return f"awg{id}"
+
+def check_variable(var:str, uprog):
+    for i in range(len(uprog['variables'])):
+        if uprog['variables'][i]["variable"][1] == var:
+            return True
+        
+    return False
+    
+def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
+
+    uprogtable = build_unique_progtable(sequence.progTable,sequence)
+    possible_delays = [
+        "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d10", "d11", "d12",
+        "d13", "d14", "d15", "d16", "d17", "d18", "d19", "d20", "d21", "d22",
+        "d23", "d24", "d25", "d26", "d27", "d28", "d29", "d30"]
+    loop_iterators = ["i","j"]
+    loop_dims = ["m","f"]
+
+    n_pulses = len(sequence.pulses)
+    n_axes = len(uprogtable)
+
+    static_delay_hash = {0:"d9"}
+    mv_delay_hash = {}
+    axis_start_hash = {}
+    axis_step_hash = {}
+    axis_val_hash = {}
+    axs_ids = []
+    head = "begin exp \"auto\" [INTG QUAD] \n"
+    foot = "end exp"
+    def_file = "begin defs \n"
+    dims = "begin defs \n dim s["
+    pcyc_str = ""
+
+    for i,pulse in enumerate(sequence.pulses):
+        static_delay_hash[i] = possible_delays.pop()
+        def_file += f"{static_delay_hash[i]} = {pulse.t.value}\n"
+        if type(pulse) is Detection:
+            def_file += f"pg = {pulse.tp.value}\n"
+        else:
+            def_file += f"p{i} = {pulse.tp.value}\n"
+
+    for axis in uprogtable:
+        ax_ID = axis["axID"]
+        axs_ids.append(ax_ID)
+        axis_start_hash[ax_ID] = possible_delays.pop()
+        axis_step_hash[ax_ID] = possible_delays.pop()
+        axis_val_hash[ax_ID] = possible_delays.pop()
+
+        def_file += f"{axis_step_hash[ax_ID]} = {axis['axis']['step']}\n"
+        if not axis['axis']['reduce']:
+            dims += f"{axis['axis']['dim']},"
+
+    axs_ids.sort(reverse=True)
+    reduced_axes = np.array([uprogtable[i]["axis"]["reduce"] for i in range(n_axes)])
+    n_reduced = np.sum(reduced_axes)
+
+    if n_axes - n_reduced == 1:
+        kept_axes_param = ["x"]
+    elif n_axes - n_reduced == 2:
+        kept_axes_param = ["x","y"]
+    elif n_axes - n_reduced == 0:
+        raise RuntimeWarning("Transient experiments are not currently supported")
+    elif n_axes - n_reduced > 2:
+        raise RuntimeWarning("A maximum of 2 non reduced axes are allowed.")
+
+
+
+    # Setup averaging loop
+    head += "for k=1 to m \ntotscans(n) \n"
+    def_file += f"k = {sequence.averages.value}\n"
+
+    foot = "scansdone(k) \nnext k \n"+foot
+
+    delay_build = ""
+    for ax in axs_ids:
+        index = [uprogtable[i]['axID'] for i in range(len(uprogtable))].index(ax)
+        uprog = uprogtable[index]
+
+        if check_variable("B", uprog):
+
+            reduce = False # You can not reduce a Bsweep
+            loop_str = "bsweep {param}=1 to {stop} \n"
+        else:
+            reduce = uprogtable[index]['axis']["reduce"]
+            loop_str = "for {param}=1 to {stop} \n"
+        
+        if reduce:
+            param = loop_iterators.pop()
+        else:
+            param=kept_axes_param.pop()
+
+        foot = f"next {param} \n" + foot
+
+        if param == 'x':
+            stop = 'sx'
+            foot = f"dx=dx+{axis_step_hash[ax]}\n"+ foot
+        elif param == 'y':
+            stop == 'sy'
+            foot = f"dy=dy+{axis_step_hash[ax]}\n"+ foot
+        else:
+            stop = loop_dims.pop()
+            def_file += f"{stop} = {uprog['axis']['dim']}\n"
+
+        if check_variable("t", uprog):
+            changing_pulses = uprog["delay_shifts"].nonzero()[0]
+            for i in changing_pulses:
+                if i not in mv_delay_hash:
+                    mv_delay_hash[i] = possible_delays.pop()
+                    delay_build = f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n" + delay_build 
+                foot = f"{axis_val_hash[ax]}={axis_val_hash[ax]}+{axis_step_hash[ax]}\n"+ foot
+                delay_build += f"{mv_delay_hash[i]} = {mv_delay_hash[i]} + {axis_val_hash[ax]} \n"
+
+        head +=  f"{axis_val_hash[ax]} = 0\n"
+        head += loop_str.format(param=param,stop=stop)
+
+
+
+    # Add moving pulses
+    # Add shot loop
+    head += delay_build
+    head += f"shot i=1 to h\n"
+    def_file += f"h = {sequence.shots.value}\n"
+
+    foot = "next i\n" + foot
+
+    if AWG:
+        pcyc_hash = {}
+        id = -1
+        for pulse_num,pulse in enumerate(sequence.pulses):
+            if (type(pulse) is Detection):
+                continue
+            id += 1
+            pcyc_str, awg_id = _addAWGPulse(sequence,pulse_num, id, pcyc_str)
+            pcyc_hash[pulse_num] = awg_id
+
+        pcyc = PSPhaseCycle(sequence, MPFU=None, OnlyDet=True)
+        pcyc_str = pcyc.__str__() + "\n"*1 + pcyc_str
+    else:
+        pcyc = PSPhaseCycle(sequence, MPFU)
+        pcyc_hash = pcyc.pcyc_hash
+        pcyc_str = pcyc.__str__()
+
+    # Add Pulse Sequence
+    pulse_str = ""
+    for id, pulse in enumerate(sequence.pulses):
+        if id in mv_delay_hash:
+            pulse_str += f"{mv_delay_hash[id]}\n"
+        else:
+            pulse_str += f"{static_delay_hash[id]}\n"
+        
+        if type(pulse) == Detection:
+            pulse_str += f"d0\nacq [sg1]\n"
+        else:
+            pulse_str += f"p{id} [{pcyc_hash[id]}]\n"
+
+
+
+    dims = dims[:-1]
+    dims += "] \nend defs\n" 
+
+    def_file += "end defs"
+    exp_file = dims + "\n"*2 + pcyc_str + "\n"*2 +  head + pulse_str + foot
+
+    return def_file, exp_file
