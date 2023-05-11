@@ -113,8 +113,13 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
             np.array(estr["postsigns"]["ids"]).reshape(-1)
         if not (elim_pcyc and cycled[ii]):
             if type(estr["parvars"]) is list:
-                dta_x.append(estr["parvars"][estr["postsigns"]["ids"][ii]-1]
-                            ["axis"].astype(np.float32))
+                vecs = estr["parvars"][estr["postsigns"]["ids"][ii]-1]["vec"]
+                if np.ndim(vecs) == 1:
+                    dta_x.append(vecs.astype(np.float32))
+
+                elif np.ndim(vecs) == 2:
+                    unique_axes = np.unique(vecs, axis=1)
+                    dta_x.append(unique_axes.astype(np.float32))
             else:
                 dta_x.append(estr["parvars"]["axis"].astype(np.float32))
             relevant_parvars.append(estr["postsigns"]["ids"][ii]-1)
@@ -292,8 +297,8 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
             dta_ev = np.transpose(dta_ev)
             dta_avg = np.transpose(dta_avg, perm_order)
     elif exp_dim == 1:
-        dta_ev = np.zeros((np.size(dta_x[0])), dtype=np.complex128)
-        dta_avg = np.zeros((len(ran_echomax), np.size(dta_x[0])),
+        dta_ev = np.zeros((np.size(dta_x[0],axis=0)), dtype=np.complex128)
+        dta_avg = np.zeros((len(ran_echomax), np.size(dta_x[0],axis=0)),
                            dtype=np.complex128)
 
 
@@ -493,6 +498,10 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
     
     output.scans = dta_scans
     output.add_variable(Parameter(name='nAvgs', value=nAvgs))
+    output.add_variable(Parameter(name='LO', value=estr['LO']+1.5))
+    output.add_variable(Parameter(name='B', value=estr['B']))
+    output.add_variable(Parameter(name='reptime', value=estr['reptime']))
+    output.add_variable(Parameter(name='shots', value=estr['shots']))
 
     # output = AWGdata(t_ax, dta_avg)
     # output.nAvgs = nAvgs

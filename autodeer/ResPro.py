@@ -442,6 +442,7 @@ class ResonatorProfileAnalysis:
 
         self.profile_x = np.linspace(33, 35, 200)
         self.profile = lorenz_fcn(self.profile_x, self.fc, self.sigma)
+        self.fit_func = lambda x: lorenz_fcn(x, self.fc, self.sigma)
         
         norm_prof = self.profile
         norm_prof /= norm_prof.max()

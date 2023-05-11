@@ -16,6 +16,7 @@ class FieldSweepAnalysis():
         """
         self.axis = dataset.axes[0]
         self.data = dataset.data
+        self.dataset = dataset
         pass
 
     def find_max(self) -> float:
