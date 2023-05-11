@@ -3,7 +3,7 @@
 
 import autodeer.hardware.xepr_experiments as x_exp
 import re
-from autoDeer.hardware.XeprAPI_link import XeprAPILink 
+from autodeer.hardware.XeprAPI_link import XeprAPILink 
 import pytest
 
 def test_change_dimensions():

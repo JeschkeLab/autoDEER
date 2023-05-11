@@ -1,10 +1,10 @@
-import autodeer.openepr as openepr
+import autodeer.pulses as pulses
 import numpy as np
 
 
 def test_Pulse():
 
-    pulse = openepr.Pulse(0, 32, 0.5)
+    pulse = pulses.Pulse(0, 32, 0.5)
     assert pulse.t.value == 0
     assert pulse.tp.value == 32
     assert pulse.scale.value == 0.5
@@ -12,7 +12,7 @@ def test_Pulse():
 
 def test_RectPulse():
 
-    pulse = openepr.RectPulse(0, 32, 0.1, 0.5)
+    pulse = pulses.RectPulse(0, 32, 0.1, 0.5)
     assert pulse.t.value == 0
     assert pulse.tp.value == 32
     assert pulse.scale.value == 0.5
@@ -23,15 +23,15 @@ def test_RectPulse():
 
 
 def test_phasecycle():
-    pulse = openepr.Pulse(0, 32, 0.5)
+    pulse = pulses.Pulse(0, 32, 0.5)
     pulse._addPhaseCycle([0, np.pi/2, np.pi, -np.pi/2])
 
 
 def test_sequence():
-    Hahn_echo = openepr.Sequence()
-    Hahn_echo.addPulse(openepr.RectPulse(t=0, tp=16, freq=0, scale=0.1, flipangle=np.pi/2))
-    Hahn_echo.addPulse(openepr.RectPulse(t=5e2, tp=32, freq=0.1, scale=0.1, flipangle=np.pi))
-    Hahn_echo.addPulse(openepr.Detection(t=1e3,tp=512))
+    Hahn_echo = pulses.Sequence()
+    Hahn_echo.addPulse(pulses.RectPulse(t=0, tp=16, freq=0, scale=0.1, flipangle=np.pi/2))
+    Hahn_echo.addPulse(pulses.RectPulse(t=5e2, tp=32, freq=0.1, scale=0.1, flipangle=np.pi))
+    Hahn_echo.addPulse(pulses.Detection(t=1e3,tp=512))
 
     Hahn_echo.addPulsesProg(
         pulses=[1,2],
@@ -41,10 +41,10 @@ def test_sequence():
     )
 
 def build_hahn_sequence():
-    Hahn_echo = openepr.Sequence()
-    Hahn_echo.addPulse(openepr.RectPulse(t=0, tp=16, freq=0, scale=0.1, flipangle=np.pi/2))
-    Hahn_echo.addPulse(openepr.RectPulse(t=5e2, tp=32, freq=0.1, scale=0.1, flipangle=np.pi))
-    Hahn_echo.addPulse(openepr.Detection(t=1e3,tp=512))
+    Hahn_echo = pulses.Sequence()
+    Hahn_echo.addPulse(pulses.RectPulse(t=0, tp=16, freq=0, scale=0.1, flipangle=np.pi/2))
+    Hahn_echo.addPulse(pulses.RectPulse(t=5e2, tp=32, freq=0.1, scale=0.1, flipangle=np.pi))
+    Hahn_echo.addPulse(pulses.Detection(t=1e3,tp=512))
 
     Hahn_echo.addPulsesProg(
         pulses=[1,2],

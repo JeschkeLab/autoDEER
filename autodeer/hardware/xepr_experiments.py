@@ -4,7 +4,7 @@ import numpy as np
 import re
 import autodeer.tools as tools
 from scipy.optimize import minimize_scalar, curve_fit
-from autodeer.hardware import xepr_api
+from autodeer.hardware import XeprAPILink
 from deerlab import correctphase
 from numpy.polynomial import Polynomial
 
@@ -442,7 +442,7 @@ class MPFUtune:
 
 class ELDORtune:
 
-    def __init__(self, api: xepr_api, d0=700, ps_length=16, srt=6e6) -> None:
+    def __init__(self, api: XeprAPILink, d0=700, ps_length=16, srt=6e6) -> None:
         """
         Tuning incoherent ELDOR channel for optimal power using nutation 
         experiments
@@ -450,7 +450,7 @@ class ELDORtune:
 
         Parameters
         ----------
-        api : xepr_api
+        api : XeprAPILink
             The spectrometer API object
         d0 : int, optional
             The approximate position of d0, this should be lower than ideal,
@@ -534,7 +534,7 @@ class ELDORtune:
 
 class PulseProfile:
 
-    def __init__(self, api: xepr_api, d0=700, ps_length=16, srt=4e6) -> None:
+    def __init__(self, api: XeprAPILink, d0=700, ps_length=16, srt=4e6) -> None:
         """
         Tuning incoherent ELDOR channel for optimal power using nutation 
         experiments
@@ -542,7 +542,7 @@ class PulseProfile:
 
         Parameters
         ----------
-        api : xepr_api
+        api : XeprAPILink
             The spectrometr API object
         d0 : int, optional
             The approximate position of d0, this should be lower than ideal,
@@ -630,13 +630,13 @@ class PulseProfile:
 # =============================================================================
 
 
-def CalibrateFreq(api: xepr_api, num_points: int = 50, deg: int = 5):
+def CalibrateFreq(api: XeprAPILink, num_points: int = 50, deg: int = 5):
     """Generate the polynomial parameters for converting from frequency 
     (in GHz) to Xepr gunn diode stepper value. 0-4095.
 
     Parameters
     ----------
-    api : xepr_api
+    api : XeprAPILink
         The API for the spectrometer
     num_points : int, optional
         The number of points to be measured, by default 50

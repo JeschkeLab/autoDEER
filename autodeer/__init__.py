@@ -6,3 +6,4 @@ from .DEER_analysis import DEERanalysis, DEERanalysis_plot, calc_optimal_deer_fr
 from .Relaxation import CarrPurcellAnalysis
 from .classes import *
 from .sequences import *
+from .pulses import *
