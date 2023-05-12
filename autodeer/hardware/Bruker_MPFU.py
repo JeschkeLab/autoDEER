@@ -1,7 +1,8 @@
-from autodeer.classes import Interface, Dataset, Sequence, Delay, Detection
+from autodeer.classes import Interface, Dataset
+from autodeer.pulses import Delay, Detection
 from autodeer.hardware.XeprAPI_link import XeprAPILink
 from autodeer.hardware.Bruker_tools import PulseSpel, run_general
-from autodeer.sequences import HahnEchoSequence
+from autodeer.sequences import Sequence, HahnEchoSequence
 
 import tempfile
 import time
@@ -128,7 +129,17 @@ def _MPFU_channels(sequence):
             continue
         if type(pulse) is Detection:
             continue
-        flip_power = pulse.flipangle.value / pulse.tp.value
+
+        if pulse.tp.value == 0:
+            flip_power = np.inf
+        else:
+            flip_power = pulse.flipangle.value / pulse.tp.value
+
+        if (pulse.freq.value != 0):
+            # This is an ELDOR pulse
+            pulse.pcyc["Channels"] = "ELDOR"
+            channels.append("ELDOR")
+            continue
 
         if not "Channels" in pulse.pcyc:
             pulse.pcyc["Channels"] = []

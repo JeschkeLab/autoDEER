@@ -3,7 +3,8 @@ import numpy as np
 from deerlab import noiselevel
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-from autodeer.classes import Dataset, Sequence
+from autodeer.classes import Dataset
+from autodeer.sequences import Sequence
 
 # ===========================================================================
 

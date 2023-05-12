@@ -2,7 +2,7 @@ import os
 import deerlab as dl
 import numpy as np
 import logging
-from autodeer.classes import Dataset, Parameter
+from autodeer.classes import Dataset
 from autodeer.hardware.ETH_awg_load import uwb_load
 from scipy.io import loadmat
 
