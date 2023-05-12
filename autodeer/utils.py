@@ -1,6 +1,9 @@
 import re
 import numpy as np
 from scipy.sparse import bsr_array
+import uuid
+import base64
+
 
 def build_table(source, params, params_widths):
     string = ""
@@ -136,3 +139,12 @@ def transpose_list_of_dicts(d):
 def save_file(path, str):
     with open(path, "w") as file:
         file.write(str)
+
+
+def autoEPRDecoder(dct):
+    if isinstance(dct, dict) and '__uuid__' in dct:
+        return uuid.UUID(dct["__uuid__"])
+    if isinstance(dct, dict) and '__ndarray__' in dct:
+        data = base64.b64decode(dct['__ndarray__'][2:-1])
+        return np.frombuffer(data, dct['dtype']).reshape(dct['shape'])
+    return dct

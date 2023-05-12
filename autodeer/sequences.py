@@ -1,6 +1,765 @@
-from autodeer.classes import Sequence, Detection, Parameter, Delay
-from autodeer.pulses import RectPulse
+from autodeer.classes import Parameter
+from autodeer.pulses import Pulse, Detection, Delay, RectPulse
+import autodeer.pulses as ad_pulses
 import numpy as np
+import matplotlib.pyplot as plt
+import json
+from itertools import product
+import copy
+from autodeer.utils import build_table, autoEPRDecoder
+import json
+from autodeer import __version__
+import uuid
+import base64
+import autodeer.pulses as ad_pulses
+
+
+class Sequence:
+    """
+    Represents an experimental pulse sequence.
+    """
+
+    def __init__(
+            self, *, name, B, LO, reptime, averages, shots, **kwargs) -> None:
+        """Represents an experimental pulse sequence.
+
+        Parameters
+        ----------
+        name : str
+            The name of this pulse sequence
+        B : float
+            The magnetic field for this sequence in Gauss.
+        LO : float
+            The central frequency of this sequence. I.e. The frequnecy at which
+            a zero offset pulse is at. 
+        reptime : float
+            The shot repetition time in us.
+        averages : int
+            The number of scans to be accumulated.
+        shots : itn
+            The number of shots per point.
+        """
+
+        self.pulses = []
+        self.num_pulses = len(self.pulses)
+
+
+        if isinstance(B, Parameter):
+            self.B = B.copy()
+        else:
+            self.B = Parameter(
+                "B", B, "Gauss",
+                "The static B0 field for the experiment")
+        
+        self.LO = Parameter(
+            "LO", LO, "GHz",
+            "The local oscillator frequency.")
+        
+        self.reptime = Parameter(
+            "reptime", reptime, "us",
+            "The shot repetition time")
+        
+        self.averages = Parameter(
+            "averages", averages, "None",
+            "The number of averages to perform.")
+        
+        self.shots = Parameter(
+            "shots", shots, "None",
+            "The number of shots per scan.")
+
+        if "det_window" in kwargs:
+            self.det_window = Parameter(
+                "det_window", kwargs["det_window"], "None",
+                "The length of the default detection gate"
+            )
+        else:
+            self.det_window = Parameter(
+                "det_window", 128, "None",
+                "The length of the default detection gate"
+            )
+
+            
+        self.name = name
+        self.progTable = {"EventID": [], "Variable": [], "axis": [],
+                     "axID": [], "uuid": [], "reduce": []}
+        pass
+
+    def plot(self) -> None:
+
+        pass
+
+    def plot_pulse_exc(self, FieldSweep=None, ResonatorProfile=None):
+
+        if FieldSweep is not None:
+            data = FieldSweep.data
+            data /= np.max(np.abs(data))
+            ax = FieldSweep.fs_x
+            plt.plot(ax, data, label="Field Sweep", color='r')
+            
+        if ResonatorProfile is not None:
+            data = ResonatorProfile.prof_data / ResonatorProfile.prof_data.max()
+            plt.plot(ResonatorProfile.prof_frqs-self.LO.value, data, label="Resonator Profile", color='k')
+
+
+        def check_array_new(list,array, return_pos=False):
+            test = True
+            for i, ele in enumerate(list):
+                if np.allclose(
+                    ele,array,rtol=1e-03, atol=1e-03, equal_nan=True):
+                    test = False
+                    if return_pos:
+                        return i
+            return test
+
+        axs = []
+        fts = []
+        labels = []
+        for i, pulse in enumerate(self.pulses):
+            if type(pulse) == Delay:
+                continue
+            elif type(pulse) == Detection:
+                continue
+            ax, ft = pulse._calc_fft(1e4)
+
+            if check_array_new(fts, ft):
+                axs.append(ax)
+                fts.append(ft)
+                labels.append([i])
+            else:
+                j = check_array_new(fts, ft, return_pos=True)
+                labels[j].append(i)
+
+        hatches = ['/', '\\', '|', '-', 'o', '.']
+        
+        
+        for i in range(0,len(axs)):
+            ft = np.abs(fts[i])
+            ft /= np.max(ft)
+            plt.fill(axs[i],ft, 
+                     label=f"Pulse id={str(labels[i])[1:-1]}",
+                     hatch=hatches.pop(), alpha=0.3)
+        
+        plt.xlabel("Frequency (GHz)")
+        plt.legend()
+
+        # Set correct axis, find mim and max freq
+        
+        for i, pulse in enumerate(self.pulses):
+            if hasattr(pulse, "freq"):
+                p_min = pulse.freq.value
+                p_max = pulse.freq.value
+            elif hasattr(pulse, "init_freq") & hasattr(pulse, "final_freq"):
+                p_min = pulse.init_freq.value
+                p_max = pulse.final_freq.value
+            elif hasattr(pulse, "init_freq") & hasattr(pulse, "BW"):
+                p_min = pulse.init_freq.value
+                p_max = p_min + pulse.BW.value
+            elif hasattr(pulse, "final_freq") & hasattr(pulse, "BW"):
+                p_max = pulse.init_freq.value
+                p_min = p_max - pulse.BW.value
+            # Check p_min < p_max
+            if p_min > p_max:
+                p_temp = p_min
+                p_min = p_max
+                p_max = p_temp
+            if i == 0:
+                min_frq = p_min
+                max_frq = p_max
+            else:
+                if min_frq > p_min:
+                    min_frq = p_min
+                if max_frq < p_max:
+                    max_frq = p_max
+        
+        min_frq = np.floor(min_frq*100)/100 - 0.2
+        max_frq = np.ceil(max_frq*100)/100 + 0.2
+        plt.xlim(min_frq, max_frq)
+        
+        
+        pass
+
+    def addPulse(self, pulse):
+        """Adds a pulse to the next position in the sequence.
+
+        Parameters
+        ----------
+        pulse : Pulse
+            The object describing the pulse.
+        """
+        if type(pulse) == Pulse or issubclass(type(pulse), Pulse):
+            self.pulses.append(pulse)
+        
+        elif type(pulse) == list:
+            for el in pulse:
+                self.pulses.append(el)
+        self.num_pulses = len(self.pulses)
+        self._buildPhaseCycle()
+        self._estimate_time()
+
+    def _estimate_time(self):
+        """
+        Calculates the estimated experiment time in seconds.
+        """
+        self._buildPhaseCycle()
+        acqs = self.averages.value * self.shots.value
+        if hasattr(self, 'pcyc_dets'):
+            acqs *= self.pcyc_dets.shape[0]
+        if hasattr(self, 'progTable'):
+            _, pos = np.unique(self.progTable['axID'], return_index=True)
+            for i in pos:
+                acqs *= self.progTable['axis'][i].shape[0]
+        
+        time = acqs * self.reptime.value * 1e-6
+
+        self.time = Parameter(name="time", value=f"{(time // 3600):.0f}:{(time % 3600) // 60:.0f}:{(time % 60):.0f}", unit="HH:MM:SS",
+        description="Estimated sequence run time")
+        return time
+
+    def _buildPhaseCycle(self):
+        # Identify pulses which are phase cycled
+
+        pcyc_pulses = []
+        pulse_cycles = []
+        det_cycles = []
+        for ix, pulse in enumerate(self.pulses):
+            if pulse.pcyc is not None:
+                pcyc_pulses.append(ix)
+                # pulse_cycles.append(np.array(pulse.pcyc[0]))
+                # det_cycles.append(np.array(pulse.pcyc[1]))
+                pulse_cycles.append(pulse.pcyc["Phases"])
+                det_cycles.append(pulse.pcyc["DetSigns"])
+
+        self.pcyc_cycles = np.array(list(product(*pulse_cycles)))
+        self.pcyc_dets = np.array(list(product(*det_cycles))).prod(axis=1)
+        self.pcyc_vars = pcyc_pulses
+
+        # # Build expanded phase cycle
+        # func = lambda x: np.arange(0, len(x))
+        # map(func, pulse_cycles)
+        # n_pulses = len(pulse_cycles)
+
+        # m = list(map(func, pulse_cycles))
+        # grids = np.meshgrid(*m, indexing='ij')
+        # expanded_cycles = []
+        # expanded_dets = []
+
+        # for i in range(0, n_pulses):
+        #     expanded_cycles.append(
+        #         pulse_cycles[i][grids[i].flatten(order='F')])
+        #     expanded_dets.append(det_cycles[i][grids[i].flatten(order='F')])
+
+        # self.pcyc_vars = pcyc_pulses
+        # self.pcyc_cycles = np.stack(expanded_cycles)
+        # self.pcyc_dets = np.prod(np.stack(expanded_dets), axis=0)
+        # self.pcyc_n = self.pcyc_cycles.shape[1]
+        
+        return self.pcyc_vars, self.pcyc_cycles, self.pcyc_dets
+
+    def evolution(self, params, reduce=[]):
+        axes_uuid = [param.uuid for param in params]
+        reduce_uuid = [param.uuid for param in reduce]
+
+
+        # Build the ProgTable
+        progTable = {"EventID": [], "Variable": [], "axis": [],
+                     "axID": [], "uuid": [], "reduce": []}
+        
+        for n, pulse in enumerate(self.pulses):
+            table = pulse.build_table()
+            for i in range(len(table["uuid"])):
+                if table["uuid"][i] in axes_uuid:
+                    progTable["axID"].append(axes_uuid.index(table["uuid"][i]))
+                    progTable["uuid"].append(table["uuid"][i]) 
+                    progTable["EventID"].append(n)
+                    progTable["Variable"].append(table["Variable"][i])
+                    progTable["axis"].append(table["axis"][i])
+                    if table["uuid"][i] in reduce_uuid:
+                        progTable["reduce"].append(True)
+                    else:
+                        progTable["reduce"].append(False)
+
+        for var_name in vars(self):
+            var = getattr(self, var_name)
+            if type(var) is Parameter:
+                if not var.is_static():
+                    for i in range(len(var.axis)):
+                        if var.axis[i]["uuid"] in axes_uuid:
+                            progTable["axID"].append(axes_uuid.index(var.axis[i]["uuid"]))
+                            progTable["EventID"].append(None)
+                            progTable["Variable"].append(var_name) 
+                            progTable["axis" ].append(var.axis[i]["axis"])
+                            progTable["uuid"].append(var.axis[i]["uuid"]) 
+                            if var.axis[i]["uuid"] in reduce_uuid:
+                                progTable["reduce"].append(True)
+                            else:
+                                progTable["reduce"].append(False)
+        self.progTable = progTable
+        return self.progTable
+        
+    def _buildProgTable(self):
+        #           parvarid, pulse #, variable, axis
+        # progTable = [[], [], [], []]
+        progTable = {"EventID": [], "Variable": [], "axis": [],
+                     "axID": []}
+
+        for n, pulse in enumerate(self.pulses):
+            # Loop over all pulses
+            # for var_name in vars(pulse):
+            #     var = getattr(pulse, var_name)
+            #     # Loop over all pulse parameters
+            #     if type(var) is Parameter:
+            #         if var.progressive is True:
+            #             for i in range(0, len(var.prog)):
+            #                 progTable["axID"].append(var.prog[i][0]) 
+            #                 progTable["EventID"].append(n)
+            #                 progTable["Variable"].append(var_name) 
+            #                 progTable["axis"].append(var.prog[i][1]) 
+
+            table = pulse.build_table()
+            n_table = len(table["uuid"])
+            progTable["axID"] += table["uuid"]
+            progTable["EventID"] += [n] * n_table
+            progTable["Variable"] += table["Variable"] 
+            progTable["axis"] += table["axis"]  
+
+        # Sequence/ Experiment Parameters
+        for var_name in vars(self):
+            var = getattr(self, var_name)
+            if type(var) is Parameter:
+                if not var.is_static():
+                    for i in range(0, len(var.prog)):
+                        # progTable["axID"].append(var.prog[i][0]) 
+                        # progTable["EventID"].append(None)
+                        # progTable["Variable"].append(var_name) 
+                        # progTable["axis"].append(var.prog[i][1]) 
+                        progTable["axID"] += var.ax_id
+                        progTable["EventID"].append(None)
+                        progTable["Variable"].append(var_name) 
+                        progTable["axis" ]+= var.axis
+        self.progTable = progTable
+        return self.progTable
+        
+    def addPulseProg(self, pulse_id, variable, axis_id, axis) -> None:
+        """Adds a single progessive pulse element to the sequence.
+
+        It is strongly recomeneded that the axis is generated using `np.arange`
+        over `np.linspace`. Most spectrometers do not like inputs with a high
+        number of decimal places. `np.arange` allows control of the step size
+        reducing any risk of conflict with the interface.
+
+        Parameters
+        ----------
+        pulse_id : int
+            The iD of the moving pulse element. If it is a sequence parameter, 
+            such as `B` field, then `None` should be given.
+        variable : str
+            The name of the parameter.
+        axis_id : int
+            The iD of the axis. 
+        axis : np.ndarray
+            An array containing how the pulse element changes.
+        """
+        if pulse_id is None:
+            # Assume it is an experiment/sequence parameter
+            var = getattr(self, variable)
+            var.add_progression(axis_id, axis)
+        else:
+            var = getattr(self.pulses[pulse_id], variable)
+            var.add_progression(axis_id, axis)
+        
+        self._buildProgTable()
+        self._estimate_time()
+
+        pass
+    
+    def addPulsesProg(
+            self, pulses, variables, axis_id, axis, multipliers=None) -> None:
+        """Adds a multiple progessive pulse element to the sequence. This is
+        very useful when multiple elements are changing at the same time with
+        a constant relationship.
+
+        It is strongly recomeneded that the axis is generated using `np.arange`
+        over `np.linspace`. Most spectrometers do not like inputs with a high
+        number of decimal places. `np.arange` allows control of the step size
+        reducing any risk of conflict with the interface.
+
+
+        Parameters
+        ----------
+        pulses : list[int]
+            A list of pulse iDs that are changing
+        variables : list[str]
+            A list of variables that are changing
+        axis_id : int
+            The iD of the axis 
+        axis : np.ndaaray
+            An array containing how the pulse element changes
+        multipliers : list or np.ndaaray, optional
+            How the different variable are proportional to each other, by
+            default None. If `None` is specified then it is assumed that there
+            is a 1:1 relationship. The axs gives the values for the first
+            element.
+        """
+        
+        if multipliers is None:
+            multipliers = np.ones(len(pulses))
+
+        for i, pulse in enumerate(pulses):
+            self.addPulseProg(pulse, variables[i], axis_id,
+                              axis * multipliers[i])     
+
+        self._buildProgTable()
+        pass 
+
+    def isPulseFocused(self):
+        """
+        Is the sequence expressed to contain only pulses and no delays?
+        """
+        test = []
+        for pulse in self.pulses:
+            test.append(pulse.isPulseFocused())
+
+        if np.array(test).all() == True:
+            return True
+        else:
+            return False
+
+    def isDelayFocused(self):  
+        """
+        Is the sequence expressed to contain both pulses and delays?
+        """ 
+        test = []
+        for pulse in self.pulses:
+            test.append(pulse.isDelayFocused())
+        if np.array(test).all() == True:
+            return True
+        else:
+            return False
+
+    def convert(self, *, reduce=True):
+        """Converts the current sequence to either pulse focused or delay
+        focused depending on the current state
+
+        Parameters
+        ----------
+        reduce : bool, optional
+            Reduce to the smallest number of objects, by default True
+        """
+
+        if self.isPulseFocused():
+            self._convert_to_delay()
+        elif self.isDelayFocused():
+            self._convert_to_pulses()
+
+    def _convert_to_delay(self):
+        num_pulses = len(self.pulses)
+
+        # create list of pulse timeing
+        pulse_times = []
+        new_sequence = []
+
+        new_pulse = copy.deepcopy(self.pulses[0])
+        new_pulse.t = None
+        new_sequence.append(new_pulse)
+        pulse_times.append(self.pulses[0].t.value)
+        pulse_hash = {0: 0}
+
+        for i in range(1, num_pulses):
+            t_cur = self.pulses[i].t.value
+            t_prev = self.pulses[i-1].t.value
+            static_delay = t_cur-t_prev
+            tmp_delay = Delay(tp=static_delay)
+            new_sequence.append(tmp_delay)
+            new_pulse = copy.deepcopy(self.pulses[i])
+            new_pulse.t = None
+            new_sequence.append(new_pulse)
+            pulse_hash[i] = new_sequence.index(new_pulse)
+            pulse_times.append(t_cur)
+
+        new_prog_table = {"EventID": [], "Variable": [], "axis": [],
+                          "axID": []}
+
+        def add_prog_table(dic, Element, Variable, axes, ax_id):
+            dic["EventID"].append(Element)
+            dic["Variable"].append(Variable)
+            dic["axis"].append(axes)
+            dic["axID"].append(ax_id)
+            return dic
+        prog_axes = np.unique(self.progTable["axID"])
+        for ax_id in prog_axes:
+            indexs = np.where(np.array(self.progTable["axID"]) == ax_id)[0]
+            for i in indexs:
+                pulse_num = self.progTable["EventID"][i]
+                pulse_times[pulse_num] = self.progTable["axis"][i]
+            for i in range(1, num_pulses):
+                diff = np.atleast_1d(pulse_times[i] - pulse_times[i-1])
+                if diff.shape[0] > 1:
+                    new_prog_table = add_prog_table(
+                        new_prog_table, int(i*2 - 1), "tp", diff, ax_id)
+        
+        # Change the pcyc_vars
+        new_pcyc_var = []
+        for var in self.pcyc_vars:
+            new_pcyc_var.append(pulse_hash[var])
+        self.pcyc_vars = new_pcyc_var
+
+        self.pulses = new_sequence
+        self.progTable = new_prog_table
+        return self.pulses
+
+    def _convert_to_pulses(self):
+        num_ele = len(self.pulses)
+        new_sequence = []
+
+        new_pulse = copy.deepcopy(self.pulses[0])
+        new_pulse.t = Parameter("t", 0, "ns", "Start time of pulse")
+        new_sequence.append(new_pulse)
+
+        for i in range(1, num_ele):
+            pulse = self.pulses[i]
+            if type(pulse) is not Delay:
+                pos = 0
+                for j in range(0, i):
+                    pos += self.pulses[j].tp.value
+                new_pulse = copy.deepcopy(pulse)
+                new_pulse.t = Parameter("t", pos, "ns", "Start time of pulse")
+                new_sequence.append(new_pulse)
+        self.pulses = new_sequence
+        return self.pulses
+
+    def _checkRect(self) -> bool:
+        """Checks if all the pulses in the sequence are rectangular.
+        """
+        test = True
+
+        for pulse in self.pulses:
+            if type(pulse) is not RectPulse:
+                test = False
+
+        return test
+
+    def __str__(self):
+
+        header = "#" * 79 + "\n" + "autoDEER Sequence Definition" + \
+                 "\n" + "#" * 79 + "\n"
+
+        # Sequence Parameters
+        seq_param_string = "Sequence Parameters: \n"
+        seq_param_string += "{:<10} {:<12} {:<10} {:<30} \n".format(
+            'Name', 'Value', 'Unit', 'Description')
+
+        for param_key in vars(self):
+            param = getattr(self, param_key)
+            if type(param) is Parameter:
+                if type(param.value) is str:
+                    seq_param_string += "{:<10} {:<12} {:<10} {:<30} \n".format(
+                        param.name, param.value, param.unit, param.description)
+                else:
+                    seq_param_string += "{:<10} {:<12.5g} {:<10} {:<30} \n".format(
+                        param.name, param.value, param.unit, param.description)
+        
+        # Pulses
+        pulses_string = "\nEvents (Pulses, Delays, etc...): \n"
+
+        if self.isPulseFocused():
+            # pulses_string += "{:<4} {:<12} {:<8} {:<12} \n".format(
+            #     'iD', 't (ns)', 'tp (ns)', 'Type')
+            # for i, pulse in enumerate(self.pulses):
+            #     pulses_string += "{:<4} {:<12.3E} {:<8} {:<10} \n".format(
+            #         i, pulse.t.value, pulse.tp.value, type(pulse).__name__)
+            params = ['iD', 't', 'tp', 'scale', 'type', 'Phase Cycle']
+            params_widths = ["4", "8", "8", "8", "14", "40"]
+        elif self.isDelayFocused():
+            # pulses_string += "{:<4} {:<8} {:<12} \n".format(
+            #     'iD', 'tp (ns)', 'Type')
+            # for i, pulse in enumerate(self.pulses):
+            #     pulses_string += "{:<4} {:<8} {:<10} \n".format(
+            #         i, pulse.tp.value, type(pulse).__name__)
+            params = ['iD', 'tp', 'scale', 'type']
+            params_widths = ["4", "8", "8", "14"]
+        pulses_string += build_table(self.pulses, params, params_widths)
+
+        def print_event_id(i):
+            if prog_table["EventID"][i] is None:
+                return "Seq"
+            else:
+                return str(prog_table["EventID"][i])
+
+        def get_unit(i):
+            pulse_num = prog_table["EventID"][i]
+            if pulse_num is None:
+                param = getattr(self, prog_table["Variable"][i])
+            else:
+                param = getattr(
+                    self.pulses[pulse_num], prog_table["Variable"][i])
+            
+            if param.unit is None:
+                return "None"
+            else:
+                return param.unit
+
+
+        def test_unique_step(array):
+            diffs = np.diff(array)-np.diff(array)[0]
+            return np.isclose(diffs,np.zeros(diffs.shape)).all()
+
+        # Progressive elements
+        prog_string = "\nProgression: \n"
+        if len(self.progTable["axID"]) >= 1:
+            prog_string += "{:<10} {:<10} {:<10} {:<10} {:<10} {:<10} \n".format(
+                'Pulse', 'Prog. Axis', 'Parameter', 'Step', 'Dim', 'Unit')
+        for i in range(0, len(self.progTable["axID"])):
+            prog_table = self.progTable
+            axis = prog_table["axis"][i]
+            if test_unique_step(axis):
+                step = np.unique(np.diff(axis))[0]
+                fstring = "{:<10} {:<10} {:<10} {:<10.5g} {:<10} {:<10} \n"
+            else:
+                step = "Var"
+                fstring = "{:<10} {:<10} {:<10} {:<10} {:<10} {:<10} \n"
+             
+            prog_string += fstring.format(
+                print_event_id(i), prog_table["axID"][i],
+                prog_table["Variable"][i], step,
+                prog_table["axis"][i].shape[0], get_unit(i))
+
+        footer = "#" * 79 + "\n" +\
+            f"Built by autoDEER Version: {__version__}" + "\n" + "#" * 79
+
+        return header + seq_param_string + pulses_string + prog_string + footer
+
+    def copy(self):
+        return copy.deepcopy(self)
+    
+    def _to_dict(self):
+        to_return = {"version": __version__, "type": "Sequence"}
+
+        for key, var in vars(self).items():
+            if isinstance(var, Parameter):
+                to_return[key] = var._to_dict()
+            if key == "pulses":
+                new_list = []
+                for pulse in var:
+                    new_list.append(pulse._to_json())
+                to_return[key] = new_list
+            else:
+                to_return[key] = var
+
+        return to_return
+
+    def _to_json(self):
+        class autoEPREncoder(json.JSONEncoder):
+            def default(self, obj):
+                if isinstance(obj, np.ndarray):
+                    data_b64 = base64.b64encode(obj.data)
+                    return dict(__ndarray__=str(data_b64),
+                                dtype=str(obj.dtype),
+                                shape=obj.shape)
+                if isinstance(obj, complex):
+                    return str(obj)
+                if isinstance(obj, uuid.UUID):
+                    return_dict = {"__uuid__": str(obj)}
+                    return return_dict
+                if isinstance(obj, Parameter):
+                    return obj._to_dict()
+                if isinstance(obj, Pulse):
+                    return obj._to_dict()
+                if isinstance(obj, Sequence):
+                    return obj._to_dict()
+                else:
+                    return json.JSONEncoder.default(self, obj)
+        
+        return json.dumps(self._to_dict(), cls=autoEPREncoder, indent=4)
+
+    def save(self, filename):
+        """Save the sequence to a JSON file.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the JSON file.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        TypeError
+            If the object cannot be serialized to JSON.
+
+        Example
+        -------
+        >>> obj = Sequence()
+        >>> obj.save("my_sequence.json")
+        """
+        
+                
+        with open(filename, "w") as f:
+           f.write(self._to_json())
+
+    @classmethod
+    def _from_dict(cls, dct):
+        name = dct["name"]
+        B = Parameter._from_dict(dct["B"])
+        LO = Parameter._from_dict(dct["LO"])
+        reptime = Parameter._from_dict(dct["reptime"])
+        averages = Parameter._from_dict(dct["averages"])
+        shots = Parameter._from_dict(dct["shots"])
+        new_sequence = cls(
+            name=name, B=B, LO=LO, reptime=reptime, averages=averages, shots=shots
+        )
+        for key, var in dct.items(): 
+            if isinstance(var, dict) and ("type" in var):
+                setattr(new_sequence, key, Parameter._from_dict(var))
+            elif key == "pulses":
+                for pulse in var:
+                    if hasattr(ad_pulses,pulse['type']):
+                        new_sequence.pulses.append(
+                            getattr(ad_pulses,pulse['type'])._from_dict(pulse))
+                    else:
+                        new_sequence.pulses.append(
+                            Pulse._from_dict(pulse))
+            else:
+                setattr(new_sequence, key, var)
+
+        return new_sequence
+    
+    @classmethod
+    def _from_json(cls, JSONstring):
+        dct = json.loads(JSONstring, object_hook=autoEPRDecoder)
+        return cls._from_dict(dct)
+    
+    @classmethod
+    def load(cls, filename):
+        """Load an object from a JSON file.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the JSON file.
+
+        Returns
+        -------
+        obj : Sequence
+            The Sequence loaded from the JSON file.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the file does not exist.
+
+        Example
+        -------
+        >>> obj = Sequence.load("my_sequence.json")
+        """
+        with open(filename, "w") as f:
+           file_buffer = f.read()
+        return cls._from_json(file_buffer)
+
+# =============================================================================
+#                                Subclasses
+# =============================================================================
 
 class DEERSequence(Sequence):
     """
@@ -177,8 +936,8 @@ class DEERSequence(Sequence):
         else:
             self.addPulse(RectPulse(tp=tp, freq=0, flipangle=np.pi))
         
-        p1 = 2*self.tau1 - self.deadtime
-        self.addPulse(Delay(tp=p1))
+        r1 = 2*self.tau1 - self.deadtime
+        self.addPulse(Delay(tp=r1))
 
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
             self.addPulse(self.pump_pulse.copy(t=None))
@@ -197,7 +956,7 @@ class DEERSequence(Sequence):
         d = 2*(self.tau1+self.tau2)
 
         if hasattr(self, "det_event"):
-            self.addPulse(self.det_event.copy(t=cd))
+            self.addPulse(self.det_event.copy(t=d))
         else:
             self.addPulse(Detection(t=d, tp=512))
 
@@ -500,6 +1259,7 @@ class DEERSequence(Sequence):
         r = np.arange(1.5, 8)
         pass
 
+# =============================================================================
 
 class HahnEchoSequence(Sequence):
     """
@@ -576,6 +1336,8 @@ class HahnEchoSequence(Sequence):
         else:
             self.addPulse(Detection(t=2*tau, tp=self.det_window.value))
 
+# =============================================================================
+
 class FieldSweepSequence(HahnEchoSequence):
     """
     Represents a Field Sweep (EDFS) sequence. 
@@ -625,6 +1387,7 @@ class FieldSweepSequence(HahnEchoSequence):
             axis = np.linspace(B-Bwidth/2, B+Bwidth/2, Bwidth + 1)
         )
         
+# =============================================================================
 
 class CarrPurcellSequence(Sequence):
     """
@@ -730,7 +1493,7 @@ class CarrPurcellSequence(Sequence):
             axis,
             multipliers=multipliers)
 
-
+# =============================================================================
 
 class ResonatorProfileSequence(Sequence):
     """
@@ -835,6 +1598,7 @@ class ResonatorProfileSequence(Sequence):
             axis,
             multipliers=[1,1/self.gyro])
 
+# =============================================================================
 
 class TWTProfileSequence(Sequence):
     """
@@ -885,3 +1649,5 @@ class TWTProfileSequence(Sequence):
                 ["scale"],
                 1,
                 axis)
+
+# =============================================================================

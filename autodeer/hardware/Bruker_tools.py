@@ -1,5 +1,5 @@
-from autodeer.classes import Delay, Detection, Sequence
-from autodeer.pulses import RectPulse
+from autodeer.sequences import Sequence
+from autodeer.pulses import RectPulse, Delay, Detection
 import numpy as np
 import re
 import time
