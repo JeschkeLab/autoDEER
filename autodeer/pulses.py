@@ -575,6 +575,7 @@ class Detection(Pulse):
         Pulse.__init__(self, t=t, tp=tp, **kwargs)
         self.scale = None
         self.freq = Parameter("freq", freq, "GHz", "The detection frequency, if supported")
+        self.pcyc = None
         pass
 
 
