@@ -287,7 +287,12 @@ class Parameter:
         """
 
         self.name = name
-        self.value = value
+
+        if isinstance(value, Parameter):
+            self.value = value.value
+        else:
+            self.value = value
+            
         self.unit = unit
         self.description = description
         self.axis = []
@@ -629,7 +634,6 @@ class Parameter:
         """
         with open(filename, "w") as f:
            f.write(self._to_json())
-
 
     @staticmethod
     def _from_dict(dict):
