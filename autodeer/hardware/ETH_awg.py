@@ -160,17 +160,21 @@ class ETH_awg_interface(Interface):
         amp_tune =HahnEchoSequence(
             B=B, LO=LO, reptime=reptime, averages=1, shots=400
         )
+
+        scale = Parameter("scale",0,dim=45,step=0.02)
         amp_tune.pulses[0].tp.value = tp
-        amp_tune.pulses[0].scale.value = 0
+        amp_tune.pulses[0].scale = scale
         amp_tune.pulses[1].tp.value = tp * 2
-        amp_tune.pulses[1].scale.value = 0
+        amp_tune.pulses[1].scale = scale
+
+        amp_tune.evolution([scale])
         
-        amp_tune.addPulsesProg(
-            pulses=[0,1],
-            variables=['scale','scale'],
-            axis_id=0,
-            axis=np.arange(0,0.9,0.02),
-        )
+        # amp_tune.addPulsesProg(
+        #     pulses=[0,1],
+        #     variables=['scale','scale'],
+        #     axis_id=0,
+        #     axis=np.arange(0,0.9,0.02),
+        # )
 
         self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
 
