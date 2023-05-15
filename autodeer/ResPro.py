@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.fft as fft
-from scipy.interpolate import pchip_interpolate
+from scipy.interpolate import pchip_interpolate, splrep, BSpline
 from scipy.signal import hilbert
 import scipy.signal as signal
 import matplotlib.pyplot as plt
@@ -485,5 +485,59 @@ class ResonatorProfileAnalysis:
 
         return fig
 
+# =============================================================================
+# Spectral Position optimisation
+
+def ceil(number, decimals=0):
+    order = decimals*-1
+    return np.ceil(number / 10**order)*10**order
+
+def floor(number, decimals=0):
+    order = decimals*-1
+    return np.floor(number / 10**order)*10**order
+
+def calc_overlap(x, func1, func2):
+    y1 = func1(x)
+    y2 = func2(x)
+    area_1 = np.trapz(y1, x)
+    area_2 = np.trapz(y2, x)
+    y1 /= area_1
+    y2 /= area_2
+    area_12 = np.trapz(y1*y2, x)
+    return area_12
+
+def optimise_spectra_position(resonator_profile, fieldsweep, verbosity=0):
+
+    band_width = resonator_profile.fc / resonator_profile.q
+
+    if band_width > 0.4:
+        n_points = 200
+    else:
+        n_points = 100
+
+    gyro = fieldsweep.gyro
+
+    upper_field_lim = ceil((resonator_profile.fc + band_width)/gyro, 1)
+    lower_field_lim = floor((resonator_profile.fc - band_width)/gyro , 1)
+
+    if verbosity > 0 :
+        print(f"Original field position {fieldsweep.dataset.params['B']:.1f} B")
+    fx = np.flip(fieldsweep.fs_x + fieldsweep.dataset.params['LO']+1.5)
+    gyro_x = fx / fieldsweep.dataset.params['B']
+    testB  = np.linspace(lower_field_lim,upper_field_lim,n_points)
+    Overlap_B = np.zeros(n_points)
+
+    for i,B in enumerate(testB):
+        x = gyro_x*B
+        y = np.flip(fieldsweep.data)
+        tck_s = splrep(x, y, s=0.02)
+        x = np.linspace(33,35,100)
+        Overlap_B[i] = calc_overlap(x, resonator_profile.fit_func(x), BSpline(*tck_s))
+
+    plt.plot(testB,Overlap_B)
+    best_field = testB[Overlap_B.argmax()]
+    if verbosity > 0 :
+        print(f"Ideal field position {best_field:.1f} B")
+    return best_field
 
 
