@@ -572,8 +572,9 @@ class Detection(Pulse):
             functionality, by default 0 MHz
 
         """
-        Pulse.__init__(self, t=t, tp=tp,freq=freq, **kwargs)
+        Pulse.__init__(self, t=t, tp=tp, **kwargs)
         self.scale = None
+        self.freq = Parameter("freq", freq, "GHz", "The detection frequency, if supported")
         pass
 
 

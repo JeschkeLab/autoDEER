@@ -16,7 +16,7 @@ class ETH_awg_interface(Interface):
     """
     Represents the interface for connecting to Andrin Doll style spectrometers.
     """
-    def __init__(self, awg_freq=1.5, dig_rate=2) -> None:
+    def __init__(self, awg_freq=1.5, dig_rate=2, test_mode=False) -> None:
         """An interface for connecting to a Andrin Doll style spectrometer,
         commonly in use at ETH Zürich.
 
@@ -35,8 +35,9 @@ class ETH_awg_interface(Interface):
         dig_rate : float
             The speed of the digitser in GSa/s
         """
-        
-        self.connect()
+        if not test_mode:
+            self.connect()
+            
         self.awg_freq = awg_freq
         self.dig_rate = dig_rate
         self.pulses = {}
