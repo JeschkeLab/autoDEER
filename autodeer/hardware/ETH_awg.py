@@ -10,6 +10,7 @@ from deerlab import correctphase
 import numpy as np
 import scipy.signal as sig
 from scipy.io import loadmat
+from autodeer.utils import transpose_list_of_dicts
 
 
 class ETH_awg_interface(Interface):
@@ -430,7 +431,6 @@ class ETH_awg_interface(Interface):
 
         struc = {}
 
-        struc["LO"] = round(float(sequence.LO.value - self.awg_freq), 3)
         struc["avgs"] = float(sequence.averages.value)
         struc["reptime"] = round(float(sequence.reptime.value * 1e3), 0)
         struc["shots"] = float(sequence.shots.value)
@@ -450,6 +450,8 @@ class ETH_awg_interface(Interface):
         for i in unique_parvars:
             struc["parvars"].append(self._build_parvar(i, sequence))
         
+        struc["LO"] = round(float(sequence.LO.value - self.awg_freq), 3)
+
         return struc
 
     def _build_pulse(self, pulse) -> dict:
@@ -562,6 +564,19 @@ class ETH_awg_interface(Interface):
             _description_
         """
 
+        def get_vec(seq,EventID,variable,uuid):
+
+            if EventID is None:
+                attr = getattr(seq, variable)
+            else:
+                attr = getattr(seq.pulses[EventID], variable)
+
+            # Find local position
+            axis_T = transpose_list_of_dicts(attr.axis)
+            i = axis_T['uuid'].index(uuid)
+            vec = attr.value + attr.axis[i]['axis']
+            return vec.astype(float)
+
         prog_table = sequence.progTable
         prog_table_n = len(prog_table["axID"])
         parvar = {}
@@ -575,7 +590,9 @@ class ETH_awg_interface(Interface):
             if prog_table["axID"][i] == id:
                 pulse_num = prog_table["EventID"][i]
                 var = prog_table["Variable"][i]
-                vec = prog_table["axis"][i].astype(float)
+                uuid = prog_table["uuid"][i]
+                # vec = prog_table["axis"][i].astype(float)
+                vec = get_vec(sequence,pulse_num,var,uuid)
                 if pulse_num is not None:
                     if var in ["freq", "init_freq"]:
                         vec += self.awg_freq
@@ -596,10 +613,10 @@ class ETH_awg_interface(Interface):
                     # Instead of stepping the LO we will step the frequency
                     # all the pulses and detection events.
                     pulse_strings = []
-                    vec = prog_table["axis"][i].astype(float)
+                    # vec = prog_table["axis"][i].astype(float)
                     centre_freq = (vec[-1] + vec[0])/2
                     LO = centre_freq - self.awg_freq
-                    sequence.LO.value = LO
+                    sequence.LO.value = centre_freq
                     vec = vec - LO
                     vecs = []
                     pulse_str = lambda i: f"events{{{i+1}}}.pulsedef.nu_init"

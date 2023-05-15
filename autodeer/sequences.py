@@ -1397,7 +1397,7 @@ class FieldSweepSequence(HahnEchoSequence):
 
 
         self.B = Parameter(
-            "B", B-Bwidth/2,step=1,dim=Bwidth, unit="Gauss", description="Field sweep width"
+            "B", value=B-Bwidth/2, step=1,dim=Bwidth, unit="Gauss", description="Field sweep width"
         )
         
         self.evolution([self.B])
@@ -1585,7 +1585,7 @@ class ResonatorProfileSequence(Sequence):
             unit="Guass",link=self.LO,description="B0 Field" )
         
         self.addPulse(RectPulse(  # Hard pulse
-            t=tp, tp=4, freq=0, flipangle="Hard"
+            t=0, tp=tp, freq=0, flipangle="Hard"
         ))
 
         if hasattr(self, "pi2_pulse"):
