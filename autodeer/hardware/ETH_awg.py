@@ -277,21 +277,18 @@ class ETH_awg_interface(Interface):
                 pi2_pulse = pulse, pi_pulse=pi_pulse
             )
 
-            amp_tune.pulses[0].scale.value = 0
+            scale = Parameter('scale',0,unit=None,step=0.02, dim=45, description='The amplitude of the pulse 0-1')
+            amp_tune.pulses[0].scale = scale
 
-            amp_tune.addPulsesProg(
-                pulses=[0],
-                variables=['scale'],
-                axis_id=0,
-                axis=np.arange(0,0.9,0.02),
-            )
+            amp_tune.evolution([scale])
+
             self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
 
             while self.isrunning():
                 time.sleep(10)
             dataset = self.acquire_dataset()
-            scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
-            pulse.scale.value = scale
+            new_amp = np.around(dataset.axes[0][dataset.data.argmax()],2)
+            pulse.scale = Parameter('scale',new_amp,unit=None,description='The amplitude of the pulse 0-1')
             return pulse
 
         elif mode == "amp_nut":
@@ -311,12 +308,17 @@ class ETH_awg_interface(Interface):
                               freq=c_frq-LO))
             nut_tune.addPulse(Detection(t=3e3, tp=512, freq=c_frq-LO))
 
-            nut_tune.addPulsesProg(
-                pulses=[0],
-                variables=["scale"],
-                axis_id = 0,
-                axis= np.arange(0,0.9,0.02)
-            )
+            scale = Parameter('scale',0,unit=None,step=0.02, dim=45, description='The amplitude of the pulse 0-1')
+            nut_tune.pulses[0].scale = scale
+            nut_tune.evolution([scale])
+
+
+            # nut_tune.addPulsesProg(
+            #     pulses=[0],
+            #     variables=["scale"],
+            #     axis_id = 0,
+            #     axis= np.arange(0,0.9,0.02)
+            # )
             self.launch(nut_tune, "autoDEER_amptune", IFgain=1)
 
             while self.isrunning():
@@ -326,14 +328,14 @@ class ETH_awg_interface(Interface):
             if data[np.abs(data).argmax()] < 0:
                 data *= -1
             if np.isclose(pulse.flipangle.value, np.pi):
-                scale = np.around(dataset.axes[0][data.argmin()],2)
+                new_amp = np.around(dataset.axes[0][data.argmin()],2)
             elif np.isclose(pulse.flipangle.value, np.pi/2):
                 sign_changes = np.diff(np.sign(np.real(data)))
-                scale = np.around(dataset.axes[0][np.nonzero(sign_changes)[0][0]],2)
+                new_amp = np.around(dataset.axes[0][np.nonzero(sign_changes)[0][0]],2)
             else:
                 raise RuntimeError("Target pulse can only have a flip angle of either: ",
                                 "pi or pi/2.")
-            pulse.scale.value = scale
+            pulse.scale = Parameter('scale',new_amp,unit=None,description='The amplitude of the pulse 0-1')
         
             return pulse
     
