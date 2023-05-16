@@ -107,6 +107,7 @@ class ETH_awg_interface(Interface):
             try:
                 Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
                 data = uwb_load(Matfile, options=options, verbosity=verbosity)
+                data.LO = Parameter("LO", data.params['LO']+self.awg_freq, unit="GHz", description="Total local oscilator frequency")
             except OSError:
                 time.sleep(10)
             else:

@@ -17,6 +17,8 @@ class FieldSweepAnalysis():
         self.axis = dataset.axes[0]
         self.data = dataset.data
         self.dataset = dataset
+        if hasattr(self.dataset,"LO"):
+            self.LO = self.dataset.LO
         pass
 
     def find_max(self) -> float:
@@ -32,7 +34,7 @@ class FieldSweepAnalysis():
 
         return self.max_field
 
-    def calc_gyro(self, det_frq: float) -> float:
+    def calc_gyro(self, LO: float=None) -> float:
         """Calculates the gyromagnetic ratio for a given frequency
 
         Parameters
@@ -48,11 +50,18 @@ class FieldSweepAnalysis():
 
         if not hasattr(self, "max_field"):
             self.find_max()
-        self.det_frq = det_frq
-        self.gyro = det_frq/self.max_field
-        hf_x = det_frq - self.gyro*self.axis
-        self.fs_x = det_frq + hf_x
-        self.fs_x = det_frq - self.gyro*self.axis
+
+        if LO is None:
+            if hasattr(self,"LO"):
+                LO = self.LO.value
+            else:
+                raise ValueError("A LO frequency must eithe be in the dataset or specified as an argument")
+            
+        self.LO = LO
+        self.gyro = LO/self.max_field
+        hf_x = LO - self.gyro*self.axis
+        self.fs_x = LO + hf_x
+        self.fs_x = LO - self.gyro*self.axis
         return self.gyro
 
     def plot(self, norm: bool = True, axis: str = "time") -> Figure:

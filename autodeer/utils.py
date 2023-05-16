@@ -121,7 +121,7 @@ def sop(spins, comps):
         else:
             raise ValueError(f"Incorect specification of comps: ",
                              f"{sop_type} is not a valid input")
-        M_ = bsr_array((val, (r,c)), shape=(n,n)).toarrßay()
+        M_ = bsr_array((val, (r,c)), shape=(n,n)).toarray()
         OP = np.kron(OP, M_)
 
     return OP
