@@ -281,7 +281,7 @@ class Sequence:
         for var_name in vars(self):
             var = getattr(self, var_name)
             if type(var) is Parameter:
-                if not var.is_static():
+                if not var.is_static() and not var.virtual:
                     for i in range(len(var.axis)):
                         if var.axis[i]["uuid"] in axes_uuid:
                             progTable["axID"].append(axes_uuid.index(var.axis[i]["uuid"]))
@@ -326,7 +326,7 @@ class Sequence:
         for var_name in vars(self):
             var = getattr(self, var_name)
             if type(var) is Parameter:
-                if not var.is_static():
+                if not var.is_static() and not var.virtual:
                     for i in range(0, len(var.prog)):
                         # progTable["axID"].append(var.prog[i][0]) 
                         # progTable["EventID"].append(None)
@@ -983,7 +983,7 @@ class DEERSequence(Sequence):
         # pass
 
 
-    def five_pulse(self, tp=16):
+    def five_pulse(self, tp=16, relaxation=False):
         """
         Build a five pulse DEER sequence.
 
@@ -993,10 +993,27 @@ class DEERSequence(Sequence):
             Length of default RectPulse in ns, by default 16ns.
         """
         
-        dim = np.floor((self.tau2.value + self.tau1.value - 2*self.deadtime)/self.dt)
 
-        t = Parameter(name="t", value=self.tau1+self.deadtime, step=self.dt,
+        # t = Parameter(name="t", value=-self.deadtime, step=self.dt,
+        #                dim=dim, unit="ns", description="The time axis")
+
+        if relaxation:
+            self.tau1 = Parameter(
+                name="tau1", value=self.tau1.value, unit="ns", dim=100, step=50,
+                description="The first interpulse delays", virtual=True)
+            self.tau2 = Parameter(
+                name="tau2", value=self.tau2.value, unit="ns", dim=100,
+                step=50, link=self.tau1,
+                description="The second interpulse delays", virtual=True)
+            
+            t = Parameter(name="t", value=0, unit="ns", description="The time axis")
+
+
+        else:
+            dim = np.floor((self.tau2.value + self.tau1.value - 2*self.deadtime)/self.dt)
+            t = Parameter(name="t", value=-self.deadtime, step=self.dt,
                        dim=dim, unit="ns", description="The time axis")
+
 
 
 
@@ -1020,7 +1037,7 @@ class DEERSequence(Sequence):
                                     flipangle=np.pi))
         
         if hasattr(self,"pump_pulse"): # Pump 2 pulse
-            self.addPulse(self.pump_pulse.copy(t=t))
+            self.addPulse(self.pump_pulse.copy(t=2*self.tau1 + t))
         else:
             self.addPulse(RectPulse(t=t, tp=tp, freq=0,
                                     flipangle=np.pi))
@@ -1037,7 +1054,13 @@ class DEERSequence(Sequence):
             self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
 
 
-        self.evolution([t])
+
+        if relaxation:
+            self.evolution([self.tau1])
+
+        else:
+            self.evolution([t])
+
         # self.addPulsesProg(
         #     [3],
         #     ["t"],
@@ -1581,7 +1604,7 @@ class ResonatorProfileSequence(Sequence):
         center_LO = self.LO.value
         self.LO = Parameter("LO", center_LO-fwidth, step=0.02, dim=dim, unit="GHz", description="LO frequency")
         self.B = Parameter(
-            "B",((center_LO-fwidth)/self.gyro), step=fstep/self.gyro, dim=dim,
+            "B",((self.LO.value)/self.gyro), step=fstep/self.gyro, dim=dim,
             unit="Guass",link=self.LO,description="B0 Field" )
         
         self.addPulse(RectPulse(  # Hard pulse

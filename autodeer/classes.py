@@ -231,7 +231,8 @@ class Parameter:
     Represents a sequence or pulse parameter.
     """
 
-    def __init__(self, name, value, unit=None, description=None, **kwargs) -> None:
+    def __init__(self, name, value, unit=None, description=None, virtual=False,
+                  **kwargs) -> None:
         """A general parameter.
 
         Parameters
@@ -248,6 +249,11 @@ class Parameter:
             The difference from the intial value for each position in a 
             dynamic axis. Can be n-dimensional, by default None.
         ax_id : list, optional 
+        virtual: bool, optional
+            A virtual paramter is only used to vary other parameters, it is not 
+            varied itself and will not be directly passed to a spectrometer.
+            This parameter is **never** inherited.
+            By default, False
              
     
 
@@ -295,6 +301,7 @@ class Parameter:
             
         self.unit = unit
         self.description = description
+        self.virtual = virtual
         self.axis = []
         self.ax_id = []
         if "link" in kwargs:
@@ -380,7 +387,7 @@ class Parameter:
                             a_index = a_ax_ids.index(id)
                             b_index = b_ax_ids.index(id)
                             b_ax_ids.remove(id)
-                            new_axis.append({"axis": self.axis[a_index]["axis"] + __o.axis[b_index]["axis"], "uuid": self.uuid})
+                            new_axis.append({"axis": self.axis[a_index]["axis"] + __o.axis[b_index]["axis"], "uuid": id})
                             new_ax_id.append(id)
                 else:
                     new_axis = self.axis
@@ -448,7 +455,7 @@ class Parameter:
                             a_index = a_ax_ids.index(id)
                             b_index = b_ax_ids.index(id)
                             b_ax_ids.remove(id)
-                            new_axis.append({"axis": self.axis[a_index] - __o.axis[b_index], "uuid": self.uuid})
+                            new_axis.append({"axis": self.axis[a_index] - __o.axis[b_index], "uuid": id})
                             new_ax_id.append(id)
                 else:
                     new_axis = self.axis
@@ -523,7 +530,7 @@ class Parameter:
                             a_index = a_ax_ids.index(id)
                             b_index = b_ax_ids.index(id)
                             b_ax_ids.remove(id)
-                            new_axis.append({"axis": self.axis[a_index] * __o.axis[b_index], "uuid": self.uuid})
+                            new_axis.append({"axis": self.axis[a_index] * __o.axis[b_index], "uuid": id})
                             new_ax_id.append(id)
                 else:
                     new_axis = self.axis
