@@ -12,7 +12,7 @@ from autodeer import __version__
 import uuid
 import base64
 import autodeer.pulses as ad_pulses
-
+import numbers
 
 class Sequence:
     """
@@ -656,6 +656,8 @@ class Sequence:
                                 dtype=str(obj.dtype),
                                 shape=obj.shape)
                 if isinstance(obj, complex):
+                    return str(obj)
+                if isinstance(obj, numbers.Number):
                     return str(obj)
                 if isinstance(obj, uuid.UUID):
                     return_dict = {"__uuid__": str(obj)}

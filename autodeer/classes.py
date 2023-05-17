@@ -607,6 +607,8 @@ class Parameter:
                                 shape=obj.shape)
                 if isinstance(obj, complex):
                     return str(obj)
+                if isinstance(obj, numbers.Number):
+                    return str(obj)
                 if isinstance(obj, uuid.UUID):
                     return_dict = {"__uuid__": str(obj)}
                     return return_dict
