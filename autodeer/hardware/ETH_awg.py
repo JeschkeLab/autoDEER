@@ -325,8 +325,9 @@ class ETH_awg_interface(Interface):
                 time.sleep(10)
             dataset = self.acquire_dataset()
             data = correctphase(dataset.data)
-            if data[np.abs(data).argmax()] < 0:
+            if data[0] < 0:
                 data *= -1
+                
             if np.isclose(pulse.flipangle.value, np.pi):
                 new_amp = np.around(dataset.axes[0][data.argmin()],2)
             elif np.isclose(pulse.flipangle.value, np.pi/2):
