@@ -232,7 +232,7 @@ def DEERanalysis(dataset, compactness=True, model=None, verbosity=0, **kwargs):
             exp_type = "3pDEER"
             tau1 = sequence.tau1.value
             t = sequence.t.value + sequence.t.axis[0]['axis']
-        elif sequence.name == "nDEER":
+        elif sequence.name == "nDEER-CP":
             exp_type = "4pDEER"
             tau1 = sequence.tau1.value
             tau2 = sequence.tau2.value
@@ -326,6 +326,7 @@ def DEERanalysis(dataset, compactness=True, model=None, verbosity=0, **kwargs):
     
     if ROI:
         ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
+        fit.ROI = ROI
         rec_tau_max = (ROI[1]/3)**3 * 2
         return fit, rec_tau_max
     else:

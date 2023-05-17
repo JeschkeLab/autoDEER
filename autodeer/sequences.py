@@ -853,6 +853,9 @@ class DEERSequence(Sequence):
         tp : float
             Length of default RectPulse in ns, by default 16ns.
         """
+
+        self.name = "3pDEER"
+
         dim = np.floor((self.tau1 - 2*self.deadtime)/self.dt)
 
         t = Parameter(name="t", value=self.deadtime, step=self.dt, dim=dim, unit="ns", description="The time axis")
@@ -904,7 +907,7 @@ class DEERSequence(Sequence):
 
         pass
 
-    def four_pulse(self, tp=16):
+    def four_pulse(self, tp=16, relaxation=False):
         """
         Build a four pulse DEER sequence.
 
@@ -913,17 +916,22 @@ class DEERSequence(Sequence):
         tp : float
             Length of default RectPulse in ns, by default 16ns.
         """
+        self.name = "4pDEER"
+        if relaxation:
+            self.tau1 = Parameter(
+                name="tau1", value=self.tau1.value, unit="ns", dim=100, step=50,
+                description="The first interpulse delays", virtual=True)
+            self.tau2 = Parameter(
+                name="tau2", value=self.tau2.value, unit="ns", dim=100,
+                step=50, link=self.tau1,
+                description="The second interpulse delays", virtual=True)
+            self.t = Parameter(name="t", value=0, unit="ns", description="The time axis", virtual=True)
+        else:
+            dim = np.floor((self.tau2.value)/self.dt)
+            self.t = Parameter(name="t", value = - self.deadtime, step=self.dt,
+                       dim=dim, unit="ns", description="The time axis", virtual=True)
+
         
-
-        dim = np.floor((self.tau2.value)/self.dt)
-
-        t = Parameter(name="t", value=2*self.tau1-self.deadtime, step=self.dt,
-                       dim=dim, unit="ns", description="The time axis")
-
-        
-        # d1 = Delay(self.tau1)
-        # d2 = Delay(self.tau2)
-
         if hasattr(self,"exc_pulse"): # Exc pulse
             self.addPulse(self.exc_pulse.copy(t=0))
         else:
@@ -931,24 +939,18 @@ class DEERSequence(Sequence):
                 t=0, tp=tp, freq=0, flipangle=np.pi/2
             ))
         
-        # self.addPulse(d1)
         
         if hasattr(self,"ref_pulse"): # Ref 1 pulse
             self.addPulse(self.ref_pulse.copy(t=self.tau1))
         else:
             self.addPulse(RectPulse(t=self.tau1, tp=tp, freq=0, flipangle=np.pi))
         
-        # r1 = 2*self.tau1 - self.deadtime
-        # self.addPulse(Delay(tp=r1))
-
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=t))
+            self.addPulse(self.pump_pulse.copy(t=2*self.tau1 + self.t))
         else:
-            self.addPulse(RectPulse(t=t,
+            self.addPulse(RectPulse(t=2*self.tau1 + self.t,
                                     tp=tp, freq=0, flipangle=np.pi))
 
-        # r2 = 2*self.tau1 + self.tau2
-        # self.addPulse(Delay(tp=r2))
 
         if hasattr(self,"ref_pulse"): # Ref 2 pulse
             
@@ -957,21 +959,17 @@ class DEERSequence(Sequence):
             self.addPulse(RectPulse(t=2*self.tau1 + self.tau2,
                                     tp=tp, freq=0, flipangle=np.pi))
 
-        # d = 2*(self.tau1+self.tau2)
-
         if hasattr(self, "det_event"):
             self.addPulse(self.det_event.copy(t=2*(self.tau1+self.tau2)))
         else:
             self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
 
 
-        self.evolution([t])
-        # self.addPulsesProg(
-        #     [2],
-        #     ["t"],
-        #     0,
-        #     axis)
-        
+        if relaxation:
+            self.evolution([self.tau1])
+
+        else:
+            self.evolution([self.t])
         # if self.ESEEM_avg is not None:
         #     if self.ESEEM_avg.lower() == "proton":
         #         ESEEM_axis = np.arange(0,8) * 8
@@ -998,7 +996,8 @@ class DEERSequence(Sequence):
 
         # t = Parameter(name="t", value=-self.deadtime, step=self.dt,
         #                dim=dim, unit="ns", description="The time axis")
-
+        
+        self.name = "5pDEER"
         if relaxation:
             self.tau1 = Parameter(
                 name="tau1", value=self.tau1.value, unit="ns", dim=100, step=50,
@@ -1008,13 +1007,18 @@ class DEERSequence(Sequence):
                 step=50, link=self.tau1,
                 description="The second interpulse delays", virtual=True)
             
-            t = Parameter(name="t", value=0, unit="ns", description="The time axis")
-
+            self.t = Parameter(
+                name="t", value=0, unit="ns", description="The time axis",
+                virtual=True)
 
         else:
-            dim = np.floor((self.tau2.value + self.tau1.value - 2*self.deadtime)/self.dt)
-            t = Parameter(name="t", value= self.deadtime, step=self.dt,
-                       dim=dim, unit="ns", description="The time axis")
+            if self.deadtime > self.tau3.value:
+                raise ValueError("Deadtime must be greater than tau3, otherwise pulses crash")
+            
+            dim = np.floor((self.tau2.value + self.tau1.value - self.tau3.value)/self.dt)
+            self.t = Parameter(
+                name="t", value= self.tau3.value - self.deadtime, step=self.dt,
+                dim=dim, unit="ns", description="The time axis", virtual=True)
 
 
 
@@ -1039,9 +1043,9 @@ class DEERSequence(Sequence):
                                     flipangle=np.pi))
         
         if hasattr(self,"pump_pulse"): # Pump 2 pulse
-            self.addPulse(self.pump_pulse.copy(t=self.tau1 + t))
+            self.addPulse(self.pump_pulse.copy(t=self.tau1 + self.t))
         else:
-            self.addPulse(RectPulse(t=t, tp=tp, freq=0,
+            self.addPulse(RectPulse(t=self.tau1 + self.t, tp=tp, freq=0,
                                     flipangle=np.pi))
 
         if hasattr(self,"ref_pulse"): # Ref 2 pulse
@@ -1061,7 +1065,7 @@ class DEERSequence(Sequence):
             self.evolution([self.tau1])
 
         else:
-            self.evolution([t])
+            self.evolution([self.t])
 
         # self.addPulsesProg(
         #     [3],
@@ -1087,7 +1091,7 @@ class DEERSequence(Sequence):
 
         # pass
 
-    def seven_pulse(self, tp=16):
+    def seven_pulse(self, tp=16, relaxation=False):
         """
         Build a seven pulse DEER sequence.
 
@@ -1096,14 +1100,33 @@ class DEERSequence(Sequence):
         tp : float
             Length of default RectPulse in ns, by default 16ns.
         """
-        self.name = "7p-DEER"
+        self.name = "7pDEER"
 
-        axis = np.arange(0, self.tau2 + self.tau1 - 2*self.deadtime, self.dt)
+        if relaxation:
+            self.tau1 = Parameter(
+                name="tau1", value=self.tau1.value, unit="ns", dim=100, step=50,
+                description="The first interpulse delays", virtual=True)
+            self.tau2 = Parameter(
+                name="tau2", value=self.tau2.value, unit="ns", dim=100,
+                step=50, link=self.tau1,
+                description="The second interpulse delays", virtual=True)
+            
+            self.t = Parameter(
+                name="t", value=0, unit="ns", description="The time axis",
+                virtual=True)
+
+        else:
+            dim = np.floor((self.tau2.value + self.tau1.value - 2*self.deadtime)/self.dt)
+            self.t = Parameter(
+                name="t", value = + self.deadtime, step=self.dt,
+                dim=dim, unit="ns", description="The time axis", virtual=True)
+
+        # axis = np.arange(0, self.tau2 + self.tau1 - 2*self.deadtime, self.dt)
         
-        dim = np.floor((self.tau2 + self.tau1 - 2*self.deadtime)/self.dt)
+        # dim = np.floor((self.tau2 + self.tau1 - 2*self.deadtime)/self.dt)
 
-        t = Parameter(name="t", value=0, step=self.dt,
-                       dim=dim, unit="ns", description="The time axis")
+        # t = Parameter(name="t", value=0, step=self.dt,
+        #                dim=dim, unit="ns", description="The time axis")
 
 
         if hasattr(self,"exc_pulse"): # Exc pulse
@@ -1113,19 +1136,16 @@ class DEERSequence(Sequence):
                 t=0, tp=tp, freq=0, flipangle=np.pi/2
             ))
 
-        r1_pos = self.tau1
         if hasattr(self,"ref_pulse"): # Ref 1 pulse
             self.addPulse(self.ref_pulse.copy(t=self.tau1))
         else:
             self.addPulse(RectPulse(t=self.tau1, tp=tp, freq=0, flipangle=np.pi))
 
-        p1_pos = r1_pos + self.deadtime
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=r1_pos + self.deadtime + t))
+            self.addPulse(self.pump_pulse.copy(t=self.tau1 + self.t))
         else:
-            self.addPulse(RectPulse(t=r1_pos + self.deadtime, tp=tp, freq=0, flipangle=np.pi))
+            self.addPulse(RectPulse(t=self.tau1 + self.t, tp=tp, freq=0, flipangle=np.pi))
 
-        r2_pos = 2*self.tau1 + self.tau2
         if hasattr(self,"ref_pulse"): # Ref 2 pulse
             self.addPulse(self.ref_pulse.copy(t= 2*self.tau1 + self.tau2))
         else:
@@ -1133,18 +1153,16 @@ class DEERSequence(Sequence):
                 t= 2*self.tau1 + self.tau2, tp=tp, freq=0, flipangle=np.pi
             ))
 
-        p2_pos = r2_pos + self.tau4
         if hasattr(self,"pump_pulse"): # Pump 2 pulse
-            self.addPulse(self.pump_pulse.copy(t=r2_pos + self.tau4))
+            self.addPulse(self.pump_pulse.copy(t=2*self.tau1 + self.tau2 + self.tau4))
         else:
-            self.addPulse(RectPulse(t=r2_pos + self.tau4, tp=tp, freq=0, flipangle=np.pi))
+            self.addPulse(RectPulse(t=2*self.tau1 + self.tau2 + self.tau4, tp=tp, freq=0, flipangle=np.pi))
         
         r3_pos = 2*self.tau1 + 2*self.tau2 + self.tau3
-        p3_pos = r3_pos - self.deadtime
         if hasattr(self,"pump_pulse"): # Pump 3 pulse
-            self.addPulse(self.pump_pulse.copy(t=p3_pos - t))
+            self.addPulse(self.pump_pulse.copy(t=r3_pos - self.t))
         else:
-            self.addPulse(RectPulse(t=p3_pos -t, tp=tp, freq=0, flipangle=np.pi))
+            self.addPulse(RectPulse(t=r3_pos -self.t, tp=tp, freq=0, flipangle=np.pi))
 
         
         if hasattr(self,"ref_pulse"): # Ref 3 pulse
@@ -1160,7 +1178,11 @@ class DEERSequence(Sequence):
             self.addPulse(Detection(t=d_pos, tp=512))
 
 
-        self.evolution([t])
+        if relaxation:
+            self.evolution([self.tau1])
+
+        else:
+            self.evolution([self.t])
 
         # self.addPulsesProg(
         #     pulses=[2],
@@ -1175,16 +1197,60 @@ class DEERSequence(Sequence):
         #     axis=axis+self.pulses[2].t.value)
         pass
     
-    def nDEER_CP(self, n, tp=16):
+    def nDEER_CP(self, n:int, tp=16, relaxation=False):
+        """Generate an nDEER sequence.
+
+        The sum of tau1 and tau2 is used as total trace length. 
+
+
+        Parameters
+        ----------
+        n : int
+            The number of refocusing pulses
+        tp : int, optional
+            _description_, by default 16
+        relaxation : bool, optional
+            _description_, by default False
+
+        Raises
+        ------
+        ValueError
+            _description_
+        """
 
         step = 2*(self.tau1.value+self.tau2.value)/(2*n)
+        self.name = "nDEER-CP"
+        self.n = Parameter(
+            name="n", value=n,
+            unit=None, description="The number of refoucsing pulses",
+            virtual=True)
 
-        
-        dim = np.floor((2*(self.tau1.value+self.tau2.value) - 2*self.deadtime - 2*step)/self.dt)
+        self.step = Parameter(
+            name="step", value=2*(self.tau1.value+self.tau2.value)/(2*n),
+            unit=None, description="The gap of the first refoucsing pulse",
+            virtual=True)
 
-        t = Parameter(name="t", value=2*step - self.deadtime, step=self.dt,
-                       dim=dim, unit="ns", description="The time axis")
+        if relaxation:
 
+            self.step = Parameter(
+                name="step", value=2*(self.tau1.value+self.tau2.value)/(2*n),
+                dim=100, step=200,
+                unit=None, description="The gap of the first refoucsing pulse",
+                virtual=True)            
+            self.t = Parameter(
+                name="t", value=0, unit="ns", description="The time axis",
+                virtual=True)
+
+        else:
+            if self.deadtime > self.tau3.value:
+                raise ValueError("Deadtime must be greater than tau3, otherwise pulses crash")
+            
+            dim = np.floor((2*(n-1)*self.step.value)/self.dt)
+
+            self.t = Parameter(
+                name="t", value= - self.deadtime, step=self.dt,
+                dim=dim, unit="ns", description="The time axis", virtual=True)
+                
 
         if hasattr(self,"exc_pulse"): # Exc pulse
             self.addPulse(self.exc_pulse.copy(t=0))
@@ -1201,10 +1267,10 @@ class DEERSequence(Sequence):
             ))
 
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=t))
+            self.addPulse(self.pump_pulse.copy(t=2*self.step + self.t))
         else:
             self.addPulse(RectPulse(
-                t=t, tp=tp, freq=0, flipangle=np.pi
+                t=2*self.step + self.t, tp=tp, freq=0, flipangle=np.pi
             ))
         
         for i in np.arange(1,n):
@@ -1217,11 +1283,14 @@ class DEERSequence(Sequence):
                 ))
 
         if hasattr(self, "det_event"):
-            self.addPulse(self.det_event.copy(t=2*(self.tau1+self.tau2)))
+            self.addPulse(self.det_event.copy(t=2*n*(self.step)))
         else:
-            self.addPulse(Detection(t=2*(self.tau1+self.tau2), tp=512))
-
-        self.evolution([t])
+            self.addPulse(Detection(t=2*n*(self.step), tp=512))
+        
+        if relaxation:
+            self.evolution([self.step])
+        else:
+            self.evolution([self.t])
         # self.addPulsesProg(
         #     [2],
         #     ["t"],
