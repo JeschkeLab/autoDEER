@@ -210,7 +210,131 @@ def DEERanalysis(
 
 
 # =============================================================================
+def DEERanalysis(dataset, compactness=True, model=None, verbosity=0, **kwargs):
 
+    Vexp = dataset.data 
+    Vexp /= Vexp.max()
+
+    if hasattr(dataset,"sequence"):
+        sequence = dataset.sequence
+        if sequence.name == "4pDEER":
+            exp_type = "4pDEER"
+            tau1 = sequence.tau1.value
+            tau2 = sequence.tau2.value
+            t = sequence.t.value + sequence.t.axis[0]['axis']
+        elif sequence.name == "5pDEER":
+            exp_type = "5pDEER"
+            tau1 = sequence.tau1.value
+            tau2 = sequence.tau2.value
+            tau3 = sequence.tau3.value
+            t = sequence.t.value + sequence.t.axis[0]['axis']
+        elif sequence.name == "3pDEER":
+            exp_type = "3pDEER"
+            tau1 = sequence.tau1.value
+            t = sequence.t.value + sequence.t.axis[0]['axis']
+        elif sequence.name == "nDEER":
+            exp_type = "4pDEER"
+            tau1 = sequence.tau1.value
+            tau2 = sequence.tau2.value
+            t = sequence.t.value + sequence.t.axis[0]['axis']
+
+    else:
+        # Extract params from kwargs
+        if "tau1" in kwargs:
+            tau1 = kwargs["tau1"]
+        if "tau2" in kwargs:
+            tau2 = kwargs["tau2"]
+        if "tau3" in kwargs:
+            tau3 = kwargs["tau3"]
+        exp_type = kwargs["exp_type"]
+
+
+    if verbosity > 1:
+        print(f"")
+        print(f"Experimental Parameters set to: tau1 {tau1:.2f} us \n tau1 {tau2:.2f} us")
+
+    if "pathways" in kwargs:
+        pathways = kwargs["pathways"]
+    else:
+        pathways = None
+        
+    if exp_type == "4pDEER":
+        experimentInfo = dl.ex_4pdeer(tau1=tau1,tau2=tau2,pathways=pathways)
+    elif exp_type == "5pDEER":
+        experimentInfo = dl.ex_fwd5pdeer(tau1=tau1,tau2=tau2,tau3=tau3,pathways=pathways)
+    elif exp_type == "3pDEER":
+        experimentInfo = dl.ex_3pdeer(tau=tau1,pathways=pathways)
+
+    r = np.linspace(1.5,10,100)
+
+
+    if "regparamrange" in kwargs:
+        regparamrange = kwargs["regparamrange"]
+    else:
+        regparamrange = None
+
+    # identify experiment
+    
+
+    Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo)
+    Vmodel.pathways = pathways
+
+    if compactness:
+        compactness_penalty = dl.dipolarpenalty(model, r, 'compactness', 'icc')
+        compactness_penalty.weight.set(lb=5e-3, ub=2e-1)
+        # compactness_penalty.weight.freeze(0.04)
+
+    else:
+        compactness_penalty = None
+
+    if "bootstrap" in kwargs:
+        bootstrap = kwargs["bootstrap"]
+    else:
+        bootstrap = 0
+
+    if "bootcores" in kwargs:
+        bootcores = kwargs["bootcores"]
+    else:
+        bootcores = 1
+
+    if "mask" in kwargs:
+        mask = kwargs["mask"]
+        noiselvl = dl.noiselevel(Vexp[mask])
+    else:
+        noiselvl = dl.noiselevel(Vexp)
+
+
+    # Core 
+    fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty, 
+                 bootstrap=bootstrap, mask=mask, noiselvl=noiselvl,
+                 regparamrange=regparamrange, bootcores=bootcores)
+    
+    mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
+
+    lam = 0
+    for mod in mod_labels:
+        lam += getattr(fit, mod)
+    MNR = lam/fit.noiselvl
+    fit.MNR = MNR
+    fit.lam = lam
+
+
+    fit.Vmodel = Vmodel
+    fit.r = r
+    fit.Vexp = Vexp
+    fit.t = t
+    
+    if ROI:
+        ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
+        rec_tau_max = (ROI[1]/3)**3 * 2
+        return fit, rec_tau_max
+    else:
+        ROI=None
+        return fit
+    
+
+
+# =============================================================================
 
 def DEERanalysis_plot(fit, background:bool, ROI=None):
     """DEERanalysis_plot Generates a figure showing both the time domain and
