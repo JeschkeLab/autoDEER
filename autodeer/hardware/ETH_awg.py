@@ -42,6 +42,7 @@ class ETH_awg_interface(Interface):
         self.awg_freq = awg_freq
         self.dig_rate = dig_rate
         self.pulses = {}
+        self.cur_exp = None
         pass
 
     def connect(self, session=None):
@@ -108,6 +109,7 @@ class ETH_awg_interface(Interface):
                 Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
                 data = uwb_load(Matfile, options=options, verbosity=verbosity)
                 data.LO = Parameter("LO", data.params['LO']+self.awg_freq, unit="GHz", description="Total local oscilator frequency")
+                data.sequence = self.cur_exp
             except OSError:
                 time.sleep(10)
             else:
