@@ -1011,7 +1011,7 @@ class DEERSequence(Sequence):
 
         else:
             dim = np.floor((self.tau2.value + self.tau1.value - 2*self.deadtime)/self.dt)
-            t = Parameter(name="t", value=-self.deadtime, step=self.dt,
+            t = Parameter(name="t", value= self.deadtime, step=self.dt,
                        dim=dim, unit="ns", description="The time axis")
 
 
@@ -1037,7 +1037,7 @@ class DEERSequence(Sequence):
                                     flipangle=np.pi))
         
         if hasattr(self,"pump_pulse"): # Pump 2 pulse
-            self.addPulse(self.pump_pulse.copy(t=2*self.tau1 + t))
+            self.addPulse(self.pump_pulse.copy(t=self.tau1 + t))
         else:
             self.addPulse(RectPulse(t=t, tp=tp, freq=0,
                                     flipangle=np.pi))

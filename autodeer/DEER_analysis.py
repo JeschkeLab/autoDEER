@@ -34,7 +34,8 @@ def DEERanalysis(
         t: np.ndarray, V: np.ndarray, tau1: float, tau2: float,
         tau3: float = None, zerotime: float = 0, num_points: int = 50,
         compactness: bool = True, precision: str = "Detailed",
-        background: bool = False, plot: bool = True, **kwargs):
+        background: bool = False, plot: bool = True, ROI:bool = True,
+          **kwargs):
     """DEERanalysis This function conducts the standard deer analysis 
     using deerlab
 
@@ -64,6 +65,8 @@ def DEERanalysis(
         setup experiments, by default "Detailed"
     plot: bool, optional
         Should a figure be generated and returned, by default True.
+    ROI: bool, optional
+        Should a Region-of-Interest be calculated
 
     Returns
     -------
@@ -177,7 +180,10 @@ def DEERanalysis(
                  regparamrange=regparamrange, bootcores=bootcores)
 
     mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
-    ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
+    if ROI:
+        ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
+    else:
+        ROI=None
 
     fit.mask = mask
 
