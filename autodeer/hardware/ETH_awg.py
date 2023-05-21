@@ -1,5 +1,6 @@
 import matlab.engine
-from autodeer.classes import  Interface, Dataset, Parameter
+from autodeer.dataset import Dataset
+from autodeer.classes import  Interface, Parameter
 from autodeer.pulses import Pulse, RectPulse, ChirpPulse, HSPulse, Delay, Detection
 from autodeer.sequences import Sequence, HahnEchoSequence
 import numpy as np

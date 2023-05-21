@@ -3,7 +3,7 @@ import time
 import os
 import yaml
 import XeprAPI
-from autodeer.classes import Dataset
+from autodeer.dataset import Dataset
 from scipy.optimize import minimize_scalar
 import logging
 import re

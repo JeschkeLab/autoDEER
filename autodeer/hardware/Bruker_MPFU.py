@@ -1,4 +1,5 @@
-from autodeer.classes import Interface, Dataset
+from autodeer.classes import Interface
+from autodeer.dataset import Dataset
 from autodeer.pulses import Delay, Detection
 from autodeer.hardware.XeprAPI_link import XeprAPILink
 from autodeer.hardware.Bruker_tools import PulseSpel, run_general

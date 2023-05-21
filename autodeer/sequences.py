@@ -640,7 +640,7 @@ class Sequence:
             if key == "pulses":
                 new_list = []
                 for pulse in var:
-                    new_list.append(pulse._to_json())
+                    new_list.append(pulse._to_dict())
                 to_return[key] = new_list
             else:
                 to_return[key] = var
@@ -755,7 +755,7 @@ class Sequence:
         -------
         >>> obj = Sequence.load("my_sequence.json")
         """
-        with open(filename, "w") as f:
+        with open(filename, "r") as f:
            file_buffer = f.read()
         return cls._from_json(file_buffer)
 
@@ -764,6 +764,7 @@ class Sequence:
 # =============================================================================
 
 class DEERSequence(Sequence):
+    
     """
     Represents a DEER/PELDOR sequence. 
     """

@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.signal as sig
-from autodeer.classes import Dataset, Parameter
+from autodeer.classes import Parameter
+from autodeer.dataset import Dataset
 
 
 

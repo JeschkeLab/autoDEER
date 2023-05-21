@@ -441,7 +441,7 @@ class Pulse:
     
 
     def _to_dict(self):
-        to_return = {"version": __version__, "type": "Pulse"}
+        to_return = {"version": __version__, "type": "Pulse", "subclass": type(self)}
 
         for key, var in vars(self).items():
             if isinstance(var, Parameter):
@@ -544,7 +544,7 @@ class Pulse:
         -------
         >>> obj = Pulse.load("my_pulse.json")
         """
-        with open(filename, "w") as f:
+        with open(filename, "r") as f:
            file_buffer = f.read()
         return cls._from_json(file_buffer)
 
