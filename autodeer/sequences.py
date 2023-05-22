@@ -632,7 +632,7 @@ class Sequence:
         return copy.deepcopy(self)
     
     def _to_dict(self):
-        to_return = {"version": __version__, "type": "Sequence"}
+        to_return = {"version": __version__, "type": "Sequence", "subclass": str(type(self))}
 
         for key, var in vars(self).items():
             if isinstance(var, Parameter):
