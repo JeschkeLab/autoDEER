@@ -80,7 +80,7 @@ class SNRCriteria(Criteria):
 
 class DEERCriteria(Criteria):
 
-    def __init__(self, tau1, tau2, tau3=None, mode="Speed") -> None:
+    def __init__(self, mode="Speed", model=None) -> None:
         """Criteria for running DEER experiments.
 
         Mode
@@ -113,24 +113,29 @@ class DEERCriteria(Criteria):
         description = "Criteria for terminating DEER experiments."
         if mode.lower() == "speed":
             MNR_threshold = 20
+            regparam_range = (1,1e3)
 
         elif mode.lower() == "low":
             MNR_threshold = 10
-
+            regparamrange = None
         elif mode.lower() == "med":
             MNR_threshold = 50
-
+            regparamrange = None
         elif mode.lower() == "high":
             MNR_threshold = 100
-        
+            regparamrange = None    
         else:
             MNR_threshold = 50
+            regparamrange = None
 
         def test_func(data: Dataset, verbosity=0):
-            fit, _, _ = DEERanalysis(
-                data.axes[0]/1000 - tau1, data.data,
-                tau1, tau2, tau3, num_points=100,
-                compactness=True, precision="Speed", plot=False)
+            # fit, _, _ = DEERanalysis(
+            #     data.axes[0]/1000 - tau1, data.data,
+            #     tau1, tau2, tau3, num_points=100,
+            #     compactness=True, precision="Speed", plot=False)
+            fit = DEERanalysis(
+                data, compactnesss=True, model=model, regparamrange=regparamrange
+            )
             test = True
             if fit.MNR < MNR_threshold:
                 test = False
