@@ -651,7 +651,8 @@ class Sequence:
         class autoEPREncoder(json.JSONEncoder):
             def default(self, obj):
                 if isinstance(obj, np.ndarray):
-                    data_b64 = base64.b64encode(obj.data)
+                    data = np.ascontiguousarray(obj.data)
+                    data_b64 = base64.b64encode(data)
                     return dict(__ndarray__=str(data_b64),
                                 dtype=str(obj.dtype),
                                 shape=obj.shape)
@@ -920,11 +921,11 @@ class DEERSequence(Sequence):
         self.name = "4pDEER"
         if relaxation:
             self.tau1 = Parameter(
-                name="tau1", value=self.tau1.value, unit="ns", dim=100, step=50,
+                name="tau1", value=self.tau1.value, unit="ns",
                 description="The first interpulse delays", virtual=True)
             self.tau2 = Parameter(
                 name="tau2", value=self.tau2.value, unit="ns", dim=100,
-                step=50, link=self.tau1,
+                step=50,
                 description="The second interpulse delays", virtual=True)
             self.t = Parameter(name="t", value=0, unit="ns", description="The time axis", virtual=True)
         else:
@@ -967,7 +968,7 @@ class DEERSequence(Sequence):
 
 
         if relaxation:
-            self.evolution([self.tau1])
+            self.evolution([self.tau2])
 
         else:
             self.evolution([self.t])

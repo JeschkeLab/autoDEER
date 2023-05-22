@@ -482,7 +482,8 @@ class Parameter:
         class autoEPREncoder(json.JSONEncoder):
             def default(self, obj):
                 if isinstance(obj, np.ndarray):
-                    data_b64 = base64.b64encode(obj.data)
+                    data = np.ascontiguousarray(obj.data)
+                    data_b64 = base64.b64encode(data)
                     return dict(__ndarray__=str(data_b64),
                                 dtype=str(obj.dtype),
                                 shape=obj.shape)
