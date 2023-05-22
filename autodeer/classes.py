@@ -14,125 +14,6 @@ from autodeer.utils import autoEPRDecoder
 
 
 # =============================================================================
-class Dataset:
-    """
-    Represents an experimental dataset.
-    """
-    def __init__(self, axes: np.ndarray, data: np.ndarray, params: dict = None,
-                 scans: np.ndarray = None) -> None:
-        """
-        Parameters
-        ----------
-        axes : list[np.ndarray]
-            An array of vectors containing the axes of the dataset
-        data : np.ndarray
-            The data either as an array of n-dimensions, containing either 
-            float or complex values.
-        params : dict, optional
-            A dictionary of experimental parameters, by default None
-        """
-        if type(axes) != list:
-            self.axes = [axes]
-        else:
-            self.axes = axes
-        self.data = data
-        self.params = params
-        if type(self.axes) is np.ndarray:
-            self.dims = self.axes.ndim
-        else:
-            self.dims = len(self.axes)
-        self.scans = scans
-
-        if not np.iscomplexobj(self.data):
-            self.data = hilbert(self.data)
-        pass
-
-    def plot(self, label=None, **kwargs) -> plt.figure:
-        """
-        Produces a standard quick graph of the data. This is a line plot for 
-        1D data and a heatmap for 2D data.
-
-        Parameters
-        ----------
-        label : list[str], optional
-            A list contains labels. [x_label,z_label], by default None
-        
-        Optional Kwargs
-        ----------
-        lines : list[str], optional
-            A list of lines to plot. A selection of ["real", "imag","abs"]
-            by default all options are plotted.
-
-        Returns
-        -------
-        plt.figure
-            _description_
-        """
-
-        if "lines" in kwargs:
-            if 'abs' in kwargs["lines"]:
-                abs = True
-            if 'imag' in kwargs["lines"]:
-                imag = True
-            if 'abs' in kwargs["lines"]:
-                real = True
-        else:
-            abs=True
-            real=True
-            imag=True
-        if self.dims == 1:
-            fig, ax = plt.subplots()
-            if abs:
-                ax.plot(self.axes[0], np.abs(self.data), label='abs')
-            if real:
-                ax.plot(self.axes[0], np.real(self.data), label='real')
-            if imag:
-                ax.plot(self.axes[0], np.imag(self.data), label='imag')
-            ax.legend()
-            ax.set_ylabel('Signal')
-            if label is not None:
-                ax.set_xlabel(label[0])
-        else:
-            raise RuntimeError("Only Single dimension data is supported")
-
-        return fig
-        
-    def save(self, file: str) -> None:
-        """
-        Saves the dataset in a variety of commonly used data formats based of
-        the file extension. 
-
-        Extension options: [".mat",".np",".txt"]
-
-        Parameters
-        ----------
-        file : str
-            The file name or path to save to. 
-        """
-        filename, file_ext = os.path.splittext(file)
-        
-        if file_ext == ".mat":  # Save as old-style .mat file
-            save_dict = {
-                "dta": self.data,
-                "axes": self.axes,
-                "params": self.params
-                }
-            savemat(filename, save_dict) 
-        elif file_ext == ".np":  # Save as numpy file
-            if self.dims == 1:
-                save_array = np.vstack([self.axes, self.data])
-                np.save(filename, save_array)
-
-        elif file_ext == ".txt":  # Save as text file
-            if self.dims == 1:
-                save_array = np.vstack([self.axes, self.data])
-                np.savetxt(filename, save_array, delimiter=",")
-
-    def add_variable(self, param):
-        setattr(self, param.name, param)
-        
-
-# =============================================================================
 
 
 class Interface:
@@ -145,7 +26,7 @@ class Interface:
     def connect(self) -> None:
         pass
 
-    def acquire_dataset(self) -> Dataset:
+    def acquire_dataset(self):
         """
         Acquires the dataset.
         """
@@ -608,7 +489,7 @@ class Parameter:
                 if isinstance(obj, complex):
                     return str(obj)
                 if isinstance(obj, numbers.Number):
-                    return str(obj)
+                    return float(obj)
                 if isinstance(obj, uuid.UUID):
                     return_dict = {"__uuid__": str(obj)}
                     return return_dict
@@ -683,7 +564,7 @@ class Parameter:
         -------
         >>> obj = Parameter.load("my_parameter.json")
         """
-        with open(filename, "w") as f:
+        with open(filename, "r") as f:
            file_buffer = f.read()
         return cls._from_json(file_buffer)
           

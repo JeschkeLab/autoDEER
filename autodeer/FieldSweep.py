@@ -1,7 +1,7 @@
 from matplotlib.figure import Figure
 import numpy as np
 import matplotlib.pyplot as plt
-from autodeer.classes import Dataset
+from autodeer.dataset import Dataset
 
 
 class FieldSweepAnalysis():
