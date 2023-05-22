@@ -210,33 +210,47 @@ def DEERanalysis(
 
 
 # =============================================================================
-def DEERanalysis(dataset, compactness=True, model=None, verbosity=0, **kwargs):
+def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, **kwargs):
 
     Vexp = dataset.data 
     Vexp /= Vexp.max()
+
+    def val_in_us(Param):
+        if len(Param.axis) == 0:
+            if Param.unit == "us":
+                return Param.value
+            elif Param.unit == "ns":
+                return Param.value / 1e3
+        elif len(Param.axis) == 1:
+            if Param.unit == "us":
+                return sequence.tau1.value + Param.axis[0]['axis']
+            elif Param.unit == "ns":
+                return (Param.value + Param.axis[0]['axis']) / 1e3 
+            
 
     if hasattr(dataset,"sequence"):
         sequence = dataset.sequence
         if sequence.name == "4pDEER":
             exp_type = "4pDEER"
-            tau1 = sequence.tau1.value
-            tau2 = sequence.tau2.value
-            t = sequence.t.value + sequence.t.axis[0]['axis']
+            tau1 = val_in_us(sequence.tau1)
+            tau2 = val_in_us(sequence.tau2)
+
         elif sequence.name == "5pDEER":
             exp_type = "5pDEER"
-            tau1 = sequence.tau1.value
-            tau2 = sequence.tau2.value
-            tau3 = sequence.tau3.value
-            t = sequence.t.value + sequence.t.axis[0]['axis']
+            tau1 = val_in_us(sequence.tau1)
+            tau2 = val_in_us(sequence.tau2)
+            tau3 = val_in_us(sequence.tau3)
+
         elif sequence.name == "3pDEER":
             exp_type = "3pDEER"
-            tau1 = sequence.tau1.value
-            t = sequence.t.value + sequence.t.axis[0]['axis']
+            tau1 = val_in_us(sequence.tau1)
+
         elif sequence.name == "nDEER-CP":
             exp_type = "4pDEER"
-            tau1 = sequence.tau1.value
-            tau2 = sequence.tau2.value
-            t = sequence.t.value + sequence.t.axis[0]['axis']
+            tau1 = val_in_us(sequence.tau1)
+            tau2 = val_in_us(sequence.tau2)
+        
+        t = val_in_us(sequence.t)
 
     else:
         # Extract params from kwargs
@@ -247,6 +261,7 @@ def DEERanalysis(dataset, compactness=True, model=None, verbosity=0, **kwargs):
         if "tau3" in kwargs:
             tau3 = kwargs["tau3"]
         exp_type = kwargs["exp_type"]
+        t = dataset.axes[0]
 
 
     if verbosity > 1:
@@ -302,6 +317,7 @@ def DEERanalysis(dataset, compactness=True, model=None, verbosity=0, **kwargs):
         noiselvl = dl.noiselevel(Vexp[mask])
     else:
         noiselvl = dl.noiselevel(Vexp)
+        mask=None
 
 
     # Core 
@@ -325,9 +341,8 @@ def DEERanalysis(dataset, compactness=True, model=None, verbosity=0, **kwargs):
     fit.t = t
     
     if ROI:
-        ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
-        fit.ROI = ROI
-        rec_tau_max = (ROI[1]/3)**3 * 2
+        fit.ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
+        rec_tau_max = (fit.ROI[1]/3)**3 * 2
         return fit, rec_tau_max
     else:
         ROI=None
