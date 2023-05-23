@@ -30,189 +30,15 @@ def calc_identifiability(profile):
 # =============================================================================
 
 
-def DEERanalysis(
-        t: np.ndarray, V: np.ndarray, tau1: float, tau2: float,
-        tau3: float = None, zerotime: float = 0, num_points: int = 50,
-        compactness: bool = True, precision: str = "Detailed",
-        background: bool = False, plot: bool = True, ROI:bool = True,
-          **kwargs):
-    """DEERanalysis This function conducts the standard deer analysis 
-    using deerlab
-
-    Parameters
-    ----------
-    t : np.ndarray
-        The time domain of the data
-    V : np.ndarray
-        The signal, of equal length as t
-    tau1 : float
-        The first inter pulse delay.
-    tau2 : float
-        The second inter pulse delay
-    tau3 : float, optional
-        For 5p DEER the third delay. If this has a value it is automatically 
-        detected as 5pulse, by default None
-    zerotime : float, optional
-        What value in the time axis represents the maximum, by default 0
-    num_points : int, optional
-        How many points in the distance distribution. This number should not 
-        be too high, by default 50
-    compactness : bool, optional
-        Is the compactness criterion applied, this should always be applied, 
-        by default True
-    precision : str, optional
-        How large the rmax should be. "Detailed", for normal work, "Speed" for 
-        setup experiments, by default "Detailed"
-    plot: bool, optional
-        Should a figure be generated and returned, by default True.
-    ROI: bool, optional
-        Should a Region-of-Interest be calculated
-
-    Returns
-    -------
-    fit : dict
-        A dictionary like object containing all the DeerLab fit data.
-    ROI : tuple
-        A tuple containing the minimum and maximum distances in the Region of
-        Interest (ROI)
-    rec_tau_max : float
-        The recomeneded dipolar evolution time for this region of interest.
-    fig : Figure
-        A Figure object of a plot, only if plot is True.
-    """
-
-    mask = None
-
-    if np.iscomplexobj(V):
-        V, Vim, ph = dl.correctphase(V, full_output=True)
-        if "echos" in kwargs:
-            echos = kwargs["echos"]
-            mask = np.ones(V.shape, dtype=bool)
-            for loc in echos:
-                mask *= remove_echo(V, Vim, loc)
-            
-    if "mask" in kwargs:
-        mask = kwargs["mask"]
-
-    Vexp = V/np.max(V)         # Rescaling (aesthetic)
-    t = t+zerotime
-
-    if precision.lower() == "detailed":
-        Ltype = 3
-        regparamrange = [1e-8, 1e3]
-    elif precision.lower() == "speed":
-        Ltype = 6
-        # regparamrange = [0.1, 1e3]
-        regparamrange = [1e-1, 1e3]
-
-    else:
-        print("No Precision set. Ltype = 4nm")
-        Ltype = 4
-        regparamrange = [1e-8, 1e3]
-
-    rmax = Ltype*(t.max()/2)**(1/3)
-    rmax_e = np.ceil(rmax)  # Effective rmax
-    
-    r = np.linspace(1.5, rmax_e, num_points)  # nm  
-    
-    if "pathways" in kwargs:
-        pathways = kwargs["pathways"]
-    else:
-        pathways = None
-    if tau3 is not None:
-        pulses = 5
-        experimentInfo = dl.ex_fwd5pdeer(tau1, tau2, tau3, pathways=pathways)
-        if pathways is None:
-            pathways = [1, 2, 3, 4, 5, 6, 7, 8]
-    else:
-        pulses = 4
-        experimentInfo = dl.ex_4pdeer(tau1, tau2, pathways=pathways)
-        if pathways is None:
-            pathways = [1, 2, 3, 4]
-
-    Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo)
-
-    # if (tau1 == tau2):
-    #     # Link pathways
-    #     if (pulses == 5) & (2 in pathways) & (8 in pathways):
-    #         index2 = pathways.index(2) + 1
-    #         index8 = pathways.index(8) + 1
-    #         links = {"lam28": [f"lam{index2}", f"lam{index8}"]}
-    #         Vmodel = dl.link(Vmodel, **links)
-    #         pathways.remove(2)
-    #         pathways.remove(8)
-    #         pathways.append([2, 8])
-    #     if (pulses == 4) & (1 in pathways) & (4 in pathways):
-    #         index1 = pathways.index(1) + 1
-    #         index4 = pathways.index(4) + 1
-    #         Vmodel = dl.link(Vmodel, lam14=[f"lam{index1}", f"lam{index4}"])
-    #         pathways.remove(1)
-    #         pathways.remove(4)
-    #         pathways.append([1, 4])
-
-    Vmodel.pathways = pathways
-    
-    if compactness:
-        compactness_penalty = dl.dipolarpenalty(None, r, 'compactness', 'icc')
-        compactness_penalty.weight.set(lb=5e-3, ub=2e-1)
-        # compactness_penalty.weight.freeze(0.04)
-
-    else:
-        compactness_penalty = None
-
-    if "bootstrap" in kwargs:
-        bootstrap = kwargs["bootstrap"]
-    else:
-        bootstrap = 0
-
-    if "bootcores" in kwargs:
-        bootcores = kwargs["bootcores"]
-    else:
-        bootcores = 1
-    
-    if mask is not None:
-        noiselvl = dl.noiselevel(Vexp[mask])
-    else:
-        noiselvl = dl.noiselevel(Vexp)
-
-    fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty, 
-                 bootstrap=bootstrap, mask=mask, noiselvl=noiselvl,
-                 regparamrange=regparamrange, bootcores=bootcores)
-
-    mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
-    if ROI:
-        ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
-    else:
-        ROI=None
-
-    fit.mask = mask
-
-    # Find total modulation depth
-    lam = 0
-    for mod in mod_labels:
-        lam += getattr(fit, mod)
-    MNR = lam/fit.noiselvl
-    fit.MNR = MNR
-    
-    rec_tau_max = (ROI[1]/3)**3 * 2
-
-    # Expand fit object
-    fit.Vmodel = Vmodel
-    fit.r = r
-    fit.Vexp = Vexp
-    fit.t = t
-
-    if plot:
-        fig = DEER_analysis_plot(fit, background, ROI=ROI)
-        return fit, ROI, rec_tau_max, fig
-    else:
-        return fit, ROI, rec_tau_max
-
-
 # =============================================================================
 def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, **kwargs):
 
-    Vexp = dataset.data 
+
+    Vexp:np.ndarray = dataset.data 
+
+    if np.iscomplexobj(Vexp):
+        Vexp = dl.correctphase(Vexp)
+
     Vexp /= Vexp.max()
 
     def val_in_us(Param):
@@ -339,6 +165,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     fit.r = r
     fit.Vexp = Vexp
     fit.t = t
+    fit.mask = mask
     
     if ROI:
         fit.ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
@@ -531,7 +358,12 @@ def IdentifyROI(
 
         # Single gaussian approach
         Pmodel = dl.dd_gauss
+        Pmodel.mean.lb=0
+        Pmodel.mean.ub=r.max() *2
         Pmodel.mean.par0 = r[P.argmax()]
+        Pmodel.std.lb=0
+        Pmodel.std.ub=r.max()
+        Pmodel.std.par0 = (r.max() - r.min())*0.5
         fit2 = dl.fit(Pmodel, P, r)
         min_dist = fit2.mean - 2.5 * fit2.std
         max_dist = fit2.mean + 2.5 * fit2.std
