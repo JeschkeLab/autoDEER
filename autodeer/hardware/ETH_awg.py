@@ -131,8 +131,8 @@ class ETH_awg_interface(Interface):
         struct = self._build_exp_struct(sequence)
         struct['savename'] = savename
         struct['IFgain'] = IFgain
-        self.cur_exp = struct
-        self.workspace['exp'] = self.cur_exp
+        self.cur_exp = sequence
+        self.workspace['exp'] = struct
         self.engine.eval('launch(exp)', nargout=0)
 
     def isrunning(self) -> bool:
@@ -330,7 +330,7 @@ class ETH_awg_interface(Interface):
             data = correctphase(dataset.data)
             if data[0] < 0:
                 data *= -1
-                
+
             if np.isclose(pulse.flipangle.value, np.pi):
                 new_amp = np.around(dataset.axes[0][data.argmin()],2)
             elif np.isclose(pulse.flipangle.value, np.pi/2):

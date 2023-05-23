@@ -430,9 +430,10 @@ class ResonatorProfileAnalysis:
         lorenz.sigma.set(lb=0, ub=2)
         lorenz.sigma.par0 = 0.1
 
-        dl.dd_gauss.mean.set(par0=34.05, lb=33, ub=35)
-        dl.dd_gauss.std.set(par0=0.3, lb=0.01, ub=10)
-        result_gauss = dl.fit(dl.dd_gauss, self.prof_data, self.prof_frqs)
+        gauss_model = dl.dd_gauss
+        gauss_model.mean.set(par0=34.05, lb=33, ub=35)
+        gauss_model.std.set(par0=0.3, lb=0.01, ub=10)
+        result_gauss = dl.fit(gauss_model, self.prof_data, self.prof_frqs)
         lorenz.centre.par0 = result_gauss.mean
         result = dl.fit(lorenz, self.prof_data, self.prof_frqs)
 

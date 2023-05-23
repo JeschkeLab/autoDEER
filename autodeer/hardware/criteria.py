@@ -113,7 +113,7 @@ class DEERCriteria(Criteria):
         description = "Criteria for terminating DEER experiments."
         if mode.lower() == "speed":
             MNR_threshold = 20
-            regparam_range = (1,1e3)
+            regparamrange = (1,1e3)
 
         elif mode.lower() == "low":
             MNR_threshold = 10
