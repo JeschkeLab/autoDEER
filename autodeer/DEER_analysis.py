@@ -168,11 +168,12 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     fit.mask = mask
     
     if ROI:
+        tau_max = lambda r: (r**3) *(2/4**3)
         fit.ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
-        rec_tau_max = (fit.ROI[1]/3)**3 * 2
+        rec_tau_max = tau_max(fit.ROI[1])
         return fit, rec_tau_max
     else:
-        ROI=None
+        fit.ROI=None
         return fit
     
 
