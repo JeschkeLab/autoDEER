@@ -53,7 +53,7 @@ class Interface:
         """
         pass
 
-    def terminate_at(self, criterion, test_interval=10, verbosity=0):
+    def terminate_at(self, criterion, test_interval=10, keep_running=True, verbosity=0):
         """Terminates the experiment upon a specific condition being
         satisified. 
 
@@ -94,8 +94,11 @@ class Interface:
 
             if not condition:
                 if not self.isrunning():
-                    msg = "Experiments has finished before criteria met."
-                    raise RuntimeError(msg)
+                    if keep_running:
+                        return None
+                    else:
+                        msg = "Experiments has finished before criteria met."
+                        raise RuntimeError(msg)
                 end_time = time.time()
                 if (end_time - start_time) < test_interval_seconds:
                     if verbosity > 0:
@@ -482,6 +485,8 @@ class Parameter:
         class autoEPREncoder(json.JSONEncoder):
             def default(self, obj):
                 if isinstance(obj, np.ndarray):
+                    if (len(obj) > 0 ) and isinstance(obj[0], str):
+                        return list(obj)
                     data = np.ascontiguousarray(obj.data)
                     data_b64 = base64.b64encode(data)
                     return dict(__ndarray__=str(data_b64),
