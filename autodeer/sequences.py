@@ -987,7 +987,7 @@ class DEERSequence(Sequence):
         # pass
 
 
-    def five_pulse(self, tp=16, relaxation=False):
+    def five_pulse(self, tp=16, relaxation=False, re_step=50, re_dim=100):
         """
         Build a five pulse DEER sequence.
 
@@ -1004,11 +1004,11 @@ class DEERSequence(Sequence):
         self.name = "5pDEER"
         if relaxation:
             self.tau1 = Parameter(
-                name="tau1", value=self.tau1.value, unit="ns", dim=100, step=50,
+                name="tau1", value=self.tau1.value, unit="ns", dim=re_dim, step=re_step,
                 description="The first interpulse delays", virtual=True)
             self.tau2 = Parameter(
-                name="tau2", value=self.tau2.value, unit="ns", dim=100,
-                step=50, link=self.tau1,
+                name="tau2", value=self.tau2.value, unit="ns", dim=re_dim,
+                step=re_step, link=self.tau1,
                 description="The second interpulse delays", virtual=True)
             
             self.t = Parameter(
