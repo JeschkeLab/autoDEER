@@ -97,7 +97,7 @@ def sop(spins, comps):
             r = np.hstack((m-1,m))
             c = np.hstack((m,m-1))
             dia = -0.5*1j * np.sqrt(m*m[::-1])
-            val = np.hstack((dia,dia))
+            val = np.hstack((dia,-dia))
         elif sop_type == 'z':
             m = np.arange(1, n+ 1)
             r = m - 1
