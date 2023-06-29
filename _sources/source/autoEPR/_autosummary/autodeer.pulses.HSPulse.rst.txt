@@ -19,13 +19,17 @@ autodeer.pulses.HSPulse
    .. autosummary::
    
       ~HSPulse.__init__
+      ~HSPulse.build_table
       ~HSPulse.copy
       ~HSPulse.exciteprofile
       ~HSPulse.func
       ~HSPulse.isDelayFocused
       ~HSPulse.isPulseFocused
+      ~HSPulse.is_static
+      ~HSPulse.load
       ~HSPulse.plot
       ~HSPulse.plot_fft
+      ~HSPulse.save
    
    
 

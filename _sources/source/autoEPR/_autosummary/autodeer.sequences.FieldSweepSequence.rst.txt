@@ -24,10 +24,13 @@ autodeer.sequences.FieldSweepSequence
       ~FieldSweepSequence.addPulsesProg
       ~FieldSweepSequence.convert
       ~FieldSweepSequence.copy
+      ~FieldSweepSequence.evolution
       ~FieldSweepSequence.isDelayFocused
       ~FieldSweepSequence.isPulseFocused
+      ~FieldSweepSequence.load
       ~FieldSweepSequence.plot
       ~FieldSweepSequence.plot_pulse_exc
+      ~FieldSweepSequence.save
    
    
 

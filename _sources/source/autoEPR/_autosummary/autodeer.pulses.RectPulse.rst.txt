@@ -19,13 +19,17 @@ autodeer.pulses.RectPulse
    .. autosummary::
    
       ~RectPulse.__init__
+      ~RectPulse.build_table
       ~RectPulse.copy
       ~RectPulse.exciteprofile
       ~RectPulse.func
       ~RectPulse.isDelayFocused
       ~RectPulse.isPulseFocused
+      ~RectPulse.is_static
+      ~RectPulse.load
       ~RectPulse.plot
       ~RectPulse.plot_fft
+      ~RectPulse.save
    
    
 

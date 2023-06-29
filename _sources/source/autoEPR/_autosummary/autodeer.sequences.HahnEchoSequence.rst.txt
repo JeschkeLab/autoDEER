@@ -24,10 +24,13 @@ autodeer.sequences.HahnEchoSequence
       ~HahnEchoSequence.addPulsesProg
       ~HahnEchoSequence.convert
       ~HahnEchoSequence.copy
+      ~HahnEchoSequence.evolution
       ~HahnEchoSequence.isDelayFocused
       ~HahnEchoSequence.isPulseFocused
+      ~HahnEchoSequence.load
       ~HahnEchoSequence.plot
       ~HahnEchoSequence.plot_pulse_exc
+      ~HahnEchoSequence.save
    
    
 

@@ -19,10 +19,12 @@ autodeer.classes.Parameter
    .. autosummary::
    
       ~Parameter.__init__
-      ~Parameter.add_progression
-      ~Parameter.add_step_progression
+      ~Parameter.add_axis
       ~Parameter.copy
-      ~Parameter.remove_progression
+      ~Parameter.is_static
+      ~Parameter.load
+      ~Parameter.remove_dynamic
+      ~Parameter.save
    
    
 

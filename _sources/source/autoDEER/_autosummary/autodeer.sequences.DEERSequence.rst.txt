@@ -24,13 +24,16 @@ autodeer.sequences.DEERSequence
       ~DEERSequence.addPulsesProg
       ~DEERSequence.convert
       ~DEERSequence.copy
+      ~DEERSequence.evolution
       ~DEERSequence.five_pulse
       ~DEERSequence.four_pulse
       ~DEERSequence.isDelayFocused
       ~DEERSequence.isPulseFocused
+      ~DEERSequence.load
       ~DEERSequence.nDEER_CP
       ~DEERSequence.plot
       ~DEERSequence.plot_pulse_exc
+      ~DEERSequence.save
       ~DEERSequence.select_pcyc
       ~DEERSequence.seven_pulse
       ~DEERSequence.simulate

@@ -24,10 +24,13 @@ autodeer.sequences.CarrPurcellSequence
       ~CarrPurcellSequence.addPulsesProg
       ~CarrPurcellSequence.convert
       ~CarrPurcellSequence.copy
+      ~CarrPurcellSequence.evolution
       ~CarrPurcellSequence.isDelayFocused
       ~CarrPurcellSequence.isPulseFocused
+      ~CarrPurcellSequence.load
       ~CarrPurcellSequence.plot
       ~CarrPurcellSequence.plot_pulse_exc
+      ~CarrPurcellSequence.save
    
    
 

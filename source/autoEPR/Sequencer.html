@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Interfaces" href="Interface.html" /><link rel="prev" title="Getting Started" href="Getting_Started.html" />
 
-    <!-- Generated with Sphinx 6.1.3 and Furo 2023.03.27 -->
+    <!-- Generated with Sphinx 7.0.1 and Furo 2023.05.20 -->
         <title>Creating a Custom Sequence - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=e6660623a769aa55fea372102b9bf3151b292993" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
@@ -166,21 +166,21 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1 has-children"><a class="reference internal" href="../Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Installation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../Install_python.html">Installing Python</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">autoEPR</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">autoEPR</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of autoEPR</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="Getting_Started.html">Getting Started</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Creating a Custom Sequence</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="Interface.html">Interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="Interface.html">Interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Interfaces</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="Bruker_interface.html">Bruker Interface</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="Reference.html">API Reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../autoDEER/index.html">autoDEER</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../autoDEER/index.html">autoDEER</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of autoDEER</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/deer_intro.html">What is DEER?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/semi_autoDEER.html">Semi - autoDEER</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../autoDEER/fully_autoDEER.html">Fully - autoDEER</a></li>
@@ -225,8 +225,8 @@
           <section id="creating-a-custom-sequence">
 <h1>Creating a Custom Sequence<a class="headerlink" href="#creating-a-custom-sequence" title="Permalink to this heading">#</a></h1>
 <p>autoEPR can be used to script and develop EPR pulse sequences in Python.</p>
-<p>Pulse sequences are built up of two main object: <a class="reference internal" href="_autosummary/autodeer.classes.Sequence.html#sequence"><span class="std std-ref">Sequences</span></a>
-and <a class="reference internal" href="_autosummary/autodeer.classes.Pulse.html#pulse"><span class="std std-ref">Pulses</span></a>. In its simplest form, a pulse sequence is just a
+<p>Pulse sequences are built up of two main object: <span class="xref std std-ref">Sequences</span>
+and <span class="xref std std-ref">Pulses</span>. In its simplest form, a pulse sequence is just a
 train of pulses. Here, we consider a pulse in its general form. I.e. Pulses are
 not just MW pulses but also delays and detection events.</p>
 <p>A sequence also contains additional information about the experiment, such as:
@@ -345,7 +345,7 @@ import infomation.</p>
 <h3>Custom pulses<a class="headerlink" href="#custom-pulses" title="Permalink to this heading">#</a></h3>
 <p>Unlike when making custom sequences it is not recommended that you use an
 an instance of the class, instead it is recommended that create a new class which
-inherits from the class <a class="reference internal" href="_autosummary/autodeer.classes.Pulse.html#pulse"><span class="std std-ref">Pulse</span></a>.</p>
+inherits from the class <span class="xref std std-ref">Pulse</span>.</p>
 <p>All pulses have the attributes <cite>AM</cite> and <cite>FM</cite> which describe their shape and
 frequency dependencies. The recommended way of creating these is to create a
 function called <cite>func</cite> and build <cite>AM</cite> and <cite>FM</cite> for this specific pulse length.

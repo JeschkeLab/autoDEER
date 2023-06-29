@@ -19,13 +19,17 @@ autodeer.pulses.ChirpPulse
    .. autosummary::
    
       ~ChirpPulse.__init__
+      ~ChirpPulse.build_table
       ~ChirpPulse.copy
       ~ChirpPulse.exciteprofile
       ~ChirpPulse.func
       ~ChirpPulse.isDelayFocused
       ~ChirpPulse.isPulseFocused
+      ~ChirpPulse.is_static
+      ~ChirpPulse.load
       ~ChirpPulse.plot
       ~ChirpPulse.plot_fft
+      ~ChirpPulse.save
    
    
 

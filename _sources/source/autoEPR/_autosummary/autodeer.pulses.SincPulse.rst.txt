@@ -19,13 +19,17 @@ autodeer.pulses.SincPulse
    .. autosummary::
    
       ~SincPulse.__init__
+      ~SincPulse.build_table
       ~SincPulse.copy
       ~SincPulse.exciteprofile
       ~SincPulse.func
       ~SincPulse.isDelayFocused
       ~SincPulse.isPulseFocused
+      ~SincPulse.is_static
+      ~SincPulse.load
       ~SincPulse.plot
       ~SincPulse.plot_fft
+      ~SincPulse.save
    
    
 
