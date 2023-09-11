@@ -221,6 +221,12 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.optimise_pulses.emit(self.pulses)
         self.pause_and_wait()
 
+        self.signals.status.emit('Tuning pulses')
+        # Tune the pulses
+        exc_pulse = self.interface.tune_pulse(exc_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
+        ref_pulse = self.interface.tune_pulse(ref_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
+        pump_pulse = self.interface.tune_pulse(pump_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
+
 
         # Run a relaxation experiment
         self.signals.status.emit('Running relaxation Experiment')
