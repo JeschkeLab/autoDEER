@@ -19,7 +19,7 @@ from queue import Queue
 
 
 from autoDEER_worker import autoDEERWorker
-QtCore.QDir.addSearchPath('icons', '/Users/hugo/Documents/Work/autoDeer_dev/GUI/resources')
+QtCore.QDir.addSearchPath('icons', 'gui/resources')
 
 
 
@@ -128,7 +128,7 @@ class UI(QMainWindow):
         super().__init__()
  
         # loading the ui file with uic module
-        uic.loadUi("/Users/hugo/Documents/Work/autoDeer_dev/GUI/gui2.ui", self)
+        uic.loadUi("gui\gui2.ui", self)
         logo_pixmap = QtGui.QPixmap('icons:logo.png')
         logo_pixmap = logo_pixmap.scaledToHeight(60)
         self.logo.setPixmap(logo_pixmap)

@@ -16,7 +16,7 @@ import deerlab as dl
 import tools
 from functools import partial
 
-QtCore.QDir.addSearchPath('icons', '/Users/hugo/Documents/Work/autoDeer_dev/GUI/resources')
+QtCore.QDir.addSearchPath('icons', 'gui/resources')
 
 
 def get_Vexp(dataset, settings):
@@ -49,7 +49,7 @@ class DEERplot(QWidget):
         super().__init__(parent)
  
         # loading the ui fsile with uic module
-        uic.loadUi("/Users/hugo/Documents/Work/autoDeer_dev/GUI/quickdeer.ui", self)
+        uic.loadUi("gui/quickdeer.ui", self)
 
         self.threadpool = QtCore.QThreadPool()
         self.current_results = {}
