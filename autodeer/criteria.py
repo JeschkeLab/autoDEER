@@ -1,4 +1,5 @@
-from autodeer import Dataset, DEERanalysis
+from autodeer.dataset import Dataset
+from autodeer.DEER_analysis import DEERanalysis
 import time
 import numpy as np
 from deerlab.utils import der_snr
