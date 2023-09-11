@@ -551,12 +551,16 @@ class Sequence:
         for param_key in vars(self):
             param = getattr(self, param_key)
             if type(param) is Parameter:
+                if param.unit is None:
+                    unit = ""
+                else:
+                    unit = param.unit
                 if type(param.value) is str:
                     seq_param_string += "{:<10} {:<12} {:<10} {:<30} \n".format(
-                        param.name, param.value, param.unit, param.description)
+                        param.name, param.value, unit, param.description)
                 else:
                     seq_param_string += "{:<10} {:<12.5g} {:<10} {:<30} \n".format(
-                        param.name, param.value, param.unit, param.description)
+                        param.name, param.value, unit, param.description)
         
         # Pulses
         pulses_string = "\nEvents (Pulses, Delays, etc...): \n"
@@ -1201,7 +1205,7 @@ class DEERSequence(Sequence):
         #     axis=axis+self.pulses[2].t.value)
         pass
     
-    def nDEER_CP(self, n:int, tp=16, relaxation=False):
+    def nDEER_CP(self, n:int, tp=16, relaxation=False, pcyc='Normal'):
         """Generate an nDEER sequence.
 
         The sum of tau1 and tau2 is used as total trace length. 
@@ -1215,14 +1219,13 @@ class DEERSequence(Sequence):
             _description_, by default 16
         relaxation : bool, optional
             _description_, by default False
-
-        Raises
-        ------
-        ValueError
-            _description_
+        pcyc: str, optional
+            Normal: Phases cycles pump and observer pulses, no DC cycle
+            NormalDC: Phases cycles pump and observer pulses, DC cycle
+            Obs: Phases cycles observer pulses, no DC cycle
+            ObsDC: Phases cycles and observer pulses, DC cycle
         """
 
-        step = 2*(self.tau1.value+self.tau2.value)/(2*n)
         self.name = "nDEER-CP"
         self.n = Parameter(
             name="n", value=n,
@@ -1231,25 +1234,23 @@ class DEERSequence(Sequence):
 
         self.step = Parameter(
             name="step", value=2*(self.tau1.value+self.tau2.value)/(2*n),
-            unit=None, description="The gap of the first refoucsing pulse",
+            unit="ns", description="The gap of the first refoucsing pulse",
             virtual=True)
 
         if relaxation:
 
             self.step = Parameter(
-                name="step", value=2*(self.tau1.value+self.tau2.value)/(2*n),
+                name="step", value=self.deadtime,
                 dim=100, step=200,
-                unit=None, description="The gap of the first refoucsing pulse",
+                unit="ns", description="The gap of the first refoucsing pulse",
                 virtual=True)            
             self.t = Parameter(
                 name="t", value=0, unit="ns", description="The time axis",
                 virtual=True)
 
         else:
-            if self.deadtime > self.tau3.value:
-                raise ValueError("Deadtime must be greater than tau3, otherwise pulses crash")
             
-            dim = np.floor((2*(n-1)*self.step.value)/self.dt)
+            dim = np.floor((n*self.step.value)/self.dt)
 
             self.t = Parameter(
                 name="t", value= - self.deadtime, step=self.dt,
@@ -1264,26 +1265,26 @@ class DEERSequence(Sequence):
             ))
         
         if hasattr(self,"ref_pulse"): # Ref 1 pulse
-            self.addPulse(self.ref_pulse.copy(t=step))
+            self.addPulse(self.ref_pulse.copy(t=self.step))
         else:
             self.addPulse(RectPulse( 
-                t=step, tp=tp, freq=0, flipangle=np.pi
+                t=self.step, tp=tp, freq=0, flipangle=np.pi
             ))
 
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=2*self.step + self.t))
+            self.addPulse(self.pump_pulse.copy(t=n*self.step + self.t))
         else:
             self.addPulse(RectPulse(
-                t=2*self.step + self.t, tp=tp, freq=0, flipangle=np.pi
+                t=n*self.step + self.t, tp=tp, freq=0, flipangle=np.pi
             ))
         
         for i in np.arange(1,n):
 
             if hasattr(self,"ref_pulse"): # Ref i pulse
-                self.addPulse(self.ref_pulse.copy(t=(2*i+1)*step))
+                self.addPulse(self.ref_pulse.copy(t=(2*i+1)*self.step))
             else:
                 self.addPulse(RectPulse( 
-                    t=(2*i+1)*step, tp=tp, freq=0, flipangle=np.pi
+                    t=(2*i+1)*self.step, tp=tp, freq=0, flipangle=np.pi
                 ))
 
         if hasattr(self, "det_event"):
@@ -1295,11 +1296,27 @@ class DEERSequence(Sequence):
             self.evolution([self.step])
         else:
             self.evolution([self.t])
-        # self.addPulsesProg(
-        #     [2],
-        #     ["t"],
-        #     0,
-        #     axis)
+      
+        if pcyc == 'NormalDC' or pcyc=='ObsDC':
+            self.pulses[0]._addPhaseCycle(
+                [0, np.pi], [1, -1])
+        
+        if pcyc == 'NormalDC' or pcyc == 'Normal':
+            self.pulses[2]._addPhaseCycle(
+                [0, np.pi/2, np.pi, -np.pi/2], [1, 1, 1, 1])
+        
+        if pcyc is not None:
+            if n-1 == 1:
+                self.pulses[1]._addPhaseCycle(
+                    [0, np.pi], [1,1])
+            elif n > 2:
+                self.pulses[1]._addPhaseCycle(
+                    [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])
+                self.pulses[n]._addPhaseCycle(
+                    [0, np.pi], [1,1])
+                for i in range(3,n):
+                    self.pulses[i]._addPhaseCycle(
+                    [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])
 
         pass
     def select_pcyc(self, option: str):

@@ -404,7 +404,12 @@ class Pulse:
             if (hasattr(new_pulse,arg)) and (getattr(new_pulse,arg) is not None):
                 attr = getattr(new_pulse,arg)
                 if type(attr) is Parameter:
-                    attr.value = kwargs[arg]     
+                    if isinstance(kwargs[arg], numbers.Number):
+                        attr.value = kwargs[arg]     
+                    elif isinstance(kwargs[arg], Parameter):
+                        attr.value = kwargs[arg].value
+                        attr.axis = kwargs[arg].axis
+
                 elif arg == "pcyc":
                     new_pcyc = kwargs[arg]
                     if attr is None:

@@ -139,7 +139,7 @@ class ETH_awg_interface(Interface):
         state = bool(self.engine.dig_interface('savenow'))
         return state
     
-    def tune_rectpulse(self,*,tp, LO, B, reptime):
+    def tune_rectpulse(self,*,tp, LO, B, reptime, shots=400):
         """Generates a rectangular pi and pi/2 pulse of the given length at 
         the given field position. This value is stored in the pulse cache. 
 
@@ -153,6 +153,8 @@ class ETH_awg_interface(Interface):
             Magnetic B0 field position in Gauss
         reptime: float
             Shot repetion time in us.
+        shots: int
+            The number of shots
 
         Returns
         -------
@@ -163,7 +165,7 @@ class ETH_awg_interface(Interface):
         """
 
         amp_tune =HahnEchoSequence(
-            B=B, LO=LO, reptime=reptime, averages=1, shots=400
+            B=B, LO=LO, reptime=reptime, averages=1, shots=shots
         )
 
         scale = Parameter("scale",0,dim=45,step=0.02)
@@ -198,7 +200,7 @@ class ETH_awg_interface(Interface):
         return self.pulses[f"p90_{tp}"], self.pulses[f"p180_{tp*2}"]
 
     
-    def tune_pulse(self, pulse, mode, LO, B , reptime):
+    def tune_pulse(self, pulse, mode, LO, B , reptime, shots=400):
         """Tunes a single pulse a range of methods.
 
         Parameters
@@ -213,6 +215,8 @@ class ETH_awg_interface(Interface):
             Magnetic B0 field position in Gauss
         reptime : us
             Shot repetion time in us.
+        shots: int
+            The number of shots
 
         Returns
         -------
@@ -276,7 +280,7 @@ class ETH_awg_interface(Interface):
         if mode == "amp_hahn":
             amp_tune =HahnEchoSequence(
                 B=B, LO=LO, 
-                reptime=reptime, averages=1, shots=400,
+                reptime=reptime, averages=1, shots=shots,
                 pi2_pulse = pulse, pi_pulse=pi_pulse
             )
 
@@ -298,7 +302,7 @@ class ETH_awg_interface(Interface):
 
             nut_tune = Sequence(
                 name="nut_tune", B=B, LO=LO, reptime=reptime,
-                averages=1,shots=400
+                averages=1,shots=shots
             )
             nut_tune.addPulse(pulse.copy(
                 t=0, pcyc={"phases":[0],"dets":[1]}, scale=0))
