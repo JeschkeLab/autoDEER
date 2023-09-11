@@ -7,4 +7,5 @@ from .Relaxation import CarrPurcellAnalysis
 from .classes import *
 from .sequences import *
 from .pulses import *
+from .criteria import *
 from .dataset import Dataset

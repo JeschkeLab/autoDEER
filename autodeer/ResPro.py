@@ -421,53 +421,64 @@ class ResonatorProfileAnalysis:
         def lorenz_fcn(x, centre, sigma):
             y = (0.5*sigma)/((x-centre)**2 + (0.5*sigma)**2)
             return y
+        def lorenz_fcn(x, fc, q):
+            y = (0.5*fc)/(q*(x-fc)**2 + q*(0.5*(fc/q))**2)
+            return y
+
+
         self.prof_frqs = np.squeeze(self.prof_frqs)
         self.prof_data = np.squeeze(self.prof_data)
 
         lorenz = dl.Model(lorenz_fcn, constants='x')
-        lorenz.centre.par0 = 34
-        lorenz.centre.set(lb=33, ub=35)
-        lorenz.sigma.set(lb=0, ub=2)
-        lorenz.sigma.par0 = 0.1
+        lorenz.fc.par0 = 34
+        lorenz.fc.set(lb=33, ub=35)
+        lorenz.q.set(lb=0, ub=100)
+        lorenz.q.par0 = 80
 
         gauss_model = dl.dd_gauss
         gauss_model.mean.set(par0=34.05, lb=33, ub=35)
         gauss_model.std.set(par0=0.3, lb=0.01, ub=10)
         result_gauss = dl.fit(gauss_model, self.prof_data, self.prof_frqs)
-        lorenz.centre.par0 = result_gauss.mean
-        result = dl.fit(lorenz, self.prof_data, self.prof_frqs)
+        lorenz.fc.par0 = result_gauss.mean
+        results = dl.fit(lorenz, self.prof_data, self.prof_frqs)
+        self.results = results
 
-        self.fc = result.centre
-        self.sigma = result.sigma
-        self.q = self.fc / result.sigma
+        self.fc = results.fc
+        self.q = results.q
 
         self.profile_x = np.linspace(33, 35, 200)
-        self.profile = lorenz_fcn(self.profile_x, self.fc, self.sigma)
-        self.fit_func = lambda x: lorenz_fcn(x, self.fc, self.sigma)
+        self.profile = lorenz_fcn(self.profile_x, self.fc, self.q)
+        self.fit_func = lambda x: lorenz_fcn(x, self.fc, self.q)
         
         norm_prof = self.profile
         norm_prof /= norm_prof.max()
         self.pha = np.imag(hilbert(-np.log(self.profile)))
+
         pass
 
-    def plot(self, fieldsweep=None):
+    def plot(self, fieldsweep=None, axs= None, fig=None):
         """plot. 
 
         Parameters
         ----------
         fieldsweep : FieldSweepAnalysis, optional
             Overlays the FieldSweep if provided, by default None
+        axs : matplotlib.Axes, optional
+            Axes to plot on, by default None
+        fig : matplotlib.Figure, optional
+            Figure to plot on, by default None
 
         Returns
         -------
         Matplotlib.Figure
             matplotlib figure object
         """
-        fig, ax = plt.subplots(constrained_layout=True)
+        if axs is None and fig is None:
+            fig, axs = plt.subplots(constrained_layout=True)
         prof_data = self.prof_data * 1e3 # GHz -MHz
-        ax.plot(self.prof_frqs, prof_data)
-        ax.set_xlabel("Frequency / GHz")
-        ax.set_ylabel("Nutation Frequency / MHz")
+        axs.plot(self.prof_frqs, prof_data)
+        axs.set_xlabel("Frequency / GHz")
+        axs.set_ylabel("Nutation Frequency / MHz")
 
         def Hz2length(x):
             return 1 / ((x/1000)*2)
@@ -475,14 +486,14 @@ class ResonatorProfileAnalysis:
         def length2Hz(x):
             return 1 / ((x*1000)*2) 
 
-        secax = ax.secondary_yaxis('right', functions=(Hz2length, length2Hz))
+        secax = axs.secondary_yaxis('right', functions=(Hz2length, length2Hz))
         secax.set_ylabel(r'$\pi/2$ pulse length / ns')
 
         if fieldsweep:
             fsweep_data = np.abs(fieldsweep.data)
             fsweep_data /= fsweep_data.max()
             fsweep_data = fsweep_data * prof_data.max()
-            ax.plot(fieldsweep.fs_x + fieldsweep.LO, fsweep_data)
+            axs.plot(fieldsweep.fs_x + fieldsweep.LO, fsweep_data)
 
         return fig
 

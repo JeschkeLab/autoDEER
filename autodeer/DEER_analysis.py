@@ -92,7 +92,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
 
     if verbosity > 1:
         print(f"")
-        print(f"Experimental Parameters set to: tau1 {tau1:.2f} us \n tau1 {tau2:.2f} us")
+        print(f"Experimental Parameters set to: tau1 {tau1:.2f} us \t tau2 {tau2:.2f} us")
 
     if "pathways" in kwargs:
         pathways = kwargs["pathways"]
@@ -147,10 +147,13 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
 
 
     # Core 
+    if verbosity > 1:
+        print('Starting Fitting')
     fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty, 
                  bootstrap=bootstrap, mask=mask, noiselvl=noiselvl,
-                 regparamrange=regparamrange, bootcores=bootcores)
-    
+                 regparamrange=regparamrange, bootcores=bootcores,verbose=verbosity)
+    if verbosity > 1:
+        print('Fit complete')
     mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
 
     lam = 0
@@ -180,7 +183,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
 
 # =============================================================================
 
-def DEERanalysis_plot(fit, background:bool, ROI=None):
+def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None):
     """DEERanalysis_plot Generates a figure showing both the time domain and
     distance domain data along with extra important infomation such as the 
     Modulation to Noise Ratio (MNR), Region of Interest (ROI) and the 
@@ -232,11 +235,12 @@ def DEERanalysis_plot(fit, background:bool, ROI=None):
 
         return fit.P_scale * scale * prod
 
-    fig, axs = plt.subplot_mosaic([
-        ['Primary_time', 'Primary_time', 'Primary_dist', 'Primary_dist']
-        ], figsize=(12.5, 6.28))
-    fig.tight_layout(pad=4)
-    fig.subplots_adjust(bottom=0.2, hspace=0.4)
+    if axs is None and fig is None:
+        fig, axs = plt.subplot_mosaic([
+            ['Primary_time', 'Primary_time', 'Primary_dist', 'Primary_dist']
+            ], figsize=(12.5, 6.28))
+        fig.tight_layout(pad=4)
+        fig.subplots_adjust(bottom=0.2, hspace=0.4)
 
     # Time 
 
@@ -466,7 +470,7 @@ def calc_overlap_frac(fieldsweep, pump_pulse, exc_pulse):
 
 
 def calc_optimal_deer_frqs(
-        fieldsweep, pump_pulse, exc_pulse, pump_limits=None, exc_limits=None,
+        fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, pump_limits=None, exc_limits=None,
         method="density", ):
     """Calculates the necessary frequency shift to cause the maximal amount 
     of pump-exc overlap.
@@ -480,6 +484,10 @@ def calc_optimal_deer_frqs(
         The pump pulse object.
     exc_pulse : Pulse
         The excitation pulse object.
+    ref_pulse : Pulse
+        The refocusing pulse object, this is used to adjust the efficacy of the 
+        excitation pulse. This is of particular importance if the excitation pulse is
+        wider than the refocusing pulse.
     pump_limits : tuple, optional
         The lower and upper limit of the pump frequency in GHz, by default 
         +- 0.3GHz
@@ -513,9 +521,15 @@ def calc_optimal_deer_frqs(
     elif method == "density":
         f_axis = np.arange(-1,1,0.005)
         _,_,f_pump = pump_pulse.exciteprofile(f_axis)
-        f_pump = (f_pump + 1) * -0.5
+        f_pump = (f_pump - 1) * -0.5
         _,_,f_exc = exc_pulse.exciteprofile(f_axis)
-        f_exc = (f_exc + 1) * -0.5
+        f_exc = (f_exc - 1) * -1
+    
+    if ref_pulse is not None:
+        _,_,f_ref = ref_pulse.exciteprofile(f_axis)
+        f_ref = (f_ref - 1) * -0.5
+        f_exc *= f_ref
+        f_exc *= f_ref
 
     if np.iscomplexobj(fieldsweep.data):
         fs_data = correctphase(fieldsweep.data)
@@ -572,8 +586,8 @@ def calc_optimal_deer_frqs(
     return [Pump_offset[max_pos[1]], Exc_offset[max_pos[0]]]
 
 def calc_optimal_perc(pump, exc):
-    base_value = 2/3 * np.sqrt(1/3)
-    perc = (pump * np.sqrt(exc)) / base_value
+    base_value = 0.5 * 0.5
+    perc = (pump * exc) / base_value
     if np.isnan(perc):
         raise RuntimeError
     return perc 
@@ -613,7 +627,7 @@ def calc_overlap_region(x1, y1, x2, y2, new_axis=None):
 def plot_optimal_deer_frqs(
         fieldsweep: FieldSweepAnalysis, pump_pulse,
         exc_pulse, respro: ResonatorProfileAnalysis = None,
-        frq_shift: float = 0):
+        frq_shift: float = 0, axs=None, fig=None):
     """Generate a plot that contains the field sweep, pump and excitation 
     pulses as well as the resonator profile (optional). This should be used to 
     check that a DEER measurment is setup correctly and in an optimal
@@ -633,6 +647,7 @@ def plot_optimal_deer_frqs(
     frq_shift : float, optional
         The frequency shift between resonator profile and fieldsweep maximum
         , by default 0
+    
     """
     
     if fieldsweep.data.max() != 1.0:
@@ -653,24 +668,26 @@ def plot_optimal_deer_frqs(
     new_axis = np.linspace(axis_min, axis_max, 200)
     fs_new = np.abs(interp(fieldsweep.fs_x, fieldsweep.data, new_axis))
 
-    fig, ax = plt.subplots()
-    ax.plot(new_axis, fs_new, label="Field Sweep")
+    if axs is None and fig is None:
+        fig, axs = plt.subplots()
+
+    axs.plot(new_axis, fs_new, label="Field Sweep")
     dead_spins = calc_overlap_region(
         f_ax_pump, f_pump, f_ax_exc, f_exc, new_axis=new_axis)
 
-    ax.fill(dead_spins[0], fs_new * dead_spins[1], color='0.6', label="Dead", 
+    axs.fill(dead_spins[0], fs_new * dead_spins[1], color='0.6', label="Dead", 
             alpha=0.5, lw=0)
-    ax.fill_between(
+    axs.fill_between(
         new_axis, fs_new * interp(f_ax_exc, f_exc, new_axis),
         fs_new * dead_spins[1], label="Exc", color="C1", alpha=0.5, lw=0)
-    ax.fill_between(
+    axs.fill_between(
         new_axis, fs_new * interp(f_ax_pump, f_pump, new_axis),
         fs_new * dead_spins[1], label="Pump", color="C2", alpha=0.5, lw=0)
     if (respro is not None):
-        ax.plot(respro.frq-respro.fc+frq_shift, respro.labs, label="Res Pro")
-    ax.set_xlim(-0.25, 0.05)
-    ax.legend()
-    ax.set_ylabel(r"% flipped")
-    ax.set_xlabel("Frequency / GHz")
+        axs.plot(respro.frq-respro.fc+frq_shift, respro.labs, label="Res Pro")
+    axs.set_xlim(-0.25, 0.05)
+    axs.legend()
+    axs.set_ylabel(r"% flipped")
+    axs.set_xlabel("Frequency / GHz")
     return fig
 

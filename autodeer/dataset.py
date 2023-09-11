@@ -80,7 +80,7 @@ class Dataset:
                 abs = True
             if 'imag' in kwargs["lines"]:
                 imag = True
-            if 'abs' in kwargs["lines"]:
+            if 'real' in kwargs["lines"]:
                 real = True
         else:
             abs=True

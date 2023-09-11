@@ -17,7 +17,7 @@ setup(
     package_dir={'autodeer': 'autodeer'},
     packages=['autodeer','autodeer'],
     url = "https://github.com/HKaras/autoDeer",
-    python_requires=">=3.8, <3.11",
+    python_requires=">=3.8",
     install_requires=[
         'numpy',
         'scipy',

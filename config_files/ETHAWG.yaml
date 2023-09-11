@@ -1,0 +1,20 @@
+Spectrometer:
+  Type: Complete Spectrometer
+  Manufacturer: ETH
+  Model: Doll
+  Local Name: F243_AWG
+
+  AWG: True
+
+  Bridge:
+    Min Freq: 33 #GHz
+    Max Freq: 35 #GHz
+    Sample Freq: 8 #GSa/s
+    Det Freq: 2 #GSa/s
+    Det Res: 12  #bit
+
+Resonators:
+  Pent Loop-gap:
+    Center Freq: 34.0 #GHz
+    Q: 80
+

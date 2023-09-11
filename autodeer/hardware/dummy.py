@@ -6,8 +6,9 @@ from autodeer.FieldSweep import create_Nmodel
 
 import numpy as np
 import deerlab as dl
+import time
 
-
+rng = np.random.default_rng(12345)
 def val_in_us(Param):
         if len(Param.axis) == 0:
             if Param.unit == "us":
@@ -32,13 +33,29 @@ def val_in_ns(Param):
             elif Param.unit == "ns":
                 return (Param.value + Param.axis[0]['axis']) 
 
+def add_noise(data, noise_level):
+    # Add noise to the data with a given noise level for data that could be either real or complex
+    if np.isrealobj(data):
+        noise = np.squeeze(rng.normal(0, noise_level, size=(*data.shape,1)).view(np.float64))
+
+    else:
+        noise = np.squeeze(rng.normal(0, noise_level, size=(*data.shape,2)).view(np.complex128))
+    data = data + noise
+    return data
+
+def add_phaseshift(data, phase):
+    data = data.astype(np.complex128) * np.exp(-1j*phase*np.pi)
+    return data
+    
+
 class dummyInterface(Interface):
 
 
     def __init__(self, speedup=100) -> None:
         self.state = False
         self.speedup = speedup
-
+        self.pulses = {}
+        self.start_time = 0
 
         # Create virtual mode
 
@@ -52,9 +69,10 @@ class dummyInterface(Interface):
         self.mode = lambda x: lorenz_fcn(x, 34.0, 34.0/60) * scale
         super().__init__()
 
-    def launch(self, sequence, savename: str):
+    def launch(self, sequence, savename: str, **kwargs):
         self.state = True
         self.sequence = sequence
+        self.start_time = time.time()
         return super().launch(sequence, savename)
     
     def acquire_dataset(self) -> Dataset:
@@ -67,16 +85,39 @@ class dummyInterface(Interface):
             axes, data = _simulate_field_sweep(self.sequence)
         elif isinstance(self.sequence,ResonatorProfileSequence):
             axes, data = _similate_respro(self.sequence,self.mode)
-
-
+        
+        data = add_noise(data, 1e-2)
         dset = Dataset(axes, data, scans=1)
         dset.LO = self.sequence.LO
         dset.sequence = self.sequence
         
         
         return dset
+    
+    def tune_rectpulse(self,*,tp, LO, B, reptime):
+
+        rabi_freq = self.mode(LO)
+        def Hz2length(x):
+            return 1 / ((x/1000)*2)
+        rabi_time = Hz2length(rabi_freq)
+        if rabi_time > tp:
+            p90 = tp
+            p180 = tp*2
+        else:
+            p90 = rabi_time/tp
+            p180 = p90*2
+
+        self.pulses[f"p90_{tp}"] = RectPulse(tp=tp, freq=0, flipangle=np.pi/2, scale=p90)
+        self.pulses[f"p180_{tp}"] = RectPulse(tp=tp, freq=0, flipangle=np.pi, scale=p180)
+
+        return self.pulses[f"p90_{tp}"], self.pulses[f"p180_{tp}"]
+
             
     def isrunning(self) -> bool:
+        current_time = time.time()
+        if current_time - self.start_time > (self.sequence._estimate_time() / self.speedup):
+            self.state = False
+
         return self.state
     
     def terminate(self) -> None:
@@ -88,7 +129,7 @@ def _simulate_field_sweep(sequence):
     # Assuming a Nitroxide sample
     Vmodel = create_Nmodel(sequence.LO.value *1e3)
     axis = sequence.B.value + sequence.B.axis[0]['axis']
-    axis = axis * 0.1
+    sim_axis = axis * 0.1
     Boffset=0
     gy = 2.0061
     gz = 2.0021
@@ -97,8 +138,9 @@ def _simulate_field_sweep(sequence):
     GB = 0.45
     scale=1
 
-    data = Vmodel(axis,Boffset,gy,gz,axy,az,GB,scale)
-    return axis,data.astype(np.complex128)
+    data = Vmodel(sim_axis,Boffset,gy,gz,axy,az,GB,scale)
+    data = add_phaseshift(data, 0.05)
+    return axis,data
 
 
 def _simulate_deer(sequence,exp_type=None):
@@ -131,7 +173,7 @@ def _simulate_deer(sequence,exp_type=None):
     elif exp_type == "5pDEER":
         experimentInfo = dl.ex_fwd5pdeer(tau1=tau1,tau2=tau2,tau3=tau3,pathways=[1,2,3,4,5])
         reftimes = dict(zip(["reftime1","reftime2","reftime3","reftime4","reftime5"],experimentInfo.reftimes(tau1,tau2,tau3)))
-        mod_depths = {"lam1":0.4, "lam2":0.05, "lam3":0.2, "lam4":0.05, "lam5":0.1}
+        mod_depths = {"lam1":0.4, "lam2":0.00, "lam3":0.0, "lam4":0.00, "lam5":0.1}
 
     elif exp_type == "3pDEER":
         experimentInfo = dl.ex_3pdeer(tau=tau1,pathways=[1,2])
@@ -140,12 +182,14 @@ def _simulate_deer(sequence,exp_type=None):
 
 
     r = np.linspace(0.5,10,100)
-    rmean = 3.5
-    rstd = 1.5
+    rmean = 4.5
+    rstd = 1.0
     conc = 50
 
     Vmodel = dl.dipolarmodel(t,r,Pmodel=dl.dd_gauss, experiment=experimentInfo)
     Vsim = Vmodel(mean=rmean, std=rstd, conc=conc, scale=1, **reftimes, **mod_depths)
+    # Add phase shift
+    Vsim = add_phaseshift(Vsim, 0.05)
     return t, Vsim
 
 def _simulate_CP(sequence):
@@ -154,7 +198,8 @@ def _simulate_CP(sequence):
     func = lambda x, a, b, e: a*np.exp(-b*x**e)
     xaxis = val_in_ns(sequence.tau2)
     data = func(xaxis,1,0.0000008,1.8)
-    return xaxis, 
+    data = add_phaseshift(data, 0.05)
+    return xaxis, data
 
 
 def _similate_respro(sequence, mode):

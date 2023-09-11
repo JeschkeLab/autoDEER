@@ -47,13 +47,14 @@ class CarrPurcellAnalysis:
         self.fit_result = curve_fit(self.func, self.axis, data, p0=p0)
         return self.fit_result
 
-    def plot(self, norm: bool = True) -> Figure:
+    def plot(self, norm: bool = True, axs=None, fig=None) -> Figure:
         """Plot the carr purcell decay with fit, if avaliable.
 
         Parameters
         ----------
         norm : bool, optional
             Normalise the fit to a maximum of 1, by default True
+        
 
         Returns
         -------
@@ -65,18 +66,20 @@ class CarrPurcellAnalysis:
             data = np.abs(self.data)
             data /= np.max(data)
 
-        fig, ax = plt.subplots()
+        if axs is None and fig is None:
+            fig, axs = plt.subplots()
+
         if hasattr(self, "fit_result"):
-            ax.plot(self.axis, data, '.', label='data', color='0.6', ms=6)
-            ax.plot(self.axis, self.func(
+            axs.plot(self.axis, data, '.', label='data', color='0.6', ms=6)
+            axs.plot(self.axis, self.func(
                 self.axis, *self.fit_result[0]), label='fit', color='C1', lw=2)
 
-            ax.legend()
+            axs.legend()
         else:
-            ax.plot(self.axis, data, label='data')
+            axs.plot(self.axis, data, label='data')
 
-        ax.set_xlabel('Time / us')
-        ax.set_ylabel('Normalised Amplitude')
+        axs.set_xlabel('Time / us')
+        axs.set_ylabel('Normalised Amplitude')
         return fig
 
     def find_optimal(
