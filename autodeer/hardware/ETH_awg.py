@@ -111,6 +111,8 @@ class ETH_awg_interface(Interface):
                 data.sequence = self.cur_exp
             except OSError:
                 time.sleep(10)
+            except IndexError:
+                time.sleep(10)
             else:
                 return data
         
