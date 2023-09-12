@@ -101,10 +101,11 @@ class ETH_awg_interface(Interface):
         path = folder_path + "\\" \
             + f"{date:08d}_{start_time:04d}_{filename}.mat"
         
-        self.engine.dig_interface('savenow')
+        
         
         for i in range(0, 10):
             try:
+                self.engine.dig_interface('savenow')
                 Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
                 data = uwb_load(Matfile, options=options, verbosity=verbosity)
                 data.LO = Parameter("LO", data.params['LO']+self.awg_freq, unit="GHz", description="Total local oscilator frequency")
@@ -112,6 +113,8 @@ class ETH_awg_interface(Interface):
             except OSError:
                 time.sleep(10)
             except IndexError:
+                time.sleep(10)
+            except ValueError:
                 time.sleep(10)
             else:
                 return data
@@ -697,6 +700,10 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0):
                         nAvgs = 0
                     else:
                         nAvgs = ii
+        else:
+            raise ValueError("The dataset is missing data")
+        if sum(dta[0][:, 0]) == 0:
+            raise ValueError("The dataset is missing data")
         return [dta, nAvgs]
     
     dta, nAvgs = extract_data(matfile)

@@ -52,7 +52,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
     '''
 
-    def __init__(self, interface, wait:QtCore.QWaitCondition, mutex:QtCore.QMutex, results:dict, *args, **kwargs):
+    def __init__(self, interface, wait:QtCore.QWaitCondition, mutex:QtCore.QMutex, results:dict, LO, gyro, *args, **kwargs):
         super(autoDEERWorker,self).__init__()
 
         # Store constructor arguments (re-used for processing)
@@ -65,6 +65,8 @@ class autoDEERWorker(QtCore.QRunnable):
         self.mutex = mutex
         self.results = results
         self.sample = self.kwargs['sample']
+        self.LO = LO
+        self.gyro = gyro
 
 
         # # Add the callback to our kwargs
@@ -75,14 +77,12 @@ class autoDEERWorker(QtCore.QRunnable):
         self.mutex.unlock()
 
 
-    def run_fsweep(self):
+    def run_fsweep(self, reptime):
         '''
         Initialise the runner function with passed args, kwargs.
         '''
-
-        LO = 33.98
-        gyro_N = 0.0028087
-        reptime = 3e3
+        LO = self.LO
+        gyro_N = self.gyro
         p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=100)
 
         fsweep = ad.FieldSweepSequence(
@@ -98,18 +98,16 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('Field-sweep complete')
         self.signals.fsweep_result.emit(self.interface.acquire_dataset())
 
-    def run_respro(self):
+    def run_respro(self, reptime):
         '''
         Initialise the runner function for resonator profile.
         '''
+        LO = self.LO
+        gyro=self.gyro
+        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro, reptime = reptime,shots=100)
 
-        LO = 33.98
-        gyro_N = 0.0028087
-        reptime = 3e3
-        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=100)
-        self.gyro_exp = self.results['fieldsweep'].gyro
         RPseq = ad.ResonatorProfileSequence(
-            B=LO/self.gyro_exp, LO=LO,reptime=reptime,averages=1,shots=120,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=1,shots=120,
             pi2_pulse=p90, pi_pulse=p180,
         )
 
@@ -120,20 +118,19 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('Resonator Profile complete')
         self.signals.respro_result.emit(self.interface.acquire_dataset())
 
-    def run_relax(self):
+    def run_relax(self,reptime):
         '''
         Initialise the runner function for relaxation. 
         '''
-
-        LO = 33.98
-        reptime = 3e3
+        LO = self.LO
+        gyro = self.gyro
         relax = ad.DEERSequence(
-            B=LO/self.gyro_exp, LO=LO,reptime=reptime,averages=1,shots=150,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=1,shots=50,
             tau1=0.5, tau2=0.5, tau3=0.2, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
             )
-        relax.five_pulse(relaxation=True, re_step=150)
+        relax.five_pulse(relaxation=True, re_step=200)
         relax.select_pcyc("16step_5p")
         relax._estimate_time();
         relax.pulses[1].scale.value = 0
@@ -145,11 +142,11 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('Relaxation experiment complete')
         self.signals.relax_result.emit(self.interface.acquire_dataset())
 
-    def run_quick_deer(self):
-        LO = 33.98
-        reptime = 3e3
+    def run_quick_deer(self,reptime):
+        LO = self.LO
+        gyro = self.gyro
         deer = ad.DEERSequence(
-            B=LO/self.gyro_exp, LO=LO,reptime=reptime,averages=1000,shots=150,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=1000,shots=150,
             tau1=2.0, tau2=2.0, tau3=0.3, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -164,14 +161,15 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('DEER experiment complete')
         self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
 
-    def run_long_deer(self):
-        LO = 33.98
-        reptime = 3e3
+    def run_long_deer(self, reptime):
+        LO = self.LO
+        gyro = self.gyro
+        
         rec_tau = self.results['quickdeer'].rec_tau
         max_tau = self.results['relax'].max_tau
         tau = np.min([rec_tau,max_tau])
         deer = ad.DEERSequence(
-            B=LO/self.gyro_exp, LO=LO,reptime=reptime,averages=1000,shots=150,
+            B=LO/self.gyro, LO=LO,reptime=reptime,averages=1000,shots=150,
             tau1=tau, tau2=tau, tau3=0.3, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -181,6 +179,7 @@ class autoDEERWorker(QtCore.QRunnable):
         deer._estimate_time();
         self.interface.launch(deer,savename=f"{self.sample}_deer_tau_{tau}us",IFgain=2)
         self.signals.status.emit('DEER experiment running')
+        time.sleep(30) # Always wait for the experiment to properly start
         with threadpool_limits(limits=1, user_api='blas'):
             self.interface.terminate_at(ad.DEERCriteria(mode="high"),verbosity=2,test_interval=0.5)
         self.signals.status.emit('DEER experiment complete')
@@ -189,16 +188,14 @@ class autoDEERWorker(QtCore.QRunnable):
     @QtCore.pyqtSlot()    
     def run(self):
 
-        LO = 33.98
-        gyro_N = 0.0028087
         reptime = 3e3
-        # p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=100)
-
-        self.run_fsweep()
+        LO = self.LO
+        gyro_N = self.gyro
+        self.run_fsweep(reptime)
         
         self.pause_and_wait()
 
-        self.run_respro()
+        self.run_respro(reptime)
 
         self.pause_and_wait()
 
@@ -230,13 +227,13 @@ class autoDEERWorker(QtCore.QRunnable):
 
         # Run a relaxation experiment
         self.signals.status.emit('Running relaxation Experiment')
-        self.run_relax()
+        self.run_relax(reptime)
         self.signals.status.emit('Analysing relaxation Experiment')
 
         self.pause_and_wait()
 
         self.signals.status.emit('Running QuickDEER')
-        self.run_quick_deer()
+        self.run_quick_deer(reptime)
         self.signals.status.emit('Analysing QuickDEER')
         # self.pause_and_wait()
 

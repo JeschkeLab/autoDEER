@@ -94,7 +94,7 @@ class Worker(QtCore.QRunnable):
 def fieldsweep_process(dataset):
     fsweep_analysis = ad.FieldSweepAnalysis(dataset)
     fsweep_analysis.calc_gyro()
-    fsweep_analysis.fit()
+    fsweep_analysis.fit(xtol=1e-5, lin_maxiter=100)
 
     return fsweep_analysis
 
@@ -107,6 +107,11 @@ def respro_process(dataset, freq_axis, fieldsweep=None):
     respro.process_nutations(threshold=4)
     
     respro.fit()
+
+    if fieldsweep is not None:
+        LO_new = fieldsweep.LO + ad.optimise_spectra_position(respro, fieldsweep)
+        return respro, LO_new
+
 
     return respro
 
@@ -165,6 +170,9 @@ class UI(QMainWindow):
         self.current_folder = ''
         self.config = None
         self.connected = False
+
+        self.LO = 0
+        self.gyro = 0.0028087
    
     def load_epr_file(self, store_location):
 
@@ -223,6 +231,11 @@ class UI(QMainWindow):
         self.resonatorComboBox.clear()
         self.resonatorComboBox.addItems(self.config['Resonators'].keys())
 
+        # Set LO to resonator central frequency
+        key1 = list(self.config['Resonators'].keys())[0]
+        self.LO = self.config['Resonators'][key1]['Center Freq']
+
+
     def connect_spectrometer(self):
         if self.spectromterInterface is None:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be loaded first!')
@@ -274,7 +287,7 @@ class UI(QMainWindow):
     def refresh_fieldsweep(self, fitresult):
 
         self.current_results['fieldsweep'] = fitresult
-
+        self.gyro = fitresult.gyro
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
@@ -316,7 +329,7 @@ class UI(QMainWindow):
             self.current_data['respro'] = dataset
 
         if hasattr(dataset, 'sequence'):
-            f_axis = dataset.sequence.LO.value + dataset.sequence.LO.axis[0]['axis']
+            f_axis = dataset.sequence.LO.value + dataset.sequence.LO.axis[0]['axis'] - 0.3 # Fix this necessary offset
         else:
             # Assuming mat file
             # TODO: Change to new data format
@@ -337,9 +350,13 @@ class UI(QMainWindow):
         self.respro_ax = axs
 
 
-    def refresh_respro(self, fitresult):
-        
+    def refresh_respro(self, *args):
+
+        fitresult = args[0]
         self.current_results['respro'] = fitresult
+
+        if len(args) > 1:
+            self.LO = args[1]
 
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
@@ -489,7 +506,10 @@ class UI(QMainWindow):
         self.waitCondition = QtCore.QWaitCondition()
         mutex = QtCore.QMutex()
 
-        worker = autoDEERWorker(self.spectromterInterface,wait=self.waitCondition,mutex=mutex, results=self.current_results, sample=sampleName, temp=Temp, maxtime=MaxTime)
+        worker = autoDEERWorker(
+            self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
+            results=self.current_results,LO=self.LO, gyro = self.gyro,
+            sample=sampleName, temp=Temp, maxtime=MaxTime )
         worker.signals.status.connect(self.msgbar.setText)
         worker.signals.fsweep_result.connect(self.update_fieldsweep)
         worker.signals.respro_result.connect(self.update_respro)
@@ -517,8 +537,8 @@ class UI(QMainWindow):
         if self.spectromterInterface is None:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
 
- 
-app = QApplication([])
-window = UI()
-window.show()
-app.exec()
+if __name__ == '__main__':
+    app = QApplication([])
+    window = UI()
+    window.show()
+    app.exec()
