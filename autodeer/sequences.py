@@ -1240,7 +1240,7 @@ class DEERSequence(Sequence):
         if relaxation:
 
             self.step = Parameter(
-                name="step", value=self.deadtime,
+                name="step", value=300,
                 dim=100, step=200,
                 unit="ns", description="The gap of the first refoucsing pulse",
                 virtual=True)            

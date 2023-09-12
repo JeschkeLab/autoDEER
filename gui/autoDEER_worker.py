@@ -83,7 +83,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = 33.98
         gyro_N = 0.0028087
         reptime = 3e3
-        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime)
+        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=100)
 
         fsweep = ad.FieldSweepSequence(
             B=LO/gyro_N, LO=LO,reptime=reptime,averages=1,shots=40,
@@ -106,7 +106,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = 33.98
         gyro_N = 0.0028087
         reptime = 3e3
-        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime)
+        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=100)
         self.gyro_exp = self.results['fieldsweep'].gyro
         RPseq = ad.ResonatorProfileSequence(
             B=LO/self.gyro_exp, LO=LO,reptime=reptime,averages=1,shots=120,
@@ -192,7 +192,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = 33.98
         gyro_N = 0.0028087
         reptime = 3e3
-        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime)
+        # p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=100)
 
         self.run_fsweep()
         
