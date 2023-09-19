@@ -75,7 +75,7 @@ class dummyInterface(Interface):
         self.start_time = time.time()
         return super().launch(sequence, savename)
     
-    def acquire_dataset(self) -> Dataset:
+    def acquire_dataset(self,**kwargs) -> Dataset:
         if isinstance(self.sequence, DEERSequence):
             if self.sequence.t.is_static():
                 axes, data = _simulate_CP(self.sequence)
@@ -94,7 +94,7 @@ class dummyInterface(Interface):
         
         return dset
     
-    def tune_rectpulse(self,*,tp, LO, B, reptime):
+    def tune_rectpulse(self,*,tp, LO, B, reptime,**kwargs):
 
         rabi_freq = self.mode(LO)
         def Hz2length(x):
@@ -111,7 +111,11 @@ class dummyInterface(Interface):
         self.pulses[f"p180_{tp}"] = RectPulse(tp=tp, freq=0, flipangle=np.pi, scale=p180)
 
         return self.pulses[f"p90_{tp}"], self.pulses[f"p180_{tp}"]
+    
+    def tune_pulse(self, pulse, mode, LO, B , reptime, shots=400):
 
+        pulse.scale = Parameter('scale',0.5,unit=None,description='The amplitude of the pulse 0-1')
+        return pulse
             
     def isrunning(self) -> bool:
         current_time = time.time()
