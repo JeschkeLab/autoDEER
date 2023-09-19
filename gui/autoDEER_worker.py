@@ -52,7 +52,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
     '''
 
-    def __init__(self, interface, wait:QtCore.QWaitCondition, mutex:QtCore.QMutex, results:dict, LO, gyro, *args, **kwargs):
+    def __init__(self, interface, wait:QtCore.QWaitCondition, mutex:QtCore.QMutex, results:dict, LO, gyro, user_inputs:dict = None, *args, **kwargs):
         super(autoDEERWorker,self).__init__()
 
         # Store constructor arguments (re-used for processing)
@@ -64,9 +64,10 @@ class autoDEERWorker(QtCore.QRunnable):
         self.wait = wait
         self.mutex = mutex
         self.results = results
-        self.sample = self.kwargs['sample']
+        self.sample = user_inputs['sample']
         self.LO = LO
         self.gyro = gyro
+        self.user_inputs = user_inputs
 
 
         # # Add the callback to our kwargs
@@ -191,6 +192,7 @@ class autoDEERWorker(QtCore.QRunnable):
         reptime = 3e3
         LO = self.LO
         gyro_N = self.gyro
+
         self.run_fsweep(reptime)
         
         self.pause_and_wait()
@@ -199,27 +201,75 @@ class autoDEERWorker(QtCore.QRunnable):
 
         self.pause_and_wait()
 
-        exc_pulse = ad.RectPulse(  
-                tp=16, freq=0, flipangle=np.pi/2, scale=0
-            )
-        ref_pulse = ad.RectPulse(  
-                        tp=16, freq=0, flipangle=np.pi, scale=0
-                    )
-        pump_pulse = ad.HSPulse(  
+        # Define the pulses
+        if 'exc_pulse' in self.user_inputs.keys():
+            if self.user_inputs['exc_pulse'] == 'Rectangular':
+                exc_pulse = ad.RectPulse(  
+                    tp=16, freq=0, flipangle=np.pi/2, scale=0
+                )
+            elif self.user_inputs['exc_pulse'] == 'Chirp':
+                exc_pulse = ad.ChirpPulse(
+                    tp=16, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi/2, scale=0,
+                )
+            elif self.user_inputs['exc_pulse'] == 'HS':
+                exc_pulse = ad.HSPulse(  
+                    tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi/2, scale=0,
+                    order1=6, order2=1, beta=10
+                )
+        else:
+            exc_pulse = ad.RectPulse(  
+                    tp=16, freq=0, flipangle=np.pi/2, scale=0
+                )
+        if 'ref_pulse' in self.user_inputs.keys():
+            if self.user_inputs['ref_pulse'] == 'Rectangular':
+                ref_pulse = ad.RectPulse(  
+                    tp=16, freq=0, flipangle=np.pi, scale=0
+                )
+            elif self.user_inputs['ref_pulse'] == 'Chirp':
+                ref_pulse = ad.ChirpPulse(
+                    tp=16, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
+                )
+            elif self.user_inputs['ref_pulse'] == 'HS':
+                ref_pulse = ad.HSPulse(  
+                    tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
+                    order1=6, order2=1, beta=10
+                )
+        else:
+            ref_pulse = ad.RectPulse(  
+                            tp=16, freq=0, flipangle=np.pi, scale=0
+                        )
+            
+        if 'pump_pulse' in self.user_inputs.keys():
+            if self.user_inputs['pump_pulse'] == 'Rectangular':
+                pump_pulse = ad.RectPulse(  
+                    tp=16, freq=0, flipangle=np.pi, scale=0
+                )
+            elif self.user_inputs['pump_pulse'] == 'Chirp':
+                pump_pulse = ad.ChirpPulse(
+                    tp=16, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
+                )
+            elif self.user_inputs['pump_pulse'] == 'HS':
+                pump_pulse = ad.HSPulse(  
+                    tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
+                    order1=6, order2=1, beta=10
+                )
+        else:
+            pump_pulse = ad.HSPulse(  
                         tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
                         order1=6, order2=1, beta=10
                     )
+            
         det_event = ad.Detection(tp=512, freq=0)
 
         self.pulses = {'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse, 'pump_pulse':pump_pulse, 'det_event':det_event}
 
-        # Optimise the pulses
+        # Optimise the pulse positions
         self.signals.status.emit('Optimising pulses')
         self.signals.optimise_pulses.emit(self.pulses)
         self.pause_and_wait()
 
-        self.signals.status.emit('Tuning pulses')
         # Tune the pulses
+        self.signals.status.emit('Tuning pulses')
         exc_pulse = self.interface.tune_pulse(exc_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
         ref_pulse = self.interface.tune_pulse(ref_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
         pump_pulse = self.interface.tune_pulse(pump_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
@@ -235,11 +285,10 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('Running QuickDEER')
         self.run_quick_deer(reptime)
         self.signals.status.emit('Analysing QuickDEER')
-        # self.pause_and_wait()
+        self.pause_and_wait()
 
-        # self.signals.status.emit('Running LongDEER')
-        # self.run_longdeer()
-        # self.pause_and_wait()
+        self.signals.status.emit('Running LongDEER')
+        self.run_longdeer()
 
         self.signals.finished.emit()
 

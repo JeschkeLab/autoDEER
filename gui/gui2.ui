@@ -77,7 +77,34 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="resonatorComboBox"/>
+           <widget class="QComboBox" name="resonatorComboBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>200</width>
+              <height>0</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="connectedLabel">
+            <property name="text">
+             <string>Connected</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="Connected_Light">
+            <property name="text">
+             <string notr="true"/>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -92,7 +119,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>5</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideRight</enum>
@@ -197,6 +224,11 @@
               <widget class="QPushButton" name="FullyAutoButton">
                <property name="enabled">
                 <bool>true</bool>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>15</pointsize>
+                </font>
                </property>
                <property name="text">
                 <string>Run Fully Automatic DEER</string>
@@ -328,6 +360,11 @@
              </item>
              <item>
               <widget class="QPushButton" name="AdvancedAutoButton">
+               <property name="font">
+                <font>
+                 <pointsize>15</pointsize>
+                </font>
+               </property>
                <property name="text">
                 <string>Run Advanced Mode</string>
                </property>
@@ -361,7 +398,7 @@
                    <string>...</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources_file.qrc">
+                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
                     <normaloff>:/icons/resources/upload.png</normaloff>:/icons/resources/upload.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -381,7 +418,7 @@
                    <string notr="true"/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources_file.qrc">
+                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
                     <normaloff>:/icons/resources/refresh.png</normaloff>:/icons/resources/refresh.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -401,7 +438,7 @@
                    <string notr="true"/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources_file.qrc">
+                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
                     <normaloff>:/icons/resources/play.png</normaloff>:/icons/resources/play.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -445,6 +482,11 @@
                <layout class="QHBoxLayout" name="horizontalLayout_3">
                 <item>
                  <widget class="QLabel" name="label_3">
+                  <property name="font">
+                   <font>
+                    <pointsize>17</pointsize>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>Experimental Parameters</string>
                   </property>
@@ -466,67 +508,234 @@
                </layout>
               </item>
               <item>
-               <widget class="QTableWidget" name="fsweep_exp_table">
-                <column>
-                 <property name="text">
-                  <string>Parameter</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>Value</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>Unit</string>
-                 </property>
-                </column>
-               </widget>
+               <layout class="QGridLayout" name="gridLayout_3">
+                <property name="topMargin">
+                 <number>10</number>
+                </property>
+                <item row="1" column="1">
+                 <widget class="QDoubleSpinBox" name="gyroSpinBox">
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::NoButtons</enum>
+                  </property>
+                  <property name="suffix">
+                   <string> MHz/T</string>
+                  </property>
+                  <property name="decimals">
+                   <number>6</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_32">
+                  <property name="text">
+                   <string>A</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="QDoubleSpinBox" name="GBSpinBox">
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::NoButtons</enum>
+                  </property>
+                  <property name="suffix">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_17">
+                  <property name="text">
+                   <string>Gaussian Broadening</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="1">
+                 <widget class="QDoubleSpinBox" name="BoffsetSpinBox">
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::NoButtons</enum>
+                  </property>
+                  <property name="suffix">
+                   <string> B</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="0">
+                 <widget class="QLabel" name="label_21">
+                  <property name="text">
+                   <string>B offset</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_30">
+                  <property name="text">
+                   <string>Gyromagentic ratio (at peak)</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_31">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>g</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_28">
+                  <property name="text">
+                   <string>Spin Centre</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="lineEdit">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>N</string>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <layout class="QHBoxLayout" name="horizontalLayout_17">
+                  <item>
+                   <widget class="QDoubleSpinBox" name="AxSpinBox">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="buttonSymbols">
+                     <enum>QAbstractSpinBox::NoButtons</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="AySpinBox">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="buttonSymbols">
+                     <enum>QAbstractSpinBox::NoButtons</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="AzSpinBox">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="buttonSymbols">
+                     <enum>QAbstractSpinBox::NoButtons</enum>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="2" column="1">
+                 <layout class="QGridLayout" name="gridLayout_4">
+                  <item row="1" column="0">
+                   <widget class="QDoubleSpinBox" name="gySpinBox">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="buttonSymbols">
+                     <enum>QAbstractSpinBox::NoButtons</enum>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QDoubleSpinBox" name="gxSpinBox">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="buttonSymbols">
+                     <enum>QAbstractSpinBox::NoButtons</enum>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QDoubleSpinBox" name="gzSpinBox">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="buttonSymbols">
+                     <enum>QAbstractSpinBox::NoButtons</enum>
+                    </property>
+                    <property name="decimals">
+                     <number>4</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLineEdit" name="gxCI"/>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QLineEdit" name="gyCI"/>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QLineEdit" name="gzCI"/>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
               </item>
               <item>
-               <widget class="QLabel" name="label_4">
-                <property name="text">
-                 <string>Analysis</string>
+               <spacer name="verticalSpacer_4">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
                 </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QTableWidget" name="fsweep_analysis_table">
-                <property name="editTriggers">
-                 <set>QAbstractItemView::NoEditTriggers</set>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
                 </property>
-                <property name="dragDropOverwriteMode">
-                 <bool>false</bool>
-                </property>
-                <property name="sortingEnabled">
-                 <bool>false</bool>
-                </property>
-                <property name="rowCount">
-                 <number>1</number>
-                </property>
-                <row/>
-                <column>
-                 <property name="text">
-                  <string>Parameter</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>Value</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>95% CI</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>Unit</string>
-                 </property>
-                </column>
-               </widget>
+               </spacer>
               </item>
              </layout>
             </item>
@@ -557,7 +766,7 @@
                    <string>...</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources_file.qrc">
+                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
                     <normaloff>:/icons/resources/upload.png</normaloff>:/icons/resources/upload.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -577,7 +786,7 @@
                    <string notr="true"/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources_file.qrc">
+                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
                     <normaloff>:/icons/resources/refresh.png</normaloff>:/icons/resources/refresh.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -597,7 +806,7 @@
                    <string notr="true"/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources_file.qrc">
+                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
                     <normaloff>:/icons/resources/play.png</normaloff>:/icons/resources/play.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -628,11 +837,29 @@
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_3">
               <item>
+               <spacer name="verticalSpacer_3">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
                <layout class="QHBoxLayout" name="horizontalLayout_8">
                 <item>
                  <widget class="QLabel" name="label_5">
+                  <property name="font">
+                   <font>
+                    <pointsize>17</pointsize>
+                   </font>
+                  </property>
                   <property name="text">
-                   <string>Experimental Parameters</string>
+                   <string>Resonator Profile</string>
                   </property>
                  </widget>
                 </item>
@@ -652,66 +879,94 @@
                </layout>
               </item>
               <item>
-               <widget class="QTableWidget" name="respro_exp_table">
-                <column>
-                 <property name="text">
-                  <string>Parameter</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>Value</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>Unit</string>
-                 </property>
-                </column>
+               <layout class="QHBoxLayout" name="horizontalLayout_15">
+                <item>
+                 <layout class="QGridLayout" name="gridLayout">
+                  <item row="1" column="1">
+                   <widget class="QDoubleSpinBox" name="qDoubleSpinBox">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="buttonSymbols">
+                     <enum>QAbstractSpinBox::NoButtons</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="centerFrequencyLabel">
+                    <property name="text">
+                     <string>Centre Frequency</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QDoubleSpinBox" name="centreFrequencyDoubleSpinBox">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="buttonSymbols">
+                     <enum>QAbstractSpinBox::NoButtons</enum>
+                    </property>
+                    <property name="suffix">
+                     <string> GHz</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="qLabel">
+                    <property name="text">
+                     <string>Q</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="2">
+                   <widget class="QLabel" name="centreFrequencyCI">
+                    <property name="text">
+                     <string>(0.00, 0.00)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2">
+                   <widget class="QLabel" name="qCI">
+                    <property name="text">
+                     <string>(0.00, 0.00)</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_9">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="Line" name="line_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
                </widget>
               </item>
               <item>
                <widget class="QLabel" name="label_6">
+                <property name="font">
+                 <font>
+                  <pointsize>17</pointsize>
+                 </font>
+                </property>
                 <property name="text">
-                 <string>Analysis</string>
+                 <string>Optimal Pulses</string>
                 </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QTableWidget" name="respro_analysis_table">
-                <property name="editTriggers">
-                 <set>QAbstractItemView::NoEditTriggers</set>
-                </property>
-                <property name="dragDropOverwriteMode">
-                 <bool>false</bool>
-                </property>
-                <property name="sortingEnabled">
-                 <bool>false</bool>
-                </property>
-                <property name="rowCount">
-                 <number>1</number>
-                </property>
-                <row/>
-                <column>
-                 <property name="text">
-                  <string>Parameter</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>Value</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>95% CI</string>
-                 </property>
-                </column>
-                <column>
-                 <property name="text">
-                  <string>Unit</string>
-                 </property>
-                </column>
                </widget>
               </item>
               <item>
@@ -737,6 +992,242 @@
                  </spacer>
                 </item>
                </layout>
+              </item>
+              <item>
+               <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1,1">
+                <property name="sizeConstraint">
+                 <enum>QLayout::SetDefaultConstraint</enum>
+                </property>
+                <property name="topMargin">
+                 <number>20</number>
+                </property>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_25">
+                  <property name="text">
+                   <string>Bandwidth (MHz or ns)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_23">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Plain</enum>
+                  </property>
+                  <property name="lineWidth">
+                   <number>0</number>
+                  </property>
+                  <property name="text">
+                   <string>Pulse</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>50</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::NoButtons</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_22">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Excitation</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_26">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Pump</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>50</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::NoButtons</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLabel" name="label_24">
+                  <property name="text">
+                   <string>Central Freq (MHz)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_27">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Refocusing</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>50</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::NoButtons</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+                  <property name="minimumSize">
+                   <size>
+                    <width>50</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::NoButtons</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
+                  <property name="minimumSize">
+                   <size>
+                    <width>50</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::NoButtons</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="2">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
+                  <property name="minimumSize">
+                   <size>
+                    <width>50</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>80</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::NoButtons</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </item>
@@ -767,7 +1258,7 @@
                    <string>...</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources_file.qrc">
+                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
                     <normaloff>:/icons/resources/upload.png</normaloff>:/icons/resources/upload.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -787,7 +1278,7 @@
                    <string notr="true"/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources_file.qrc">
+                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
                     <normaloff>:/icons/resources/refresh.png</normaloff>:/icons/resources/refresh.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -807,7 +1298,7 @@
                    <string notr="true"/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources_file.qrc">
+                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
                     <normaloff>:/icons/resources/play.png</normaloff>:/icons/resources/play.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -836,11 +1327,22 @@
              </layout>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_12">
+             <layout class="QVBoxLayout" name="verticalLayout_12" stretch="0,1">
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_13">
                 <item>
                  <widget class="QLabel" name="label_16">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <pointsize>17</pointsize>
+                   </font>
+                  </property>
                   <property name="text">
                    <string>Experimental Parameters</string>
                   </property>
@@ -850,6 +1352,9 @@
                  <spacer name="horizontalSpacer_8">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType">
+                   <enum>QSizePolicy::Expanding</enum>
                   </property>
                   <property name="sizeHint" stdset="0">
                    <size>
@@ -882,6 +1387,9 @@
                   <property name="readOnly">
                    <bool>true</bool>
                   </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::NoButtons</enum>
+                  </property>
                   <property name="suffix">
                    <string> us</string>
                   </property>
@@ -909,6 +1417,9 @@
                   <property name="readOnly">
                    <bool>true</bool>
                   </property>
+                  <property name="buttonSymbols">
+                   <enum>QAbstractSpinBox::NoButtons</enum>
+                  </property>
                   <property name="suffix">
                    <string> us</string>
                   </property>
@@ -928,15 +1439,11 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_7"/>
         </widget>
-        <widget class="QWidget" name="longDEER">
+        <widget class="DEERplot" name="longDEER">
          <attribute name="title">
           <string>Long DEER</string>
          </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_10">
-          <item>
-           <widget class="DEERplot" name="longdeer_widget" native="true"/>
-          </item>
-         </layout>
+         <layout class="QVBoxLayout" name="verticalLayout_10"/>
         </widget>
        </widget>
       </item>
@@ -944,6 +1451,11 @@
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QPushButton" name="pushButton_3">
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>Log</string>
           </property>
@@ -958,6 +1470,11 @@
         </item>
         <item>
          <widget class="QPushButton" name="stopButton">
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
           <property name="text">
            <string>STOP!</string>
           </property>
@@ -1096,7 +1613,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="resources_file.qrc"/>
+  <include location="../../../autoDeer_dev/GUI/resources_file.qrc"/>
  </resources>
  <connections/>
 </ui>

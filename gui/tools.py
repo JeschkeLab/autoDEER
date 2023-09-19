@@ -13,6 +13,13 @@ import numpy as np
 #   General functions and classes
 #
 # =============================================================================
+
+def getCIstring(Uncert, precision=2):
+    try:
+        return f"({Uncert.ci(95)[0]:.{precision}f},{Uncert.ci(95)[1]:.{precision}f})"
+    except ValueError:
+        return "frozen"
+    
 def load_epr_file(Object, store_location):
 
         filename, _= QFileDialog.getOpenFileName(

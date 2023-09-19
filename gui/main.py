@@ -14,7 +14,7 @@ import numpy as np
 from quickdeer import DEERplot
 import yaml
 
-
+import tools
 from queue import Queue
 
 
@@ -133,10 +133,12 @@ class UI(QMainWindow):
         super().__init__()
  
         # loading the ui file with uic module
-        uic.loadUi("gui\gui2.ui", self)
+        uic.loadUi("gui/gui2.ui", self)
         logo_pixmap = QtGui.QPixmap('icons:logo.png')
         logo_pixmap = logo_pixmap.scaledToHeight(60)
         self.logo.setPixmap(logo_pixmap)
+        self.set_spectrometer_connected_light(0)
+
         self.fsweep_toolbar()
         self.respro_toolbar()
         self.relax_toolbar()
@@ -173,7 +175,17 @@ class UI(QMainWindow):
 
         self.LO = 0
         self.gyro = 0.0028087
-   
+
+    def set_spectrometer_connected_light(self, state):
+        if state == 0:
+            light_pixmap = QtGui.QPixmap('icons:red.png')
+        elif state == 1:
+            light_pixmap = QtGui.QPixmap('icons:green.png')
+        elif state == 2:
+            light_pixmap = QtGui.QPixmap('icons:yellow.png')
+        
+        light_pixmap = light_pixmap.scaledToHeight(30)
+        self.Connected_Light.setPixmap(light_pixmap)
     def load_epr_file(self, store_location):
 
         filename, _= QFileDialog.getOpenFileName(
@@ -244,6 +256,7 @@ class UI(QMainWindow):
 
         self.spectromterInterface.connect()
         self.connected = True
+        self.set_spectrometer_connected_light(1)
 
     def fsweep_toolbar(self):
         upload_icon = QtGui.QIcon('icons:upload.png')
@@ -295,31 +308,50 @@ class UI(QMainWindow):
         self.fsweep_v_left.removeWidget(self.fsweep_plot)
         self.fsweep_v_left.addWidget(fsweep_plot,1)
 
-        # Add fit results
-        parameters = ['Boffset','az','GB']
 
-        analysis_rows = []
-        for param in parameters:
-            attr = getattr(fitresult.results,param)
-            if isinstance(attr, dl.Parameter):
-                unit = attr.unit
-            else:
-                unit = None
 
-            if hasattr(fitresult.results,f"{param}Uncert"):
-                CI_tmp = getattr(fitresult.results,f"{param}Uncert").ci(95)
-                CI =f"({CI_tmp[0]:.2f},{CI_tmp[1]:.2f})"
-            else:
-                CI = None
-            analysis_rows.append({"Parameter":param, "Value":f"{attr:.2f}", "95% CI":CI, "Unit":unit})
+        # Add fit resultss
+
+        self.gyroSpinBox.setValue(fitresult.gyro*1e3)
+        self.gxSpinBox.setValue(-0.0025 * fitresult.results.az + 2.0175)
+        self.gySpinBox.setValue(fitresult.results.gy)
+        self.gzSpinBox.setValue(fitresult.results.gz)
+        self.AxSpinBox.setValue(fitresult.results.axy*28.0328)
+        self.AySpinBox.setValue(fitresult.results.axy*28.0328)
+        self.AzSpinBox.setValue(fitresult.results.az)
+        self.GBSpinBox.setValue(fitresult.results.GB)
+        self.BoffsetSpinBox.setValue(fitresult.results.Boffset)
+
+        gxCI = -0.0025 *fitresult.results.azUncert.ci(95)+ 2.0175
+        self.gxCI.setText(f"({gxCI[0]:.4f},{gxCI[1]:.4f})")
+        self.gyCI.setText(tools.getCIstring(fitresult.results.gyUncert))
+        self.gzCI.setText(tools.getCIstring(fitresult.results.gzUncert))
+
+
+        # parameters = ['Boffset','az','GB']
+
+        # analysis_rows = []
+        # for param in parameters:
+        #     attr = getattr(fitresult.results,param)
+        #     if isinstance(attr, dl.Parameter):
+        #         unit = attr.unit
+        #     else:
+        #         unit = None
+
+        #     if hasattr(fitresult.results,f"{param}Uncert"):
+        #         CI_tmp = getattr(fitresult.results,f"{param}Uncert").ci(95)
+        #         CI =f"({CI_tmp[0]:.2f},{CI_tmp[1]:.2f})"
+        #     else:
+        #         CI = None
+        #     analysis_rows.append({"Parameter":param, "Value":f"{attr:.2f}", "95% CI":CI, "Unit":unit})
         
-        self.fsweep_analysis_table.setRowCount(len(analysis_rows))
+        # self.fsweep_analysis_table.setRowCount(len(analysis_rows))
 
-        for row,e in enumerate(analysis_rows):
-            self.fsweep_analysis_table.setItem(row, 0, QTableWidgetItem(e['Parameter']))
-            self.fsweep_analysis_table.setItem(row, 1, QTableWidgetItem(e['Value']))
-            self.fsweep_analysis_table.setItem(row, 2, QTableWidgetItem(e['95% CI']))
-            self.fsweep_analysis_table.setItem(row, 3, QTableWidgetItem(e['Unit']))
+        # for row,e in enumerate(analysis_rows):
+        #     self.fsweep_analysis_table.setItem(row, 0, QTableWidgetItem(e['Parameter']))
+        #     self.fsweep_analysis_table.setItem(row, 1, QTableWidgetItem(e['Value']))
+        #     self.fsweep_analysis_table.setItem(row, 2, QTableWidgetItem(e['95% CI']))
+        #     self.fsweep_analysis_table.setItem(row, 3, QTableWidgetItem(e['Unit']))
 
     def update_respro(self, dataset=None):
 
@@ -370,62 +402,38 @@ class UI(QMainWindow):
 
         self.respro_canvas.draw()
         # Add fit results
-        parameters = ['fc','q']
 
-        analysis_rows = []
-        for param in parameters:
-            attr = getattr(fitresult.results, param)
-            if isinstance(attr, dl.Parameter):
-                unit = attr.unit
-            else:
-                unit = None
+        self.centreFrequencyDoubleSpinBox.setValue(fitresult.results.fc)
+        self.centreFrequencyCI.setText(f"({fitresult.results.fcUncert.ci(95)[0]:.2f},{fitresult.results.fcUncert.ci(95)[1]:.2f})")
+        self.qDoubleSpinBox.setValue(fitresult.results.q)
+        self.qCI.setText(f"({fitresult.results.qUncert.ci(95)[0]:.2f},{fitresult.results.qUncert.ci(95)[1]:.2f})")
 
-            if hasattr(fitresult.results,f"{param}Uncert"):
-                CI_tmp = getattr(fitresult.results,f"{param}Uncert").ci(95)
-                CI =f"({CI_tmp[0]:.2f},{CI_tmp[1]:.2f})"
-            else:
-                CI = None
-            analysis_rows.append({"Parameter":param, "Value":f"{attr:.2f}", "95% CI":CI, "Unit":unit})
-        
-        self.respro_analysis_table.setRowCount(len(analysis_rows))
-
-        for row,e in enumerate(analysis_rows):
-            self.respro_analysis_table.setItem(row, 0, QTableWidgetItem(e['Parameter']))
-            self.respro_analysis_table.setItem(row, 1, QTableWidgetItem(e['Value']))
-            self.respro_analysis_table.setItem(row, 2, QTableWidgetItem(e['95% CI']))
-            self.respro_analysis_table.setItem(row, 3, QTableWidgetItem(e['Unit']))
 
 
     def optimise_pulses_button(self):
 
-        self.OptimisePulsesButton.clicked.connect(self.optimise_pulses)
+        self.OptimisePulsesButton.clicked.connect(lambda: self.optimise_pulses())
 
     def optimise_pulses(self, pulses=None):
         if pulses is None:
             pump_pulse = ad.HSPulse(tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0, order1=6, order2=1, beta=10)
             exc_pulse = ad.RectPulse(tp=16, freq=0.02, flipangle=np.pi/2, scale=0)
+            ref_pulse = exc_pulse.copy(flipangle=np.pi)
         else:
             pump_pulse = pulses['pump_pulse']
+            ref_pulse = pulses['ref_pulse']
             exc_pulse = pulses['exc_pulse']
 
-        # pump_offset, exc_offset = ad.calc_optimal_deer_frqs(self.current_results['fieldsweep'],pump_pulse, exc_pulse,pump_limits=(-0.1,0.1),exc_limits=(-0.2,0))
-
-        # if hasattr(exc_pulse, 'freq'):
-        #     exc_pulse.freq.value += exc_offset
-        # else:
-        #     exc_pulse.init_freq.value += exc_offset
+        pump_pulse, exc_pulse, ref_pulse = ad.optimise_pulses(self.current_results['fieldsweep'], pump_pulse, exc_pulse, ref_pulse)
         
-        # if hasattr(pump_pulse, 'freq'):
-        #     pump_pulse.freq.value += pump_offset
-        # else:
-        #     pump_pulse.init_freq.value += pump_offset
+        self.respro_ax.cla()
+        ad.plot_overlap(self.current_results['fieldsweep'], pump_pulse, exc_pulse,ref_pulse, axs=self.respro_ax,fig=self.respro_canvas.figure)
+        self.respro_canvas.draw()
+
+
 
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
-        # TODO: Actually calculate optimal pulses
-        self.respro_ax.cla()
-        ad.plot_optimal_deer_frqs(self.current_results['fieldsweep'], pump_pulse, exc_pulse, axs=self.respro_ax,fig=self.respro_canvas.figure)
-        self.respro_canvas.draw()
     
 
     def update_relax(self, dataset=None):
@@ -461,9 +469,9 @@ class UI(QMainWindow):
         
     def advanced_mode_inputs(self):
         self.Exp_types.addItems(['5pDEER','4pDEER','3pDEER','nDEER'])
-        self.ExcPulseSelect.addItems(['Rectangular','Chirp','HS'])
-        self.RefPulseSelect.addItems(['Rectangular','Chirp','HS'])
-        self.PumpPulseSelect.addItems(['Rectangular','Chirp','HS'])
+        self.ExcPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
+        self.RefPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
+        self.PumpPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
 
     def update_quickdeer(self, dataset=None):
         if dataset is None:
@@ -471,23 +479,11 @@ class UI(QMainWindow):
         else:
             self.current_data['relax'] = dataset
 
-        quickdeer_wait = QtCore.QWaitCondition()
-        quickdeer_mutex = QtCore.QMutex()
         self.q_DEER.current_data['quickdeer'] = dataset
         self.q_DEER.update_exp_table()
         self.q_DEER.update_figure()
         self.q_DEER.process_deeranalysis(wait_condition = self.waitCondition)
 
-        # print('Main thread mutex Lock')
-        # quickdeer_mutex.lock()
-        # quickdeer_wait.wait(quickdeer_mutex)
-        # quickdeer_mutex.unlock()
-        # print('Main thread mutex unlock')
-
-        # self.current_results['fit_result'] = self.quickdeer_widget.fitresult
-        # self.current_results['taumax'] = self.quickdeer_widget.taumax
-
-        # self.waitCondition.wakeAll()
 
     def RunFullyAutoDEER(self):
 
@@ -495,9 +491,10 @@ class UI(QMainWindow):
             QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
             return None
 
-        MaxTime = self.MaxTime.value()
-        sampleName = self.SampleName.text()
-        Temp = self.TempValue.value()
+        userinput = {}
+        userinput['MaxTime'] = self.MaxTime.value()
+        userinput['sample'] = self.SampleName.text()
+        userinput['Temp'] = self.TempValue.value()
 
         # Block the autoDEER buttons
         self.FullyAutoButton.setEnabled(False)
@@ -509,7 +506,7 @@ class UI(QMainWindow):
         worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
             results=self.current_results,LO=self.LO, gyro = self.gyro,
-            sample=sampleName, temp=Temp, maxtime=MaxTime )
+            user_inputs=userinput )
         worker.signals.status.connect(self.msgbar.setText)
         worker.signals.fsweep_result.connect(self.update_fieldsweep)
         worker.signals.respro_result.connect(self.update_respro)
@@ -523,19 +520,43 @@ class UI(QMainWindow):
         self.threadpool.start(worker)
 
     def RunAdvanedAutoDEER(self):
-        MaxTime = self.MaxTime.value()
-        sampleName = self.SampleName.text()
-        Temp = self.TempValue.value()
-        ExpType = self.Exp_types.currentText()
-        tau1 = self.Tau1Value.value()
-        tau2 = self.Tau2Value.value()
-        tau3 = self.Tau3Value.value()
-        ExcPulse = self.ExcPulseSelect.currentText()
-        RefPulse = self.RefPulseSelect.currentText()
-        PumpPulse = self.PumpPulseSelect.currentText()
 
-        if self.spectromterInterface is None:
+        if self.spectromterInterface is None or self.connected is False:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
+            return None
+        
+        # Block the autoDEER buttons
+        self.FullyAutoButton.setEnabled(False)
+        self.AdvancedAutoButton.setEnabled(False)
+
+        self.waitCondition = QtCore.QWaitCondition()
+        mutex = QtCore.QMutex()
+        userinput = {}
+        userinput['MaxTime'] = self.MaxTime.value()
+        userinput['sample'] = self.SampleName.text()
+        userinput['Temp'] = self.TempValue.value()
+        userinput['ExpType'] = self.Exp_types.currentText()
+        userinput['tau1'] = self.Tau1Value.value()
+        userinput['tau2'] = self.Tau2Value.value()
+        userinput['tau3'] = self.Tau3Value.value()
+        userinput['ExcPulse'] = self.ExcPulseSelect.currentText()
+        userinput['RefPulse'] = self.RefPulseSelect.currentText()
+        userinput['PumpPulse'] = self.PumpPulseSelect.currentText()
+
+        worker = autoDEERWorker(
+            self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
+            results=self.current_results,LO=self.LO, gyro = self.gyro,
+            userinput=userinput )
+        worker.signals.status.connect(self.msgbar.setText)
+        worker.signals.fsweep_result.connect(self.update_fieldsweep)
+        worker.signals.respro_result.connect(self.update_respro)
+        worker.signals.optimise_pulses.connect(self.optimise_pulses)
+        worker.signals.relax_result.connect(self.update_relax)
+        worker.signals.quickdeer_result.connect(self.update_quickdeer)
+        worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
+        worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
+
+        self.threadpool.start(worker)
 
 if __name__ == '__main__':
     app = QApplication([])
