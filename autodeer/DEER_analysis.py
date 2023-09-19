@@ -10,6 +10,8 @@ import scipy.fft as fft
 from deerlab import correctphase
 from scipy.interpolate import interp1d
 import re
+import numbers
+import scipy.signal as sig
 
 
 log = logging.getLogger('core.DEER')
@@ -691,3 +693,249 @@ def plot_optimal_deer_frqs(
     axs.set_xlabel("Frequency / GHz")
     return fig
 
+# =============================================================================
+# Optimising pulse postions
+# =============================================================================
+
+def shift_pulse_freq(pulse,shift):
+    if hasattr(pulse,'freq'):
+        pulse.freq.value += shift
+    elif hasattr(pulse,'BW'):
+        if hasattr(pulse,'init_freq'):
+            pulse.init_freq.value += shift
+        elif hasattr(pulse,'final_freq'):
+            pulse.final_freq.value += shift
+    elif hasattr(pulse,'init_freq') and hasattr(pulse,'final_freq'):
+        pulse.init_freq.value += shift
+        pulse.final_freq.value += shift
+    return pulse
+
+def normalise_01(A):
+    # Normalise the vector A to be between 0 and 1
+    A = A - np.min(A)
+    A = A / np.max(A)
+    return A
+
+def resample_and_shift_vector(A,f,shift):
+    # Resample the vector A along axis f and shift it by shift and return on original axis f
+    A = np.interp(f,f+shift,A)
+    return A
+
+
+def build__lowpass_butter_filter(cutoff):
+    """Build a lowpass butterworth filter with a cutoff frequency of cutoff
+
+    Args:
+        cutoff (float): cutoff frequency in GHz
+    """
+
+    sos = sig.butter(1,cutoff,btype='lowpass',analog=True)
+    def filter_func(f):
+        w = 2*np.pi*f
+        w,h = sig.freqs(*sos,w)
+        return abs(h)
+    return filter_func
+
+def functional(f_axis,fieldsweep,A,B,filter=None,A_shift=0,B_shift=0):
+    """Functional for optimising the pulse positions
+
+    Parameters
+    ----------
+    f_axis : np.ndarray
+        The frequency axis of the field sweep in GHz
+    fieldsweep : ad.FieldSweepAnalysis
+        The FieldSweep analysis object
+    A : np.ndarray
+        The pump pulse profile
+    B : np.ndarray
+        The effective excitation pulse profile
+    filter : np.ndarray, optional
+        The filter profile if applicable, by default None
+    A_shift : int, optional
+        The shift in pump pulse in GHz, by default 0
+    B_shift : int, optional
+        The shift in effective exciatation pulse in GHz, by default 0
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+    D_profile = resample_and_shift_vector(A,f_axis,A_shift)*fieldsweep*resample_and_shift_vector(B,f_axis,B_shift)
+    A_profile = fieldsweep*(resample_and_shift_vector(A,f_axis,A_shift))-D_profile # Pump
+    B_profile = fieldsweep*(resample_and_shift_vector(B,f_axis,B_shift))-D_profile # Exc
+    fsweep_norm = np.trapz(fieldsweep,f_axis)
+    Aspins = np.trapz(A_profile,f_axis)/fsweep_norm
+
+    if filter is None:
+        Bspins = np.trapz(B_profile,f_axis)/fsweep_norm
+        Noise = 1
+    else:
+        Bspins = np.trapz(B_profile*resample_and_shift_vector(filter,f_axis,B_shift),f_axis)/fsweep_norm
+        Noise = np.trapz(filter,f_axis)
+
+    return -1*(Aspins * Bspins)/np.sqrt(Noise)
+
+
+
+
+def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='grid',
+                    nDEER=False, num_ref_pulses=2):
+    """Optimise the pulse positions to maximise the pump-exc overlap.
+
+    Parameters
+    ----------
+    Fieldsweep : ad.FieldSweepAnalysis
+        The FieldSweep analysis object
+    pump_pulse : ad.Pulse
+        The pump pulse object
+    exc_pulse : ad.Pulse
+        The excitation pulse object
+    ref_pulse : ad.Pulse, optional
+        The refocusing pulse object\, by default None
+    filter : str or number or list, optional
+        The filter profile if applicable, by default None. If it is a number a filter is generated with this cutoff frequency.
+        If the string 'Matched' is used a matched filter is used. If a list is used the optimisation is performed for each filter and the best is returned.
+    verbosity : int, optional
+        The verbosity, by default 0
+    method : str, optional
+        What search optimisation is used, by default 'grid'
+    nDEER : bool, optional
+        Is the sequence an nDEER sequrence, by default False. If True then the refocusing pulse is not optimised.
+    num_ref_pulses : int, optional
+        The total number of refocusing pulses, by default 2
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+
+
+    gyro  = Fieldsweep.gyro
+    fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)
+
+    f = np.linspace(-0.3,0.3,100)
+
+    fieldsweep_profile = np.flip(fieldsweep_fun(f))
+    
+    pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[2].real)
+    exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[2].real)
+
+    if ref_pulse is not None:
+        for i in range(num_ref_pulses):
+            exc_Mz *= normalise_01(-1*ref_pulse.exciteprofile(freqs=f)[2].real)
+    
+    def optimise(filter):
+        if filter == 'Matched':
+            # Matched filter
+            filter_profile = exc_Mz
+        elif isinstance(filter, numbers.Number):
+            filter_profile = build__lowpass_butter_filter(filter)(f)
+        elif filter is None:
+            filter_profile = None
+            
+
+        fun = lambda x: functional(f, fieldsweep_profile, pump_Mz, exc_Mz,filter_profile,A_shift=x[0],B_shift=x[1])
+        
+        if method == 'grid':
+            X,Y = np.meshgrid(f,f)
+            Z = [fun([x,y]) for x,y in zip(X.flatten(),Y.flatten())]
+            Z = np.array(Z).reshape(X.shape)
+            fA,fB = np.unravel_index(Z.argmin(), Z.shape)
+            if verbosity > 1:
+                print(f"Filter: {filter:<8} Functional:{Z.min():.3f} \t Pump shift: {f[fA]*1e3:.1f}MHz \t Exc/Ref shift: {f[fB]*1e3:.1f}MHz")
+
+        return Z.min(), f[fA], f[fB]
+    
+    if isinstance(filter, list):
+        results = [optimise(f) for f in filter]
+        best = np.argmin([r[0] for r in results])
+        funct, fA, fB = results[best]
+        if verbosity > 0:
+            print(f"Best filter: {filter[best]}")
+    elif filter is None:
+        funct, fA, fB = optimise(None)
+        if verbosity > 0:
+            print(f"Filter: None Functional:{funct:.3f} \t Pump shift: {fA*1e3:.1f}MHz \t Exc/Ref shift: {fB*1e3:.1f}MHz")
+    else:
+        funct, fA, fB = optimise(filter)
+        if verbosity > 0:
+            print(f"Filter: {filter:<8} Functional:{funct:.3f} \t Pump shift: {fA*1e3:.1f}MHz \t Exc/Ref shift: {fB*1e3:.1f}MHz")
+
+    new_pump_pulse = pump_pulse.copy()
+    new_pump_pulse = shift_pulse_freq(new_pump_pulse,fA)
+    new_exc_pulse = exc_pulse.copy()
+    new_exc_pulse = shift_pulse_freq(new_exc_pulse,fB)
+
+    new_ref_pulse = ref_pulse.copy()
+    if not nDEER:
+        new_ref_pulse = shift_pulse_freq(new_ref_pulse,fB)
+
+    if isinstance(filter, list):
+        return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best]
+    else:
+        return new_pump_pulse, new_exc_pulse, new_ref_pulse,
+
+
+def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, num_ref_pulses=2, axs=None, fig=None):
+    """Plots the pump and excitation profiles as well as the fieldsweep and filter profile.
+
+    Parameters
+    ----------
+
+    Fieldsweep : ad.FieldSweepAnalysis
+        The FieldSweep analysis object
+    pump_pulse : ad.Pulse
+        The pump pulse object
+    exc_pulse : ad.Pulse
+        The excitation pulse object
+    ref_pulse : ad.Pulse, optional 
+        The refocusing pulse object, by default None
+    filter : str or number, optional
+        The filter profile if applicable, by default None. If it is a number a filter is generated with this cutoff frequency.
+        If the string 'Matched' is used a matched filter is used.
+    num_ref_pulses : int, optional
+        The total number of refocusing pulses, by default 2
+    axs : matplotlib.axes, optional
+        The axes to plot on, by default None
+    fig : matplotlib.figure, optional
+        The figure to plot on, by default None
+    
+    """
+
+
+    gyro  = Fieldsweep.gyro
+    fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)
+
+    f = np.linspace(-0.3,0.3,100)
+
+    fieldsweep_profile = np.flip(fieldsweep_fun(f))
+
+        
+    pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[2].real)
+    exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[2].real)
+
+    if ref_pulse is not None:
+        for i in range(num_ref_pulses):
+            exc_Mz *= normalise_01(-1*ref_pulse.exciteprofile(freqs=f)[2].real)
+    
+
+    if filter == 'Matched':
+        # Matched filter
+        filter_profile = exc_Mz
+    elif isinstance(filter, numbers.Number):
+        filter_profile = build__lowpass_butter_filter(filter)
+
+    if axs is None and fig is None:
+        fig, axs = plt.subplots(1,1,figsize=(5,5))
+    axs.plot(f,fieldsweep_profile, label = 'Fieldsweep', c='k')
+    axs.fill_between(f,pump_Mz*fieldsweep_profile,linestyle='', label = 'Pump Profile', alpha=0.5,color='#D95B6F')
+    axs.fill_between(f,exc_Mz*fieldsweep_profile, linestyle='', label = 'Observer Profile',alpha=0.5,color='#42A399')
+    if filter is not None:
+        axs.plot(f,filter_profile(f),'--', label = 'Filter')
+    axs.legend()
+    axs.set_xlabel('Frequency (MHz)')
+    fig.tight_layout()
+
+    return fig
