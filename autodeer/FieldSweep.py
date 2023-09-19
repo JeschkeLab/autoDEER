@@ -146,6 +146,7 @@ class FieldSweepAnalysis():
         B = np.linspace(self.axis.min(), self.axis.max(), self.data.shape[0])*0.1
         result = dl.fit(mymodel,self.data.real,B,verbose=2,reg=False,  **kwargs)
         self.results = result
+        self.model = mymodel
         return result
 
     def plot(self, norm: bool = True, axis: str = "time") -> Figure:

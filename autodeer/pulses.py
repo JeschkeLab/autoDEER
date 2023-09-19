@@ -210,6 +210,8 @@ class Pulse:
         eye = np.identity(2)
         # offsets = np.arange(-2*BW,2*BW,0.002)
 
+        self._buildFMAM(self.func)
+
         if freqs is None:
             fxs, fs = self._calc_fft()
             fs = np.abs(fs)
