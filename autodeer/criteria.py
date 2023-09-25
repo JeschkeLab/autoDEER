@@ -81,7 +81,7 @@ class SNRCriteria(Criteria):
 
 class DEERCriteria(Criteria):
 
-    def __init__(self, mode="Speed", model=None,verbosity=0) -> None:
+    def __init__(self, mode="Speed", model=None,verbosity=0, update_func=None) -> None:
         """Criteria for running DEER experiments.
 
         Mode
@@ -135,11 +135,14 @@ class DEERCriteria(Criteria):
             #     tau1, tau2, tau3, num_points=100,
             #     compactness=True, precision="Speed", plot=False)
             fit = DEERanalysis(
-                data, compactness=False, model=model, regparamrange=regparamrange,verbosity=verbosity
+                data, compactness=False, model=model, regparamrange=regparamrange,verbosity=verbosity,lin_maxiter=100
             )
             test = True
             if fit.MNR < MNR_threshold:
                 test = False
+            
+            if update_func is not None:
+                update_func(fit)
             
             if verbosity > 0:
                 print(f"Test: {test}\t - MNR:{fit.MNR}")
