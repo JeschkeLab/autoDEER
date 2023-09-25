@@ -100,13 +100,18 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
         pathways = kwargs["pathways"]
     else:
         pathways = None
+
+    if "pulselength" in kwargs:
+        pulselength = kwargs["pulselength"]/1e3
+    else:
+        pulselength = 16/1e3
         
     if exp_type == "4pDEER":
-        experimentInfo = dl.ex_4pdeer(tau1=tau1,tau2=tau2,pathways=pathways)
+        experimentInfo = dl.ex_4pdeer(tau1=tau1,tau2=tau2,pathways=pathways,pulselength=pulselength)
     elif exp_type == "5pDEER":
-        experimentInfo = dl.ex_fwd5pdeer(tau1=tau1,tau2=tau2,tau3=tau3,pathways=pathways)
+        experimentInfo = dl.ex_fwd5pdeer(tau1=tau1,tau2=tau2,tau3=tau3,pathways=pathways,pulselength=pulselength)
     elif exp_type == "3pDEER":
-        experimentInfo = dl.ex_3pdeer(tau=tau1,pathways=pathways)
+        experimentInfo = dl.ex_3pdeer(tau=tau1,pathways=pathways,pulselength=pulselength)
 
     r = np.linspace(1.5,10,100)
 
@@ -176,6 +181,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
         tau_max = lambda r: (r**3) *(2/4**3)
         fit.ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
         rec_tau_max = tau_max(fit.ROI[1])
+        fit.rec_tau_max = rec_tau_max
         return fit, rec_tau_max
     else:
         fit.ROI=None

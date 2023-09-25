@@ -1,10 +1,9 @@
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QTableWidgetItem, QWidget, QVBoxLayout
+from PyQt6.QtWidgets import QApplication, QWidget,QLabel,QDoubleSpinBox,QGridLayout,QAbstractSpinBox
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
 from pathlib import Path
-import sys, traceback
 from threadpoolctl import threadpool_limits
 
 from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
@@ -19,7 +18,7 @@ from functools import partial
 QtCore.QDir.addSearchPath('icons', 'gui/resources')
 
 
-def get_Vexp(dataset, settings):
+def get_Vexp(dataset, tmin=0):
     t = dataset.axes[0]
     Vexp = dataset.data
 
@@ -30,8 +29,8 @@ def get_Vexp(dataset, settings):
         # guess this is in us not ns
         t /= 1e3
 
-    if 'zerotime' in settings:
-        t -= float(settings['zerotime']['Value'])
+    t -= t.min()
+    t += tmin
 
     return t, Vexp
 
@@ -55,6 +54,7 @@ class DEERplot(QWidget):
         self.current_results = {}
         self.current_data = {}
         self.create_figure()
+        self.setup_inputs()
         self.toolbar()
 
         self.current_folder = ''
@@ -65,7 +65,7 @@ class DEERplot(QWidget):
 
         def custom_load():
             tools.load_epr_file(self, 'quickdeer')
-            self.update_exp_table()
+            self.update_inputs_from_dataset()
             self.update_figure()
             
 
@@ -76,30 +76,35 @@ class DEERplot(QWidget):
         self.Refresh_analysis.setIcon(refresh_icon)
         self.Refresh_analysis.clicked.connect(self.process_deeranalysis)
 
-    def update_exp_table(self):
+    def setup_inputs(self):
+        self.ExperimentcomboBox.addItems(['5pDEER', '4pDEER'])
+        self.DistancecomboBox.addItems(['auto','Parametric', 'Gaussian', 'Bi-Gaussian', 'Tri-Gaussian','Rice','Bi-Rice','Tri-Rice'])
+        self.BackgroundcomboBox.addItems(['Hom3D','Str-exp'])
+        self.PathwayslineEdit.setText('1,2,3,4,5')
+        self.CompactnessradioButton.setChecked(True)
+        self.PulseLengthdoubleSpinBox.setValue(16)
+
+    def update_inputs_from_dataset(self):
         dataset= self.current_data['quickdeer']
-        headers= ['Parameter', 'Value', 'Unit']
-        rows=[]
         if hasattr(dataset, 'sequence'):
             seq = getattr(dataset, 'sequence')
-            rows.append({"Parameter":"Type", "Value":seq.name, "Unit":""})
+            self.ExperimentcomboBox.setCurrentText(seq.name)
             if seq.name =='4pDEER':
-                rows.append({"Parameter":"tau1", "Value":seq.tau1.value, "Unit":seq.tau1.unit})
-                rows.append({"Parameter":"tau2", "Value":seq.tau2.value, "Unit":seq.tau2.unit})
+                self.Tau1doubleSpinBox.setValue(tools.param_in_us(seq.tau1))
+                self.Tau2doubleSpinBox.setValue(tools.param_in_us(seq.tau2))
+                self.Tau3doubleSpinBox.setDisabled(1)
+                self.PathwayslineEdit.setText('1,2,3')
             if seq.name =='5pDEER':
-                rows.append({"Parameter":"tau1", "Value":seq.tau1.value, "Unit":seq.tau1.unit})
-                rows.append({"Parameter":"tau2", "Value":seq.tau2.value, "Unit":seq.tau2.unit})
-                rows.append({"Parameter":"tau3", "Value":seq.tau3.value, "Unit":seq.tau3.unit})
-        else:
-            rows.append({"Parameter":"Type", "Value":"5pDEER", "Unit":""})
-            rows.append({"Parameter":"tau1", "Value":1.2, "Unit":'us'})
-            rows.append({"Parameter":"tau2", "Value":1.2, "Unit":'us'})
-            rows.append({"Parameter":"tau3", "Value":"0.3", "Unit":"us"})
-            rows.append({"Parameter":"zerotime", "Value":"0.5", "Unit":"us"})
+                self.Tau3doubleSpinBox.setDisabled(0)
 
-        rows.append({"Parameter":"Compactness", "Value":"True", "Unit":""})
-        rows.append({"Parameter":"Pathways", "Value":"1,2,3,4,5", "Unit":""})
-        tools.fill_table(self.Experiment_table, headers, rows, rowcount = 10)
+                self.Tau1doubleSpinBox.setValue(tools.param_in_us(seq.tau1))
+                self.Tau2doubleSpinBox.setValue(tools.param_in_us(seq.tau2))
+                self.Tau3doubleSpinBox.setValue(tools.param_in_us(seq.tau3))
+                self.PathwayslineEdit.setText('1,2,3,4,5')
+        
+
+
+
 
     def update_analysis_table(self):
         results = self.fitresult
@@ -114,18 +119,66 @@ class DEERplot(QWidget):
             rows.append({"Parameter":param, "Value":getattr(results,param), "95% CI":getattr(results,f"{param}Uncert").ci(95), "Unit":""})
         tools.fill_table(self.Analysis_table, headers, rows, rowcount = len(rows))
 
-    def get_exp_table(self):
-        dict = tools.read_table(self.Experiment_table)
-        return dict
+    def update_fit_result(self):
+
+        results = self.fitresult
+
+        self.MNRDoubleSpinBox.setValue(results.MNR)
+        self.Chi2DoubleSpinBox.setValue(results.stats['chi2red'])
+        try:
+            self.regparamDoubleSpinBox.setValue(results.regparam)
+            self.regparamDoubleSpinBox.setDisabled(0)
+
+        except AttributeError:
+            self.regparamDoubleSpinBox.setDisabled(1)
+
+
+        # Find pathways in the fit results
+        pathways = []
+        if 'mod' in results.paramlist:
+            pathways = [1]
+            reftime = getattr(results,f"reftime")
+            lam = getattr(results,f"mod")
+            i=0
+            self.Pathways_Box.addWidget(QLabel(f"reftime"),i,0,1,1)
+            self.Pathways_Box.addWidget(QDoubleSpinBox(value=reftime, suffix=' us', readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
+            self.Pathways_Box.addWidget(QLabel(tools.getCIstring(getattr(results,f"reftimeUncert"))),i,2,1,1)
+            self.Pathways_Box.addWidget(QLabel(f"mod"),i+1,0,1,1)
+            self.Pathways_Box.addWidget(QDoubleSpinBox(value=lam, suffix=' us', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i+1,1,1,1)
+            self.Pathways_Box.addWidget(QLabel(tools.getCIstring(getattr(results,f"modUncert"))),i+1,2,1,1)
+
+        else:
+            for param in results.paramlist:
+                # Search for parameters that start with 'reftime' and record the number
+                if param.startswith('reftime'):
+                    pathways.append(int(param[7:]))
+            
+            # Add pathways to table
+            for i in range(0,len(pathways)*2,2):
+                pathway = pathways[i//2]
+
+                # Creating a new lay out that is formed from a label and 2 double spin boxes and 2 more labels. in a 1x2x2 pattern
+                reftime = getattr(results,f"reftime{pathway}")
+                lam = getattr(results,f"lam{pathway}")
+                self.Pathways_Box.addWidget(QLabel(f"reftime {pathway}"),i,0,1,1)
+                self.Pathways_Box.addWidget(QDoubleSpinBox(value=reftime, suffix=' us', readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
+                self.Pathways_Box.addWidget(QLabel(tools.getCIstring(getattr(results,f"reftime{pathway}Uncert"))),i,2,1,1)
+                self.Pathways_Box.addWidget(QLabel(f"lam {pathway}"),i+1,0,1,1)
+                self.Pathways_Box.addWidget(QDoubleSpinBox(value=lam, suffix=' us', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i+1,1,1,1)
+                self.Pathways_Box.addWidget(QLabel(tools.getCIstring(getattr(results,f"lam{pathway}Uncert"))),i+1,2,1,1)
+
+
 
     def create_figure(self):
         fig, axs = plt.subplot_mosaic([
             ['Primary_time', 'Primary_time', 'Primary_dist', 'Primary_dist']
             ], figsize=(12.5, 6.28))
         self.static_canvas = FigureCanvas(fig)
-        self.Plot_layout.addWidget(NavigationToolbar2QT(self.static_canvas, self))
+        Navbar = NavigationToolbar2QT(self.static_canvas, self)
+        Navbar.setMaximumHeight(24)
         self.Plot_layout.addWidget(self.static_canvas)
-        # self._static_ax = self.static_canvas.figure.subplots(1,2)
+        self.Plot_layout.addWidget(Navbar)
+
         self._static_ax = axs
         self.static_canvas.figure.tight_layout(pad=4)
         self.static_canvas.figure.subplots_adjust(bottom=0.2, hspace=0.4)
@@ -135,53 +188,76 @@ class DEERplot(QWidget):
         if not hasattr(self,'fit_result'):
             # Only update the raw data
             if  hasattr(self,'current_data') and 'quickdeer' in self.current_data.keys():
-                self._static_ax['Primary_time'].plot(*get_Vexp(self.current_data['quickdeer'],self.get_exp_table()))
+                self._static_ax['Primary_time'].plot(*get_Vexp(self.current_data['quickdeer']))
 
         self.static_canvas.draw()
 
         
 
-    def process_deeranalysis(self,wait_condition=None):
+    def process_deeranalysis(self,wait_condition=None, update_func=None):
 
         settings = {'ROI':True}
-        table = self.get_exp_table()
-        settings['exp_type'] = table['Type']['Value']
-        settings['tau1'] = float(table['tau1']['Value'])
-        settings['tau2'] = float(table['tau2']['Value'])
+        settings['exp_type'] = self.ExperimentcomboBox.currentText()
+        settings['tau1'] = self.Tau1doubleSpinBox.value()
+        settings['tau2'] = self.Tau2doubleSpinBox.value()
         if settings['exp_type'] == '5pDEER':
-            settings['tau3'] = float(table['tau3']['Value'])
+            settings['tau3'] = self.Tau3doubleSpinBox.value()
 
-        settings['pathways'] = tools.str_to_list_type(table['Pathways']['Value'])
-        settings['compactness'] = bool(table['Compactness']['Value'])
-        # settings['compactness'] = False
+        settings['pathways'] = tools.str_to_list_type(self.PathwayslineEdit.text(), int)
+        settings['compactness'] = self.CompactnessradioButton.isChecked()
+        settings['pulselength'] = self.PulseLengthdoubleSpinBox.value()
+
         dataset= self.current_data['quickdeer']
 
         if dataset.axes[0].max()>500: # Axis is in ns
             dataset.axes[0] /= 1e3
         
+        dataset.axes[0] -= dataset.axes[0].min()
+        dataset.axes[0] += self.tmindoubleSpinBox.value()
+
+        if self.DistancecomboBox.currentText() == 'auto':
+            settings['model'] = None
+        elif self.DistancecomboBox.currentText() == 'Parametric':
+            settings['model'] = None
+        elif self.DistancecomboBox.currentText() == 'Gaussian':
+            settings['model'] = dl.dd_gauss
+        elif self.DistancecomboBox.currentText() == 'Bi-Gaussian':
+            settings['model'] = dl.dd_gauss2
+        elif self.DistancecomboBox.currentText() == 'Tri-Gaussian':
+            settings['model'] = dl.dd_gauss3
+        elif self.DistancecomboBox.currentText() == 'Rice':
+            settings['model'] = dl.dd_rice
+        elif self.DistancecomboBox.currentText() == 'Bi-Rice':
+            settings['model'] = dl.dd_rice2
+        elif self.DistancecomboBox.currentText() == 'Tri-Rice':
+            settings['model'] = dl.dd_rice3
+        else:
+            settings['model'] = None
 
 
         worker = tools.Worker(deeranalysis_process, dataset, settings)
-        worker.signals.result.connect(partial(self.refresh_deer, wait_condition=wait_condition))
+        worker.signals.result.connect(partial(self.refresh_deer, wait_condition=wait_condition,update_func=update_func))
 
         print('starting worker')
         self.threadpool.start(worker)
 
-    def refresh_deer(self, fitresult, wait_condition=None):
+    def refresh_deer(self, fitresult, wait_condition=None,update_func=None):
         if isinstance(fitresult, tuple):
             self.fitresult = fitresult[0]
             self.taumax = fitresult[1]
         else:
             self.fitresult = fitresult
-        
+        if update_func is not None:
+            update_func(self.fitresult)
         if isinstance(wait_condition , QtCore.QWaitCondition):
             wait_condition.wakeAll()
+        
 
         self._static_ax['Primary_time'].cla()
         self._static_ax['Primary_dist'].cla()
         ad.DEERanalysis_plot(self.fitresult, background=False, ROI=self.fitresult.ROI, axs= self._static_ax, fig=self.static_canvas.figure)
         self.static_canvas.draw()
-        self.update_analysis_table()
+        self.update_fit_result()
 
 
 if __name__ == '__main__':

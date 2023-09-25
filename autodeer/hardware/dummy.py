@@ -85,13 +85,18 @@ class dummyInterface(Interface):
             axes, data = _simulate_field_sweep(self.sequence)
         elif isinstance(self.sequence,ResonatorProfileSequence):
             axes, data = _similate_respro(self.sequence,self.mode)
-        
-        data = add_noise(data, 1e-2)
-        dset = Dataset(axes, data, scans=1)
+
+        time_estimate = self.sequence._estimate_time()
+        time_estimate /= self.speedup
+        progress = (time.time() - self.start_time) / time_estimate
+        if progress > 1:
+            progress = 1
+        data = add_noise(data, 1/(100*progress))
+        scan_num = self.sequence.averages.value
+        dset = Dataset(axes, data, num_scans=int(scan_num*progress))
         dset.LO = self.sequence.LO
         dset.sequence = self.sequence
-        
-        
+    
         return dset
     
     def tune_rectpulse(self,*,tp, LO, B, reptime,**kwargs):

@@ -91,9 +91,7 @@ class Worker(QtCore.QRunnable):
         finally:
             self.signals.finished.emit()  # Done
 
-def fieldsweep_process(dataset):
-    fsweep_analysis = ad.FieldSweepAnalysis(dataset)
-    fsweep_analysis.calc_gyro()
+def fieldsweep_fit(fsweep_analysis):
     fsweep_analysis.fit(xtol=1e-5, lin_maxiter=100)
 
     return fsweep_analysis
@@ -144,8 +142,8 @@ class UI(QMainWindow):
         self.relax_toolbar()
         self.create_respro_figure()
         self.create_relax_figure()
+        self.create_fieldsweep_figure()
         self.advanced_mode_inputs()
-        self.optimise_pulses_button()
 
         self.threadpool = QtCore.QThreadPool()
         self.current_results = {}
@@ -169,6 +167,9 @@ class UI(QMainWindow):
 
         self.actionLoadConfig.triggered.connect(self.load_spectrometer_config)
         self.actionConnect.triggered.connect(self.connect_spectrometer)
+        self.show_respro.clicked.connect(lambda: self.update_respro())
+        self.OptimisePulsesButton.clicked.connect(lambda: self.optimise_pulses_button())
+
         self.current_folder = ''
         self.config = None
         self.connected = False
@@ -292,22 +293,36 @@ class UI(QMainWindow):
         else:
             self.current_data['fieldsweep'] = dataset
 
-        worker = Worker(fieldsweep_process, dataset)
-        worker.signals.result.connect(self.refresh_fieldsweep)
+        fsweep_analysis = ad.FieldSweepAnalysis(dataset)
+        fsweep_analysis.calc_gyro()
+        self.fsweep_ax.cla()
+        fsweep_analysis.plot(axs=self.fsweep_ax,fig=self.fsweep_canvas.figure)
+        self.fsweep_canvas.draw()
+
+        worker = Worker(fieldsweep_fit, fsweep_analysis)
+        worker.signals.result.connect(self.refresh_fieldsweep_after_fit)
         
         self.threadpool.start(worker)
+
+    def create_fieldsweep_figure(self):
+        fig, axs  = plt.subplots(1,1,figsize=(12.5, 6.28))
+        self.fsweep_canvas = FigureCanvas(fig)
+        self.fsweep_v_left.addWidget(self.fsweep_canvas)
+        Navbar = NavigationToolbar2QT(self.fsweep_canvas, self)
+        Navbar.setMaximumHeight(24)
+        self.fsweep_v_left.addWidget(Navbar)
+        self.fsweep_ax = axs
  
-    def refresh_fieldsweep(self, fitresult):
+    def refresh_fieldsweep_after_fit(self, fitresult):
 
         self.current_results['fieldsweep'] = fitresult
         self.gyro = fitresult.gyro
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
-        fsweep_plot = FigureCanvas(fitresult.plot())
-        self.fsweep_v_left.removeWidget(self.fsweep_plot)
-        self.fsweep_v_left.addWidget(fsweep_plot,1)
-
+        self.fsweep_ax.cla()
+        fitresult.plot(axs=self.fsweep_ax,fig=self.fsweep_canvas.figure)
+        self.fsweep_canvas.draw()
 
 
         # Add fit resultss
@@ -328,30 +343,6 @@ class UI(QMainWindow):
         self.gzCI.setText(tools.getCIstring(fitresult.results.gzUncert))
 
 
-        # parameters = ['Boffset','az','GB']
-
-        # analysis_rows = []
-        # for param in parameters:
-        #     attr = getattr(fitresult.results,param)
-        #     if isinstance(attr, dl.Parameter):
-        #         unit = attr.unit
-        #     else:
-        #         unit = None
-
-        #     if hasattr(fitresult.results,f"{param}Uncert"):
-        #         CI_tmp = getattr(fitresult.results,f"{param}Uncert").ci(95)
-        #         CI =f"({CI_tmp[0]:.2f},{CI_tmp[1]:.2f})"
-        #     else:
-        #         CI = None
-        #     analysis_rows.append({"Parameter":param, "Value":f"{attr:.2f}", "95% CI":CI, "Unit":unit})
-        
-        # self.fsweep_analysis_table.setRowCount(len(analysis_rows))
-
-        # for row,e in enumerate(analysis_rows):
-        #     self.fsweep_analysis_table.setItem(row, 0, QTableWidgetItem(e['Parameter']))
-        #     self.fsweep_analysis_table.setItem(row, 1, QTableWidgetItem(e['Value']))
-        #     self.fsweep_analysis_table.setItem(row, 2, QTableWidgetItem(e['95% CI']))
-        #     self.fsweep_analysis_table.setItem(row, 3, QTableWidgetItem(e['Unit']))
 
     def update_respro(self, dataset=None):
 
@@ -377,8 +368,10 @@ class UI(QMainWindow):
     def create_respro_figure(self):
         fig, axs  = plt.subplots(1,1,figsize=(12.5, 6.28))
         self.respro_canvas = FigureCanvas(fig)
-        self.respro_v_left.addWidget(NavigationToolbar2QT(self.respro_canvas, self))
+        Navbar = NavigationToolbar2QT(self.respro_canvas, self)
+        Navbar.setMaximumHeight(24)
         self.respro_v_left.addWidget(self.respro_canvas)
+        self.respro_v_left.addWidget(Navbar)
         self.respro_ax = axs
 
 
@@ -411,8 +404,13 @@ class UI(QMainWindow):
 
 
     def optimise_pulses_button(self):
-
-        self.OptimisePulsesButton.clicked.connect(lambda: self.optimise_pulses())
+        if self.pulses is None:
+            self.optimise_pulses()
+        elif self.pulses['pump_pulse'] is None:
+            self.optimise_pulses()
+        else:
+            self.update_optimise_pulses_figure()
+        
 
     def optimise_pulses(self, pulses=None):
         if pulses is None:
@@ -426,15 +424,59 @@ class UI(QMainWindow):
 
         pump_pulse, exc_pulse, ref_pulse = ad.optimise_pulses(self.current_results['fieldsweep'], pump_pulse, exc_pulse, ref_pulse)
         
+        self.pulses = {'pump_pulse':pump_pulse, 'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse}    
+
+        if self.waitCondition is not None: # Wake up the runner thread
+            self.waitCondition.wakeAll()
+
+        self.update_optimise_pulses_figure()
+    
+    def update_optimise_pulses_figure(self):
+        pump_pulse = self.pulses['pump_pulse']
+        exc_pulse = self.pulses['exc_pulse']
+        ref_pulse = self.pulses['ref_pulse']
+
         self.respro_ax.cla()
         ad.plot_overlap(self.current_results['fieldsweep'], pump_pulse, exc_pulse,ref_pulse, axs=self.respro_ax,fig=self.respro_canvas.figure)
         self.respro_canvas.draw()
 
-
-
-        if self.waitCondition is not None: # Wake up the runner thread
-            self.waitCondition.wakeAll()
-    
+        # update the pulse parameter grid
+        type_to_pulse_hash = {ad.RectPulse:'Rect', ad.ChirpPulse:'Chirp', ad.HSPulse:'HS'}
+        if isinstance(exc_pulse, ad.RectPulse):
+            self.ExcFreqBox.setValue(tools.param_in_MHz(exc_pulse.freq))
+            self.ExcBWBox.setValue(exc_pulse.tp.value)
+            self.ExcBWBox.setSuffix(' ns')
+            self.ExcTypeLine.setText('Rect')
+        else:
+            center_freq = (tools.param_in_MHz(exc_pulse.final_freq) + tools.param_in_MHz(exc_pulse.init_freq))/2
+            self.ExcFreqBox.setValue(center_freq)
+            self.ExcBWBox.setValue(tools.param_in_MHz(exc_pulse.BW))
+            self.ExcBWBox.setSuffix(' MHz')
+            self.ExcTypeLine.setText(type_to_pulse_hash[type(exc_pulse)])
+        
+        if isinstance(ref_pulse, ad.RectPulse):
+            self.RefFreqBox.setValue(tools.param_in_MHz(ref_pulse.freq))
+            self.RefBWBox.setValue(ref_pulse.tp.value)
+            self.RefBWBox.setSuffix(' ns')
+            self.RefTypeLine.setText('Rect')
+        else:
+            center_freq = (tools.param_in_MHz(ref_pulse.final_freq) + tools.param_in_MHz(ref_pulse.init_freq))/2
+            self.RefFreqBox.setValue(center_freq)
+            self.RefBWBox.setValue(tools.param_in_MHz(ref_pulse.BW))
+            self.RefBWBox.setSuffix(' MHz')
+            self.RefTypeLine.setText(type_to_pulse_hash[type(ref_pulse)])
+        
+        if isinstance(pump_pulse, ad.RectPulse):
+            self.PumpFreqBox.setValue(tools.param_in_MHz(pump_pulse.freq))
+            self.PumpBWBox.setValue(pump_pulse.tp.value)
+            self.PumpBWBox.setSuffix(' ns')
+            self.PumpTypeLine.setText('Rect')
+        else:
+            center_freq = (tools.param_in_MHz(pump_pulse.final_freq) + tools.param_in_MHz(pump_pulse.init_freq))/2
+            self.PumpFreqBox.setValue(center_freq)
+            self.PumpBWBox.setValue(tools.param_in_MHz(pump_pulse.BW))
+            self.PumpBWBox.setSuffix(' MHz')
+            self.PumpTypeLine.setText(type_to_pulse_hash[type(pump_pulse)])
 
     def update_relax(self, dataset=None):
         if dataset is None:
@@ -450,22 +492,29 @@ class UI(QMainWindow):
     def create_relax_figure(self):
         fig, axs  = plt.subplots(1,1,figsize=(12.5, 6.28))
         self.relax_canvas = FigureCanvas(fig)
-        self.relax_v_left.addWidget(NavigationToolbar2QT(self.relax_canvas, self))
+        Navbar = NavigationToolbar2QT(self.relax_canvas, self)
+        Navbar.setMaximumHeight(24)
         self.relax_v_left.addWidget(self.relax_canvas)
+        self.relax_v_left.addWidget(Navbar)
         self.relax_ax = axs
 
     def refresh_relax(self, fitresult):
         self.current_results['relax'] = fitresult
-
-        if self.waitCondition is not None: # Wake up the runner thread
-            self.waitCondition.wakeAll()
 
         self.relax_ax.cla()
         fitresult.plot(axs=self.relax_ax,fig=self.relax_canvas.figure)
         self.relax_canvas.draw()
 
         tau2hrs = fitresult.find_optimal(averages=1, SNR_target=20, target_time=2, target_shrt=0.1, target_step=0.015)
+        max_tau = fitresult.find_optimal(averages=1, SNR_target=20, target_time=24, target_shrt=0.1, target_step=0.015)
+        self.current_results['relax'].tau2hrs = tau2hrs
+        self.current_results['relax'].max_tau = max_tau
+        self.DipolarEvoMax.setValue(max_tau)
         self.DipolarEvo2hrs.setValue(tau2hrs)
+
+        if self.waitCondition is not None: # Wake up the runner thread
+            self.waitCondition.wakeAll()
+
         
     def advanced_mode_inputs(self):
         self.Exp_types.addItems(['5pDEER','4pDEER','3pDEER','nDEER'])
@@ -480,9 +529,11 @@ class UI(QMainWindow):
             self.current_data['relax'] = dataset
 
         self.q_DEER.current_data['quickdeer'] = dataset
-        self.q_DEER.update_exp_table()
+        self.q_DEER.update_inputs_from_dataset()
         self.q_DEER.update_figure()
-        self.q_DEER.process_deeranalysis(wait_condition = self.waitCondition)
+        def update_func(x):
+            self.current_results['quickdeer'] = x
+        self.q_DEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
 
 
     def RunFullyAutoDEER(self):
@@ -495,6 +546,7 @@ class UI(QMainWindow):
         userinput['MaxTime'] = self.MaxTime.value()
         userinput['sample'] = self.SampleName.text()
         userinput['Temp'] = self.TempValue.value()
+        userinput['DEER_update_func'] = self.q_DEER.refresh_deer
 
         # Block the autoDEER buttons
         self.FullyAutoButton.setEnabled(False)
@@ -513,6 +565,8 @@ class UI(QMainWindow):
         worker.signals.optimise_pulses.connect(self.optimise_pulses)
         worker.signals.relax_result.connect(self.update_relax)
         worker.signals.quickdeer_result.connect(self.update_quickdeer)
+        worker.signals.quickdeer_update.connect(self.q_DEER.update_figure)
+
         worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
         worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
 
@@ -542,6 +596,8 @@ class UI(QMainWindow):
         userinput['ExcPulse'] = self.ExcPulseSelect.currentText()
         userinput['RefPulse'] = self.RefPulseSelect.currentText()
         userinput['PumpPulse'] = self.PumpPulseSelect.currentText()
+        userinput['DEER_update_func'] = self.q_DEER.refresh_deer
+
 
         worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,

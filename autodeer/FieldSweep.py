@@ -149,7 +149,7 @@ class FieldSweepAnalysis():
         self.model = mymodel
         return result
 
-    def plot(self, norm: bool = True, axis: str = "time") -> Figure:
+    def plot(self, norm: bool = True, axis: str = "time", axs=None, fig=None) -> Figure:
         """Generate a field sweep plot
 
         Parameters
@@ -169,26 +169,39 @@ class FieldSweepAnalysis():
             data = self.data
             data /= np.max(np.abs(data))
 
+        if axs is None and fig is None:
+            fig, axs = plt.subplots(1, 1, figsize=(8, 6))              
+
+        # Plot the data
         if axis.lower() == 'time':
-            fig, ax = plt.subplots()
-            ax.plot(self.axis, np.abs(data), label='abs')
-            ax.plot(self.axis, np.real(data), label='real')
-            ax.plot(self.axis, np.imag(data), label='imag')
-            ax.legend()
-            ax.set_xlabel('Field G')
-            ax.set_ylabel('Normalised Amplitude')
+            axs.plot(self.axis, np.real(data), label='real')
+            axs.plot(self.axis, np.imag(data), label='imag')
+            axs.legend()
+            axs.set_xlabel('Field G')
+            axs.set_ylabel('Normalised Amplitude')
             if hasattr(self, "max_field"):
                 min_value = np.min(np.hstack([np.real(data), np.imag(data)]))
                 max_value = np.min(np.hstack([np.real(data), np.imag(data)]))
-                ax.vlines(
+                axs.vlines(
                     self.max_field, min_value, max_value, label="Maximum")
+                
         elif axis.lower() == 'freq':
+
             if not hasattr(self, "fs_x"):
                 raise RuntimeError("Please run fieldsweep.calc_gyro() first")
-            fig, ax = plt.subplots()
-            ax.plot(self.fs_x, np.abs(data), label='abs')
-            ax.set_xlabel('Frequency GHz')
-            ax.set_ylabel('Normalised Amplitude')
+            
+            axs.plot(self.fs_x, np.abs(data), label='abs')
+            axs.set_xlabel('Frequency GHz')
+            axs.set_ylabel('Normalised Amplitude')
+
+        # Plot the fit
+        if hasattr(self,"results"):
+            if axis.lower() == 'time':
+                axs.plot(self.axis, self.results.evaluate(self.model,self.axis*0.1), label='fit')
+            elif axis.lower() == 'freq':
+
+                axs.plot(self.fs_x, np.flip(self.results.model(self.axis*0.1)), label='fit')
+            axs.legend()
 
         return fig
 

@@ -112,6 +112,26 @@ def pyqt_table_from_dict(table, dict):
         rows.append(dict[key])
     fill_table(table, headers, rows)
 
+def param_in_us(param):
+    if not isinstance(param, ad.Parameter):
+        raise TypeError(f"Expected Parameter, got {type(param)}")
+    if param.unit == 'us':
+        return param.value
+    elif param.unit == 'ns':
+        return param.value/1000
+    
+def param_in_MHz(param):
+    if not isinstance(param, ad.Parameter):
+        raise TypeError(f"Expected Parameter, got {type(param)}")
+    if param.unit == 'MHz':
+        return param.value
+    elif param.unit == 'GHz':
+        return param.value*1000
+    elif param.unit == 'kHz':
+        return param.value/1000
+    elif param.unit == 'Hz':
+        return param.value/1000000
+    
 # =============================================================================
 #
 #   Multi-threading functions and classes
