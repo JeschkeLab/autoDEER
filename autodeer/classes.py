@@ -76,7 +76,7 @@ class Interface:
             start_time = time.time()
             data = self.acquire_dataset()
             try:
-                nAvgs = data.nAvgs.value
+                nAvgs = data.num_scans.value
             except AttributeError:
                 print("WARNING: Dataset missing number of averages(nAvgs)!")
                 nAvgs = 1

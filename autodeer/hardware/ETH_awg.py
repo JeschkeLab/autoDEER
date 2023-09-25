@@ -1148,7 +1148,7 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0):
         params=estr)
     
     output.scans = dta_scans
-    output.add_variable(Parameter(name='nAvgs', value=nAvgs))
+    output.add_variable(Parameter(name='num_scans', value=nAvgs))
 
     # output = AWGdata(t_ax, dta_avg)
     # output.nAvgs = nAvgs

@@ -24,7 +24,8 @@ class Dataset:
     Represents an experimental dataset.
     """
     def __init__(self, axes: np.ndarray, data: np.ndarray, params: dict = None,
-                 scans: np.ndarray = None, force_complex:bool = True, **kwargs) -> None:
+                 scans: np.ndarray = None, force_complex:bool = True,
+                 num_scans = 0, **kwargs) -> None:
         """
         Parameters
         ----------
@@ -47,7 +48,7 @@ class Dataset:
         else:
             self.dims = len(self.axes)
         self.scans = scans
-
+        self.num_scans = Parameter(name='num_scans', value=num_scans)
         if force_complex:
             if not np.iscomplexobj(self.data):
                 self.data = hilbert(self.data)

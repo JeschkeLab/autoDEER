@@ -98,11 +98,6 @@ def eprload(
         # axes = uwb_output.dta_x
         # data = uwb_output.dta_ev
 
-        # data = Dataset(axes, data, Params)
-        # data.add_variable(Parameter(name='nAvgs', value=uwb_output.nAvgs))
-        # if hasattr(uwb_output,"dta_scans"):
-        #     data.scans = uwb_output.dta_scans
-        # return data 
         return uwb_output        
 
 def progress_bar(progress, post=""):
