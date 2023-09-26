@@ -167,8 +167,11 @@ class UI(QMainWindow):
 
         self.actionLoadConfig.triggered.connect(self.load_spectrometer_config)
         self.actionConnect.triggered.connect(self.connect_spectrometer)
+        self.actionSaveReport.triggered.connect(self.create_report)
         self.show_respro.clicked.connect(lambda: self.update_respro())
         self.OptimisePulsesButton.clicked.connect(lambda: self.optimise_pulses_button())
+
+        self.Tab_widget.setCurrentIndex(0)
 
         self.current_folder = ''
         self.config = None
@@ -298,6 +301,7 @@ class UI(QMainWindow):
         self.fsweep_ax.cla()
         fsweep_analysis.plot(axs=self.fsweep_ax,fig=self.fsweep_canvas.figure)
         self.fsweep_canvas.draw()
+        self.Tab_widget.setCurrentIndex(1)
 
         worker = Worker(fieldsweep_fit, fsweep_analysis)
         worker.signals.result.connect(self.refresh_fieldsweep_after_fit)
@@ -341,6 +345,7 @@ class UI(QMainWindow):
         self.gxCI.setText(f"({gxCI[0]:.4f},{gxCI[1]:.4f})")
         self.gyCI.setText(tools.getCIstring(fitresult.results.gyUncert))
         self.gzCI.setText(tools.getCIstring(fitresult.results.gzUncert))
+        self.Tab_widget.setCurrentIndex(1)
 
 
 
@@ -400,7 +405,7 @@ class UI(QMainWindow):
         self.centreFrequencyCI.setText(f"({fitresult.results.fcUncert.ci(95)[0]:.2f},{fitresult.results.fcUncert.ci(95)[1]:.2f})")
         self.qDoubleSpinBox.setValue(fitresult.results.q)
         self.qCI.setText(f"({fitresult.results.qUncert.ci(95)[0]:.2f},{fitresult.results.qUncert.ci(95)[1]:.2f})")
-
+        self.Tab_widget.setCurrentIndex(2)
 
 
     def optimise_pulses_button(self):
@@ -430,6 +435,7 @@ class UI(QMainWindow):
             self.waitCondition.wakeAll()
 
         self.update_optimise_pulses_figure()
+        self.Tab_widget.setCurrentIndex(2)
     
     def update_optimise_pulses_figure(self):
         pump_pulse = self.pulses['pump_pulse']
@@ -511,6 +517,7 @@ class UI(QMainWindow):
         self.current_results['relax'].max_tau = max_tau
         self.DipolarEvoMax.setValue(max_tau)
         self.DipolarEvo2hrs.setValue(tau2hrs)
+        self.Tab_widget.setCurrentIndex(3)
 
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
@@ -528,6 +535,7 @@ class UI(QMainWindow):
         else:
             self.current_data['relax'] = dataset
 
+        self.Tab_widget.setCurrentIndex(4)
         self.q_DEER.current_data['quickdeer'] = dataset
         self.q_DEER.update_inputs_from_dataset()
         self.q_DEER.update_figure()
@@ -613,6 +621,92 @@ class UI(QMainWindow):
         worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
 
         self.threadpool.start(worker)
+
+    def create_report(self):
+        report = ad.Reporter(filepath='hello.pdf',pagesize='A4')
+
+        report.add_title('title','autoDEER Report')
+        if self.connected:
+            report.add_new_section('spec',' Spectrometer')
+            report.add_text('spec', 'Local Name: ' + self.config['Spectrometer']['Local Name'])
+            report.add_text('spec', 'Manufacturer: ' + self.config['Spectrometer']['Manufacturer'])
+            report.add_text('spec', 'Model: ' + self.config['Spectrometer']['Model'])
+
+            report.add_text('spec', 'Resonator: ' + self.resonatorComboBox.currentText())
+            report.add_space('spec', height=10)
+        
+        report.add_new_section('inputs',' User Inputs')
+        report.add_text('inputs', 'Sample Name: ' + self.SampleName.text())
+        report.add_text('inputs', 'Temperature: ' + str(self.TempValue.value()) + ' K')
+        report.add_text('inputs', 'Max Time: ' + str(self.MaxTime.value()) + ' hours')
+
+        report.add_page_break('inputs')
+
+        if 'fieldsweep' in self.current_results:
+            report.add_new_section('fieldsweep',' Field Sweep')
+            report.add_figure('fieldsweep', self.fsweep_canvas.figure)
+            report.add_text('fieldsweep', f"Gyromagnetic Ratio: {self.current_results['fieldsweep'].gyro:.3g} GHz/G")
+            if hasattr(self.current_results['fieldsweep'], 'results'):
+                report.add_space('fieldsweep')
+                report.add_code_block('fieldsweep', self.current_results['fieldsweep'].results.__str__(), title='Fit Results')
+            report.add_page_break('fieldsweep')
+
+        if 'respro' in self.current_results:
+            report.add_new_section('respro',' Resonator Profile')
+            fig,axs = plt.subplots(1,1,figsize=(5, 5))
+            fitresult = self.current_results['respro']
+            if 'fieldsweep'in self.current_results:
+                fitresult.plot(fieldsweep=self.current_results['fieldsweep'],axs=axs, fig=fig);
+            else:
+                fitresult.plot(axs=axs,fig=fig)
+
+
+            report.add_figure('respro', fig)
+            if hasattr(self.current_results['respro'], 'results'):
+                report.add_space('respro')
+                report.add_code_block('respro', self.current_results['respro'].results.__str__(), title='Fit Results')
+            report.add_page_break('respro')
+
+        if self.pulses != {}:
+            pump_pulse = self.pulses['pump_pulse']
+            exc_pulse = self.pulses['exc_pulse']
+            ref_pulse = self.pulses['ref_pulse']
+            report.add_new_section('pulses',' Optimised Pulses')
+            fig,axs = plt.subplots(1,1,figsize=(5, 5))
+            ad.plot_overlap(self.current_results['fieldsweep'], pump_pulse, exc_pulse,ref_pulse, axs=axs,fig=fig)
+
+            report.add_figure('pulses', fig)
+            report.add_space('pulses')
+
+            report.add_code_block('pulses', exc_pulse.__str__(), title='Excitation Pulse')
+            report.add_code_block('pulses', ref_pulse.__str__(), title='Refocusing Pulse')
+            report.add_code_block('pulses', pump_pulse.__str__(), title='Pump Pulse')
+
+
+        if 'relax' in self.current_results:
+            report.add_new_section('relax',' Relaxation')
+            report.add_figure('relax', self.relax_canvas.figure)
+            if hasattr(self.current_results['relax'], 'results'):
+                report.add_space('relax')
+                report.add_code_block('relax', self.current_results['relax'].results.__str__(), title='Fit Results')
+            report.add_page_break('relax') 
+
+
+        if 'quickdeer' in self.q_DEER.current_data:
+            report.add_new_section('quickdeer',' QuickDEER')
+            fig,axs = plt.subplot_mosaic([['Primary_time'], 
+                                          ['Primary_dist']], figsize=(6,6))
+            
+            ad.DEERanalysis_plot(self.q_DEER.fitresult, background=False, ROI=self.q_DEER.fitresult.ROI, axs= axs, fig=fig,text=False)
+            report.add_figure('quickdeer', fig)
+            
+            if 'quickdeer' in self.current_results:
+                report.add_space('quickdeer')
+                report.add_code_block('quickdeer', self.current_results['quickdeer'].__str__(), title='Fit Results')
+            report.add_page_break('quickdeer')
+            
+        report._build()
+        pass
 
 if __name__ == '__main__':
     app = QApplication([])
