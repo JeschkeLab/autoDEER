@@ -1,5 +1,6 @@
 from autodeer.classes import Parameter
 from autodeer.utils import build_table, sop, autoEPRDecoder
+from memoization import cached
 import numpy as np
 from scipy.integrate import cumulative_trapezoid
 import numbers
@@ -54,6 +55,7 @@ class Pulse:
 
 
         self.name = name
+        self.Progression = False
 
         if flipangle is not None:
             self.flipangle = Parameter(
@@ -164,6 +166,7 @@ class Pulse:
 
         return axis_fft, pulse_fft
 
+    @cached(thread_safe=False)
     def exciteprofile(self, freqs=None):
         """Excitation profile
 
@@ -608,7 +611,6 @@ class Delay(Pulse):
         else:
             self.t = None
         self.tp = Parameter("Length", tp, "ns", "Length of the pulse")
-        self.Progression = False
         self.pcyc = None
         self.scale = None
 
@@ -625,7 +627,6 @@ class RectPulse(Pulse):
         Pulse.__init__(
             self, tp=tp, t=t, flipangle=flipangle, **kwargs)
         self.freq = Parameter("freq", freq, "GHz", "Frequency of the Pulse")
-        self.Progression = False
         self._buildFMAM(self.func)
         pass
 
@@ -647,7 +648,7 @@ class HSPulse(Pulse):
         self.order1 = Parameter(
             "order1", order1, None, "Order 1 of the HS Pulse")
         self.order2 = Parameter(
-            "order1", order2, None, "Order 2 of the HS Pulse")
+            "order2", order2, None, "Order 2 of the HS Pulse")
         self.beta = Parameter("beta", beta, None, "Beta of the HS Pulse")
 
         # Frequency Infomation

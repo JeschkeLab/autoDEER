@@ -191,7 +191,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
 
 # =============================================================================
 
-def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None):
+def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=True):
     """DEERanalysis_plot Generates a figure showing both the time domain and
     distance domain data along with extra important infomation such as the 
     Modulation to Noise Ratio (MNR), Region of Interest (ROI) and the 
@@ -288,6 +288,8 @@ def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None):
     axs['Primary_dist'].set_ylabel(r"$P(r^{-1})$")
     axs['Primary_dist'].legend()
 
+    if not text:
+        return fig
     # Analysis
     axs['Primary_time'].text(
         0.05, 0.05, f"MNR: {fit.MNR:.2f}",
@@ -884,7 +886,7 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
         return new_pump_pulse, new_exc_pulse, new_ref_pulse,
 
 
-def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, num_ref_pulses=2, axs=None, fig=None):
+def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, respro=None, num_ref_pulses=2, axs=None, fig=None):
     """Plots the pump and excitation profiles as well as the fieldsweep and filter profile.
 
     Parameters
@@ -901,6 +903,8 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, num_
     filter : str or number, optional
         The filter profile if applicable, by default None. If it is a number a filter is generated with this cutoff frequency.
         If the string 'Matched' is used a matched filter is used.
+    respro : ad.ResonatorProfileAnalysis, optional
+        The resonator profile for fitting, by default None. The resonator profile must include the fit.
     num_ref_pulses : int, optional
         The total number of refocusing pulses, by default 2
     axs : matplotlib.axes, optional

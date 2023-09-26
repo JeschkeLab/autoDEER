@@ -6,7 +6,7 @@ extras={
     "Bruker": ["XeprAPI"],
     "Matlab": ["matlabengine"],
     "Docs": ["sphinx", "pydata-sphinx-theme", "sphinx-gallery", "sphinx-design"],
-    "GUI": ["PyQt6","threadpoolctl"],
+    "GUI": ["PyQt6","threadpoolctl", "pyinstaller"],
 }
 extras["Dev"] = extras["Bruker"] + extras["Matlab"] + extras["Docs"] + \
     ["pytest"]
@@ -25,6 +25,8 @@ setup(
         'matplotlib',
         'deerlab >= 1.0',
         'pyyaml',
+        'reportlab',
+        'svglib',
     ],
     extras_require=extras
 )

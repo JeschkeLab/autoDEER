@@ -1,6 +1,7 @@
 Spectrometer:
   Type: Complete Spectrometer
   Manufacturer: Dummy
+  Model: DummyV1
   Local Name: Dummy
 
   AWG: True
