@@ -510,9 +510,12 @@ class UI(QMainWindow):
         self.relax_ax.cla()
         fitresult.plot(axs=self.relax_ax,fig=self.relax_canvas.figure)
         self.relax_canvas.draw()
-
-        tau2hrs = fitresult.find_optimal(averages=1, SNR_target=20, target_time=2, target_shrt=0.1, target_step=0.015)
-        max_tau = fitresult.find_optimal(averages=1, SNR_target=20, target_time=24, target_shrt=0.1, target_step=0.015)
+        if hasattr(fitresult, 'sequence'):
+            reptime = fitresult.sequence.reptime.value
+        else:
+            reptime = 3e-3
+        tau2hrs = fitresult.find_optimal(averages=50*16, SNR_target=20/0.7, target_time=2, target_shrt=reptime*1e-6, target_step=0.015)
+        max_tau = fitresult.find_optimal(averages=50*16, SNR_target=20/0.7, target_time=24, target_shrt=reptime*1e-6, target_step=0.015)
         self.current_results['relax'].tau2hrs = tau2hrs
         self.current_results['relax'].max_tau = max_tau
         self.DipolarEvoMax.setValue(max_tau)
