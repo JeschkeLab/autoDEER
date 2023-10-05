@@ -156,6 +156,7 @@ class autoDEERWorker(QtCore.QRunnable):
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
             )
+        
         deer.five_pulse()
         deer.select_pcyc("16step_5p")
         deer._estimate_time();

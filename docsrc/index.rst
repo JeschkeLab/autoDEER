@@ -27,5 +27,5 @@ automatic Double Electron Electron Resonance (DEER) spectroscopy.
     :hidden:
 
     ./source/Install.rst
-    ./source/autoEPR/index.rst
     ./source/autoDEER/index.rst
+    ./source/autoEPR/index.rst
