@@ -119,7 +119,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>4</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideRight</enum>
@@ -398,7 +398,7 @@
                    <string>...</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
+                   <iconset>
                     <normaloff>:/icons/resources/upload.png</normaloff>:/icons/resources/upload.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -418,7 +418,7 @@
                    <string notr="true"/>
                   </property>
                   <property name="icon">
-                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
+                   <iconset>
                     <normaloff>:/icons/resources/refresh.png</normaloff>:/icons/resources/refresh.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -736,7 +736,7 @@
                    <string>...</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
+                   <iconset>
                     <normaloff>:/icons/resources/upload.png</normaloff>:/icons/resources/upload.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -756,7 +756,7 @@
                    <string notr="true"/>
                   </property>
                   <property name="icon">
-                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
+                   <iconset>
                     <normaloff>:/icons/resources/refresh.png</normaloff>:/icons/resources/refresh.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -1294,7 +1294,7 @@
                    <string>...</string>
                   </property>
                   <property name="icon">
-                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
+                   <iconset>
                     <normaloff>:/icons/resources/upload.png</normaloff>:/icons/resources/upload.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -1314,7 +1314,7 @@
                    <string notr="true"/>
                   </property>
                   <property name="icon">
-                   <iconset resource="../../../autoDeer_dev/GUI/resources_file.qrc">
+                   <iconset>
                     <normaloff>:/icons/resources/refresh.png</normaloff>:/icons/resources/refresh.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -1462,13 +1462,13 @@
           </item>
          </layout>
         </widget>
-        <widget class="DEERplot" name="q_DEER">
+        <widget class="QWidget" name="q_DEER">
          <attribute name="title">
           <string>Quick DEER</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_7"/>
         </widget>
-        <widget class="DEERplot" name="longDEER">
+        <widget class="QWidget" name="longDEER">
          <attribute name="title">
           <string>Long DEER</string>
          </attribute>
@@ -1645,16 +1645,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>DEERplot</class>
-   <extends>QWidget</extends>
-   <header>quickdeer.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
- <resources>
-  <include location="../../../autoDeer_dev/GUI/resources_file.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

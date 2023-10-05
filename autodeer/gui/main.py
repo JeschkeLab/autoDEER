@@ -1,26 +1,24 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QTableWidgetItem, QErrorMessage,QMessageBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
 from pathlib import Path
-import sys, traceback
+import sys, traceback, os
 
 from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
-from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import autodeer as ad
-import deerlab as dl
 import numpy as np
-from quickdeer import DEERplot
+from autodeer.gui.tools import *
+from autodeer.gui.autoDEER_worker import autoDEERWorker
+from autodeer.gui.quickdeer import DEERplot
 import yaml
 
-import tools
 from queue import Queue
 
+package_directory = os.path.dirname(os.path.abspath(__file__))
 
-from autoDEER_worker import autoDEERWorker
-QtCore.QDir.addSearchPath('icons', 'gui/resources')
-
+QtCore.QDir.addSearchPath('icons', f"{package_directory}/resources")
 
 
 class WorkerSignals(QtCore.QObject):
@@ -124,18 +122,22 @@ def relax_process(dataset):
 
     return CP_data
 
-class UI(QMainWindow):
+class autoDEERUI(QMainWindow):
 
 
     def __init__(self):
         super().__init__()
  
         # loading the ui file with uic module
-        uic.loadUi("gui/gui2.ui", self)
+        uic.loadUi(f"{package_directory}/gui2.ui", self)
         logo_pixmap = QtGui.QPixmap('icons:logo.png')
         logo_pixmap = logo_pixmap.scaledToHeight(60)
         self.logo.setPixmap(logo_pixmap)
         self.set_spectrometer_connected_light(0)
+
+        self.q_DEER.layout().addWidget(DEERplot())
+        self.longDEER.layout().addWidget(DEERplot())
+
 
         self.fsweep_toolbar()
         self.respro_toolbar()
@@ -343,8 +345,8 @@ class UI(QMainWindow):
 
         gxCI = -0.0025 *fitresult.results.azUncert.ci(95)+ 2.0175
         self.gxCI.setText(f"({gxCI[0]:.4f},{gxCI[1]:.4f})")
-        self.gyCI.setText(tools.getCIstring(fitresult.results.gyUncert))
-        self.gzCI.setText(tools.getCIstring(fitresult.results.gzUncert))
+        self.gyCI.setText(getCIstring(fitresult.results.gyUncert))
+        self.gzCI.setText(getCIstring(fitresult.results.gzUncert))
         self.Tab_widget.setCurrentIndex(1)
 
 
@@ -449,38 +451,38 @@ class UI(QMainWindow):
         # update the pulse parameter grid
         type_to_pulse_hash = {ad.RectPulse:'Rect', ad.ChirpPulse:'Chirp', ad.HSPulse:'HS'}
         if isinstance(exc_pulse, ad.RectPulse):
-            self.ExcFreqBox.setValue(tools.param_in_MHz(exc_pulse.freq))
+            self.ExcFreqBox.setValue(param_in_MHz(exc_pulse.freq))
             self.ExcBWBox.setValue(exc_pulse.tp.value)
             self.ExcBWBox.setSuffix(' ns')
             self.ExcTypeLine.setText('Rect')
         else:
-            center_freq = (tools.param_in_MHz(exc_pulse.final_freq) + tools.param_in_MHz(exc_pulse.init_freq))/2
+            center_freq = (param_in_MHz(exc_pulse.final_freq) + param_in_MHz(exc_pulse.init_freq))/2
             self.ExcFreqBox.setValue(center_freq)
-            self.ExcBWBox.setValue(tools.param_in_MHz(exc_pulse.BW))
+            self.ExcBWBox.setValue(param_in_MHz(exc_pulse.BW))
             self.ExcBWBox.setSuffix(' MHz')
             self.ExcTypeLine.setText(type_to_pulse_hash[type(exc_pulse)])
         
         if isinstance(ref_pulse, ad.RectPulse):
-            self.RefFreqBox.setValue(tools.param_in_MHz(ref_pulse.freq))
+            self.RefFreqBox.setValue(param_in_MHz(ref_pulse.freq))
             self.RefBWBox.setValue(ref_pulse.tp.value)
             self.RefBWBox.setSuffix(' ns')
             self.RefTypeLine.setText('Rect')
         else:
-            center_freq = (tools.param_in_MHz(ref_pulse.final_freq) + tools.param_in_MHz(ref_pulse.init_freq))/2
+            center_freq = (param_in_MHz(ref_pulse.final_freq) + param_in_MHz(ref_pulse.init_freq))/2
             self.RefFreqBox.setValue(center_freq)
-            self.RefBWBox.setValue(tools.param_in_MHz(ref_pulse.BW))
+            self.RefBWBox.setValue(param_in_MHz(ref_pulse.BW))
             self.RefBWBox.setSuffix(' MHz')
             self.RefTypeLine.setText(type_to_pulse_hash[type(ref_pulse)])
         
         if isinstance(pump_pulse, ad.RectPulse):
-            self.PumpFreqBox.setValue(tools.param_in_MHz(pump_pulse.freq))
+            self.PumpFreqBox.setValue(param_in_MHz(pump_pulse.freq))
             self.PumpBWBox.setValue(pump_pulse.tp.value)
             self.PumpBWBox.setSuffix(' ns')
             self.PumpTypeLine.setText('Rect')
         else:
-            center_freq = (tools.param_in_MHz(pump_pulse.final_freq) + tools.param_in_MHz(pump_pulse.init_freq))/2
+            center_freq = (param_in_MHz(pump_pulse.final_freq) + param_in_MHz(pump_pulse.init_freq))/2
             self.PumpFreqBox.setValue(center_freq)
-            self.PumpBWBox.setValue(tools.param_in_MHz(pump_pulse.BW))
+            self.PumpBWBox.setValue(param_in_MHz(pump_pulse.BW))
             self.PumpBWBox.setSuffix(' MHz')
             self.PumpTypeLine.setText(type_to_pulse_hash[type(pump_pulse)])
 
@@ -713,6 +715,6 @@ class UI(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication([])
-    window = UI()
+    window = autoDEERUI()
     window.show()
     app.exec()
