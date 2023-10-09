@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from autodeer.dataset import Dataset
 from autodeer.sequences import Sequence
-
+import deerlab as dl
 # ===========================================================================
 
 
@@ -142,23 +142,29 @@ class ReptimeAnalysis():
             The sequence object describing the experiment. (not currently used)
         """
         self.axis = dataset.axes[0]
+
+        if self.axis.max() > 1e4:
+            self.axis /= 1e3 # ns -> us
         self.data = dataset.data/np.max(dataset.data)
         self.seq = sequence
         pass
 
-    def fit(self):
-        def func(t,T1):
-            return 1-np.exp(-t/T1)
+    def fit(self, **kwargs):
+        def func(t,A,T1):
+            return A*(1-np.exp(-t/T1))
+        self.func = func
 
-        mymodel = dl.Model(func,constants='t')
-        mymodel.T1.set(lb=0,ub=np.inf,par0=500)
-        mymodel.T1.unit = 'us'
-        mymodel.T1.description = 'T1 time'
+        # mymodel = dl.Model(func,constants='t')
+        # mymodel.T1.set(lb=0,ub=np.inf,par0=1.8e3)
+        # mymodel.T1.unit = 'us'
+        # mymodel.T1.description = 'T1 time'
 
-        results = dl.fit(mymodel,dataset.data.real,dataset.axes[0])
-        self.fit_result = results
+        # results = dl.fit(mymodel,self.data.real,self.axis,reg=False,**kwargs)
+        # self.fit_result = results
 
-        return results
+        self.fit_result = curve_fit(func, self.axis, self.data.real, p0=[1,1.8e3])
+
+        return self.fit_result
 
     def plot(self, axs=None, fig=None):
 
@@ -168,8 +174,8 @@ class ReptimeAnalysis():
         axs.plot(self.axis, self.data, '.', label='data', color='0.6', ms=6)
 
         if hasattr(self,'fit_result'):
-            axs.plot(self.axis, self.fit_result.model, label='fit', color='C1', lw=2)
-            axs.vlines(self.fit_result.T1,0,1,linestyles='dashed',label='T1 = {:.3g} us'.format(self.fit_result.T1),colors='C0')
+            axs.plot(self.axis, self.func(self.axis,*self.fit_result[0]), label='fit', color='C1', lw=2)
+            axs.vlines(self.fit_result[0][1],0,1,linestyles='dashed',label='T1 = {:.3g} us'.format(self.fit_result[0][1]),colors='C0')
 
             if hasattr(self,'optimal'):
                 axs.vlines(self.optimal,0,1,linestyles='dashed',label='optimal = {:.3g} us'.format(self.optimal),colors='C2')
@@ -180,5 +186,5 @@ class ReptimeAnalysis():
 
     def calc_optimal_reptime(self, recovery=0.8):
         # Calculates the x% recovery time
-        self.optimal = self.fit_result.T1*np.log(1/(1-recovery))
+        self.optimal = self.fit_result[0][1]*np.log(1/(1-recovery))
         return self.optimal

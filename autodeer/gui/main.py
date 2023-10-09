@@ -563,6 +563,9 @@ class autoDEERUI(QMainWindow):
         opt_reptime = reptime_analysis.calc_optimal_reptime(0.8)
 
         self.current_results['reptime'] = reptime_analysis
+        print(f"Reptime {opt_reptime*1e-3:.2g} s")
+        if self.waitCondition is not None: # Wake up the runner thread
+            self.waitCondition.wakeAll()
         
 
 

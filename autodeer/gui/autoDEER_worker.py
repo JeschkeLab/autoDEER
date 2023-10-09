@@ -151,7 +151,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro = self.gyro
         deer = DEERSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=5,shots=150,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=50,shots=15,
             tau1=tau, tau2=tau, tau3=0.3, dt=dt,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -175,7 +175,7 @@ class autoDEERWorker(QtCore.QRunnable):
         max_tau = self.results['relax'].max_tau
         tau = np.min([rec_tau,max_tau])
         deer = DEERSequence(
-            B=LO/self.gyro, LO=LO,reptime=reptime,averages=50,shots=150,
+            B=LO/self.gyro, LO=LO,reptime=reptime,averages=500,shots=45,
             tau1=tau, tau2=tau, tau3=0.3, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -191,11 +191,14 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('DEER experiment complete')
         self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
 
-    def run_reptime_opt(self):
+    def run_reptime_opt(self,reptime_guess):
         LO = self.LO
-        scan = ReptimeScan(B=LO/self.gyro, LO=LO, reptime_max=8000, averages=10, shots=20)
+        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/self.gyro, reptime = reptime_guess,shots=100)
+
+        scan = ReptimeScan(B=LO/self.gyro, LO=LO, reptime_max=12e3, averages=1, shots=50,
+                           pi2_pulse=p90, pi_pulse=p180)
         self.interface.launch(scan,savename=f"{self.sample}_reptimescan",IFgain=2)
-        self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=0.5)
+        # self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=0.5)
         self.signals.status.emit('Reptime scan complete')
         self.signals.reptime_scan_result.emit(self.interface.acquire_dataset())
 
@@ -212,7 +215,7 @@ class autoDEERWorker(QtCore.QRunnable):
         
         self.pause_and_wait()
 
-        self.run_reptime_opt()
+        self.run_reptime_opt(reptime)
 
         self.pause_and_wait()
 

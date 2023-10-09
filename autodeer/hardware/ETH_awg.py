@@ -589,6 +589,12 @@ class ETH_awg_interface(Interface):
             axis_T = transpose_list_of_dicts(attr.axis)
             i = axis_T['uuid'].index(uuid)
             vec = attr.value + attr.axis[i]['axis']
+
+            if attr.unit == 'us':
+                vec *=1e3
+            elif attr.unit == 'ms':
+                vec *=1e6
+            
             return vec.astype(float)
 
         prog_table = sequence.progTable
