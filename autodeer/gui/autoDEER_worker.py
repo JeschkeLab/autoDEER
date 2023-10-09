@@ -1,5 +1,5 @@
 import PyQt6.QtCore as QtCore
-from autodeer import FieldSweepSequence, ResonatorProfileSequence, DEERSequence, RectPulse, ChirpPulse, HSPulse, Detection, DEERCriteria
+from autodeer import FieldSweepSequence, ResonatorProfileSequence, DEERSequence, RectPulse, ChirpPulse, HSPulse, Detection, DEERCriteria, SNRCriteria, ReptimeScan
 import time
 import numpy as np
 from threadpoolctl import threadpool_limits
@@ -36,6 +36,7 @@ class autoDEERSignals(QtCore.QObject):
     quickdeer_result = QtCore.pyqtSignal(object)
     longdeer_result = QtCore.pyqtSignal(object)
     quickdeer_update = QtCore.pyqtSignal(object)
+    reptime_scan_result = QtCore.pyqtSignal(object)
     
 
 class autoDEERWorker(QtCore.QRunnable):
@@ -190,6 +191,16 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('DEER experiment complete')
         self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
 
+    def run_reptime_opt(self):
+        LO = self.LO
+        scan = ReptimeScan(B=LO/self.gyro, LO=LO, reptime_max=8000, averages=10, shots=20)
+        self.interface.launch(scan,savename=f"{self.sample}_reptimescan",IFgain=2)
+        self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=0.5)
+        self.signals.status.emit('Reptime scan complete')
+        self.signals.reptime_scan_result.emit(self.interface.acquire_dataset())
+
+
+
     @QtCore.pyqtSlot()    
     def run(self):
 
@@ -200,6 +211,12 @@ class autoDEERWorker(QtCore.QRunnable):
         self.run_fsweep(reptime)
         
         self.pause_and_wait()
+
+        self.run_reptime_opt()
+
+        self.pause_and_wait()
+
+        reptime = self.results['reptime'].optimal
 
         self.run_respro(reptime)
 

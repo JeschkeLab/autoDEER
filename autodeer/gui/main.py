@@ -551,6 +551,19 @@ class autoDEERUI(QMainWindow):
             self.current_results['quickdeer'] = x
         self.q_DEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
 
+    def update_reptime(self, dataset=None):
+        if dataset is None:
+            dataset = self.current_data['reptime']
+        else:
+            self.current_data['reptime'] = dataset
+
+        reptime_analysis = ad.ReptimeAnalysis(dataset,dataset.sequence)
+        reptime_analysis.fit()
+        opt_reptime = reptime_analysis.calc_optimal_reptime(0.8)
+
+        self.current_results['reptime'] = reptime_analysis
+        
+
 
     def RunFullyAutoDEER(self):
 
@@ -582,6 +595,7 @@ class autoDEERUI(QMainWindow):
         worker.signals.relax_result.connect(self.update_relax)
         worker.signals.quickdeer_result.connect(self.update_quickdeer)
         worker.signals.quickdeer_update.connect(self.q_DEER.update_figure)
+        worker.signals.reptime_scan_result.connect(self.update_reptime)
 
         worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
         worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
@@ -627,6 +641,8 @@ class autoDEERUI(QMainWindow):
         worker.signals.quickdeer_result.connect(self.update_quickdeer)
         worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
         worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
+        worker.signals.reptime_scan_result.connect(self.update_reptime)
+
 
         self.threadpool.start(worker)
 
