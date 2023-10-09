@@ -130,7 +130,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro = self.gyro
         relax = ad.DEERSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=1,shots=50,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=1,shots=10,
             tau1=0.5, tau2=0.5, tau3=0.2, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -151,7 +151,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro = self.gyro
         deer = ad.DEERSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=5,shots=150,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=50,shots=15,
             tau1=tau, tau2=tau, tau3=0.3, dt=dt,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']

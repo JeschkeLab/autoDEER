@@ -940,8 +940,8 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     if axs is None and fig is None:
         fig, axs = plt.subplots(1,1,figsize=(5,5))
     axs.plot(f,fieldsweep_profile, label = 'Fieldsweep', c='k')
-    axs.fill_between(f,pump_Mz*fieldsweep_profile,linestyle='', label = 'Pump Profile', alpha=0.5,color='#D95B6F')
-    axs.fill_between(f,exc_Mz*fieldsweep_profile, linestyle='', label = 'Observer Profile',alpha=0.5,color='#42A399')
+    axs.fill_between(f,pump_Mz*fieldsweep_profile, label = 'Pump Profile', alpha=0.5,color='#D95B6F')
+    axs.fill_between(f,exc_Mz*fieldsweep_profile, label = 'Observer Profile',alpha=0.5,color='#42A399')
     if filter is not None:
         axs.plot(f,filter_profile(f),'--', label = 'Filter')
     axs.legend()
