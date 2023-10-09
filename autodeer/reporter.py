@@ -5,13 +5,19 @@ from reportlab.lib.units import cm
 from reportlab.platypus.paragraph import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.graphics import renderPDF
-
+from reportlab.platypus.doctemplate import PageTemplate
+from reportlab.platypus.frames import Frame
+from functools import partial
+from datetime import date
 
 from svglib.svglib import svg2rlg
 from io import BytesIO
 
 from collections import OrderedDict
 styles = getSampleStyleSheet()
+
+
+package_dir = __file__.split('autodeer')[0]
 
 class SvgFlowable(Flowable):
     """Convert byte stream containing SVG into a Reportlab Flowable."""
@@ -53,8 +59,31 @@ class Reporter():
                     bottomMargin = 2.5 * cm)
             
             self.story = OrderedDict()  # possibly change to a normal dict in the future
+            frame = Frame(self.pdf.leftMargin, self.pdf.bottomMargin, self.pdf.width, self.pdf.height, id='normal')
+            template = PageTemplate(id='normal', frames=frame, onPage=self.header, onPageEnd=self.footer)
+            self.pdf.addPageTemplates([template])
 
             pass
+    
+    def header(self, canvas, doc):
+        logo = package_dir + '/docsrc/_static/autoDEER_light.png'
+        canvas.saveState()
+        canvas.setFont('Times-Bold',12)
+        date_str = date.today().strftime("%d/%m/%Y")
+        canvas.drawImage(logo, 2, doc.height+80, width=215, height=50,mask='auto')
+
+        canvas.drawCentredString(doc.width-2, doc.height+95, f'autodeer report: {date_str}')
+        canvas.restoreState()
+
+    def footer(self, canvas, doc):
+        canvas.saveState()
+        page_number = canvas.getPageNumber()
+        canvas.setFont('Times-Roman',9)
+        canvas.drawString(2.2 * cm, 2.2 * cm, f'Page {page_number}')
+        canvas.restoreState()
+
+    
+
 
     def _build(self):
         # Convert ordered dict to list of values and then flatten

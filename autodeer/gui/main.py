@@ -135,8 +135,10 @@ class autoDEERUI(QMainWindow):
         self.logo.setPixmap(logo_pixmap)
         self.set_spectrometer_connected_light(0)
 
-        self.q_DEER.layout().addWidget(DEERplot())
-        self.longDEER.layout().addWidget(DEERplot())
+        self.qDEER_tab.layout().addWidget(DEERplot())
+        self.q_DEER = self.qDEER_tab.layout().itemAt(0).widget()
+        self.lDEER_tab.layout().addWidget(DEERplot())
+        self.longDEER = self.lDEER_tab.layout().itemAt(0).widget()
 
 
         self.fsweep_toolbar()
@@ -178,6 +180,7 @@ class autoDEERUI(QMainWindow):
         self.current_folder = ''
         self.config = None
         self.connected = False
+        self.pulses = {}
 
         self.LO = 0
         self.gyro = 0.0028087

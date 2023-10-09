@@ -119,7 +119,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>5</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideRight</enum>
@@ -1462,13 +1462,13 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="q_DEER">
+        <widget class="QWidget" name="qDEER_tab">
          <attribute name="title">
           <string>Quick DEER</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_7"/>
         </widget>
-        <widget class="QWidget" name="longDEER">
+        <widget class="QWidget" name="lDEER_tab">
          <attribute name="title">
           <string>Long DEER</string>
          </attribute>
