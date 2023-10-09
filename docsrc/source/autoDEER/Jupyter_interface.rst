@@ -1,12 +1,11 @@
-Semi - autoDEER
-===============
+Jupyter_interface
+=================
 
-What is a semi-autoDEER experiment?
------------------------------------
-A semi-autoDEER experiment is an autoDEER experiment run inside a Jupyter 
-notebook where each sub-experiment is run individually this allows an experienced
-user to intercede and take control when necessary or provide slight modifications
-to the script. It has the same form and layout as a fully autoDEER experiment. 
+Advanced users will likely want to have more control over their experiments, 
+beyond what the GUI can provide. For this reason, autoDEER has a Jupyter
+interface that allows users to run experiments from within a Jupyter notebook.
+In this mode, the user can intercede and take control when necessary or provide
+modifications to the alogoithm.
 
 In this example, we show how to run a five-pulse DEER experiment using 
 rectangular pulses.

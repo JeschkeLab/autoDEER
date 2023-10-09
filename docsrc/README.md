@@ -8,7 +8,7 @@ The autoDeer documentation is built using Spinx and the pydata theme. Please fol
 2) Install autoDeer from source
 3) Install Sphinx and extensions
 
-        pip install sphinx    
+        pip install sphinx sphinx_toolbox sphinx_copybutton numpydoc
         <!-- pip install pydata-sphinx-theme -->
         pip install furo
         pip install sphinx-gallery

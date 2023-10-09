@@ -5,17 +5,19 @@ import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
 from pathlib import Path
 from threadpoolctl import threadpool_limits
+import os
 
 from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-import autodeer as ad
+from autodeer import DEERanalysis, DEERanalysis_plot
 import deerlab as dl
 
-import tools
+from autodeer.gui.tools import * 
 from functools import partial
 
 QtCore.QDir.addSearchPath('icons', 'gui/resources')
+package_directory = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_Vexp(dataset, tmin=0):
@@ -48,7 +50,7 @@ class DEERplot(QWidget):
         super().__init__(parent)
  
         # loading the ui fsile with uic module
-        uic.loadUi("gui/quickdeer.ui", self)
+        uic.loadUi(f"{package_directory}/quickdeer.ui", self)
 
         self.threadpool = QtCore.QThreadPool()
         self.current_results = {}
@@ -64,7 +66,7 @@ class DEERplot(QWidget):
         upload_icon = QtGui.QIcon('icons:upload.png')
 
         def custom_load():
-            tools.load_epr_file(self, 'quickdeer')
+            load_epr_file(self, 'quickdeer')
             self.update_inputs_from_dataset()
             self.update_figure()
             
@@ -90,16 +92,16 @@ class DEERplot(QWidget):
             seq = getattr(dataset, 'sequence')
             self.ExperimentcomboBox.setCurrentText(seq.name)
             if seq.name =='4pDEER':
-                self.Tau1doubleSpinBox.setValue(tools.param_in_us(seq.tau1))
-                self.Tau2doubleSpinBox.setValue(tools.param_in_us(seq.tau2))
+                self.Tau1doubleSpinBox.setValue(param_in_us(seq.tau1))
+                self.Tau2doubleSpinBox.setValue(param_in_us(seq.tau2))
                 self.Tau3doubleSpinBox.setDisabled(1)
                 self.PathwayslineEdit.setText('1,2,3')
             if seq.name =='5pDEER':
                 self.Tau3doubleSpinBox.setDisabled(0)
 
-                self.Tau1doubleSpinBox.setValue(tools.param_in_us(seq.tau1))
-                self.Tau2doubleSpinBox.setValue(tools.param_in_us(seq.tau2))
-                self.Tau3doubleSpinBox.setValue(tools.param_in_us(seq.tau3))
+                self.Tau1doubleSpinBox.setValue(param_in_us(seq.tau1))
+                self.Tau2doubleSpinBox.setValue(param_in_us(seq.tau2))
+                self.Tau3doubleSpinBox.setValue(param_in_us(seq.tau3))
                 self.PathwayslineEdit.setText('1,2,3,4,5')
         
 
@@ -117,7 +119,7 @@ class DEERplot(QWidget):
             if param == 'P':
                 continue
             rows.append({"Parameter":param, "Value":getattr(results,param), "95% CI":getattr(results,f"{param}Uncert").ci(95), "Unit":""})
-        tools.fill_table(self.Analysis_table, headers, rows, rowcount = len(rows))
+        fill_table(self.Analysis_table, headers, rows, rowcount = len(rows))
 
     def update_fit_result(self):
 
@@ -142,10 +144,10 @@ class DEERplot(QWidget):
             i=0
             self.Pathways_Box.addWidget(QLabel(f"reftime"),i,0,1,1)
             self.Pathways_Box.addWidget(QDoubleSpinBox(value=reftime, suffix=' us', readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
-            self.Pathways_Box.addWidget(QLabel(tools.getCIstring(getattr(results,f"reftimeUncert"))),i,2,1,1)
+            self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"reftimeUncert"))),i,2,1,1)
             self.Pathways_Box.addWidget(QLabel(f"mod"),i+1,0,1,1)
             self.Pathways_Box.addWidget(QDoubleSpinBox(value=lam, suffix=' us', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i+1,1,1,1)
-            self.Pathways_Box.addWidget(QLabel(tools.getCIstring(getattr(results,f"modUncert"))),i+1,2,1,1)
+            self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"modUncert"))),i+1,2,1,1)
 
         else:
             for param in results.paramlist:
@@ -162,10 +164,10 @@ class DEERplot(QWidget):
                 lam = getattr(results,f"lam{pathway}")
                 self.Pathways_Box.addWidget(QLabel(f"reftime {pathway}"),i,0,1,1)
                 self.Pathways_Box.addWidget(QDoubleSpinBox(value=reftime, suffix=' us', readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
-                self.Pathways_Box.addWidget(QLabel(tools.getCIstring(getattr(results,f"reftime{pathway}Uncert"))),i,2,1,1)
+                self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"reftime{pathway}Uncert"))),i,2,1,1)
                 self.Pathways_Box.addWidget(QLabel(f"lam {pathway}"),i+1,0,1,1)
                 self.Pathways_Box.addWidget(QDoubleSpinBox(value=lam, suffix=' us', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i+1,1,1,1)
-                self.Pathways_Box.addWidget(QLabel(tools.getCIstring(getattr(results,f"lam{pathway}Uncert"))),i+1,2,1,1)
+                self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"lam{pathway}Uncert"))),i+1,2,1,1)
 
 
 
@@ -203,7 +205,7 @@ class DEERplot(QWidget):
         if settings['exp_type'] == '5pDEER':
             settings['tau3'] = self.Tau3doubleSpinBox.value()
 
-        settings['pathways'] = tools.str_to_list_type(self.PathwayslineEdit.text(), int)
+        settings['pathways'] = str_to_list_type(self.PathwayslineEdit.text(), int)
         settings['compactness'] = self.CompactnessradioButton.isChecked()
         settings['pulselength'] = self.PulseLengthdoubleSpinBox.value()
 
@@ -235,7 +237,7 @@ class DEERplot(QWidget):
             settings['model'] = None
 
 
-        worker = tools.Worker(deeranalysis_process, dataset, settings)
+        worker = Worker(deeranalysis_process, dataset, settings)
         worker.signals.result.connect(partial(self.refresh_deer, wait_condition=wait_condition,update_func=update_func))
 
         print('starting worker')

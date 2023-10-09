@@ -1,7 +1,7 @@
 from autodeer.classes import  Interface, Parameter
 from autodeer.dataset import  Dataset
 from autodeer.pulses import Pulse, RectPulse, ChirpPulse, HSPulse, Delay, Detection
-from autodeer.sequences import Sequence, HahnEchoSequence, DEERSequence, FieldSweepSequence, ResonatorProfileSequence
+from autodeer.sequences import *
 from autodeer.FieldSweep import create_Nmodel
 
 import numpy as np
@@ -76,6 +76,7 @@ class dummyInterface(Interface):
         return super().launch(sequence, savename)
     
     def acquire_dataset(self,**kwargs) -> Dataset:
+
         if isinstance(self.sequence, DEERSequence):
             if self.sequence.t.is_static():
                 axes, data = _simulate_CP(self.sequence)
@@ -85,6 +86,10 @@ class dummyInterface(Interface):
             axes, data = _simulate_field_sweep(self.sequence)
         elif isinstance(self.sequence,ResonatorProfileSequence):
             axes, data = _similate_respro(self.sequence,self.mode)
+        elif isinstance(self.sequence, ReptimeScan):
+            axes, data = _simulate_reptimescan(self.sequence)
+        else:
+            raise NotImplementedError("Sequence not implemented")
 
         time_estimate = self.sequence._estimate_time()
         time_estimate /= self.speedup
@@ -224,3 +229,14 @@ def _similate_respro(sequence, mode):
     damped_oscilations_vec
     data = damped_oscilations_vec(tp_x.reshape(tp_len,1),nut_freqs.reshape(1,LO_len)*1e-3,0.06)
     return [tp_x, LO_axis], data
+
+def _simulate_reptimescan(sequence):
+    def func(x,T1):
+        return 1-np.exp(-x/T1)
+    t = sequence.reptime.value + sequence.reptime.axis[0]['axis']
+    T1 = 500 #us
+
+    data = func(t,T1)
+    data = add_phaseshift(data, 0.05)
+    return t, data
+

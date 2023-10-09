@@ -158,16 +158,21 @@ class PSparvar:
                 var = progTable["Variable"][i]
                 vec = progTable["axis"][i]
                 parvar["variables"].append(var)
-                parvar["vec"].append(vec)
-                if type(sequence.pulses[pulse_num]) is Delay:
-                    parvar["types"].append("d")
-                else:
-                    parvar["types"].append("p")
+                if var == 'B':
+                    continue
                 
-                self.events.append(pulse_num)
+                if var == 't':
+                    #add this to the assoicated delay
+                    parvar["types"].append("d")
+                    self.events.append(pulse_num)
+                elif var == 'reptime':
+                    parvar["types"].append('srt')
+                    self.events.append('srt')
+                elif not isinstance(sequence.pulses[pulse_num], Detection):
+                    parvar["types"].append("p")
+                    self.events.append(pulse_num)
 
-                if var != "tp":
-                    self.PulseSpel = False
+                parvar["vec"].append(vec)
 
                 if len(np.unique(np.diff(vec))) != 1:
                     self.PulseSpel = False
@@ -179,10 +184,22 @@ class PSparvar:
             self.Bsweep = True
         else:
             self.Bsweep = False
-        self.ax_step = parvar["step"][0]
-        self.init = parvar["vec"][0][0]
-        self.dim = parvar["vec"][0].shape[0]
-        self.parvar = parvar
+
+        if "reptime" in parvar["variables"]:
+            self.repsweep = True
+        else:
+            self.repsweep = False
+        
+        if len(parvar['step']) == 0:
+            self.ax_step = None
+            self.init = None
+            self.dim = None
+            self.parvar = parvar
+        else:
+            self.ax_step = parvar["step"][0]
+            self.init = parvar["vec"][0][0]
+            self.dim = parvar["vec"][0].shape[0]
+            self.parvar = parvar
         pass
 
     def checkPulseSpel(self) -> bool:
@@ -203,8 +220,50 @@ possible_delays = [
     "d13", "d14", "d15", "d16", "d17", "d18", "d19", "d20", "d21", "d22",
     "d23", "d24", "d25", "d26", "d27", "d28", "d29", "d30"]
 
+possible_vars = ['a','b','c','e']
+
 possible_pulses = [
         "p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10"]
+
+def convert_progtable(progtable):
+    """
+    This function reformats the progtable to be compatible with the Bruker_tools. 
+    This is done by converting the axis of each moving pulse to be relative to the previous moving pulse.
+    """
+    n_entries = len(progtable['EventID'])
+    uaxes = np.unique(progtable['axID'])
+    n_uaxes = len(uaxes)
+
+    for ax in uaxes:
+        base_axis = None
+        total_axis = None
+        for i in range(n_entries):
+            if progtable['axID'][i] != ax:
+                continue
+            if progtable['Variable'][i] != 't':
+                continue
+            if base_axis is None:
+                base_axis = progtable['axis'][i]
+                total_axis = base_axis
+            else:
+                new_axis = progtable['axis'][i] - total_axis
+                total_axis = progtable['axis'][i]
+                progtable['axis'][i] = new_axis
+    
+    return progtable
+
+
+
+def calc_rel_positions(sequence):
+    """
+    Calcuates the starting relative positions of all pulses in a sequence.
+    """
+    n_pulses = len(sequence.pulses)
+    positions = np.zeros(n_pulses)
+    for i,pulse in enumerate(sequence.pulses):
+        positions[i] = pulse.t.value
+    rel_positions = np.diff(positions,prepend=0)
+    return rel_positions
 
 # =============================================================================
 
@@ -214,9 +273,10 @@ class PulseSpel:
     def __init__(self, sequence, MPFU=None, AWG=False) -> None:
 
         self._check_sequence(sequence)
-
+        self.convert_progtable(sequence.progTable)
         self.possible_delays = possible_delays.copy()
         self.possible_pulses = possible_pulses.copy()
+        self.possible_vars = possible_vars.copy()
         self.sequence = sequence
         self.var_hash = {}
         self.def_file_str = ""
@@ -228,13 +288,16 @@ class PulseSpel:
 
         
         # Build hash of initial pulses
+        # For every event and delay is created immediately prior to the event
+
+        rel_positions = calc_rel_positions(sequence)
         for id, pulse in enumerate(sequence.pulses):
+            str = self._new_delay(f"{id}d")
+            self._addDef(f"{str} = {int(rel_positions[id])}") 
+            
             if type(pulse) == Detection:
                 self.var_hash[id] = "pg"
                 self._addDef(f"pg = {int(pulse.tp.value)}")
-            elif type(pulse) == Delay:
-                str = self._new_delay(id)
-                self._addDef(f"{str} = {int(pulse.tp.value)}")
             else:
                 str = self._new_pulse(id)
                 self._addDef(f"{str} = {int(pulse.tp.value)}")
@@ -260,14 +323,25 @@ class PulseSpel:
         place_hash = {}
         for i, parvar in enumerate(self.parvars):
             for j, event in enumerate(parvar.events): 
-                str = self._new_delay(f"{event}_step")
-                step_hash[event] = str
-                self._addDef(f"{str} = {parvar.parvar['step'][j]}")
-                if parvar.parvar['types'][j] == "d":
-                    str = self._new_delay(f"{event}_place")
-                elif parvar.parvar['types'][j] == "p":
+                if event == 'srt': #srt loop
+                    str = self._new_var('srt')
+                    self._addDef(f"{str} = {parvar.parvar['step'][j]} * srtu")
+                    str = self._new_var('srt_step')
+                    step_hash[event] = str
+                    self._addDef(f"{str} = {parvar.parvar['step'][j]} * srtu")
+                    place_hash[event] = 'srt'
+                elif parvar.parvar['types'][j] == 'p': #pulse loop
+                    str = self._new_delay(f"{event}_step")
+                    step_hash[f"{event}p"] = str
+                    self._addDef(f"{str} = {parvar.parvar['step'][j]}")
                     str = self._new_pulse(f"{event}_place")
-                place_hash[event] = str
+                    place_hash[f"{event}p"] = str
+                elif parvar.parvar['types'][j] == 'd': #delay loop
+                    str = self._new_delay(f"{event}_step")
+                    step_hash[f"{event}d"] = str
+                    self._addDef(f"{str} = {parvar.parvar['step'][j]}")
+                    str = self._new_delay(f"{event}_place")
+                    place_hash[f"{event}d"] = str
             dim_step = self._new_delay(f"dim{i}_step")
             self._addDef(f"{dim_step} = {parvar.ax_step}")
             self._addDef(f"d{20+i} = {parvar.init}")
@@ -297,6 +371,8 @@ class PulseSpel:
             self._addExp(f"{place_hash[i]} = {self.var_hash[i]}")
         if self.parvars[0].Bsweep:
             self._addExp(f"bsweep x=1 to sx")
+        elif self.parvars[0].repsweep:
+            self._addExp(f"for x=1 to sx")
         else:
             self._addExp(f"sweep x=1 to sx")
     
@@ -305,8 +381,20 @@ class PulseSpel:
 
         # # Read pulse sequence with phase cycle
         for id, pulse in enumerate(sequence.pulses):
-            if id in place_hash:
-                pulse_str = place_hash[id]
+            # if id in place_hash:
+            #     pulse_str = place_hash[id]
+            # else:
+            #     pulse_str = self.var_hash[id]
+            # Add delays
+            if f"{id}d" in place_hash:
+                delay_str = place_hash[f"{id}d"]
+            else:
+                delay_str = self.var_hash[f"{id}d"]
+            self._addExp(f"{delay_str}")
+
+            # Add pulses
+            if f"{id}p" in place_hash:
+                pulse_str = place_hash[f"{id}p"]
             else:
                 pulse_str = self.var_hash[id]
             if id in self.pcyc_hash:
@@ -315,10 +403,6 @@ class PulseSpel:
                 self._addExp(f"d0\nacq [sg1]")
             else:
                 self._addExp(f"{pulse_str}")
-        # if type(pulse) == Delay:
-        #     self._addExp(f"{}")
-        # else:
-        #     self._addExp(f"{} [{}]")
 
         self._addExp(f"next i")  # End of shots loop
         for i in place_hash.keys():
@@ -337,6 +421,11 @@ class PulseSpel:
         self.var_hash[key] = str
         return str
     
+    def _new_var(self, key):
+        str = self.possible_vars.pop(0)
+        self.var_hash[key] = str
+        return str
+
     def _new_pulse(self, key):
         str = self.possible_pulses.pop(0)
         self.var_hash[key] = str

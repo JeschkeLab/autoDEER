@@ -55,9 +55,12 @@ class Sequence:
             "LO", LO, "GHz",
             "The local oscillator frequency.")
         
-        self.reptime = Parameter(
-            "reptime", reptime, "us",
-            "The shot repetition time")
+        if isinstance(reptime, Parameter):
+            self.reptime = reptime.copy()
+        else:
+            self.reptime = Parameter(
+                "reptime", reptime, "us",
+                "The shot repetition time")
         
         self.averages = Parameter(
             "averages", averages, "None",
@@ -1512,11 +1515,58 @@ class FieldSweepSequence(HahnEchoSequence):
 
 
         self.B = Parameter(
-            "B", value=B-Bwidth/2, step=1,dim=Bwidth, unit="Gauss", description="Field sweep width"
+            "B", value=B-Bwidth/2, step=1, dim=Bwidth, unit="Gauss", description="Field sweep width"
         )
         
         self.evolution([self.B])
         
+# =============================================================================
+
+class ReptimeScan(HahnEchoSequence):
+    """
+    Represents a reptime scan of a Hahn Echo Sequence. 
+    """
+    def __init__(self, *, B, LO, reptime_max, averages, shots, **kwargs) -> None:
+        """A Hahn echo sequence is perfomed with the shot repetition time increasing.1
+
+        Parameters
+        ----------
+        B : int or float
+            The B0 field, in Guass
+        LO : int or float
+            The LO frequency in GHz
+        reptime_max : np.ndarray
+            The maximum shot repetition time in us    
+        averages : int
+            The number of scans.
+        shots : int
+            The number of shots per point
+        
+        Optional Parameters
+        -------------------
+        pi2_pulse : Pulse
+            An autoEPR Pulse object describing the excitation pi/2 pulse. If
+            not specified a RectPulse will be created instead. 
+        pi_pulse : Pulse
+            An autoEPR Pulse object describing the refocusing pi pulses. If
+            not specified a RectPulse will be created instead. 
+        """
+        min_reptime = 10
+        dim = 100
+        step  = (reptime_max-min_reptime)/dim
+        step = np.around(step,decimals=-1)
+        step = np.around(step,decimals=-1)
+        reptime = Parameter(
+            "reptime", min_reptime,step=step, dim=100, unit="us",
+            description = "The shot repetition time")
+        
+        super().__init__(
+            B=B, LO=LO, reptime=reptime, averages=averages,
+            shots=shots, **kwargs)
+        self.name = "reptime Scan"
+
+        self.evolution([self.reptime])
+
 # =============================================================================
 
 class CarrPurcellSequence(Sequence):

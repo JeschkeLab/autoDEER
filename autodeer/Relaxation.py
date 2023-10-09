@@ -128,3 +128,57 @@ class CarrPurcellAnalysis:
 
         self.optimal = self.axis[np.argmin(np.abs(g-f))]
         return self.optimal
+
+class ReptimeAnalysis():
+
+    def __init__(self, dataset: Dataset, sequence: Sequence = None) -> None:
+        """Analysis and calculation of Reptime based saturation recovery. 
+
+        Parameters
+        ----------
+        dataset : Dataset
+            The dataset to be analyzed.
+        sequence : Sequence, optional
+            The sequence object describing the experiment. (not currently used)
+        """
+        self.axis = dataset.axes[0]
+        self.data = dataset.data/np.max(dataset.data)
+        self.seq = sequence
+        pass
+
+    def fit(self):
+        def func(t,T1):
+            return 1-np.exp(-t/T1)
+
+        mymodel = dl.Model(func,constants='t')
+        mymodel.T1.set(lb=0,ub=np.inf,par0=500)
+        mymodel.T1.unit = 'us'
+        mymodel.T1.description = 'T1 time'
+
+        results = dl.fit(mymodel,dataset.data.real,dataset.axes[0])
+        self.fit_result = results
+
+        return results
+
+    def plot(self, axs=None, fig=None):
+
+        if axs is None and fig is None:
+            fig, axs = plt.subplots()
+
+        axs.plot(self.axis, self.data, '.', label='data', color='0.6', ms=6)
+
+        if hasattr(self,'fit_result'):
+            axs.plot(self.axis, self.fit_result.model, label='fit', color='C1', lw=2)
+            axs.vlines(self.fit_result.T1,0,1,linestyles='dashed',label='T1 = {:.3g} us'.format(self.fit_result.T1),colors='C0')
+
+            if hasattr(self,'optimal'):
+                axs.vlines(self.optimal,0,1,linestyles='dashed',label='optimal = {:.3g} us'.format(self.optimal),colors='C2')
+
+        axs.set_xlabel('reptime (us)')
+        axs.set_ylabel('normalized signal')
+        axs.legend()
+
+    def calc_optimal_reptime(self, recovery=0.8):
+        # Calculates the x% recovery time
+        self.optimal = self.fit_result.T1*np.log(1/(1-recovery))
+        return self.optimal
