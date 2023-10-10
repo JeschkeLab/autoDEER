@@ -12,6 +12,7 @@ from datetime import date
 
 from svglib.svglib import svg2rlg
 from io import BytesIO
+import os
 
 from collections import OrderedDict
 styles = getSampleStyleSheet()
@@ -66,7 +67,7 @@ class Reporter():
             pass
     
     def header(self, canvas, doc):
-        logo = package_dir + '/docsrc/_static/autoDEER_light.png'
+        logo = package_dir + os.path.abspath('/docsrc/_static/autoDEER_light.png')
         canvas.saveState()
         canvas.setFont('Times-Bold',12)
         date_str = date.today().strftime("%d/%m/%Y")

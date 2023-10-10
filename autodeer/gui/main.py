@@ -520,8 +520,9 @@ class autoDEERUI(QMainWindow):
         else:
             reptime = 3e3
         print(f"Reptime {reptime*1e-6:.2g} s")
-        tau2hrs = fitresult.find_optimal(averages=50*16, SNR_target=20/0.7, target_time=2, target_shrt=reptime*1e-6, target_step=0.015)
-        max_tau = fitresult.find_optimal(averages=50*16, SNR_target=20/0.7, target_time=24, target_shrt=reptime*1e-6, target_step=0.015)
+        averages = fitresult.seq.shots.value * fitresult.dataset.num_scans.value * 16
+        tau2hrs = fitresult.find_optimal(averages=averages, SNR_target=45/0.5, target_time=2, target_shrt=reptime*1e-6, target_step=0.015)
+        max_tau = fitresult.find_optimal(averages=averages, SNR_target=45/0.5, target_time=24, target_shrt=reptime*1e-6, target_step=0.015)
         self.current_results['relax'].tau2hrs = tau2hrs
         self.current_results['relax'].max_tau = max_tau
         self.DipolarEvoMax.setValue(max_tau)
@@ -598,7 +599,7 @@ class autoDEERUI(QMainWindow):
         worker.signals.optimise_pulses.connect(self.optimise_pulses)
         worker.signals.relax_result.connect(self.update_relax)
         worker.signals.quickdeer_result.connect(self.update_quickdeer)
-        worker.signals.quickdeer_update.connect(self.q_DEER.update_figure)
+        worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
         worker.signals.reptime_scan_result.connect(self.update_reptime)
 
         worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))

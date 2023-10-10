@@ -21,7 +21,11 @@ class CarrPurcellAnalysis:
         """
         self.axis = dataset.axes[0]
         self.data = dataset.data
-        self.seq = sequence
+        self.dataset = dataset
+        if sequence is None and hasattr(dataset,'sequence'):
+            self.seq = dataset.sequence
+        else:
+            self.seq = sequence
         pass
     
     def fit(self, type: str = "mono"):
