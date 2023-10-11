@@ -72,6 +72,11 @@ class autoDEERWorker(QtCore.QRunnable):
 
         if not 'DEER_update_func' in self.user_inputs:
             self.user_inputs['DEER_update_func'] = None
+        
+        if 'cores' in kwargs:
+            self.cores = kwargs['cores']
+        else:
+            self.cores = 1
 
 
         # # Add the callback to our kwargs
@@ -162,7 +167,7 @@ class autoDEERWorker(QtCore.QRunnable):
         deer._estimate_time();
         self.interface.launch(deer,savename=f"{self.sample}_quickdeer",IFgain=2)
         self.signals.status.emit('DEER experiment running')
-        with threadpool_limits(limits=1, user_api='blas'):
+        with threadpool_limits(limits=self.cores, user_api='blas'):
             self.interface.terminate_at(DEERCriteria(mode="speed",verbosity=2,update_func=self.signals.quickdeer_update.emit),verbosity=2,test_interval=0.5)
         self.signals.status.emit('DEER experiment complete')
         self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
@@ -183,10 +188,10 @@ class autoDEERWorker(QtCore.QRunnable):
         deer.five_pulse()
         deer.select_pcyc("16step_5p")
         deer._estimate_time();
-        self.interface.launch(deer,savename=f"{self.sample}_deer_tau_{tau}us",IFgain=2)
+        self.interface.launch(deer,savename=f"{self.sample}_deer_tau_{tau:.3f}us",IFgain=2)
         self.signals.status.emit('DEER experiment running')
         time.sleep(30) # Always wait for the experiment to properly start
-        with threadpool_limits(limits=1, user_api='blas'):
+        with threadpool_limits(limits=self.cores, user_api='blas'):
             self.interface.terminate_at(DEERCriteria(mode="high"),verbosity=2,test_interval=0.5)
         self.signals.status.emit('DEER experiment complete')
         self.signals.quickdeer_result.emit(self.interface.acquire_dataset())

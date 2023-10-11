@@ -48,6 +48,7 @@ class CarrPurcellAnalysis:
         else:
             raise ValueError("Type must be one of: mono")
         
+    
         self.fit_result = curve_fit(self.func, self.axis, data, p0=p0)
         return self.fit_result
 

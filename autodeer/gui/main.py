@@ -184,6 +184,7 @@ class autoDEERUI(QMainWindow):
 
         self.LO = 0
         self.gyro = 0.0028087
+        self.cores = 1
 
     def set_spectrometer_connected_light(self, state):
         if state == 0:
@@ -255,6 +256,11 @@ class autoDEERUI(QMainWindow):
         # Set LO to resonator central frequency
         key1 = list(self.config['Resonators'].keys())[0]
         self.LO = self.config['Resonators'][key1]['Center Freq']
+
+        # Get user preferences
+        self.cores = int(self.config['autoDEER']['cores'])
+        self.q_DEER.cores = self.cores
+        self.longDEER.cores = self.cores
 
 
     def connect_spectrometer(self):
@@ -592,7 +598,7 @@ class autoDEERUI(QMainWindow):
         worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
             results=self.current_results,LO=self.LO, gyro = self.gyro,
-            user_inputs=userinput )
+            user_inputs=userinput, cores=self.cores )
         worker.signals.status.connect(self.msgbar.setText)
         worker.signals.fsweep_result.connect(self.update_fieldsweep)
         worker.signals.respro_result.connect(self.update_respro)

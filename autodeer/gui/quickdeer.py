@@ -37,9 +37,9 @@ def get_Vexp(dataset, tmin=0):
     return t, Vexp
 
 
-def deeranalysis_process(dataset, settings):
+def deeranalysis_process(dataset, settings, cores):
 
-    with threadpool_limits(limits=1, user_api='blas'):
+    with threadpool_limits(limits=cores, user_api='blas'):
         return ad.DEERanalysis(dataset, **settings, verbosity=2)
     
 
@@ -60,6 +60,7 @@ class DEERplot(QWidget):
         self.toolbar()
 
         self.current_folder = ''
+        self.cores = 1
 
 
     def toolbar(self):
@@ -106,7 +107,15 @@ class DEERplot(QWidget):
         
 
 
-
+    def clearLayout(self, layout):
+            if layout is not None:
+                while layout.count():
+                    item = layout.takeAt(0)
+                    widget = item.widget()
+                    if widget is not None:
+                        widget.deleteLater()
+                    else:
+                        self.clearLayout(item.layout())
 
     def update_analysis_table(self):
         results = self.fitresult
@@ -134,6 +143,7 @@ class DEERplot(QWidget):
         except AttributeError:
             self.regparamDoubleSpinBox.setDisabled(1)
 
+        self.clearLayout(self.Pathways_Box)
 
         # Find pathways in the fit results
         pathways = []
@@ -237,7 +247,7 @@ class DEERplot(QWidget):
             settings['model'] = None
 
 
-        worker = Worker(deeranalysis_process, dataset, settings)
+        worker = Worker(deeranalysis_process, dataset, settings, self.cores)
         worker.signals.result.connect(partial(self.refresh_deer, wait_condition=wait_condition,update_func=update_func))
 
         print('starting worker')

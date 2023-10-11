@@ -135,7 +135,7 @@ class DEERCriteria(Criteria):
             #     tau1, tau2, tau3, num_points=100,
             #     compactness=True, precision="Speed", plot=False)
             fit = DEERanalysis(
-                data, compactness=False, model=model, regparamrange=regparamrange,verbosity=verbosity,lin_maxiter=100
+                data, compactness=False, model=model, regparamrange=regparamrange,verbosity=verbosity,lin_maxiter=50,max_nfev=100
             )
             test = True
             if fit.MNR < MNR_threshold:

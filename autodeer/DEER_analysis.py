@@ -31,6 +31,14 @@ def calc_identifiability(profile):
 
 # =============================================================================
 
+def find_longest_pulse(sequence):
+    longest_pulse = 0
+    for pulse in sequence.pulses:
+        tp = pulse.tp.value
+        if tp > longest_pulse:
+            longest_pulse = tp
+    
+    return longest_pulse/1e3
 
 # =============================================================================
 def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, **kwargs):
@@ -54,7 +62,6 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
                 return sequence.tau1.value + Param.axis[0]['axis']
             elif Param.unit == "ns":
                 return (Param.value + Param.axis[0]['axis']) / 1e3 
-            
 
     if hasattr(dataset,"sequence"):
         sequence = dataset.sequence
@@ -77,7 +84,8 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
             exp_type = "4pDEER"
             tau1 = val_in_us(sequence.tau1)
             tau2 = val_in_us(sequence.tau2)
-        
+
+        tp = find_longest_pulse(sequence)
         t = val_in_us(sequence.t)
 
     else:
@@ -101,10 +109,13 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     else:
         pathways = None
 
-    if "pulselength" in kwargs:
-        pulselength = kwargs["pulselength"]/1e3
+    if hasattr(dataset,"sequence"):
+        pulselength = tp
     else:
-        pulselength = 16/1e3
+        if "pulselength" in kwargs:
+            pulselength = kwargs["pulselength"]/1e3
+        else:
+            pulselength = 16/1e3
         
     if exp_type == "4pDEER":
         experimentInfo = dl.ex_4pdeer(tau1=tau1,tau2=tau2,pathways=pathways,pulselength=pulselength)
@@ -152,13 +163,25 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
         noiselvl = dl.noiselevel(Vexp)
         mask=None
 
+    if "max_nfev" in kwargs:
+        max_nfev = kwargs["max_nfev"]
+
+    else: 
+        max_nfev = 100
+
+    if "lin_maxiter" in kwargs:
+        lin_maxiter = kwargs["lin_maxiter"]
+
+    else: 
+        lin_maxiter = 100
 
     # Core 
     if verbosity > 1:
         print('Starting Fitting')
     fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty, 
                  bootstrap=bootstrap, mask=mask, noiselvl=noiselvl,
-                 regparamrange=regparamrange, bootcores=bootcores,verbose=verbosity)
+                 regparamrange=regparamrange, bootcores=bootcores,verbose=verbosity,
+                 max_nfev = max_nfev,lin_maxiter=lin_maxiter)
     if verbosity > 1:
         print('Fit complete')
     mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
@@ -180,6 +203,8 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     if ROI:
         tau_max = lambda r: (r**3) *(2/4**3)
         fit.ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
+        if fit.ROI[0] < 1:
+            fit.ROI[0] = 1
         rec_tau_max = tau_max(fit.ROI[1])
         fit.rec_tau_max = rec_tau_max
         return fit, rec_tau_max
