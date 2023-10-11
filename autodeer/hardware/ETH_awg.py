@@ -110,6 +110,7 @@ class ETH_awg_interface(Interface):
                 data = uwb_load(Matfile, options=options, verbosity=verbosity)
                 data.LO = Parameter("LO", data.params['LO']+self.awg_freq, unit="GHz", description="Total local oscilator frequency")
                 data.sequence = self.cur_exp
+                data.time = time.time()
             except OSError:
                 time.sleep(10)
             except IndexError:
@@ -117,7 +118,7 @@ class ETH_awg_interface(Interface):
             except ValueError:
                 time.sleep(10)
             else:
-                return data
+                return super().acquire_dataset(data)
         
     def launch(self, sequence , savename: str, IFgain: int = 0):
         """Launch a sequence on the spectrometer.

@@ -36,6 +36,7 @@ class autoDEERSignals(QtCore.QObject):
     quickdeer_result = QtCore.pyqtSignal(object)
     longdeer_result = QtCore.pyqtSignal(object)
     quickdeer_update = QtCore.pyqtSignal(object)
+    longdeer_update = QtCore.pyqtSignal(object)
     reptime_scan_result = QtCore.pyqtSignal(object)
     
 
@@ -192,7 +193,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('DEER experiment running')
         time.sleep(30) # Always wait for the experiment to properly start
         with threadpool_limits(limits=self.cores, user_api='blas'):
-            self.interface.terminate_at(DEERCriteria(mode="high"),verbosity=2,test_interval=0.5)
+            self.interface.terminate_at(DEERCriteria(mode="high",verbosity=2,update_func=self.signals.quickdeer_update.emit),verbosity=2,test_interval=0.5)
         self.signals.status.emit('DEER experiment complete')
         self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
 
@@ -223,11 +224,12 @@ class autoDEERWorker(QtCore.QRunnable):
         self.run_reptime_opt(reptime)
 
         self.pause_and_wait()
-
+        
         reptime = self.results['reptime'].optimal
-
+        
         self.run_respro(reptime)
-
+        
+        
         self.pause_and_wait()
 
         # Define the pulses
@@ -296,13 +298,11 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('Optimising pulses')
         self.signals.optimise_pulses.emit(self.pulses)
         self.pause_and_wait()
-
         # Tune the pulses
         self.signals.status.emit('Tuning pulses')
         exc_pulse = self.interface.tune_pulse(exc_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
         ref_pulse = self.interface.tune_pulse(ref_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
         pump_pulse = self.interface.tune_pulse(pump_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
-
 
         # Run a relaxation experiment
         self.signals.status.emit('Running relaxation Experiment')

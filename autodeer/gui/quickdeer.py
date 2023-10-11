@@ -61,6 +61,8 @@ class DEERplot(QWidget):
 
         self.current_folder = ''
         self.cores = 1
+        self.Last_updated.setText(f"Last updated: never")
+        self.num_scans.setText(f"# of scans: 0")
 
 
     def toolbar(self):
@@ -270,6 +272,13 @@ class DEERplot(QWidget):
         ad.DEERanalysis_plot(self.fitresult, background=False, ROI=self.fitresult.ROI, axs= self._static_ax, fig=self.static_canvas.figure)
         self.static_canvas.draw()
         self.update_fit_result()
+
+        if hasattr(self.fitresult,'dataset'):
+            self.Last_updated.setText(f"Last updated: {self.fitresult.dataset.time.strftime('%Y-%m-%d %H:%M:%S')}")
+            self.num_scans.setText(f"# of scans: {self.fitresult.dataset.num_scans.value}")
+        else:
+            self.Last_updated.setText(f"Last updated: never")
+            self.num_scans.setText(f"# of scans: 0")
 
 
 if __name__ == '__main__':

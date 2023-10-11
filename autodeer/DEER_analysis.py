@@ -195,6 +195,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
 
 
     fit.Vmodel = Vmodel
+    fit.dataset = dataset
     fit.r = r
     fit.Vexp = Vexp
     fit.t = t

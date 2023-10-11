@@ -51,11 +51,12 @@ def add_phaseshift(data, phase):
 class dummyInterface(Interface):
 
 
-    def __init__(self, speedup=100) -> None:
+    def __init__(self, speedup=100,SNR=75) -> None:
         self.state = False
         self.speedup = speedup
         self.pulses = {}
         self.start_time = 0
+        self.SNR = SNR
 
         # Create virtual mode
 
@@ -71,38 +72,37 @@ class dummyInterface(Interface):
 
     def launch(self, sequence, savename: str, **kwargs):
         self.state = True
-        self.sequence = sequence
+        self.cur_exp = sequence
         self.start_time = time.time()
         return super().launch(sequence, savename)
     
     def acquire_dataset(self,**kwargs) -> Dataset:
 
-        if isinstance(self.sequence, DEERSequence):
-            if self.sequence.t.is_static():
-                axes, data = _simulate_CP(self.sequence)
+        if isinstance(self.cur_exp, DEERSequence):
+            if self.cur_exp.t.is_static():
+                axes, data = _simulate_CP(self.cur_exp)
             else:
-                axes, data =_simulate_deer(self.sequence)
-        elif isinstance(self.sequence, FieldSweepSequence):
-            axes, data = _simulate_field_sweep(self.sequence)
-        elif isinstance(self.sequence,ResonatorProfileSequence):
-            axes, data = _similate_respro(self.sequence,self.mode)
-        elif isinstance(self.sequence, ReptimeScan):
-            axes, data = _simulate_reptimescan(self.sequence)
+                axes, data =_simulate_deer(self.cur_exp)
+        elif isinstance(self.cur_exp, FieldSweepSequence):
+            axes, data = _simulate_field_sweep(self.cur_exp)
+        elif isinstance(self.cur_exp,ResonatorProfileSequence):
+            axes, data = _similate_respro(self.cur_exp,self.mode)
+        elif isinstance(self.cur_exp, ReptimeScan):
+            axes, data = _simulate_reptimescan(self.cur_exp)
         else:
             raise NotImplementedError("Sequence not implemented")
 
-        time_estimate = self.sequence._estimate_time()
+        time_estimate = self.cur_exp._estimate_time()
         time_estimate /= self.speedup
         progress = (time.time() - self.start_time) / time_estimate
         if progress > 1:
             progress = 1
-        data = add_noise(data, 1/(100*progress))
-        scan_num = self.sequence.averages.value
+        data = add_noise(data, 1/(self.SNR*progress))
+        scan_num = self.cur_exp.averages.value
         dset = Dataset(axes, data, num_scans=int(scan_num*progress))
-        dset.LO = self.sequence.LO
-        dset.sequence = self.sequence
+        dset.LO = self.cur_exp.LO
     
-        return dset
+        return super().acquire_dataset(dset)
     
     def tune_rectpulse(self,*,tp, LO, B, reptime,**kwargs):
 
@@ -129,7 +129,7 @@ class dummyInterface(Interface):
             
     def isrunning(self) -> bool:
         current_time = time.time()
-        if current_time - self.start_time > (self.sequence._estimate_time() / self.speedup):
+        if current_time - self.start_time > (self.cur_exp._estimate_time() / self.speedup):
             self.state = False
 
         return self.state
@@ -234,7 +234,7 @@ def _simulate_reptimescan(sequence):
     def func(x,T1):
         return 1-np.exp(-x/T1)
     t = sequence.reptime.value + sequence.reptime.axis[0]['axis']
-    T1 = 500 #us
+    T1 = 2000 #us
 
     data = func(t,T1)
     data = add_phaseshift(data, 0.05)

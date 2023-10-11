@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1,0">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
@@ -258,7 +258,7 @@
              <x>0</x>
              <y>0</y>
              <width>467</width>
-             <height>130</height>
+             <height>128</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -360,6 +360,37 @@
      <property name="sizeConstraint">
       <enum>QLayout::SetMinimumSize</enum>
      </property>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="num_scans">
+       <property name="text">
+        <string># of Scans: 00</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="Last_updated">
+       <property name="text">
+        <string>Last Updated: never</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>

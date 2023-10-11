@@ -6,6 +6,7 @@ import os
 from autodeer import __version__
 import copy
 import time
+import datetime
 import numbers
 import uuid
 import json
@@ -26,11 +27,15 @@ class Interface:
     def connect(self) -> None:
         pass
 
-    def acquire_dataset(self):
+    def acquire_dataset(self, data):
         """
         Acquires the dataset.
         """
-        pass
+
+        data.sequence = self.cur_exp
+        data.time = datetime.datetime.now()
+        return data
+    
 
     def launch(self, sequence, savename: str):
         """Launches the experiment and initialises autosaving.
