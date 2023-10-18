@@ -10,4 +10,10 @@ from .pulses import *
 from .criteria import *
 from .dataset import Dataset
 from .reporter import Reporter
-from .gui.main import autoDEERUI
+
+try:
+    import PyQt6
+except ImportError:
+   pass 
+else:
+    from .gui.main import autoDEERUI
