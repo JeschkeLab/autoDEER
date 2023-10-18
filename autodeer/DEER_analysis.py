@@ -135,7 +135,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     # identify experiment
     
 
-    Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo)
+    Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo, model=model)
     Vmodel.pathways = pathways
 
     if compactness:
