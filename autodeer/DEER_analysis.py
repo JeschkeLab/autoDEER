@@ -135,7 +135,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     # identify experiment
     
 
-    Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo)
+    Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo, Pmodel=model)
     Vmodel.pathways = pathways
 
     if compactness:
@@ -175,13 +175,18 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     else: 
         lin_maxiter = 100
 
+    if "regparam" in kwargs:
+        regparam = kwargs["regparam"]
+    else:
+        regparam = "aic"
+
     # Core 
     if verbosity > 1:
         print('Starting Fitting')
     fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty, 
                  bootstrap=bootstrap, mask=mask, noiselvl=noiselvl,
                  regparamrange=regparamrange, bootcores=bootcores,verbose=verbosity,
-                 max_nfev = max_nfev,lin_maxiter=lin_maxiter)
+                 max_nfev = max_nfev,lin_maxiter=lin_maxiter,regparam=regparam)
     if verbosity > 1:
         print('Fit complete')
     mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
@@ -195,6 +200,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
 
 
     fit.Vmodel = Vmodel
+    fit.dataset = dataset
     fit.r = r
     fit.Vexp = Vexp
     fit.t = t

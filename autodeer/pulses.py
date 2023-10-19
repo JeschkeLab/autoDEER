@@ -624,6 +624,19 @@ class RectPulse(Pulse):
 
     def __init__(
             self, tp=16, freq=0, t=None, flipangle=None, **kwargs) -> None:
+        """
+
+        Parameters
+        ----------
+        tp : flaot, optional
+            Pulse Length in ns, by default 16
+        freq : float,optional
+            Frequency in MHz, by default 0
+        t : float, optional
+            Time position in ns, by default None
+        flipangle : _type_, optional
+            The flip angle in radians, by default None
+        """
         Pulse.__init__(
             self, tp=tp, t=t, flipangle=flipangle, **kwargs)
         self.freq = Parameter("freq", freq, "GHz", "Frequency of the Pulse")

@@ -4,6 +4,8 @@ import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
 from pathlib import Path
 import sys, traceback, os
+from threadpoolctl import threadpool_limits
+
 
 from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
 import matplotlib.pyplot as plt
@@ -94,15 +96,18 @@ def fieldsweep_fit(fsweep_analysis):
 
     return fsweep_analysis
 
-def respro_process(dataset, freq_axis, fieldsweep=None):
+def respro_process(dataset, freq_axis, fieldsweep=None,cores=1):
     respro = ad.ResonatorProfileAnalysis(
         nuts = dataset.data.T,
         freqs = freq_axis,
         dt=2
     )
+    print(1)
     respro.process_nutations(threshold=4)
     
-    respro.fit()
+    with threadpool_limits(limits=cores, user_api='blas'):
+        respro.fit()
+    print(2)
 
     if fieldsweep is not None:
         LO_new = fieldsweep.LO + ad.optimise_spectra_position(respro, fieldsweep)
@@ -134,6 +139,10 @@ class autoDEERUI(QMainWindow):
         logo_pixmap = logo_pixmap.scaledToHeight(60)
         self.logo.setPixmap(logo_pixmap)
         self.set_spectrometer_connected_light(0)
+
+        self.setWindowTitle("autoDEER")
+
+        
 
         self.qDEER_tab.layout().addWidget(DEERplot())
         self.q_DEER = self.qDEER_tab.layout().itemAt(0).widget()
@@ -176,8 +185,8 @@ class autoDEERUI(QMainWindow):
         self.OptimisePulsesButton.clicked.connect(lambda: self.optimise_pulses_button())
 
         self.Tab_widget.setCurrentIndex(0)
-
-        self.current_folder = ''
+        # set current folder to home directory
+        self.current_folder = str(Path.home())
         self.config = None
         self.connected = False
         self.pulses = {}
@@ -258,9 +267,14 @@ class autoDEERUI(QMainWindow):
         self.LO = self.config['Resonators'][key1]['Center Freq']
 
         # Get user preferences
-        self.cores = int(self.config['autoDEER']['cores'])
-        self.q_DEER.cores = self.cores
-        self.longDEER.cores = self.cores
+        try:
+            self.cores = int(self.config['autoDEER']['cores'])
+            self.q_DEER.cores = self.cores
+            self.longDEER.cores = self.cores
+        except:
+            self.q_DEER.cores = 1
+            self.longDEER.cores = 1
+
 
 
     def connect_spectrometer(self):
@@ -376,7 +390,7 @@ class autoDEERUI(QMainWindow):
             f_axis = dataset.params['parvars'][2]['vec'][:,1] + dataset.params['LO']
 
 
-        worker = Worker(respro_process, dataset, f_axis)
+        worker = Worker(respro_process, dataset, f_axis, cores=self.cores)
         worker.signals.result.connect(self.refresh_respro)
 
         self.threadpool.start(worker)
@@ -606,6 +620,8 @@ class autoDEERUI(QMainWindow):
         worker.signals.relax_result.connect(self.update_relax)
         worker.signals.quickdeer_result.connect(self.update_quickdeer)
         worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
+        worker.signals.longdeer_update.connect(self.longDEER.refresh_deer)
+
         worker.signals.reptime_scan_result.connect(self.update_reptime)
 
         worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
@@ -658,7 +674,9 @@ class autoDEERUI(QMainWindow):
         self.threadpool.start(worker)
 
     def create_report(self):
-        report = ad.Reporter(filepath='hello.pdf',pagesize='A4')
+        save_path = QtGui.QFileDialog.getSaveFileName(self, 'Save File', self.current_folder, ".pdf")
+
+        report = ad.Reporter(filepath=save_path,pagesize='A4')
 
         report.add_title('title','autoDEER Report')
         if self.connected:
@@ -745,6 +763,10 @@ class autoDEERUI(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication([])
+    app.setWindowIcon(QtGui.QIcon('icons:Square_logo.png'))
+    app.setApplicationName('autoDEER')
+    app.setApplicationDisplayName('autoDEER')
+    app.setApplicationVersion(str(ad.__version__))
     window = autoDEERUI()
     window.show()
     app.exec()
