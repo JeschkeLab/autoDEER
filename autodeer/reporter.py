@@ -18,10 +18,10 @@ from collections import OrderedDict
 styles = getSampleStyleSheet()
 
 
-package_dir = __file__.split('autodeer')[0]
+package_dir = os.path.dirname(os.path.split(__file__)[0])
 
 class SvgFlowable(Flowable):
-    """Convert byte stream containing SVG into a Reportlab Flowable."""
+    """Convert byte streasm containing SVG into a Reportlab Flowable."""
 
     def __init__(self, svg: BytesIO) -> None:
         """Convert SVG to RML drawing on initializtion."""
@@ -67,11 +67,11 @@ class Reporter():
             pass
     
     def header(self, canvas, doc):
-        logo = package_dir + os.path.abspath('/docsrc/_static/autoDEER_light.png')
+        logo = os.path.abspath(package_dir + '/docsrc/_static/autoDEER_light.png')
         canvas.saveState()
         canvas.setFont('Times-Bold',12)
         date_str = date.today().strftime("%d/%m/%Y")
-        canvas.drawImage(logo, 2, doc.height+80, width=215, height=50,mask='auto')
+        canvas.drawImage(logo, 10, doc.height+80, width=215, height=50,mask='auto')
 
         canvas.drawCentredString(doc.width-2, doc.height+95, f'autodeer report: {date_str}')
         canvas.restoreState()
