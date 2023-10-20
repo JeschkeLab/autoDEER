@@ -45,7 +45,7 @@ class TimeCriteria(Criteria):
 class SNRCriteria(Criteria):
 
     def __init__(
-            self, SNR_target: int, description: str = None) -> None:
+            self, SNR_target: int, description: str = None,verbosity=0) -> None:
         """Criteria testing for signal to noise ratio. This checks the SNR of 
         the normalised absolute data using the deerlab SNR noise estimation
         which is based on the work by Stoher et. al. [1]
@@ -69,12 +69,15 @@ class SNRCriteria(Criteria):
         2008, p5.4
         """
 
-        def test_func(data: Dataset, verbosity=0):
+        def test_func(data: Dataset, verbosity=verbosity):
             # Normalise data
             norm_data = data.data / data.data.max()
             std = der_snr(np.abs(norm_data))
             snr = 1/std
-            return snr > SNR_target
+            test = snr > SNR_target
+            if verbosity>1:
+                print(f"Test: {test}\t - SNR:{snr}")
+            return test
 
         super().__init__("SNR Criteria", test_func, description)
 

@@ -439,7 +439,8 @@ class ResonatorProfileAnalysis:
         gauss_model.mean.set(par0=34.05, lb=33, ub=35)
         gauss_model.std.set(par0=0.3, lb=0.01, ub=10)
         result_gauss = dl.fit(gauss_model, self.prof_data, self.prof_frqs)
-        lorenz.fc.par0 = result_gauss.mean
+        lorenz.fc.set(par0=result_gauss.mean,lb=result_gauss.mean-0.1,ub=result_gauss.mean+0.1)
+
         self.lorenz_model = lorenz
         results = dl.fit(lorenz, self.prof_data, self.prof_frqs)
         self.results = results
