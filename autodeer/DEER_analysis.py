@@ -12,6 +12,7 @@ from scipy.interpolate import interp1d
 import re
 import numbers
 import scipy.signal as sig
+from scipy.optimize import minimize,brute
 
 
 log = logging.getLogger('core.DEER')
@@ -818,8 +819,8 @@ def functional(f_axis,fieldsweep,A,B,filter=None,A_shift=0,B_shift=0):
 
 
 
-def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='grid',
-                    nDEER=False, num_ref_pulses=2):
+def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute',
+                    nDEER=False, num_ref_pulses=2, full_output=False):
     """Optimise the pulse positions to maximise the pump-exc overlap.
 
     Parameters
@@ -881,11 +882,17 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
             X,Y = np.meshgrid(f,f)
             Z = [fun([x,y]) for x,y in zip(X.flatten(),Y.flatten())]
             Z = np.array(Z).reshape(X.shape)
-            fA,fB = np.unravel_index(Z.argmin(), Z.shape)
+            f_idA,f_idB = np.unravel_index(Z.argmin(), Z.shape)
+            fA = f[f_idA]
+            fB = f[f_idB]
+            fval = Z.min()
+        elif method == 'brute':
+            [fA,fB] ,fval,_,_ = brute(fun,(slice(f.min(),f.max(),0.01),slice(f.min(),f.max(),0.01)),full_output=True)
+        
             if verbosity > 1:
-                print(f"Filter: {filter:<8} Functional:{Z.min():.3f} \t Pump shift: {f[fA]*1e3:.1f}MHz \t Exc/Ref shift: {f[fB]*1e3:.1f}MHz")
+                print(f"Filter: {filter:<8} Functional:{Z.min():.3f} \t Pump shift: {fA*1e3:.1f}MHz \t Exc/Ref shift: {fB*1e3:.1f}MHz")
 
-        return Z.min(), f[fA], f[fB]
+        return fval, fA, fB
     
     if isinstance(filter, list):
         results = [optimise(f) for f in filter]
@@ -898,7 +905,7 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
         if verbosity > 0:
             print(f"Filter: None Functional:{funct:.3f} \t Pump shift: {fA*1e3:.1f}MHz \t Exc/Ref shift: {fB*1e3:.1f}MHz")
     else:
-        funct, fA, fB = optimise(filter)
+        funct, fA, fB  = optimise(filter)
         if verbosity > 0:
             print(f"Filter: {filter:<8} Functional:{funct:.3f} \t Pump shift: {fA*1e3:.1f}MHz \t Exc/Ref shift: {fB*1e3:.1f}MHz")
 
@@ -912,9 +919,15 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
         new_ref_pulse = shift_pulse_freq(new_ref_pulse,fB)
 
     if isinstance(filter, list):
-        return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best]
+        if full_output:
+            return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best],funct
+        else:
+            return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best]
     else:
-        return new_pump_pulse, new_exc_pulse, new_ref_pulse,
+        if full_output:
+            return new_pump_pulse, new_exc_pulse, new_ref_pulse, funct
+        else:
+            return new_pump_pulse, new_exc_pulse, new_ref_pulse,
 
 
 def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, respro=None, num_ref_pulses=2, axs=None, fig=None):

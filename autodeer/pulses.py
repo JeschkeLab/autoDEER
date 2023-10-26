@@ -793,11 +793,24 @@ class ChirpPulse(Pulse):
 # =============================================================================
 
 class SincPulse(Pulse):
-    """
-    Represents a sinc shaped monochromatic pulse.
-    """
+
 
     def __init__(self, *, tp=128, freq=0, order=6, window=None, **kwargs) -> None:
+        """    Represents a sinc shaped monochromatic pulse.
+
+
+        Parameters
+        ----------
+        tp : int
+            Pulse length in ns, by default 128
+        freq : int, optional
+            The frequency of the pulse, by default 0
+        order : int, optional
+            The order of this sinc function, by default 6
+        window : _type_, optional
+            The window function, by default None
+        """
+
         Pulse.__init__(self, tp=tp, **kwargs)
         self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
 
@@ -815,4 +828,34 @@ class SincPulse(Pulse):
         AM = np.sinc(self.order.value * ax)
 
         return AM, FM
-        
+    
+class GaussianPulse(Pulse):
+    """
+    Represents a Gaussian monochromatic pulse.
+    """
+
+    def __init__(self, *, tp=128, freq=0, **kwargs) -> None:
+        """    Represents a Gaussian monochromatic pulse.
+
+
+        Parameters
+        ----------
+        tp : int
+            Pulse length in ns, by default 128
+        freq : int, optional
+            The frequency of the pulse, by default 0
+        """
+
+        Pulse.__init__(self, tp=tp, **kwargs)
+        self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
+
+        self._buildFMAM(self.func)
+        pass
+
+
+    def func(self, ax):
+        nx = ax.shape[0]
+        FM = np.zeros(nx) + self.freq.value
+        AM = np.exp(-ax**2)
+
+        return AM, FM

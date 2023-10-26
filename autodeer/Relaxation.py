@@ -44,7 +44,7 @@ class CarrPurcellAnalysis:
         if type == "mono":
             self.func = lambda x, a, b, e: a*np.exp(-b*x**e)
             p0 = [1, 1, 2]
-            bounds = ([0, 0, 0, 0],[2, 1000, 10, 1000])
+            bounds = ([0, 0, 0],[2, 1000, 10])
         elif type == "double":
             self.func = lambda x, a, b, e, c, d, f: a*np.exp(-b*x**e) + c*np.exp(-d*x**f)
             p0 = [1, 1, 2, 1, 1, 2]
