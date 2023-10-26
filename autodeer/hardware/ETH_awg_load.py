@@ -410,8 +410,8 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
             if exp_dim == 2:
                 ref_echo_unravel = np.unravel_index(ref_echo, absofsum.shape)
                 e_idx = np.argmax(sig.convolve(
-                    np.abs(dta_dc[:, ref_echo_unravel[0],
-                    ref_echo_unravel[1]]), convshape, mode="same"))
+                    np.abs(dta_dc[:, ref_echo_unravel[1],
+                    ref_echo_unravel[0]]), convshape, mode="same"))
 
             else:
                 e_idx = np.argmax(sig.convolve(

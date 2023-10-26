@@ -123,7 +123,7 @@ def relax_process(dataset):
     else:
         dataset.axes = [dataset.axes[0]]
     CP_data = ad.CarrPurcellAnalysis(dataset)
-    CP_data.fit()
+    CP_data.fit('double')
 
     return CP_data
 
@@ -636,12 +636,7 @@ class autoDEERUI(QMainWindow):
             QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
             return None
         
-        # Block the autoDEER buttons
-        self.FullyAutoButton.setEnabled(False)
-        self.AdvancedAutoButton.setEnabled(False)
-
-        self.waitCondition = QtCore.QWaitCondition()
-        mutex = QtCore.QMutex()
+        
         userinput = {}
         userinput['MaxTime'] = self.MaxTime.value()
         userinput['sample'] = self.SampleName.text()
@@ -655,27 +650,38 @@ class autoDEERUI(QMainWindow):
         userinput['PumpPulse'] = self.PumpPulseSelect.currentText()
         userinput['DEER_update_func'] = self.q_DEER.refresh_deer
 
+        # Block the autoDEER buttons
+        self.FullyAutoButton.setEnabled(False)
+        self.AdvancedAutoButton.setEnabled(False)
+
+        self.waitCondition = QtCore.QWaitCondition()
+        mutex = QtCore.QMutex()
+
 
         worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
             results=self.current_results,LO=self.LO, gyro = self.gyro,
-            userinput=userinput )
+            user_inputs=userinput, cores=self.cores )
         worker.signals.status.connect(self.msgbar.setText)
         worker.signals.fsweep_result.connect(self.update_fieldsweep)
         worker.signals.respro_result.connect(self.update_respro)
         worker.signals.optimise_pulses.connect(self.optimise_pulses)
         worker.signals.relax_result.connect(self.update_relax)
         worker.signals.quickdeer_result.connect(self.update_quickdeer)
+        worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
+        worker.signals.longdeer_update.connect(self.longDEER.refresh_deer)
+
+        worker.signals.reptime_scan_result.connect(self.update_reptime)
+
         worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
         worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
-        worker.signals.reptime_scan_result.connect(self.update_reptime)
 
 
         self.threadpool.start(worker)
 
     def create_report(self):
-        save_path = QtGui.QFileDialog.getSaveFileName(self, 'Save File', self.current_folder, ".pdf")
-
+        save_path = QFileDialog.getSaveFileName(self, 'Save File', self.current_folder, ".pdf")
+        save_path = save_path[0] + save_path[1]
         report = ad.Reporter(filepath=save_path,pagesize='A4')
 
         report.add_title('title','autoDEER Report')
