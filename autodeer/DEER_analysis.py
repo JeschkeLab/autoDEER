@@ -214,6 +214,9 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
             fit.ROI[0] = 1
         rec_tau_max = tau_max(fit.ROI[1])
         fit.rec_tau_max = rec_tau_max
+        dt_rec = lambda r: (r**3 *0.85)/(4*52.04)
+        fit.rec_dt = np.min([dt_rec(fit.ROI[0]), 8e-3])
+
         return fit, rec_tau_max
     else:
         fit.ROI=None
