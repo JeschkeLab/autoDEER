@@ -1,6 +1,6 @@
 from autodeer.classes import Interface, Parameter
 from autodeer.dataset import Dataset
-from autodeer.pulses import Delay, Detection
+from autodeer.pulses import Delay, Detection, RectPulse
 from autodeer.hardware.XeprAPI_link import XeprAPILink
 from autodeer.hardware.Bruker_tools import PulseSpel, run_general,PSPhaseCycle, write_pulsespel_file
 from autodeer.sequences import Sequence, HahnEchoSequence
@@ -64,7 +64,7 @@ class BrukerMPFU(Interface):
     def launch(self, sequence: Sequence, savename: str, start=True, tune=True):
                     
         channels = _MPFU_channels(sequence)
-        pcyc = PSPhaseCycle(sequence,self.MPFU)
+        # pcyc = PSPhaseCycle(sequence,self.MPFU)
 
         N_channels = len(channels)
 
@@ -74,8 +74,7 @@ class BrukerMPFU(Interface):
                 "Only {len(self.MPFU)} are avaliable on this spectrometer.")
         
         if tune:
-            tuner = MPFUtune(self,sequence.B.value, sequence.LO.value)
-            tuner.tune(channels)
+            MPFUtune(self,sequence, channels)
 
         # PSpel = PulseSpel(sequence, MPFU=self.MPFU)
         def_file, exp_file = write_pulsespel_file(sequence,False,self.MPFU)
@@ -171,12 +170,188 @@ def _MPFU_channels(sequence):
 # =============================================================================
 
 
-class MPFUtune:
+
+def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
+             bounds=[0, 100]):
+
+    hardware_wait=5
+    def tune_phase(
+        channel: str, target: str, tol=0.1, maxiter=30) -> float:
+        """Tunes the phase of a given channel to a given target using the
+        standard scipy optimisation scripts. 
+
+        Parameters
+        ----------
+        channel : str
+            The chosen MPFU channel. Options: ['+<x>', '-<x>', '+<y>', '-<y>']
+        target : str
+            The target echo position, this can either be maximising (+) or
+            minimising (-) either the real (R) or imaginary (I) of the echo. 
+            Options: ['R+', 'R-', 'I+', 'I-']
+        tol : float, optional
+            The tolerance in phase parameter, by default 0.1
+        maxiter : int, optional
+            The maximum number of iterations in the optimisation, by default 30
+
+        Returns
+        -------
+        float
+            The optimal value of the phase parameter
+
+        """
+
+        channel_opts = ['+<x>', '-<x>', '+<y>', '-<y>']
+        phase_opts = ['R+', 'R-', 'I+', 'I-']
+
+        if channel not in channel_opts:
+            raise ValueError(f'Channel must be one of: {channel_opts}')
+    
+        if target not in phase_opts:
+            raise ValueError(f'Phase target must be one of: {phase_opts}')
+        if channel == '+<x>':
+            phase_channel = 'BrXPhase'
+        elif channel == '-<x>':
+            phase_channel = 'BrMinXPhase'
+        elif channel == '+<y>':
+            phase_channel = 'BrYPhase'
+        elif channel == '-<y>':
+            phase_channel = 'BrMinYPhase'
+
+        if target == 'R+':
+            test_fun = lambda x: -1 * np.real(x)
+        elif target == 'R-':
+            test_fun = lambda x: 1 * np.real(x)
+        elif target == 'I+':
+            test_fun = lambda x: -1 * np.imag(x)
+        elif target == 'I-':
+            test_fun = lambda x: 1 * np.imag(x)
+
+        lb = 0.0
+        ub = 100.0
+
+        def objective(x, *args):
+            # x = x[0]
+            interface.api.hidden[phase_channel].value = x  # Set phase to value
+            time.sleep(hardware_wait)
+            interface.api.run_exp()
+            while interface.api.is_exp_running():
+                time.sleep(1)
+            data = interface.api.acquire_scan()
+            v = data.data
+
+            val = test_fun(np.sum(v))
+
+            print(f'Phase Setting = {x:.1f} \t Echo Amplitude = {-1*val:.2f}')
+
+            return val
+
+        output = minimize_scalar(
+            objective, method='bounded', bounds=[lb, ub],
+            options={'xatol': tol, 'maxiter': maxiter})
+        result = output.x
+        print(f"Optimal Phase Setting for {phase_channel} is: {result:.1f}")
+        interface.api.hidden[phase_channel].value = result
+        return result
+
+    def tune_power(
+            channel: str, tol=0.1, maxiter=30,
+            bounds=[0, 100]) -> float:
+            """Tunes the attenuator of a given channel to a given target using the
+            standard scipy optimisation scripts. 
+
+            Parameters
+            ----------
+            channel : str
+                The chosen MPFU channel. Options: ['+<x>', '-<x>', '+<y>', '-<y>']
+            tol : float, optional
+                The tolerance in attenuator parameter, by default 0.1
+            maxiter : int, optional
+                The maximum number of iterations in the optimisation, by default 30
+
+            Returns
+            -------
+            float
+                The optimal value of the attenuator parameter
+
+            """
+            channel_opts = ['+<x>', '-<x>', '+<y>', '-<y>']
+            if channel not in channel_opts:
+                raise ValueError(f'Channel must be one of: {channel_opts}')
+            
+            if channel == '+<x>':
+                atten_channel = 'BrXAmp'
+            elif channel == '-<x>':
+                atten_channel = 'BrMinXAmp'
+            elif channel == '+<y>':
+                atten_channel = 'BrYAmp'
+            elif channel == '-<y>':
+                atten_channel = 'BrMinYAmp'
+
+            lb = bounds[0]
+            ub = bounds[1]
+
+            def objective(x, *args):
+                interface.api.hidden[atten_channel].value = x  # Set phase to value
+                time.sleep(hardware_wait)
+                interface.api.run_exp()
+                while interface.api.is_exp_running():
+                    time.sleep(1)
+                data = interface.api.acquire_scan()
+                v = data.data
+
+                val = -1 * np.sum(np.abs(v))
+
+                print(f'Power Setting = {x:.1f} \t Echo Amplitude = {-1*val:.2f}')
+
+                return val
+
+            output = minimize_scalar(
+                objective, method='bounded', bounds=[lb, ub],
+                options={'xatol': tol, 'maxiter': maxiter})
+            result = output.x
+            print(f"Optimal Power Setting for {atten_channel} is: {result:.1f}")
+            interface.api.hidden[atten_channel].value = result
+            return result
+    
+    for i,channel in enumerate(channels):
+        MPFU_chanel = interface.MPFU[i]
+        if MPFU_chanel == '+<x>':
+            phase_cycle = 'BrXPhase'
+        elif MPFU_chanel == '-<x>':
+            phase_cycle = 'BrMinXPhase'
+        elif MPFU_chanel == '+<y>':
+            phase_cycle = 'BrYPhase'
+        elif MPFU_chanel == '-<y>':
+            phase_cycle = 'BrMinYPhase'
+        
+        tau = Parameter("tau",tau,dim=4,step=0)
+
+        exc_pulse = RectPulse(freq=0, tp = np.around(channel[0] * np.pi/2), scale=1, flipangle = np.pi/2)
+        ref_pulse = RectPulse(freq=0, tp = np.around(channel[0] * np.pi), scale=1, flipangle = np.pi)
+        
+        seq = HahnEchoSequence(
+            B=sequence.B,LO=sequence.LO,reptime=sequence.reptime,averages=1,
+            shots=10, tau=tau, exc_pulse=exc_pulse, ref_pulse=ref_pulse)
+        
+        seq.evolution([tau])
+
+        interface.launch(seq, savename="autoTUNE", start=False, tune=False)
+
+
+        interface.api.set_PulseSpel_phase_cycling(phase_cycle)
+        print(f"Tuning channel: {channel}")
+        tune_power(channel, tol=tol, bounds=bounds)
+        tune_phase(channel, channels[channel], tol=tol)
+
+
+
+
+class MPFUtune1:
     """
     Tuning MPFU channels for optimal attenuation and phase
     """
     def __init__(
-        self, interface, B, LO, echo="Hahn", ps_length=16, d0=680, srt=6e6) -> None:
+        self, interface, B, LO, echo="Hahn", ps_length=16, d0=680, srt=6e6,) -> None:
         """
         Parameters
         ----------
