@@ -217,7 +217,7 @@ class Parameter:
             if step == 0:
                 axis = np.zeros(dim)
             else:
-                axis = np.arange(start=0, stop= dim*step+start,step=step)
+                axis = np.arange(start=start, stop= dim*step+start,step=step)
             self.add_axis(axis=axis,axis_id=axis_id)
         
 

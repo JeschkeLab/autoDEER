@@ -1521,7 +1521,7 @@ class FieldSweepSequence(HahnEchoSequence):
 
 
         self.B = Parameter(
-            "B", value=B-Bwidth/2, step=1, dim=Bwidth, unit="Gauss", description="Field sweep width"
+            "B", value=B, start = -Bwidth/2, step=1, dim=Bwidth, unit="Gauss", description="Field sweep width"
         )
         
         self.evolution([self.B])

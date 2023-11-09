@@ -1,5 +1,6 @@
 from autodeer.sequences import Sequence
 from autodeer.pulses import RectPulse, Delay, Detection
+from autodeer.utils import gcd
 import numpy as np
 import re
 import time
@@ -786,6 +787,7 @@ def get_arange(array):
 
     return start,stop+step, step
 
+
 def build_unique_progtable(seq):
     progtable = seq.progTable
     unique_axs = np.unique(progtable["axID"])
@@ -806,7 +808,7 @@ def build_unique_progtable(seq):
             start,_, step = get_arange(axis)
             steps.append(step)
         if np.any(steps):
-            common_step = np.gcd.reduce(steps)
+            common_step = gcd(steps)
             multipliers = np.array(steps)/common_step
         else:
             common_step = 0
@@ -1000,7 +1002,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
             stop = 'sx'
             foot = f"dx=dx+{axis_step_hash[ax]}\n"+ foot
         elif param == 'y':
-            stop == 'sy'
+            stop = 'sy'
             foot = f"dy=dy+{axis_step_hash[ax]}\n"+ foot
         else:
             stop = loop_dims.pop()

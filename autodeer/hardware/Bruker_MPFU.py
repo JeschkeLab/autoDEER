@@ -61,7 +61,8 @@ class BrukerMPFU(Interface):
     def acquire_dataset(self) -> Dataset:
         return self.api.acquire_dataset()
     
-    def launch(self, sequence: Sequence, savename: str, start=True, tune=True):
+    def launch(self, sequence: Sequence, savename: str, start=True, tune=True,
+               MPFU_overwrite=None):
                     
         channels = _MPFU_channels(sequence)
         # pcyc = PSPhaseCycle(sequence,self.MPFU)
@@ -76,16 +77,22 @@ class BrukerMPFU(Interface):
         if tune:
             MPFUtune(self,sequence, channels)
 
+        if MPFU_overwrite is None:
+            MPFU_chans = self.MPFU
+        else:
+            MPFU_chans = MPFU_overwrite
         # PSpel = PulseSpel(sequence, MPFU=self.MPFU)
-        def_file, exp_file = write_pulsespel_file(sequence,False,self.MPFU)
+        def_file, exp_file = write_pulsespel_file(sequence,False,MPFU_chans)
         PSpel_file = self.temp_dir + "/autoDEER_PulseSpel"
         # PSpel.save(PSpel_file)
         save_file(PSpel_file +'.def',def_file)
         save_file(PSpel_file +'.exp',exp_file)
         self.api.set_field(sequence.B.value)
         self.api.set_freq(sequence.LO.value)
-        if hasattr(sequence,"Bwidth"):
-            self.api.set_sweep_width(sequence.Bwidth.value)
+        if 'B' in sequence.progTable['Variable']:
+            idx = sequence.progTable['Variable'].index('B')
+            B_axis = sequence.progTable['axis'][idx]
+            self.api.set_sweep_width(B_axis.max()-B_axis.min())
         
         run_general(self.api,
             ps_file= [PSpel_file],
@@ -172,7 +179,7 @@ def _MPFU_channels(sequence):
 
 
 def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
-             bounds=[0, 100]):
+             bounds=[0, 100],tau_value=400):
 
     hardware_wait=5
     def tune_phase(
@@ -250,7 +257,11 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
             options={'xatol': tol, 'maxiter': maxiter})
         result = output.x
         print(f"Optimal Phase Setting for {phase_channel} is: {result:.1f}")
-        interface.api.hidden[phase_channel].value = result
+        try:
+            interface.api.hidden[phase_channel].value = result
+        except:
+            pass
+
         return result
 
     def tune_power(
@@ -313,6 +324,19 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
             interface.api.hidden[atten_channel].value = result
             return result
     
+    def phase_to_echo(phase):
+
+        if np.isclose(phase,0):
+            return 'R+'
+        elif np.isclose(phase,np.pi):
+            return 'R-'
+        elif np.isclose(phase,np.pi/2):
+            return 'I+'
+        elif np.isclose(phase,3*np.pi/2) or np.isclose(phase,-np.pi/2):
+            return 'I-'
+        else:
+            raise ValueError('Phase must be a multiple of pi/2')
+
     for i,channel in enumerate(channels):
         MPFU_chanel = interface.MPFU[i]
         if MPFU_chanel == '+<x>':
@@ -324,24 +348,25 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
         elif MPFU_chanel == '-<y>':
             phase_cycle = 'BrMinYPhase'
         
-        tau = Parameter("tau",tau,dim=4,step=0)
+        tau = Parameter("tau",tau_value,dim=4,step=0)
 
-        exc_pulse = RectPulse(freq=0, tp = np.around(channel[0] * np.pi/2), scale=1, flipangle = np.pi/2)
-        ref_pulse = RectPulse(freq=0, tp = np.around(channel[0] * np.pi), scale=1, flipangle = np.pi)
+        exc_pulse = RectPulse(freq=0, tp = np.around(np.pi/2 /channel[0]), scale=1, flipangle = np.pi/2)
+        ref_pulse = RectPulse(freq=0, tp = np.around(np.pi / channel[0] ), scale=1, flipangle = np.pi)
         
         seq = HahnEchoSequence(
             B=sequence.B,LO=sequence.LO,reptime=sequence.reptime,averages=1,
             shots=10, tau=tau, exc_pulse=exc_pulse, ref_pulse=ref_pulse)
-        
+        seq.pulses[0].pcyc = {'Phases': [0], 'DetSigns': [1.0]}
+        seq._buildPhaseCycle()
         seq.evolution([tau])
 
-        interface.launch(seq, savename="autoTUNE", start=False, tune=False)
+        interface.launch(seq, savename="autoTUNE", start=False, tune=False, MPFU_overwrite=[MPFU_chanel,MPFU_chanel])
 
 
-        interface.api.set_PulseSpel_phase_cycling(phase_cycle)
-        print(f"Tuning channel: {channel}")
-        tune_power(channel, tol=tol, bounds=bounds)
-        tune_phase(channel, channels[channel], tol=tol)
+        interface.api.set_PulseSpel_phase_cycling('auto')
+        print(f"Tuning channel: {MPFU_chanel}")
+        tune_power(MPFU_chanel, tol=tol, bounds=bounds)
+        tune_phase(MPFU_chanel, phase_to_echo(channel[1]), tol=tol)
 
 
 
