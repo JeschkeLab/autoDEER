@@ -787,7 +787,7 @@ def get_arange(array):
     return start,stop+step, step
 
 def build_unique_progtable(seq):
-    progtable = seq.progtable
+    progtable = seq.progTable
     unique_axs = np.unique(progtable["axID"])
     u_progtable = []
     d_shifts=[]
@@ -811,8 +811,6 @@ def build_unique_progtable(seq):
         multipliers = np.array(steps)/common_step
         n_steps = len(steps)
         vars = [{"variable": variables[i],"multiplier":multipliers[i]} for i in range(n_steps)]
-        u_progtable.append({"axID":axID,"axis":common_axis,"variables":vars})
-
         n_pulses = len(seq.pulses)
         t_shift = np.zeros(n_pulses)
         for var,mul in zip(variables,multipliers):
@@ -820,11 +818,11 @@ def build_unique_progtable(seq):
                 continue
             t_shift[var[0]] = mul
         
-        d_shift = {"axID":axID, "delay_shifts": np.diff(t_shift,prepend=0), "axis":common_axis}
-        d_shifts.append(d_shift) 
+        u_progtable.append({"axID":axID,"axis":common_axis,"variables":vars,"delay_shifts": np.diff(t_shift,prepend=0)})
 
 
-    return u_progtable, d_shifts
+
+    return u_progtable
 
 def _addAWGPulse(self, sequence, pulse_num, id):
     awg_id = id
@@ -886,9 +884,27 @@ def check_variable(var:str, uprog):
         
     return False
     
-def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
+def write_pulsespel_file(sequence, AWG=False, MPFU=False):
+    """Write the pulsespel file for a given sequence. 
 
-    uprogtable = build_unique_progtable(sequence.progTable,sequence)
+    Parameters
+    ----------
+    sequence : Sequence
+        The sequence class to be converted.
+    AWG : bool, optional
+        Is this a pulse spel file for an AWG spectrometer, by default False
+    MPFU : list, optional
+        A list of MPFU channels, by default False
+
+    Returns
+    -------
+    str
+        The string for the definition file
+    str
+        The string for the experiment file
+    """
+
+    uprogtable = build_unique_progtable(sequence)
     possible_delays = [
         "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d10", "d11", "d12",
         "d13", "d14", "d15", "d16", "d17", "d18", "d19", "d20", "d21", "d22",
@@ -911,13 +927,18 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
     dims = "begin defs \n dim s["
     pcyc_str = ""
 
+    prev_pulse = None
     for i,pulse in enumerate(sequence.pulses):
         static_delay_hash[i] = possible_delays.pop()
-        def_file += f"{static_delay_hash[i]} = {pulse.t.value}\n"
+        if prev_pulse is None:
+            def_file += f"{static_delay_hash[i]} = {pulse.t.value}\n"
+        else:
+            def_file += f"{static_delay_hash[i]} = {pulse.t.value - prev_pulse.t.value}\n"
         if type(pulse) is Detection:
             def_file += f"pg = {pulse.tp.value}\n"
         else:
             def_file += f"p{i} = {pulse.tp.value}\n"
+        prev_pulse = pulse
 
     for axis in uprogtable:
         ax_ID = axis["axID"]

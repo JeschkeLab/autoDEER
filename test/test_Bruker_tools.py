@@ -95,6 +95,7 @@ def build_deer_sequence():
 
 def test_write_pulsespel_file_deer_MPFU(build_deer_sequence):
     seq = build_deer_sequence
+    channels = _MPFU_channels(seq)
     MPFU = ["+<x>","-<x>","+<y>","-<y>"]
     def_file, exp_file = write_pulsespel_file(seq,AWG=False,MPFU=MPFU)
     
