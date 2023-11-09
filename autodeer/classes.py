@@ -78,6 +78,15 @@ class Interface:
 
 
         while not condition:
+
+            if not self.isrunning():
+                if keep_running:
+                    self.terminate()
+                    return None
+                else:
+                    msg = "Experiments has finished before criteria met."
+                    raise RuntimeError(msg)
+
             start_time = time.time()
             data = self.acquire_dataset()
             try:
@@ -98,12 +107,6 @@ class Interface:
             condition = criterion.test(data, verbosity)
 
             if not condition:
-                if not self.isrunning():
-                    if keep_running:
-                        return None
-                    else:
-                        msg = "Experiments has finished before criteria met."
-                        raise RuntimeError(msg)
                 end_time = time.time()
                 if (end_time - start_time) < test_interval_seconds:
                     if verbosity > 0:
@@ -223,6 +226,16 @@ class Parameter:
         #     self.axis.append(np.array(axis))
         #     self.ax_id.append(axis_id)
         self.axis.append({"axis":axis, "uuid":self.uuid})
+
+    def get_axis(self):
+        init_value = self.value
+        axes = []
+        for axis in self.axis:
+            axes.append(axis['axis'] + init_value)
+        if len(axes) == 1:
+            return axes[0]
+        else:
+            return axes
 
     def remove_dynamic(self):
         self.axis = []
