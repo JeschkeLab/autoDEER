@@ -2,8 +2,9 @@ from autodeer.classes import Interface
 from autodeer.dataset import Dataset
 from autodeer.pulses import Delay, Detection
 from autodeer.hardware.XeprAPI_link import XeprAPILink
-from autodeer.hardware.Bruker_tools import PulseSpel, run_general
+from autodeer.hardware.Bruker_tools import PulseSpel, run_general, write_pulsespel_file
 from autodeer.sequences import Sequence, HahnEchoSequence
+from autodeer.utils import save_file
 
 import tempfile
 import time
@@ -70,11 +71,12 @@ class BrukerMPFU(Interface):
             raise RuntimeError(
                 f"This sequence requires {N_channels} MPFU" "Channels." 
                 "Only {len(self.MPFU)} are avaliable on this spectrometer.")
-        PSpel = PulseSpel(sequence, MPFU=self.MPFU)
-
+        # PSpel = PulseSpel(sequence, MPFU=self.MPFU)
+        def_file, exp_file = write_pulsespel_file(sequence,False,self.MPFU)
         PSpel_file = self.temp_dir + "/autoDEER_PulseSpel"
-        PSpel.save(PSpel_file)
-
+        # PSpel.save(PSpel_file)
+        save_file(PSpel_file +'.def',def_file)
+        save_file(PSpel_file +'.exp',exp_file)
         self.api.set_field(sequence.B.value)
         self.api.set_freq(sequence.LO.value)
         if hasattr(sequence,"Bwidth"):

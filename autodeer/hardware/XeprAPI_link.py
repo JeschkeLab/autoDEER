@@ -1,13 +1,20 @@
 import numpy as np
 import time
 import os
+import sys
 import yaml
-import XeprAPI
 from autodeer.dataset import Dataset
 from scipy.optimize import minimize_scalar
 import logging
 import re
 
+try:
+    xepr_path = os.popen("Xepr --apipath").read()[:-1]
+    sys.path.append(xepr_path)
+    import XeprAPI
+
+except:
+    raise ImportError("Xepr >2.9 needs to be installed on the computer")
 hw_log = logging.getLogger('hardware.Xepr')
 
 # ============================================================================

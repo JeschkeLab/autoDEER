@@ -968,7 +968,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
 
     # Setup averaging loop
     head += "for k=1 to m \ntotscans(n) \n"
-    def_file += f"k = {sequence.averages.value}\n"
+    def_file += f"m = {sequence.averages.value}\n"
 
     foot = "scansdone(k) \nnext k \n"+foot
 
@@ -1042,7 +1042,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
         pcyc_str = pcyc.__str__()
 
     # Add Pulse Sequence
-    pulse_str = ""
+    pulse_str = "d9\n"
     for id, pulse in enumerate(sequence.pulses):
         if id in mv_delay_hash:
             pulse_str += f"{mv_delay_hash[id]}\n"

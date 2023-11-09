@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 exec(open('autodeer/_version.py').read())
 
@@ -16,7 +16,8 @@ setup(
     version=str(__version__),
     author='Hugo Karas, Gunnar Jeschke, Stefan Stoll and other contributors',
     package_dir={'autodeer': 'autodeer'},
-    packages=['autodeer','autodeer'],
+    # packages=['autodeer','autodeer'],
+    packages=find_packages(),
     url = "https://github.com/HKaras/autoDeer",
     python_requires=">=3.8",
     install_requires=[
