@@ -148,3 +148,34 @@ def autoEPRDecoder(dct):
         data = base64.b64decode(dct['__ndarray__'][2:-1])
         return np.frombuffer(data, dct['dtype']).reshape(dct['shape'])
     return dct
+
+
+def gcd(values:list):
+    """Generates the greatest common dividor on a  list of floats
+
+    Parameters
+    ----------
+    values : list
+        _description_
+    """
+
+    if len(values) == 1:
+        return values[0]
+    
+    if len(values) == 2:
+        a = values[0]
+        b = values[1]
+        while b:
+            a, b = b, a % b
+        return a
+    
+    if len(values) > 2:
+        a = values[0]
+        b = values[1]
+        while b:
+            a, b = b, a % b
+        values[0] = a
+        values.pop(1)
+        return gcd(values)
+    
+    
