@@ -1449,8 +1449,14 @@ class HahnEchoSequence(Sequence):
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
 
-        tau = 500
-        tp = 12
+        if "tau" in kwargs:
+            tau = kwargs["tau"]
+        else:
+            tau = 500
+        if "tp" in kwargs:
+            tp = kwargs["tp"]
+        else:
+            tp = 12
 
         if hasattr(self, "pi2_pulse"):
             self.addPulse(self.pi2_pulse.copy(

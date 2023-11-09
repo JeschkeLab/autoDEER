@@ -1,8 +1,8 @@
-from autodeer.classes import Interface
+from autodeer.classes import Interface, Parameter
 from autodeer.dataset import Dataset
 from autodeer.pulses import Delay, Detection
 from autodeer.hardware.XeprAPI_link import XeprAPILink
-from autodeer.hardware.Bruker_tools import PulseSpel, run_general, write_pulsespel_file
+from autodeer.hardware.Bruker_tools import PulseSpel, run_general,PSPhaseCycle, write_pulsespel_file
 from autodeer.sequences import Sequence, HahnEchoSequence
 from autodeer.utils import save_file
 
@@ -61,9 +61,10 @@ class BrukerMPFU(Interface):
     def acquire_dataset(self) -> Dataset:
         return self.api.acquire_dataset()
     
-    def launch(self, sequence: Sequence, savename: str, start=True):
-        
+    def launch(self, sequence: Sequence, savename: str, start=True, tune=True):
+                    
         channels = _MPFU_channels(sequence)
+        pcyc = PSPhaseCycle(sequence,self.MPFU)
 
         N_channels = len(channels)
 
@@ -71,6 +72,11 @@ class BrukerMPFU(Interface):
             raise RuntimeError(
                 f"This sequence requires {N_channels} MPFU" "Channels." 
                 "Only {len(self.MPFU)} are avaliable on this spectrometer.")
+        
+        if tune:
+            tuner = MPFUtune(self,sequence.B.value, sequence.LO.value)
+            tuner.tune(channels)
+
         # PSpel = PulseSpel(sequence, MPFU=self.MPFU)
         def_file, exp_file = write_pulsespel_file(sequence,False,self.MPFU)
         PSpel_file = self.temp_dir + "/autoDEER_PulseSpel"
@@ -170,7 +176,7 @@ class MPFUtune:
     Tuning MPFU channels for optimal attenuation and phase
     """
     def __init__(
-        self, interface, B0, LO, echo="Hahn", ps_length=16, d0=680, srt=6e6) -> None:
+        self, interface, B, LO, echo="Hahn", ps_length=16, d0=680, srt=6e6) -> None:
         """
         Parameters
         ----------
@@ -192,7 +198,7 @@ class MPFUtune:
         self.api = self.interface.api
         self.MPFU = self.interface.MPFU
         self.hardware_wait = 5  # seconds 
-        self.B0 = B0
+        self.B = B
         self.LO = LO
         self.ps_length = ps_length
         self.d0 = d0
@@ -218,20 +224,25 @@ class MPFUtune:
         #              "srt": self.srt},
         #             run=False
         #             )
-        sequence = HahnEchoSequence(
-            B=self.B,LO=self.LO,reptime=3e6,averages=1,shots=10)
-        
-        sequence.addPulseProg(
-            pulse_id=1,
-            variable="t",
-            axis_id=0,
-            axis=np.linspace(tau,tau,4)
-        )
+        tau = Parameter("tau",tau,dim=4,step=0)
 
-        self.interface.launch(sequence, savename="autoTUNE", start=False)
-        PSpel = PulseSpel(sequence, self.MPFU)
+        
+        seq = HahnEchoSequence(
+            B=self.B,LO=self.LO,reptime=3e6,averages=1,shots=10, tau=tau)
+        
+        seq.evolution([tau])
+
+        self.interface.launch(seq, savename="autoTUNE", start=False, tune=False)
+        # PSpel = PulseSpel(sequence, self.MPFU)
+        def_file, exp_file = write_pulsespel_file(seq,False,self.MPFU)
         file_path = self.interface.temp_dir + "/autoDEER_tune"
-        PSpel.save(file_path)
+        # PSpel.save(file_path)
+        save_file(file_path +'.def',def_file)
+        save_file(file_path +'.exp',exp_file)
+
+        self.api.set_field(seq.B.value)
+        self.api.set_freq(seq.LO.value)
+
 
         run_general(self.api,
                     [file_path],

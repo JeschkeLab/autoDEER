@@ -214,7 +214,10 @@ class Parameter:
                 start = kwargs["start"]
             else:
                 start = 0
-            axis = np.arange(start=0, stop= dim*step+start,step=step)
+            if step == 0:
+                axis = np.zeros(dim)
+            else:
+                axis = np.arange(start=0, stop= dim*step+start,step=step)
             self.add_axis(axis=axis,axis_id=axis_id)
         
 

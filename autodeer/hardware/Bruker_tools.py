@@ -805,10 +805,14 @@ def build_unique_progtable(seq):
         for axis in axes:
             start,_, step = get_arange(axis)
             steps.append(step)
-        common_step = np.gcd.reduce(steps)
+        if np.any(steps):
+            common_step = np.gcd.reduce(steps)
+            multipliers = np.array(steps)/common_step
+        else:
+            common_step = 0
+            multipliers = np.ones(len(steps))
         index = progtable["axID"].index(axID)
         common_axis={"start":start,"dim":np.shape(axes[0])[0],"step":common_step,"reduce":progtable["reduce"][index]}
-        multipliers = np.array(steps)/common_step
         n_steps = len(steps)
         vars = [{"variable": variables[i],"multiplier":multipliers[i]} for i in range(n_steps)]
         n_pulses = len(seq.pulses)
