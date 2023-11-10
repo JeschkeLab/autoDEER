@@ -177,7 +177,67 @@ def _MPFU_channels(sequence):
 
 # =============================================================================
 
+def tune_power(
+            interface, channel: str, tol=0.1, maxiter=30,
+            bounds=[0, 100]) -> float:
+            """Tunes the attenuator of a given channel to a given target using the
+            standard scipy optimisation scripts. 
 
+            Parameters
+            ----------
+            channel : str
+                The chosen MPFU channel. Options: ['+<x>', '-<x>', '+<y>', '-<y>']
+            tol : float, optional
+                The tolerance in attenuator parameter, by default 0.1
+            maxiter : int, optional
+                The maximum number of iterations in the optimisation, by default 30
+
+            Returns
+            -------
+            float
+                The optimal value of the attenuator parameter
+
+            """
+            channel_opts = ['+<x>', '-<x>', '+<y>', '-<y>','ELDOR']
+            if channel not in channel_opts:
+                raise ValueError(f'Channel must be one of: {channel_opts}')
+            
+            if channel == '+<x>':
+                atten_channel = 'BrXAmp'
+            elif channel == '-<x>':
+                atten_channel = 'BrMinXAmp'
+            elif channel == '+<y>':
+                atten_channel = 'BrYAmp'
+            elif channel == '-<y>':
+                atten_channel = 'BrMinYAmp'
+            elif channel == 'ELDOR':
+                atten_channel = 'ELDORAtt'
+
+            lb = bounds[0]
+            ub = bounds[1]
+
+            def objective(x, *args):
+                interface.api.hidden[atten_channel].value = x  # Set phase to value
+                time.sleep(hardware_wait)
+                interface.api.run_exp()
+                while interface.api.is_exp_running():
+                    time.sleep(1)
+                data = interface.api.acquire_scan()
+                v = data.data
+
+                val = -1 * np.sum(np.abs(v))
+
+                print(f'Power Setting = {x:.1f} \t Echo Amplitude = {-1*val:.2f}')
+
+                return val
+
+            output = minimize_scalar(
+                objective, method='bounded', bounds=[lb, ub],
+                options={'xatol': tol, 'maxiter': maxiter})
+            result = output.x
+            print(f"Optimal Power Setting for {atten_channel} is: {result:.1f}")
+            interface.api.hidden[atten_channel].value = result
+            return result
 
 def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
              bounds=[0, 100],tau_value=400):
@@ -264,66 +324,6 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
             pass
 
         return result
-
-    def tune_power(
-            channel: str, tol=0.1, maxiter=30,
-            bounds=[0, 100]) -> float:
-            """Tunes the attenuator of a given channel to a given target using the
-            standard scipy optimisation scripts. 
-
-            Parameters
-            ----------
-            channel : str
-                The chosen MPFU channel. Options: ['+<x>', '-<x>', '+<y>', '-<y>']
-            tol : float, optional
-                The tolerance in attenuator parameter, by default 0.1
-            maxiter : int, optional
-                The maximum number of iterations in the optimisation, by default 30
-
-            Returns
-            -------
-            float
-                The optimal value of the attenuator parameter
-
-            """
-            channel_opts = ['+<x>', '-<x>', '+<y>', '-<y>']
-            if channel not in channel_opts:
-                raise ValueError(f'Channel must be one of: {channel_opts}')
-            
-            if channel == '+<x>':
-                atten_channel = 'BrXAmp'
-            elif channel == '-<x>':
-                atten_channel = 'BrMinXAmp'
-            elif channel == '+<y>':
-                atten_channel = 'BrYAmp'
-            elif channel == '-<y>':
-                atten_channel = 'BrMinYAmp'
-
-            lb = bounds[0]
-            ub = bounds[1]
-
-            def objective(x, *args):
-                interface.api.hidden[atten_channel].value = x  # Set phase to value
-                time.sleep(hardware_wait)
-                interface.api.run_exp()
-                while interface.api.is_exp_running():
-                    time.sleep(1)
-                data = interface.api.acquire_scan()
-                v = data.data
-
-                val = -1 * np.sum(np.abs(v))
-
-                print(f'Power Setting = {x:.1f} \t Echo Amplitude = {-1*val:.2f}')
-
-                return val
-
-            output = minimize_scalar(
-                objective, method='bounded', bounds=[lb, ub],
-                options={'xatol': tol, 'maxiter': maxiter})
-            result = output.x
-            print(f"Optimal Power Setting for {atten_channel} is: {result:.1f}")
-            interface.api.hidden[atten_channel].value = result
-            return result
     
     def phase_to_echo(phase):
 
@@ -366,10 +366,36 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
 
         interface.api.set_PulseSpel_phase_cycling('auto')
         print(f"Tuning channel: {MPFU_chanel}")
-        tune_power(MPFU_chanel, tol=tol, bounds=bounds)
+        tune_power(interface, MPFU_chanel, tol=tol, bounds=bounds)
         tune_phase(MPFU_chanel, phase_to_echo(channel[1]), tol=tol)
 
 
+def ELDORtune(interface, sequence, freq
+             tau_value=400):
+
+    sequence_gyro = sequence.B.value / seqeunce.LO.value
+    new_freq = sequence.LO.value + freq
+    new_B = new_freq * sequence_gyro
+
+    ref_echoseq = Sequence(name='ELDOR tune',B=new_b, LO=new_freq, reptime=sequence.reptime, averages=1, shots=10)
+
+
+    # tune a pair of 90/180 pulses at the eldor frequency
+    test_tp = 16
+    MPFUtune(interface, ref_echoseq, [(np.pi/2 / test_tp,0)],echo='Hahn')
+
+
+    tp = Parameter("tp",16)
+    long_delay = Parameter("long_delay",2000)
+    tau = Parameter("tau",tau_value,dim=4,step=0)
+    ref_echoseq.addPulse(RectPulse(freq=0, t=0, tp=tp, flipangle=np.pi))
+    ref_echoseq.addPulse(RectPulse(freq=0, t=long_delay,tp=tp, flipangle=np.pi/2))
+    ref_echoseq.addPulse(RectPulse(freq=0, tp=long_delay+tau, flipangle=np.pi))
+    ref_echoseq.addPulse(Detection(t=long_delay+2*tau, tp=512))
+    ref_echoseq.evolution([tp])
+    ref_echoseq.pulses[0].pcyc["Channels"] = "ELDOR"
+    
+    tune_power(interface, 'ELDOR', tol=1, bounds=[0,30])
 
 
 class MPFUtune1:
