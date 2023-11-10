@@ -80,7 +80,7 @@ class BrukerMPFU(Interface):
         if MPFU_overwrite is None:
             MPFU_chans = self.MPFU
         else:
-            MPFU_chans = MPFU_overwrite
+            MPFU_chans = MPFU_overwrite  
         # PSpel = PulseSpel(sequence, MPFU=self.MPFU)
         def_file, exp_file = write_pulsespel_file(sequence,False,MPFU_chans)
         PSpel_file = self.temp_dir + "/autoDEER_PulseSpel"
@@ -370,7 +370,7 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
         tune_phase(MPFU_chanel, phase_to_echo(channel[1]), tol=tol)
 
 
-def ELDORtune(interface, sequence, freq
+def ELDORtune(interface, sequence, freq,
              tau_value=400):
 
     sequence_gyro = sequence.B.value / seqeunce.LO.value
@@ -394,7 +394,7 @@ def ELDORtune(interface, sequence, freq
     ref_echoseq.addPulse(Detection(t=long_delay+2*tau, tp=512))
     ref_echoseq.evolution([tp])
     ref_echoseq.pulses[0].pcyc["Channels"] = "ELDOR"
-    
+
     tune_power(interface, 'ELDOR', tol=1, bounds=[0,30])
 
 

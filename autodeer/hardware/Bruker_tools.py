@@ -915,6 +915,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
         "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d10", "d11", "d12",
         "d13", "d14", "d15", "d16", "d17", "d18", "d19", "d20", "d21", "d22",
         "d23", "d24", "d25", "d26", "d27", "d28", "d29", "d30"]
+    possible_pulses= ["p0", "p1","p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9"]
     loop_iterators = ["i","j"]
     loop_dims = ["m","f"]
 
@@ -922,7 +923,9 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
     n_axes = len(uprogtable)
 
     static_delay_hash = {0:"d9"}
+    static_pulse_hash = {}
     mv_delay_hash = {}
+    mv_pulse_hash = {}
     axis_start_hash = {}
     axis_step_hash = {}
     axis_val_hash = {}
@@ -944,10 +947,12 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
             def_file += f"{static_delay_hash[i]} = {pulse.t.value}\n"
         else:
             def_file += f"{static_delay_hash[i]} = {pulse.t.value - prev_pulse.t.value}\n"
+        
         if type(pulse) is Detection:
             def_file += f"pg = {pulse.tp.value}\n"
         else:
-            def_file += f"p{i} = {pulse.tp.value}\n"
+            static_pulse_hash[i] = possible_pulses.pop()
+            def_file += f"{static_pulse_hash[i]} = {pulse.tp.value}\n"
         prev_pulse = pulse
 
     for axis in uprogtable:
@@ -1027,6 +1032,21 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
                     # foot = f"{axis_val_hash[ax]}={axis_val_hash[ax]}{sign}{axis_step_hash[ax]}\n"+ foot
                     foot = f"{mv_delay_hash[i]}={mv_delay_hash[i]}{sign}{axis_step_hash[ax]}\n"+ foot
                 # delay_build += f"{mv_delay_hash[i]} = {mv_delay_hash[i]} + {axis_val_hash[ax]} \n"
+        if check_variable("tp", uprog):
+            for var in uprog["variables"]:
+                if var["variable"][1] != "tp":
+                    continue
+                pulse_id = var["variable"][0]
+                mult = var["multiplier"]
+                mv_pulse_hash[pulse_id] = possible_pulses.pop()
+                head += f"{mv_pulse_hash[pulse_id]} = {static_pulse_hash[pulse_id]}\n"
+                if mult > 0:
+                    sign = "+"
+                else:
+                    sign = "-"
+                for k in range(int(np.abs(mult))):
+                    foot = f"{mv_pulse_hash[pulse_id]}={mv_pulse_hash[pulse_id]}{sign}{axis_step_hash[ax]}\n"+ foot
+
 
         # head +=  f"{axis_val_hash[ax]} = 0\n"
         head += loop_str.format(param=param,stop=stop)
@@ -1069,8 +1089,10 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
         if type(pulse) == Detection:
             pulse_str += f"d0\nacq [sg1]\n"
         else:
-            pulse_str += f"p{id} [{pcyc_hash[id]}]\n"
-
+            if id in mv_pulse_hash:
+                pulse_str += f"{mv_pulse_hash[id]} [{pcyc_hash[id]}]\n"
+            else:
+                pulse_str += f"{static_pulse_hash[id]} [{pcyc_hash[id]}]\n"
 
 
     dims = dims[:-1]

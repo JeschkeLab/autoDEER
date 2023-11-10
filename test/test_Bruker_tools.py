@@ -101,6 +101,14 @@ def test_write_pulsespel_file_deer_MPFU(build_deer_sequence):
     MPFU = ["+<x>","-<x>","+<y>","-<y>"]
     def_file, exp_file = write_pulsespel_file(seq,AWG=False,MPFU=MPFU)
     print(exp_file)
+
+def test_write_pulsespel_file_respro_MPFU():
+    seq = ResonatorProfileSequence(
+        B=12200, LO=34.0, reptime=3e3, averages=1, shots=10)
+    channels = _MPFU_channels(seq)
+    MPFU = ["+<x>","-<x>","+<y>","-<y>"]
+    def_file, exp_file = write_pulsespel_file(seq,AWG=False,MPFU=MPFU)
+    print(exp_file)
     
 
 
