@@ -1,6 +1,6 @@
 from autodeer.tools import eprload
 import numpy as np
-
+from autodeer.utils import gcd
 
 def test_eprload_mat():
     dataset = eprload("test/test_data/Matlab_file_test.mat")

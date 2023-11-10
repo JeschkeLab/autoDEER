@@ -178,4 +178,51 @@ def gcd(values:list):
         values.pop(1)
         return gcd(values)
     
+
+def val_in_us(Param):
+    """Returns the value or axis of a parameter in microseconds
+
+    Parameters
+    ----------
+    Param : autodeer.Parameter
+        The parameter to be converted
+
+    Returns
+    -------
+    float or numpy.ndarray
+    """
+        if len(Param.axis) == 0:
+            if Param.unit == "us":
+                return Param.value
+            elif Param.unit == "ns":
+                return Param.value / 1e3
+        elif len(Param.axis) == 1:
+            if Param.unit == "us":
+                return Param.tau1.value + Param.axis[0]['axis']
+            elif Param.unit == "ns":
+                return (Param.value + Param.axis[0]['axis']) / 1e3 
+
+def val_in_ns(Param):
+     """Returns the value or axis of a parameter in nanoseconds
+
+    Parameters
+    ----------
+    Param : autodeer.Parameter
+        The parameter to be converted
+
+    Returns
+    -------
+    float or numpy.ndarray
+    """
+        if len(Param.axis) == 0:
+            if Param.unit == "us":
+                return Param.value * 1e3
+            elif Param.unit == "ns":
+                return Param.value 
+        elif len(Param.axis) == 1:
+            if Param.unit == "us":
+                return (Param.tau1.value + Param.axis[0]['axis']) * 1e3
+            elif Param.unit == "ns":
+                return (Param.value + Param.axis[0]['axis']) 
+
     

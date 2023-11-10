@@ -1,6 +1,6 @@
 from autodeer.sequences import Sequence
 from autodeer.pulses import RectPulse, Delay, Detection
-from autodeer.utils import gcd
+from autodeer.utils import gcd, val_in_ns, val_in_us
 import numpy as np
 import re
 import time
@@ -933,6 +933,10 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
     dims = "begin defs \n dim s["
     pcyc_str = ""
 
+    # Add shot repetition time
+    
+    def_file += f"srt = {val_in_us(sequence.reptime):.0f} * srtu\n"
+
     prev_pulse = None
     for i,pulse in enumerate(sequence.pulses):
         static_delay_hash[i] = possible_delays.pop()
@@ -1014,10 +1018,17 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
                 if i not in mv_delay_hash:
                     mv_delay_hash[i] = possible_delays.pop()
                     delay_build = f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n" + delay_build 
-                foot = f"{axis_val_hash[ax]}={axis_val_hash[ax]}+{axis_step_hash[ax]}\n"+ foot
-                delay_build += f"{mv_delay_hash[i]} = {mv_delay_hash[i]} + {axis_val_hash[ax]} \n"
+                
+                for k in range(int(np.abs(uprog["delay_shifts"][i]))):
+                    if uprog["delay_shifts"][i] > 0: 
+                        sign = "+"
+                    else: 
+                        sign = "-"
+                    # foot = f"{axis_val_hash[ax]}={axis_val_hash[ax]}{sign}{axis_step_hash[ax]}\n"+ foot
+                    foot = f"{mv_delay_hash[i]}={mv_delay_hash[i]}{sign}{axis_step_hash[ax]}\n"+ foot
+                # delay_build += f"{mv_delay_hash[i]} = {mv_delay_hash[i]} + {axis_val_hash[ax]} \n"
 
-        head +=  f"{axis_val_hash[ax]} = 0\n"
+        # head +=  f"{axis_val_hash[ax]} = 0\n"
         head += loop_str.format(param=param,stop=stop)
 
 

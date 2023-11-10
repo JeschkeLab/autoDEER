@@ -75,7 +75,9 @@ def test_PulseSpel_DEER():
 def build_deer_sequence():
     deer = Sequence(name="4p DEER", B=12220, LO=34.0,reptime=3e3, averages=1, shots=100)
 
-    tau1 = Parameter(name="tau1", value=400, unit="ns", step=16, dim=8, description="The first interpulse delays")
+    # tau1 = Parameter(name="tau1", value=400, unit="ns", step=16, dim=8, description="The first interpulse delays")
+    tau1 = Parameter(name="tau1", value=400, unit="ns", description="The first interpulse delays")
+
     tau2 = Parameter(name="tau2", value=2500, unit="ns", description="The second interpulse delays")
     t = Parameter(name="t", value=-160, step=24, dim=120, unit="ns", description="The time axis")
 
@@ -98,6 +100,7 @@ def test_write_pulsespel_file_deer_MPFU(build_deer_sequence):
     channels = _MPFU_channels(seq)
     MPFU = ["+<x>","-<x>","+<y>","-<y>"]
     def_file, exp_file = write_pulsespel_file(seq,AWG=False,MPFU=MPFU)
+    print(exp_file)
     
 
 

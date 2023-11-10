@@ -153,7 +153,8 @@ def _MPFU_channels(sequence):
         if (pulse.freq.value != 0):
             # This is an ELDOR pulse
             pulse.pcyc["Channels"] = "ELDOR"
-            channels.append("ELDOR")
+            if "ELDOR" not in channels:
+                channels.append("ELDOR")
             continue
 
         if not "Channels" in pulse.pcyc:
