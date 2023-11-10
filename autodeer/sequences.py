@@ -1750,7 +1750,7 @@ class ResonatorProfileSequence(Sequence):
         fstep = 0.02
         dim = np.floor(fwidth*2/0.02)
         center_LO = self.LO.value
-        self.LO = Parameter("LO", center_LO-fwidth, step=0.02, dim=dim, unit="GHz", description="LO frequency")
+        self.LO = Parameter("LO", center_LO, start=-fwidth, step=fstep, dim=dim, unit="GHz", description="LO frequency")
         self.B = Parameter(
             "B",((self.LO.value)/self.gyro), step=fstep/self.gyro, dim=dim,
             unit="Guass",link=self.LO,description="B0 Field" )

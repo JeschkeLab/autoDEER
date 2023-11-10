@@ -535,32 +535,32 @@ class XeprAPILink:
             if self.bridge_config["Digital Source"]:
                 self.hidden['FineFreq'].value = val
                 hw_log.info(f'Bridge Frequency set to {val}Fset')
-            else:
-                if pol is None:
-                    if hasattr(self, "freq_cal"):
-                        pol = self.freq_cal
-                    else:
-                        pol = [-67652.70, 2050.203]
-
-                pol_func = np.polynomial.polynomial.Polynomial(pol)
-                pos = round(pol_func(val))
-                if precision:
-                    self.hidden['Frequency'].value = pos
-                    bounds = [pos-50, pos+50]
-
-                    def objective(x):
-                        self.hidden['Frequency'].value = x
-                        return self.get_counterfreq()
-
-                    output = minimize_scalar(
-                        objective, method='bounded', bounds=bounds,
-                        options={'xatol': 1e-3, 'maxiter': 30})
-                    pos = round(output.x)
-                    self.hidden['Frequency'].value = pos
+        else:
+            if pol is None:
+                if hasattr(self, "freq_cal"):
+                    pol = self.freq_cal
                 else:
-                    self.hidden['Frequency'].value = pos
-        
-                hw_log.info(f'Bridge Frequency set to {val} at position {pos}')
+                    pol = [-67652.70, 2050.203]
+
+            pol_func = np.polynomial.polynomial.Polynomial(pol)
+            pos = round(pol_func(val))
+            if precision:
+                self.hidden['Frequency'].value = pos
+                bounds = [pos-50, pos+50]
+
+                def objective(x):
+                    self.hidden['Frequency'].value = x
+                    return self.get_counterfreq()
+
+                output = minimize_scalar(
+                    objective, method='bounded', bounds=bounds,
+                    options={'xatol': 1e-3, 'maxiter': 30})
+                pos = round(output.x)
+                self.hidden['Frequency'].value = pos
+            else:
+                self.hidden['Frequency'].value = pos
+    
+            hw_log.info(f'Bridge Frequency set to {val} at position {pos}')
 
         return self.hidden['Frequency'].value
 

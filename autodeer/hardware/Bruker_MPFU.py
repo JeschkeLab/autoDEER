@@ -62,7 +62,7 @@ class BrukerMPFU(Interface):
         return self.api.acquire_dataset()
     
     def launch(self, sequence: Sequence, savename: str, start=True, tune=True,
-               MPFU_overwrite=None):
+               MPFU_overwrite=None,update_pulsespel=True):
                     
         channels = _MPFU_channels(sequence)
         # pcyc = PSPhaseCycle(sequence,self.MPFU)
@@ -75,19 +75,34 @@ class BrukerMPFU(Interface):
                 "Only {len(self.MPFU)} are avaliable on this spectrometer.")
         
         if tune:
+            if 'ELDOR' in channels:
+                dif_freq=None
+                for pulse in sequence.pulses:
+                    if pulse.freq.value == 0:
+                        continue
+                    elif dif_freq is None:
+                        dif_freq = pulse.freq.value
+                    elif pulse.freq.value != dif_freq:
+                        raise ValueError('Only one ELDOR frequency is possible')
+
+                ELDORtune(self,sequence,freq=dif_freq)
             MPFUtune(self,sequence, channels)
 
         if MPFU_overwrite is None:
             MPFU_chans = self.MPFU
         else:
-            MPFU_chans = MPFU_overwrite  
-        # PSpel = PulseSpel(sequence, MPFU=self.MPFU)
-        def_file, exp_file = write_pulsespel_file(sequence,False,MPFU_chans)
+            MPFU_chans = MPFU_overwrite
+
         PSpel_file = self.temp_dir + "/autoDEER_PulseSpel"
-        # PSpel.save(PSpel_file)
-        save_file(PSpel_file +'.def',def_file)
-        save_file(PSpel_file +'.exp',exp_file)
-        self.api.set_field(sequence.B.value)
+        if update_pulsespel:
+            # PSpel = PulseSpel(sequence, MPFU=self.MPFU)
+            def_file, exp_file = write_pulsespel_file(sequence,False,MPFU_chans)
+            
+            # PSpel.save(PSpel_file)
+            save_file(PSpel_file +'.def',def_file)
+            save_file(PSpel_file +'.exp',exp_file)
+            self.api.set_field(sequence.B.value)
+        print(sequence.LO.value)
         self.api.set_freq(sequence.LO.value)
         if 'B' in sequence.progTable['Variable']:
             idx = sequence.progTable['Variable'].index('B')
@@ -144,6 +159,8 @@ def _MPFU_channels(sequence):
             continue
         if type(pulse) is Detection:
             continue
+        if ('Channels' in pulse.pcyc) and (pulse.pcyc['Channels'] == 'ELDOR'):
+            continue
 
         if pulse.tp.value == 0:
             flip_power = np.inf
@@ -179,7 +196,7 @@ def _MPFU_channels(sequence):
 
 def tune_power(
             interface, channel: str, tol=0.1, maxiter=30,
-            bounds=[0, 100]) -> float:
+            bounds=[0, 100],hardware_wait=3) -> float:
             """Tunes the attenuator of a given channel to a given target using the
             standard scipy optimisation scripts. 
 
@@ -284,6 +301,7 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
             phase_channel = 'BrYPhase'
         elif channel == '-<y>':
             phase_channel = 'BrMinYPhase'
+        
 
         if target == 'R+':
             test_fun = lambda x: -1 * np.real(x)
@@ -339,6 +357,8 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
             raise ValueError('Phase must be a multiple of pi/2')
 
     for i,channel in enumerate(channels):
+        if channel =='ELDOR':
+            continue
         MPFU_chanel = interface.MPFU[i]
         if MPFU_chanel == '+<x>':
             phase_cycle = 'BrXPhase'
@@ -348,6 +368,7 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
             phase_cycle = 'BrYPhase'
         elif MPFU_chanel == '-<y>':
             phase_cycle = 'BrMinYPhase'
+        
         
         tau = Parameter("tau",tau_value,dim=4,step=0)
 
@@ -366,18 +387,18 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
 
         interface.api.set_PulseSpel_phase_cycling('auto')
         print(f"Tuning channel: {MPFU_chanel}")
-        tune_power(interface, MPFU_chanel, tol=tol, bounds=bounds)
+        tune_power(interface, MPFU_chanel, tol=tol, bounds=bounds,hardware_wait=hardware_wait)
         tune_phase(MPFU_chanel, phase_to_echo(channel[1]), tol=tol)
 
 
 def ELDORtune(interface, sequence, freq,
              tau_value=400):
 
-    sequence_gyro = sequence.B.value / seqeunce.LO.value
+    sequence_gyro = sequence.B.value / sequence.LO.value
     new_freq = sequence.LO.value + freq
     new_B = new_freq * sequence_gyro
 
-    ref_echoseq = Sequence(name='ELDOR tune',B=new_b, LO=new_freq, reptime=sequence.reptime, averages=1, shots=10)
+    ref_echoseq = Sequence(name='ELDOR tune',B=new_B, LO=new_freq, reptime=sequence.reptime, averages=1, shots=10)
 
 
     # tune a pair of 90/180 pulses at the eldor frequency
@@ -390,11 +411,13 @@ def ELDORtune(interface, sequence, freq,
     tau = Parameter("tau",tau_value,dim=4,step=0)
     ref_echoseq.addPulse(RectPulse(freq=0, t=0, tp=tp, flipangle=np.pi))
     ref_echoseq.addPulse(RectPulse(freq=0, t=long_delay,tp=tp, flipangle=np.pi/2))
-    ref_echoseq.addPulse(RectPulse(freq=0, tp=long_delay+tau, flipangle=np.pi))
+    ref_echoseq.addPulse(RectPulse(freq=0, t=long_delay+tau,tp=tp, flipangle=np.pi))
     ref_echoseq.addPulse(Detection(t=long_delay+2*tau, tp=512))
-    ref_echoseq.evolution([tp])
+    ref_echoseq.evolution([tau])
     ref_echoseq.pulses[0].pcyc["Channels"] = "ELDOR"
 
+    interface.launch(ref_echoseq, savename="autoTUNE", start=False, tune=False)
+    print(f"Tuning channel: ELDOR")
     tune_power(interface, 'ELDOR', tol=1, bounds=[0,30])
 
 
