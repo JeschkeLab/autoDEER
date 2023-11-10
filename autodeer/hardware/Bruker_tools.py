@@ -1017,8 +1017,8 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
             for i in changing_pulses:
                 if i not in mv_delay_hash:
                     mv_delay_hash[i] = possible_delays.pop()
-                    delay_build = f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n" + delay_build 
-                
+                    # delay_build = f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n" + delay_build 
+                    head += f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n"
                 for k in range(int(np.abs(uprog["delay_shifts"][i]))):
                     if uprog["delay_shifts"][i] > 0: 
                         sign = "+"
