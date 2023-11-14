@@ -6,7 +6,10 @@ from deerlab.utils import der_snr
 
 
 class Criteria:
-
+    """
+    A class for defining criteria for terminating experiments. This should
+    only be subclassed and not used directly.
+    """
     def __init__(
             self, name: str, test, description: str = None) -> None:
  
