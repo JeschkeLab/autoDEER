@@ -33,6 +33,15 @@ def calc_identifiability(profile):
 # =============================================================================
 
 def find_longest_pulse(sequence):
+    """
+    Finds the longest pulse duration in a given sequence.
+    
+    Args:
+    sequence (Sequence): The sequence to analyze.
+    
+    Returns:
+    float: The duration of the longest pulse in microseconds.
+    """
     longest_pulse = 0
     for pulse in sequence.pulses:
         tp = pulse.tp.value
@@ -88,6 +97,29 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
 
         tp = find_longest_pulse(sequence)
         t = val_in_us(sequence.t)
+    
+    elif 't' in dataset.coords: # If the dataset is a xarray and has sequence data
+        t = dataset['t'].data
+        if 'tau1' in dataset.attrs:
+            tau1 = dataset.attrs['tau1'] / 1e3
+        elif 'tau1' in kwargs:
+            tau1 = kwargs['tau1']
+        else:
+            raise ValueError("tau1 not found in dataset or kwargs")
+        if 'tau2' in dataset.attrs:
+            tau2 = dataset.attrs['tau2'] / 1e3
+        elif 'tau2' in kwargs:
+            tau2 = kwargs['tau2']
+        else:
+            raise ValueError("tau2 not found in dataset or kwargs")
+        if 'tau3' in dataset.attrs:
+            tau3 = dataset.attrs['tau3'] / 1e3
+            exp_type = "5pDEER"
+        elif 'tau3' in kwargs:
+            tau3 = kwargs['tau3']
+            exp_type = "5pDEER"
+        else:
+            exp_type = "4pDEER"
 
     else:
         # Extract params from kwargs
@@ -98,8 +130,12 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
         if "tau3" in kwargs:
             tau3 = kwargs["tau3"]
         exp_type = kwargs["exp_type"]
-        t = dataset.axes[0]
+        # t = dataset.axes[0]
+        t = dataset['X']
 
+    if t.max() > 500:
+        t /= 1e3
+    
 
     if verbosity > 1:
         print(f"")
@@ -206,6 +242,11 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     fit.Vexp = Vexp
     fit.t = t
     fit.mask = mask
+
+    if not hasattr(fit, "P"):
+        fit.P = fit.evaluate(model,r)
+        fit.PUncert = fit.propagate(model,r, lb=np.zeros_like(r))
+    
     
     if ROI:
         tau_max = lambda r: (r**3) *(2/4**3)
@@ -423,7 +464,6 @@ def IdentifyROI(
 
 # =============================================================================
 
-
 def remove_echo(
         Vre: np.ndarray, Vim: np.ndarray, loc: int,
         criteria: float = 4, extent: int = 3) -> np.ndarray:
@@ -465,7 +505,6 @@ def remove_echo(
 
     mask = np.logical_not(mask)
     return mask
-
 
 # =============================================================================
 def calc_overlap_frac(fieldsweep, pump_pulse, exc_pulse):
@@ -740,27 +779,55 @@ def plot_optimal_deer_frqs(
 # Optimising pulse postions
 # =============================================================================
 
-def shift_pulse_freq(pulse,shift):
-    if hasattr(pulse,'freq'):
+def shift_pulse_freq(pulse, shift):
+    """
+    Shifts the frequency of a pulse by a given amount.
+
+    Args:
+        pulse: The pulse whose frequency should be shifted.
+        shift: The amount by which to shift the frequency.
+
+    Returns:
+        The pulse with the shifted frequency.
+    """
+    if hasattr(pulse, 'freq'):
         pulse.freq.value += shift
-    elif hasattr(pulse,'BW'):
-        if hasattr(pulse,'init_freq'):
+    elif hasattr(pulse, 'BW'):
+        if hasattr(pulse, 'init_freq'):
             pulse.init_freq.value += shift
-        elif hasattr(pulse,'final_freq'):
+        elif hasattr(pulse, 'final_freq'):
             pulse.final_freq.value += shift
-    elif hasattr(pulse,'init_freq') and hasattr(pulse,'final_freq'):
+    elif hasattr(pulse, 'init_freq') and hasattr(pulse, 'final_freq'):
         pulse.init_freq.value += shift
         pulse.final_freq.value += shift
     return pulse
 
 def normalise_01(A):
-    # Normalise the vector A to be between 0 and 1
+    """
+    Normalizes the input vector A to be between 0 and 1.
+
+    Parameters:
+    A (numpy.ndarray): Input vector to be normalized.
+
+    Returns:
+    numpy.ndarray: Normalized vector between 0 and 1.
+    """
     A = A - np.min(A)
     A = A / np.max(A)
     return A
 
 def resample_and_shift_vector(A,f,shift):
-    # Resample the vector A along axis f and shift it by shift and return on original axis f
+    """
+    Resample the vector A along axis f and shift it by shift and return on original axis f.
+
+    Parameters:
+    A (numpy.ndarray): The input vector to be resampled and shifted.
+    f (numpy.ndarray): The axis along which to resample the vector.
+    shift (float): The amount by which to shift the resampled vector.
+
+    Returns:
+    numpy.ndarray: The resampled and shifted vector.
+    """
     A = np.interp(f,f+shift,A)
     return A
 
@@ -818,8 +885,6 @@ def functional(f_axis,fieldsweep,A,B,filter=None,A_shift=0,B_shift=0):
         Noise = np.trapz(filter,f_axis)
 
     return -1*(Aspins * Bspins)/np.sqrt(Noise)
-
-
 
 
 def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute',
@@ -889,13 +954,15 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
             fA = f[f_idA]
             fB = f[f_idB]
             fval = Z.min()
+            grid = (X,Y)
+            Jout = Z
         elif method == 'brute':
-            [fA,fB] ,fval,_,_ = brute(fun,(slice(f.min(),f.max(),0.01),slice(f.min(),f.max(),0.01)),full_output=True)
+            [fA,fB] ,fval,grid,Jout = brute(fun,(slice(f.min(),f.max(),0.01),slice(f.min(),f.max(),0.01)),full_output=True)
         
             if verbosity > 1:
                 print(f"Filter: {filter:<8} Functional:{Z.min():.3f} \t Pump shift: {fA*1e3:.1f}MHz \t Exc/Ref shift: {fB*1e3:.1f}MHz")
 
-        return fval, fA, fB
+        return fval, fA, fB,grid,Jout
     
     if isinstance(filter, list):
         results = [optimise(f) for f in filter]
@@ -904,11 +971,11 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
         if verbosity > 0:
             print(f"Best filter: {filter[best]}")
     elif filter is None:
-        funct, fA, fB = optimise(None)
+        funct, fA, fB,grid,Jout = optimise(None)
         if verbosity > 0:
             print(f"Filter: None Functional:{funct:.3f} \t Pump shift: {fA*1e3:.1f}MHz \t Exc/Ref shift: {fB*1e3:.1f}MHz")
     else:
-        funct, fA, fB  = optimise(filter)
+        funct, fA, fB,grid,Jout  = optimise(filter)
         if verbosity > 0:
             print(f"Filter: {filter:<8} Functional:{funct:.3f} \t Pump shift: {fA*1e3:.1f}MHz \t Exc/Ref shift: {fB*1e3:.1f}MHz")
 
@@ -921,14 +988,15 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
     if not nDEER:
         new_ref_pulse = shift_pulse_freq(new_ref_pulse,fB)
 
+
     if isinstance(filter, list):
         if full_output:
-            return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best],funct
+            return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best],funct,grid,Jout
         else:
             return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best]
     else:
         if full_output:
-            return new_pump_pulse, new_exc_pulse, new_ref_pulse, funct
+            return new_pump_pulse, new_exc_pulse, new_ref_pulse, funct,grid,Jout
         else:
             return new_pump_pulse, new_exc_pulse, new_ref_pulse,
 
@@ -980,7 +1048,7 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
 
     if filter == 'Matched':
         # Matched filter
-        filter_profile = exc_Mz
+        filter_profile  = lambda f_new: np.interp(f_new,f,exc_Mz)
     elif isinstance(filter, numbers.Number):
         filter_profile = build__lowpass_butter_filter(filter)
 

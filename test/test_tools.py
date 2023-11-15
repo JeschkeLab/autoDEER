@@ -9,6 +9,7 @@ def test_eprload_mat():
 
 
 def test_eprload_bruker():
-    dataset = eprload("test/test_data/test_DEER.DSC", full_output=True)
-
-    assert type(dataset.axes) is np.ndarray
+    dataset = eprload("test/test_data/test_FieldSweep.DSC")
+    assert dataset.B.min().data == 11993.65
+    assert dataset.LO == 34.0645
+    assert dataset.reptime == 5100.0

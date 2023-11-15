@@ -48,8 +48,8 @@ def test_sequence_to_from_json():
     print(new_deer)
 
 def test_DEER_4p():
-    tau1 = 400
-    tau2 = 2000
+    tau1 = 0.4
+    tau2 = 2
     dt = 16
     B = 12200
     LO = 34.0
@@ -65,12 +65,12 @@ def test_DEER_4p():
     
     assert test_sequence.pulses[0].t.value == 0
     assert test_sequence.pulses[0].tp.value == tp
-    assert test_sequence.pulses[1].t.value == tau1
+    assert test_sequence.pulses[1].t.value == tau1*1e3
     assert test_sequence.pulses[1].tp.value == tp
     assert test_sequence.pulses[2].tp.value == tp
-    assert test_sequence.pulses[3].t.value == 2*tau1 + tau2
+    assert test_sequence.pulses[3].t.value == (2*tau1 + tau2)*1e3
     assert test_sequence.pulses[3].tp.value == tp
-    assert test_sequence.pulses[4].t.value == 2*tau1 + 2*tau2
+    assert test_sequence.pulses[4].t.value == (2*tau1 + 2*tau2)*1e3
 
     assert test_sequence.B.value == B
     assert test_sequence.LO.value == LO
@@ -79,9 +79,9 @@ def test_DEER_4p():
     assert test_sequence.shots.value == shots
 
 def test_DEER_5p():
-    tau1 = 2000
+    tau1 = 2
     tau2 = tau1
-    tau3 = 200
+    tau3 = 0.3
     dt = 16
     B = 12200
     LO = 34.0
@@ -97,12 +97,14 @@ def test_DEER_5p():
     
     assert test_sequence.pulses[0].t.value == 0
     assert test_sequence.pulses[0].tp.value == tp
-    assert test_sequence.pulses[2].t.value == tau1
+    assert test_sequence.pulses[1].t.value == (tau1-tau3)*1e3
+    assert test_sequence.pulses[1].tp.value == tp
+    assert test_sequence.pulses[2].t.value == tau1*1e3
     assert test_sequence.pulses[2].tp.value == tp
     assert test_sequence.pulses[3].tp.value == tp
-    assert test_sequence.pulses[4].t.value == 2*tau1 + tau2
+    assert test_sequence.pulses[4].t.value == (2*tau1 + tau2)*1e3
     assert test_sequence.pulses[4].tp.value == tp
-    assert test_sequence.pulses[5].t.value == 2*tau1 + 2*tau2
+    assert test_sequence.pulses[5].t.value == (2*tau1 + 2*tau2)*1e3
 
     assert test_sequence.B.value == B
     assert test_sequence.LO.value == LO
@@ -136,7 +138,7 @@ def test_ResonatorProfile():
     )
 
     assert test_sequence.pulses[0].t.value == 0
-    assert test_sequence.pulses[0].tp.value == 4
+    assert test_sequence.pulses[0].tp.value == 0
     assert test_sequence.pulses[1].t.value == 2000
     assert test_sequence.pulses[1].tp.value == 16
     assert test_sequence.pulses[2].t.value == 2500
