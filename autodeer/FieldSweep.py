@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from autodeer.dataset import Dataset
 from autodeer.utils import sop
 from autodeer.classes import Parameter
 from scipy import signal
@@ -82,12 +81,12 @@ def create_Nmodel(mwFreq):
         
 class FieldSweepAnalysis():
 
-    def __init__(self, dataset: Dataset) -> None:
+    def __init__(self, dataset) -> None:
         """Analysis and calculation of FieldSweep Experiment. 
 
         Parameters
         ----------
-        dataset : Dataset
+        dataset : xarray.Dataarray
             _description_
         """
         # self.axis = dataset.axes[0]

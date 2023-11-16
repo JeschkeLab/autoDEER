@@ -1,5 +1,4 @@
 from autodeer.classes import Interface, Parameter
-from autodeer.dataset import Dataset
 from autodeer.pulses import Delay, Detection, RectPulse
 from autodeer.hardware.XeprAPI_link import XeprAPILink
 from autodeer.hardware.Bruker_tools import PulseSpel, run_general,PSPhaseCycle, write_pulsespel_file
@@ -58,7 +57,7 @@ class BrukerMPFU(Interface):
         self.api.connect()
         return super().connect()
 
-    def acquire_dataset(self) -> Dataset:
+    def acquire_dataset(self):
         return self.api.acquire_dataset()
     
     def launch(self, sequence: Sequence, savename: str, start=True, tune=True,

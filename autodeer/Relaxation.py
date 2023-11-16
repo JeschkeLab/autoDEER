@@ -3,7 +3,6 @@ import numpy as np
 from deerlab import noiselevel
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-from autodeer.dataset import Dataset
 from autodeer.sequences import Sequence
 import deerlab as dl
 # ===========================================================================
@@ -11,12 +10,12 @@ import deerlab as dl
 
 class CarrPurcellAnalysis:
 
-    def __init__(self, dataset: Dataset, sequence: Sequence = None) -> None:
+    def __init__(self, dataset, sequence: Sequence = None) -> None:
         """Analysis and calculation of Carr Purcell decay. 
 
         Parameters
         ----------
-        dataset : Dataset
+        dataset : 
             _description_
         """
         # self.axis = dataset.axes[0]
@@ -148,12 +147,12 @@ class CarrPurcellAnalysis:
 
 class ReptimeAnalysis():
 
-    def __init__(self, dataset: Dataset, sequence: Sequence = None) -> None:
+    def __init__(self, dataset, sequence: Sequence = None) -> None:
         """Analysis and calculation of Reptime based saturation recovery. 
 
         Parameters
         ----------
-        dataset : Dataset
+        dataset :
             The dataset to be analyzed.
         sequence : Sequence, optional
             The sequence object describing the experiment. (not currently used)

@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.signal as sig
 from autodeer.classes import Parameter
-from autodeer.dataset import Dataset, create_dataset_from_axes, create_dataset_from_sequence
+from autodeer.dataset import create_dataset_from_axes, create_dataset_from_sequence
 
 
 
@@ -516,47 +516,5 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
     else:
         output = create_dataset_from_sequence(dta_ev, sequence)
     
-    # output = Dataset(
-    #     axes=dta_x,
-    #     data=dta_ev,
-    #     params=estr)
-    
-    # output.scans = dta_scans
-    # output.add_variable(Parameter(name='nAvgs', value=nAvgs))
-    # output.add_variable(Parameter(name='LO', value=estr['LO']+1.5))
-    # output.add_variable(Parameter(name='B', value=estr['B']))
-    # output.add_variable(Parameter(name='reptime', value=estr['reptime']))
-    # output.add_variable(Parameter(name='shots', value=estr['shots']))
 
-    # output = AWGdata(t_ax, dta_avg)
-    # output.nAvgs = nAvgs
-    # output.dta_x = dta_x
-    # output.dta_ev = dta_ev
-    # output.dta_scans = dta_scans
-    # output.exp = estr
-    # output.det_frq = det_frq
-    # output.echopos = echopos
-    # output.corr_phase = corr_phase
-    # output.dig_level = dig_level
-    # output.raw_dta = dta
-    
     return output
-
-
-# class AWGdata:
-
-#     def __init__(self, t_ax, dta_avg) -> None:
-#         self.t_ax = t_ax
-#         self.dta_avg = dta_avg 
-
-#     def transient_plot2D(self):
-#         fig, ax = plt.subplots(1, 1)
-#         ax.pcolormesh(np.real(self.dta_avg).T)
-#         fig.show()
-    
-#     def plot(self):
-#         fig, ax = plt.subplots(1, 1)
-#         ax.plot(self.dta_x[0], np.real(self.dta_ev), label='Re')
-#         ax.plot(self.dta_x[0], np.imag(self.dta_ev), label='Im')
-#         ax.legend()
-#         fig.show()

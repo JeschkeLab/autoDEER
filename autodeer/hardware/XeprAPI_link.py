@@ -3,7 +3,7 @@ import time
 import os
 import sys
 import yaml
-from autodeer.dataset import Dataset
+from autodeer.dataset import create_dataset_from_axes
 from scipy.optimize import minimize_scalar
 import logging
 import re
@@ -153,7 +153,7 @@ class XeprAPILink:
     def is_exp_running(self):
         return self.cur_exp.isRunning
 
-    def acquire_dataset(self) -> Dataset:
+    def acquire_dataset(self):
         """
         This function acquire the dataset, this work both for a running 
         experiment or once it has finished.
@@ -163,23 +163,39 @@ class XeprAPILink:
         data_dim = len(size)
         data = dataclass.O
         params = {
-            "scans_done": self.cur_exp.getParam("NbScansDone").value,
-            "scans_todo": self.cur_exp.getParam("NbScansToDo").value,
-            "shrt": self.cur_exp.getParam("ShotRepTime").value,
-            "shots": self.cur_exp.getParam("ShotsPLoop").value
+            "nAvgs": self.cur_exp.getParam("NbScansDone").value,
+            "reptime": self.cur_exp.getParam("ShotRepTime").value,
+            "shots": self.cur_exp.getParam("ShotsPLoop").value,
+            "shots": self.cur_exp.getParam("B0VL").value * 1e4,
+            "LO": self.cur_exp.getParam("MWFQ").value / 1e9,
             }
+        default_labels = ['X','Y','Z','T']
+        dims = default_labels[:data_dim]
+        labels = []
+
+        for i in range(data_dim):
+            ax_label = default_labels[i]
+            axis_string = params['DESC'][f'{ax_label}UNI']
+            if "'" in axis_string:
+                axis_string = axis_string.replace("'", "")
+            if axis_string == 'G':
+                labels.append('B')
+            elif axis_string == 'ns':
+                labels.append('t')
+            else:
+                labels.append(None)
 
         if data_dim == 1:
             # We have a 1D dataset
             t = dataclass.X
             hw_log.debug('Acquired Dataset')
-            return Dataset(t, data, params)
+            return create_dataset_from_axes(data, t, params,labels)
         elif data_dim == 2:
             # we have a 2D dataset
             t1 = dataclass.X
             t2 = dataclass.Y
             hw_log.debug('Acquired Dataset')
-            return Dataset([t1, t2], data, params)
+            return create_dataset_from_axes(data, [t1,t2], params,labels)
 
     def acquire_scan(self):
         """

@@ -8,7 +8,7 @@ from .classes import *
 from .sequences import *
 from .pulses import *
 from .criteria import *
-from .dataset import Dataset
+from .dataset import *
 from .reporter import Reporter
 
 try:

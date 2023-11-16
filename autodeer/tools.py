@@ -2,7 +2,7 @@ import os
 import deerlab as dl
 import numpy as np
 import logging
-from autodeer.dataset import Dataset,create_dataset_from_bruker
+from autodeer.dataset import create_dataset_from_bruker
 from autodeer.hardware.ETH_awg_load import uwb_load
 from scipy.io import loadmat
 
@@ -11,7 +11,7 @@ log = logging.getLogger('core.Tools')
 
 def eprload(
         path: str, experiment: str = None, type: str = None,
-        **kwargs) -> Dataset:
+        **kwargs):
     """ A general versions of eprload
 
     Parameters
@@ -25,7 +25,7 @@ def eprload(
 
     Returns
     -------
-    Dataset
+    xarray.Dataarray
         _description_
 
     Raises
@@ -64,22 +64,6 @@ def eprload(
     
     if type == 'BRUKER':
         return create_dataset_from_bruker(path)
-        # if 'full_output' in kwargs:
-        #     full_output = kwargs['full_output']
-        # else:
-        #     full_output = False
-
-        # if full_output is False:    
-        #     t, V = dl.deerload(path, plot=False, full_output=full_output)
-
-        #     return create_dataset_from_axes(V,t)
-        #     return create_dataset_from_bruker(path)
-            # return Dataset(t, V)
-
-        # else:
-        #     t, V, Params = dl.deerload(
-        #         path, plot=False, full_output=full_output)
-        #     return Dataset(t, V, Params)
 
     elif type == 'TXT':
         if 'full_output' in kwargs:
