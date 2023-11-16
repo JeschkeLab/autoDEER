@@ -32,8 +32,8 @@ class Interface:
         Acquires the dataset.
         """
 
-        data.sequence = self.cur_exp
-        data.time = datetime.datetime.now()
+        # data.sequence = self.cur_exp
+        data.attrs['time'] = datetime.datetime.now()
         return data
     
 
@@ -90,7 +90,8 @@ class Interface:
             start_time = time.time()
             data = self.acquire_dataset()
             try:
-                nAvgs = data.num_scans.value
+                # nAvgs = data.num_scans.value
+                nAvgs = data.attrs['nAvgs']
             except AttributeError:
                 print("WARNING: Dataset missing number of averages(nAvgs)!")
                 nAvgs = 1
@@ -172,9 +173,9 @@ class Parameter:
         ```
         Creating a dynamic parameter
         ```
-        ```
-        Making a dynamic parameter
-        ```
+        Par1 = Parameter(
+            name="Par1", value=10, unit="us", description="The first parameter",
+            axis=np.arange(0,10,1), axis_id=0)
         ```
 
         Adding a parameter and a number:

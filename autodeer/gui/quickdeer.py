@@ -21,7 +21,8 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_Vexp(dataset, tmin=0):
-    t = dataset.axes[0]
+    # t = dataset.axes[0]
+    t = dataset['t'].data
     Vexp = dataset.data
 
     # normalise v
@@ -223,11 +224,11 @@ class DEERplot(QWidget):
 
         dataset= self.current_data['quickdeer']
 
-        if dataset.axes[0].max()>500: # Axis is in ns
-            dataset.axes[0] /= 1e3
+        # if dataset.axes[0].max()>500: # Axis is in ns
+        #     dataset.axes[0] /= 1e3
         
-        dataset.axes[0] -= dataset.axes[0].min()
-        dataset.axes[0] += self.tmindoubleSpinBox.value()
+        # dataset.axes[0] -= dataset.axes[0].min()
+        # dataset.axes[0] += self.tmindoubleSpinBox.value()
 
         if self.DistancecomboBox.currentText() == 'auto':
             settings['model'] = None
@@ -273,9 +274,9 @@ class DEERplot(QWidget):
         self.static_canvas.draw()
         self.update_fit_result()
 
-        if hasattr(self.fitresult,'dataset'):
+        if hasattr(self.fitresult,'dataset') and hasattr(self.fitresult.dataset,'time'):
             self.Last_updated.setText(f"Last updated: {self.fitresult.dataset.time.strftime('%Y-%m-%d %H:%M:%S')}")
-            self.num_scans.setText(f"# of scans: {self.fitresult.dataset.num_scans.value}")
+            self.num_scans.setText(f"# of scans: {self.fitresult.dataset.nAvgs}")
         else:
             self.Last_updated.setText(f"Last updated: never")
             self.num_scans.setText(f"# of scans: 0")

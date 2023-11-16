@@ -42,6 +42,9 @@ class Sequence:
 
         self.pulses = []
         self.num_pulses = len(self.pulses)
+        self.axes_uuid = []
+        self.reduce_uuid = []
+
 
 
         if isinstance(B, Parameter):
@@ -259,8 +262,8 @@ class Sequence:
         return self.pcyc_vars, self.pcyc_cycles, self.pcyc_dets
 
     def evolution(self, params, reduce=[]):
-        axes_uuid = [param.uuid for param in params]
-        reduce_uuid = [param.uuid for param in reduce]
+        self.axes_uuid = [param.uuid for param in params]
+        self.reduce_uuid = [param.uuid for param in reduce]
 
 
         # Build the ProgTable
@@ -270,13 +273,13 @@ class Sequence:
         for n, pulse in enumerate(self.pulses):
             table = pulse.build_table()
             for i in range(len(table["uuid"])):
-                if table["uuid"][i] in axes_uuid:
-                    progTable["axID"].append(axes_uuid.index(table["uuid"][i]))
+                if table["uuid"][i] in self.axes_uuid:
+                    progTable["axID"].append(self.axes_uuid.index(table["uuid"][i]))
                     progTable["uuid"].append(table["uuid"][i]) 
                     progTable["EventID"].append(n)
                     progTable["Variable"].append(table["Variable"][i])
                     progTable["axis"].append(table["axis"][i])
-                    if table["uuid"][i] in reduce_uuid:
+                    if table["uuid"][i] in self.reduce_uuid:
                         progTable["reduce"].append(True)
                     else:
                         progTable["reduce"].append(False)
@@ -286,13 +289,13 @@ class Sequence:
             if type(var) is Parameter:
                 if not var.is_static() and not var.virtual:
                     for i in range(len(var.axis)):
-                        if var.axis[i]["uuid"] in axes_uuid:
-                            progTable["axID"].append(axes_uuid.index(var.axis[i]["uuid"]))
+                        if var.axis[i]["uuid"] in self.axes_uuid:
+                            progTable["axID"].append(self.axes_uuid.index(var.axis[i]["uuid"]))
                             progTable["EventID"].append(None)
                             progTable["Variable"].append(var_name) 
                             progTable["axis" ].append(var.axis[i]["axis"])
                             progTable["uuid"].append(var.axis[i]["uuid"]) 
-                            if var.axis[i]["uuid"] in reduce_uuid:
+                            if var.axis[i]["uuid"] in self.reduce_uuid:
                                 progTable["reduce"].append(True)
                             else:
                                 progTable["reduce"].append(False)

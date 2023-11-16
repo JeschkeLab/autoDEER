@@ -118,10 +118,12 @@ def respro_process(dataset, freq_axis, fieldsweep=None,cores=1):
 
 def relax_process(dataset):
 
-    if dataset.axes[0].max()>500:
-        dataset.axes = [dataset.axes[0]/1e3]
-    else:
-        dataset.axes = [dataset.axes[0]]
+    # if dataset.axes[0].max()>500:
+    #     dataset.axes = [dataset.axes[0]/1e3]
+    # else:
+    #     dataset.axes = [dataset.axes[0]]
+    if dataset['tau1'].max() > 1e4:
+        dataset['tau1'] /= 1e3
     CP_data = ad.CarrPurcellAnalysis(dataset)
     CP_data.fit('double')
 
@@ -245,25 +247,39 @@ class autoDEERUI(QMainWindow):
         elif spectrometer['Manufacturer'] == 'Dummy':
             model = 'Dummy'
         
-        if model == 'Dummy':
-            from autodeer.hardware.dummy import dummyInterface
-            self.spectromterInterface = dummyInterface()
-        elif model == 'ETH_AWG':
-            from autodeer.hardware import ETH_awg_interface
-            self.spectromterInterface = ETH_awg_interface()
-        elif model == 'Bruker_MPFU':
-            from autodeer.hardware import BrukerMPFU
-            self.spectromterInterface = BrukerMPFU(filename_edit)
-        elif model == 'Bruker_AWG':
-            from autodeer.hardware import BrukerAWG
-            self.spectromterInterface = BrukerAWG(filename_edit)
+        try:
+            if model == 'Dummy':
+                from autodeer.hardware.dummy import dummyInterface
+                self.spectromterInterface = dummyInterface()
+            elif model == 'ETH_AWG':
+                from autodeer.hardware import ETH_awg_interface
+                self.spectromterInterface = ETH_awg_interface()
+            elif model == 'Bruker_MPFU':
+                from autodeer.hardware import BrukerMPFU
+                self.spectromterInterface = BrukerMPFU(filename_edit)
+            elif model == 'Bruker_AWG':
+                from autodeer.hardware import BrukerAWG
+                self.spectromterInterface = BrukerAWG(filename_edit)
+        except ImportError:
+            QMessageBox.about(self,'ERORR!', 
+                              'The spectrometer interface could not be loaded!\n'+
+                              'Please check that the correct packages are installed!\n'+
+                              'See the documentation for more information.')
+            return None
+
+
+        resonator_list = list(self.config['Resonators'].keys())
 
         # Find resonators
         self.resonatorComboBox.clear()
         self.resonatorComboBox.addItems(self.config['Resonators'].keys())
 
+        if len(resonator_list) == 0:
+            QMessageBox.about(self,'ERORR!', 'No resonators found in config file!')
+            return None
+        key1 = resonator_list[0]
+
         # Set LO to resonator central frequency
-        key1 = list(self.config['Resonators'].keys())[0]
         self.LO = self.config['Resonators'][key1]['Center Freq']
 
         # Get user preferences
@@ -386,8 +402,8 @@ class autoDEERUI(QMainWindow):
         else:
             # Assuming mat file
             # TODO: Change to new data format
-
-            f_axis = dataset.params['parvars'][2]['vec'][:,1] + dataset.params['LO']
+            f_axis = dataset['LO'].data - 0.3
+            # f_axis = dataset.params['parvars'][2]['vec'][:,1] + dataset.params['LO']
 
 
         worker = Worker(respro_process, dataset, f_axis, cores=self.cores)
@@ -540,7 +556,10 @@ class autoDEERUI(QMainWindow):
         else:
             reptime = 3e3
         print(f"Reptime {reptime*1e-6:.2g} s")
-        averages = fitresult.seq.shots.value * fitresult.dataset.num_scans.value * 16
+
+        # averages = fitresult.dataset.shots.value * fitresult..num_scans.value * 16
+        averages = fitresult.dataset.attrs['shots'] * fitresult.dataset.attrs['nAvgs'] * 16
+
         tau2hrs = fitresult.find_optimal(averages=averages, SNR_target=45/0.5, target_time=2, target_shrt=reptime*1e-6, target_step=0.015)
         max_tau = fitresult.find_optimal(averages=averages, SNR_target=45/0.5, target_time=24, target_shrt=reptime*1e-6, target_step=0.015)
         self.current_results['relax'].tau2hrs = tau2hrs
@@ -579,7 +598,8 @@ class autoDEERUI(QMainWindow):
         else:
             self.current_data['reptime'] = dataset
 
-        reptime_analysis = ad.ReptimeAnalysis(dataset,dataset.sequence)
+        # reptime_analysis = ad.ReptimeAnalysis(dataset,dataset.sequence)
+        reptime_analysis = ad.ReptimeAnalysis(dataset)
         reptime_analysis.fit()
         opt_reptime = reptime_analysis.calc_optimal_reptime(0.8)
 

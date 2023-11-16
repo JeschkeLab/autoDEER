@@ -107,10 +107,11 @@ class ETH_awg_interface(Interface):
             try:
                 self.engine.dig_interface('savenow')
                 Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
-                data = uwb_load(Matfile, options=options, verbosity=verbosity)
-                data.LO = Parameter("LO", data.params['LO']+self.awg_freq, unit="GHz", description="Total local oscilator frequency")
-                data.sequence = self.cur_exp
-                data.time = time.time()
+                data = uwb_load(Matfile, options=options, verbosity=verbosity,sequence=self.cur_exp)
+                # data.LO = Parameter("LO", data.params['LO']+self.awg_freq, unit="GHz", description="Total local oscilator frequency")
+                # data.sequence = self.cur_exp
+                data.attr['time'] = time.time()
+                # data.attr['LO'] = data.params['LO']+self.awg_freq
             except OSError:
                 time.sleep(10)
             except IndexError:

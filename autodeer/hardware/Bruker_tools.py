@@ -824,7 +824,7 @@ def build_unique_progtable(seq):
                 continue
             t_shift[var[0]] = mul
         
-        u_progtable.append({"axID":axID,"axis":common_axis,"variables":vars,"delay_shifts": np.diff(t_shift,prepend=0)})
+        u_progtable.append({"axID":axID,"axis":common_axis,"variables":vars, "delay_shifts": np.diff(t_shift,prepend=0)})
 
 
 

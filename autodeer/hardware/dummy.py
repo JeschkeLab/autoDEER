@@ -1,5 +1,5 @@
 from autodeer.classes import  Interface, Parameter
-from autodeer.dataset import  Dataset
+from autodeer.dataset import  Dataset, create_dataset_from_sequence
 from autodeer.pulses import Pulse, RectPulse, ChirpPulse, HSPulse, Delay, Detection
 from autodeer.sequences import *
 from autodeer.FieldSweep import create_Nmodel
@@ -99,8 +99,11 @@ class dummyInterface(Interface):
             progress = 1
         data = add_noise(data, 1/(self.SNR*progress))
         scan_num = self.cur_exp.averages.value
-        dset = Dataset(axes, data, num_scans=int(scan_num*progress))
-        dset.LO = self.cur_exp.LO
+        # dset = Dataset(axes, data, num_scans=int(scan_num*progress))
+        # dset.LO = self.cur_exp.LO
+        dset = create_dataset_from_sequence(data,self.cur_exp)
+        dset.attrs['nAvgs'] = int(scan_num*progress)
+        
     
         return super().acquire_dataset(dset)
     

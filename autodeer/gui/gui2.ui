@@ -119,7 +119,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>5</number>
+         <number>1</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideRight</enum>
@@ -491,7 +491,7 @@
                    <enum>QAbstractSpinBox::NoButtons</enum>
                   </property>
                   <property name="suffix">
-                   <string> MHz/T</string>
+                   <string> MHz/G</string>
                   </property>
                   <property name="decimals">
                    <number>6</number>

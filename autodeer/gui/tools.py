@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QTableWidgetItem
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QTableWidgetItem, QMessageBox
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
@@ -132,6 +132,19 @@ def param_in_MHz(param):
     elif param.unit == 'Hz':
         return param.value/1000000
     
+def test_SNR(Application, data):
+    """Raises an error box if the SNR of the signal is less than 1.
+
+    Parameters
+    ----------
+    data : _type_
+        _description_
+    """
+    if data.epr.SNR < 1:
+        QMessageBox.about(Application,'ERORR!', 'Signal to Noise ratio is less than 1. Please check the data and try again.')
+        return False
+    else:
+        return True    
 # =============================================================================
 #
 #   Multi-threading functions and classes
