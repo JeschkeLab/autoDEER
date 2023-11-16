@@ -134,7 +134,11 @@ def transpose_dict_of_list(d):
 def transpose_list_of_dicts(d):
     """Turns a list of dictionaries into a dictionary of lists.
     """
-    return {key: [i[key] for i in d] for key in d[0]}
+
+    if len(d) == 0:
+        return {}
+    else:
+        return {key: [i[key] for i in d] for key in d[0]}
 
 def save_file(path, str):
     with open(path, "w") as file:
@@ -198,9 +202,11 @@ def val_in_us(Param):
             return Param.value / 1e3
     elif len(Param.axis) == 1:
         if Param.unit == "us":
-            return Param.tau1.value + Param.axis[0]['axis']
+            return Param.value + Param.axis[0]['axis']
         elif Param.unit == "ns":
             return (Param.value + Param.axis[0]['axis']) / 1e3 
+    else:
+        raise ValueError("Parameter must have 0 or 1 axes")
 
 def val_in_ns(Param):
     """Returns the value or axis of a parameter in nanoseconds
@@ -225,4 +231,6 @@ def val_in_ns(Param):
             return (Param.tau1.value + Param.axis[0]['axis']) * 1e3
         elif Param.unit == "ns":
             return (Param.value + Param.axis[0]['axis']) 
+    else:
+        raise ValueError("Parameter must have 0 or 1 axes")
 

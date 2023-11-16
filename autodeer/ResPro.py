@@ -511,6 +511,22 @@ def floor(number, decimals=0):
     return np.floor(number / 10**order)*10**order
 
 def calc_overlap(x, func1, func2):
+    """Calcuates the overlap between two functions.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        The x axis of the functions
+    func1 : function
+        The first function
+    func2 : function
+        The second function
+
+    Returns
+    -------
+    float
+        The overlap between the two functions.
+    """
     y1 = func1(x)
     y2 = func2(x)
     area_1 = np.trapz(y1, x)
