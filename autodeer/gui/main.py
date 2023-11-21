@@ -292,7 +292,12 @@ class autoDEERUI(QMainWindow):
             return None
 
 
-        self.spectromterInterface.connect()
+        try:
+            self.spectromterInterface.connect()
+        except RuntimeError as e:
+            QMessageBox.about(self, 'Connection ERORR!',e)
+            
+
         self.connected = True
         self.set_spectrometer_connected_light(1)
 
