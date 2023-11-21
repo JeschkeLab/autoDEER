@@ -8,7 +8,7 @@ import pytest
 
 
 
-@pytest.mark.parametrize("seq", ['deer','fieldsweep','respro'])
+@pytest.mark.parametrize("seq", ['deer','fieldsweep','respro', 'reptime'])
 def test_write_pulsespel_file_MPFU(seq):
     if seq == 'deer':
         seq = DEERSequence(tau1=3.0, tau2=3.0, tau3=0.2, dt=12, B=12200, LO=34, reptime=3e3, averages=100, shots=100)
@@ -20,6 +20,8 @@ def test_write_pulsespel_file_MPFU(seq):
     elif seq == 'respro':
         seq = ResonatorProfileSequence(
             B=12200, LO=34.0, reptime=3e3, averages=1, shots=10)
+    elif seq == 'reptime':
+        seq = ReptimeScan(B=12200, LO=34.0, reptime_max=3e4, averages=1, shots=10)
     
     channels = _MPFU_channels(seq)
     MPFU = ["+<x>","-<x>","+<y>","-<y>"]

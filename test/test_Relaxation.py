@@ -21,16 +21,16 @@ def test_CarrPurcellAnalysis_fromBruker():
 @pytest.mark.parametrize("fit_type",["mono","double"])
 def test_CarrPurcellAnalysis_dataset(fit_type):
     seq = DEERSequence(
-        tau1=3.0, tau2=3.0, tau3=0.3, dt=16, B=12220, LO=34.0, reptime=3e3, 
+        tau1=0.5, tau2=0.5, tau3=0.3, dt=16, B=12220, LO=34.0, reptime=3e3, 
         averages=1, shots=50)
 
-    seq.five_pulse(relaxation=True)
+    seq.five_pulse(relaxation=True, re_step=200)
     x,V = _simulate_CP(seq)
     dataset = create_dataset_from_sequence(V,seq)
     CP = CarrPurcellAnalysis(dataset)
     CP.fit(fit_type)
     CP.find_optimal(2*3600, 4, 40, target_shrt=3e3, target_step=16)
-    assert np.abs(CP.optimal - 5.9)/5.9 < 0.1
+    assert np.abs(CP.optimal - 3.35)/3.35 < 0.1
 
     fig = CP.plot()
     assert isinstance(fig,mplFigure)
