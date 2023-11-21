@@ -3,7 +3,7 @@ import time
 import os
 import sys
 import yaml
-from autodeer.dataset import create_dataset_from_axes
+from autodeer.dataset import create_dataset_from_axes, create_dataset_from_sequence
 from scipy.optimize import minimize_scalar
 import logging
 import re
@@ -153,7 +153,7 @@ class XeprAPILink:
     def is_exp_running(self):
         return self.cur_exp.isRunning
 
-    def acquire_dataset(self):
+    def acquire_dataset(self, sequence = None):
         """
         This function acquire the dataset, this work both for a running 
         experiment or once it has finished.
@@ -166,36 +166,44 @@ class XeprAPILink:
             "nAvgs": self.cur_exp.getParam("NbScansDone").value,
             "reptime": self.cur_exp.getParam("ShotRepTime").value,
             "shots": self.cur_exp.getParam("ShotsPLoop").value,
-            "shots": self.cur_exp.getParam("B0VL").value * 1e4,
-            "LO": self.cur_exp.getParam("MWFQ").value / 1e9,
+            "B": self.get_field(),
+            "LO": self.get_counterfreq(),
             }
-        default_labels = ['X','Y','Z','T']
-        dims = default_labels[:data_dim]
-        labels = []
 
-        for i in range(data_dim):
-            ax_label = default_labels[i]
-            axis_string = params['DESC'][f'{ax_label}UNI']
-            if "'" in axis_string:
-                axis_string = axis_string.replace("'", "")
-            if axis_string == 'G':
-                labels.append('B')
-            elif axis_string == 'ns':
-                labels.append('t')
-            else:
-                labels.append(None)
+        if sequence is None:
+            default_labels = ['X','Y','Z','T']
+            dims = default_labels[:data_dim]
+            labels = []
 
-        if data_dim == 1:
-            # We have a 1D dataset
-            t = dataclass.X
-            hw_log.debug('Acquired Dataset')
-            return create_dataset_from_axes(data, t, params,labels)
-        elif data_dim == 2:
-            # we have a 2D dataset
-            t1 = dataclass.X
-            t2 = dataclass.Y
-            hw_log.debug('Acquired Dataset')
-            return create_dataset_from_axes(data, [t1,t2], params,labels)
+            for i in range(data_dim):
+                ax_label = default_labels[i]
+                axis_string = self.cur_exp[f'recorder.Abs{i+1}Data'].aqGetParUnits()
+                if "'" in axis_string:
+                    axis_string = axis_string.replace("'", "")
+                if axis_string == 'G':
+                    labels.append('B')
+                elif axis_string == 'ns':
+                    labels.append('t')
+                else:
+                    labels.append(None)
+
+            if data_dim == 1:
+                # We have a 1D dataset
+                t = dataclass.X
+                hw_log.debug('Acquired Dataset')
+                return create_dataset_from_axes(data, t, params,labels)
+            elif data_dim == 2:
+                # we have a 2D dataset
+                t1 = dataclass.X
+                t2 = dataclass.Y
+                hw_log.debug('Acquired Dataset')
+                return create_dataset_from_axes(data, [t1,t2], params,labels)
+            
+        else:
+            dset = create_dataset_from_sequence(data, sequence)
+            for par in params:
+                dset.attrs[par] = params['par']
+
 
     def acquire_scan(self):
         """
@@ -597,16 +605,16 @@ class XeprAPILink:
         if "Digital Source" in self.bridge_config.keys():
             if self.bridge_config["Digital Source"]:
                 return self.hidden['FineFreq'].value
-            else:
-                if pol is None:
-                    if hasattr(self, "freq_cal"):
-                        pol = self.freq_cal
-                    else:
-                        pol = [-67652.70, 2050.203]
-                inv_func = np.polynomial.polynomial.Polynomial(
-                    [-pol[0]/pol[1], 1/(pol[1])])
-    
-                return inv_func(self.hidden['Frequency'].value)
+        else:
+            if pol is None:
+                if hasattr(self, "freq_cal"):
+                    pol = self.freq_cal
+                else:
+                    pol = [-67652.70, 2050.203]
+            inv_func = np.polynomial.polynomial.Polynomial(
+                [-pol[0]/pol[1], 1/(pol[1])])
+
+            return inv_func(self.hidden['Frequency'].value)
 
     def get_spec_config(self) -> str:
         """get_spec_config Gets the name of the current spectrometer
