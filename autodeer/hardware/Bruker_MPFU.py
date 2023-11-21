@@ -1,15 +1,16 @@
 from autodeer.classes import Interface, Parameter
 from autodeer.pulses import Delay, Detection, RectPulse
 from autodeer.hardware.XeprAPI_link import XeprAPILink
-from autodeer.hardware.Bruker_tools import PulseSpel, run_general,PSPhaseCycle, write_pulsespel_file
+from autodeer.hardware.Bruker_tools import PulseSpel, run_general,build_unique_progtable,PSPhaseCycle, write_pulsespel_file
 from autodeer.sequences import Sequence, HahnEchoSequence
-from autodeer.utils import save_file
+from autodeer.utils import save_file, transpose_list_of_dicts, transpose_dict_of_list
 
 import tempfile
 import time
 from scipy.optimize import minimize_scalar, curve_fit
 import numpy as np
-
+import threading
+import os
 # =============================================================================
 
 
@@ -37,6 +38,15 @@ class BrukerMPFU(Interface):
             _description_
         d0 : int, optional
             _description_, by default 600
+
+        Attributes
+        ----------
+        temp_dir:str
+            A linux tmp directory for storing pulsespel files
+
+        bg_thread: None or threading.Thread
+            If a background thread is needed, it is stored here.
+        
         """
 
         self.api = XeprAPILink(config_file)
@@ -48,6 +58,9 @@ class BrukerMPFU(Interface):
         self.temp_dir = tempfile.mkdtemp("autoDEER")
 
         self.d0 = d0
+
+        self.bg_thread = None
+        self.bg_data = None
         
         super().__init__()
 
@@ -57,12 +70,49 @@ class BrukerMPFU(Interface):
         self.api.connect()
         return super().connect()
 
-    def acquire_dataset(self):
-        return self.api.acquire_dataset()
+    def acquire_dataset(self) -> Dataset:
+        if self.bg_thread is None:
+            return self.api.acquire_dataset()
+        else:
+            return self.bg_data
     
+    def _launch_complex_thread(self,sequence,axID=1,tune=True):
+    
+        uProgTable = build_unique_progtable(sequence)
+        reduced_seq = sequence.copy()
+        reduced_seq.progTable = transpose_list_of_dicts([transpose_dict_of_list(sequence.progTable)[0]])
+
+        uProgTable_py = uProgTable[axID]
+        axis = uProgTable_py['axis']
+        reduced_seq.averages.value = 1
+        py_ax_dim = uProgTable_py['axis']['dim']
+
+        
+        self.bg_data = np.zeros((py_ax_dim,uProgTable[0]['axis']['dim']),dtype=np.complex128)
+        
+        print("Initial PulseSpel Launch")
+        self.launch(reduced_seq,savename='test',tune=tune, update_pulsespel=True, start=False)
+
+        self.terminate()
+
+        variables = uProgTable_py['variables']
+        print("Creating Thread")
+        thread = threading.Thread(target=self.step_parameters,args=[reduced_seq,py_ax_dim,variables])
+        print("Starting Thread")
+        thread.start()
+
+        pass
+        
     def launch(self, sequence: Sequence, savename: str, start=True, tune=True,
                MPFU_overwrite=None,update_pulsespel=True):
                     
+        # First check if the sequence is pulsespel compatible
+
+        if not test_if_MPFU_compatability(sequence):
+            print("Launching complex sequence")
+            self._launch_complex_thread(sequence,1,tune)
+            pass
+
         channels = _MPFU_channels(sequence)
         # pcyc = PSPhaseCycle(sequence,self.MPFU)
 
@@ -98,11 +148,21 @@ class BrukerMPFU(Interface):
             def_file, exp_file = write_pulsespel_file(sequence,False,MPFU_chans)
             
             # PSpel.save(PSpel_file)
+            try:
+                os.remove(PSpel_file +'.def')
+            except OSError:
+                pass
+            try:
+                os.remove(PSpel_file +'.exp')
+            except OSError:
+                pass
             save_file(PSpel_file +'.def',def_file)
             save_file(PSpel_file +'.exp',exp_file)
-            self.api.set_field(sequence.B.value)
-        print(sequence.LO.value)
+        
+        
+        self.api.set_field(sequence.B.value)
         self.api.set_freq(sequence.LO.value)
+        
         if 'B' in sequence.progTable['Variable']:
             idx = sequence.progTable['Variable'].index('B')
             B_axis = sequence.progTable['axis'][idx]
@@ -139,10 +199,43 @@ class BrukerMPFU(Interface):
         pass
 
     def isrunning(self) -> bool:
-        return self.api.is_exp_running()
+        if self.bg_thread is None:
+            return self.api.is_exp_running()
+        else:
+            return self.bg_thread.is_alive()
 
     def terminate(self) -> None:
-        return self.api.abort_exp()
+        if self.bg_thread is None:
+            return self.api.abort_exp()
+        else:
+            raise RuntimeError("Backgrounds can't yet be terminated")
+        
+    
+    def step_parameters(self, reduced_seq, dim, variables):
+        
+        for i in range(dim):
+            new_seq  =reduced_seq.copy()
+            # Change all variables in the sequence
+            for var in variables:
+                if var['variable'][0] is not None:
+                    raise ValueError('Only exp parameters are supported at the moment')
+                attr = getattr(new_seq,var['variable'][1]) 
+                shift = attr.get_axis()[i]
+                attr.value = (shift)
+                setattr(new_seq,var['variable'][1],attr)
+                print(f"{var['variable'][1]}: {getattr(new_seq,var['variable'][1]).value} ")
+
+            # self.launch(new_seq,savename='test',tune=False, update_pulsespel=False)
+
+            self.api.set_field(new_seq.B.value)
+            self.api.set_freq(new_seq.LO.value)
+
+            self.api.run_exp()
+
+            while self.api.isrunning():
+                time.sleep(1)
+            single_scan_data = self.api.acquire_dataset()
+            self.bg_data[i,:] += single_scan_data.data
 
 # =============================================================================
 
@@ -418,6 +511,15 @@ def ELDORtune(interface, sequence, freq,
     interface.launch(ref_echoseq, savename="autoTUNE", start=False, tune=False)
     print(f"Tuning channel: ELDOR")
     tune_power(interface, 'ELDOR', tol=1, bounds=[0,30])
+
+def test_if_MPFU_compatability(seq):
+    table = seq.progTable
+    if 'LO' in table['Variable']:
+        return False
+    elif np.unique(table['axID']).size > 2:
+        return False 
+    else:
+        return True
 
 
 class MPFUtune1:
