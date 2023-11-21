@@ -21,7 +21,7 @@ def test_write_pulsespel_file_MPFU(seq):
         seq = ResonatorProfileSequence(
             B=12200, LO=34.0, reptime=3e3, averages=1, shots=10)
     elif seq == 'reptime':
-        seq = ReptimeScan(B=12200, LO=34.0, reptime_max=3e4, averages=1, shots=10)
+        seq = ReptimeScan(B=12200, LO=34.0,reptime=3e3, reptime_max=3e4, averages=1, shots=10)
     
     channels = _MPFU_channels(seq)
     MPFU = ["+<x>","-<x>","+<y>","-<y>"]

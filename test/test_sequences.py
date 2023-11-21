@@ -307,14 +307,16 @@ def test_ReptimeScan():
     reptime = 3e4
     averages = 1
     shots = 100
-    test_sequence = ReptimeScan(B=B, LO=LO, reptime_max=reptime, 
+    test_sequence = ReptimeScan(B=B, LO=LO,reptime=3e3, reptime_max=reptime, 
         averages=averages, shots=shots
     )
 
     assert test_sequence.progTable["Variable"][0] == "reptime"
-    assert test_sequence.progTable["axis"][0].min() == 0
-    assert test_sequence.progTable["axis"][0].max() == pytest.approx(reptime, abs=1e3)
-    assert test_sequence.progTable["axis"][0].shape[0] == 100
+    axis = test_sequence.reptime.get_axis()
+    assert axis.min() == 0
+    assert axis.max() == pytest.approx(reptime, abs=1e3)
+    assert axis.shape[0] == 100
+    assert test_sequence.reptime.value == 3e3
 
 
 def test_CarrPurcellSequence():

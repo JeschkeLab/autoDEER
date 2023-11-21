@@ -1068,7 +1068,8 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
                     continue
                 reptime0_var = letter_vars.pop()
                 head += f"srt = {reptime0_var}\n"
-                def_file += f"{reptime0_var} = {val_in_us(sequence.reptime, False):.0f} * srtu\n"
+                axis = val_in_us(sequence.reptime, True)
+                def_file += f"{reptime0_var} = {axis[0]:.0f} * srtu\n"
                 srt_step_var = letter_vars.pop()
                 def_file += f"{srt_step_var} = {var['multiplier']*uprog['axis']['step']:.0f} * srtu\n"
                 foot = f"srt=srt + {srt_step_var}\n"+ foot

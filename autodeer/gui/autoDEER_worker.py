@@ -214,7 +214,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/self.gyro, reptime = reptime_guess,shots=100)
 
-        scan = ReptimeScan(B=LO/self.gyro, LO=LO, reptime_max=12e3, averages=1, shots=50,
+        scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=12e3, averages=1, shots=50,
                            pi2_pulse=p90, pi_pulse=p180)
         self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",IFgain=2)
         # self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=0.5)

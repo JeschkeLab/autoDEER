@@ -1420,7 +1420,7 @@ class ReptimeScan(HahnEchoSequence):
     """
     Represents a reptime scan of a Hahn Echo Sequence. 
     """
-    def __init__(self, *, B, LO, reptime_max, averages, shots, **kwargs) -> None:
+    def __init__(self, *, B, LO, reptime, reptime_max, averages, shots, **kwargs) -> None:
         """A Hahn echo sequence is perfomed with the shot repetition time increasing.1
 
         Parameters
@@ -1429,6 +1429,8 @@ class ReptimeScan(HahnEchoSequence):
             The B0 field, in Guass
         LO : int or float
             The LO frequency in GHz
+        reptime: float
+            The default reptime, this is used for tuning pulses etc...
         reptime_max : np.ndarray
             The maximum shot repetition time in us    
         averages : int
@@ -1445,13 +1447,13 @@ class ReptimeScan(HahnEchoSequence):
             An autoEPR Pulse object describing the refocusing pi pulses. If
             not specified a RectPulse will be created instead. 
         """
-        min_reptime = 10
+        min_reptime = 20
         dim = 100
         step  = (reptime_max-min_reptime)/dim
         step = np.around(step,decimals=-1)
         step = np.around(step,decimals=-1)
         reptime = Parameter(
-            "reptime", min_reptime,step=step, dim=100, unit="us",
+            "reptime", reptime, start = min_reptime-reptime, step=step, dim=100, unit="us",
             description = "The shot repetition time")
         
         super().__init__(
