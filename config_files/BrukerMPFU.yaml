@@ -11,7 +11,7 @@ Spectrometer:
   Bridge:
     Min Freq: 33 #GHz
     Max Freq: 35 #GHz
-    Freq Cal: [-67652.70, 2050.203]
+    Freq Cal: [3.85625754e-10, -5.92378391e+03, 3.52260651e+02, -6.91334739e+00, 5.08737812e-02]
     MPFU Channels: ['+<x>', '-<x>','+<y>', '-<y>']
     Pulse dt: 2  #ns
     Det dt: 0.5  #ns
