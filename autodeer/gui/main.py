@@ -247,25 +247,18 @@ class autoDEERUI(QMainWindow):
         elif spectrometer['Manufacturer'] == 'Dummy':
             model = 'Dummy'
         
-        try:
-            if model == 'Dummy':
-                from autodeer.hardware.dummy import dummyInterface
-                self.spectromterInterface = dummyInterface()
-            elif model == 'ETH_AWG':
-                from autodeer.hardware import ETH_awg_interface
-                self.spectromterInterface = ETH_awg_interface()
-            elif model == 'Bruker_MPFU':
-                from autodeer.hardware import BrukerMPFU
-                self.spectromterInterface = BrukerMPFU(filename_edit)
-            elif model == 'Bruker_AWG':
-                from autodeer.hardware import BrukerAWG
-                self.spectromterInterface = BrukerAWG(filename_edit)
-        except ImportError:
-            QMessageBox.about(self,'ERORR!', 
-                              'The spectrometer interface could not be loaded!\n'+
-                              'Please check that the correct packages are installed!\n'+
-                              'See the documentation for more information.')
-            return None
+        if model == 'Dummy':
+            from autodeer.hardware.dummy import dummyInterface
+            self.spectromterInterface = dummyInterface()
+        elif model == 'ETH_AWG':
+            from autodeer.hardware import ETH_awg_interface
+            self.spectromterInterface = ETH_awg_interface()
+        elif model == 'Bruker_MPFU':
+            from autodeer.hardware.Bruker_MPFU import BrukerMPFU
+            self.spectromterInterface = BrukerMPFU(filename_edit)
+        elif model == 'Bruker_AWG':
+            from autodeer.hardware.Bruker_AWG import BrukerAWG
+            self.spectromterInterface = BrukerAWG(filename_edit)
 
 
         resonator_list = list(self.config['Resonators'].keys())

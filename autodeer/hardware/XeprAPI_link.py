@@ -475,7 +475,7 @@ class XeprAPILink:
         int
             Field position in Gauss
         """
-        self.cur_exp['CenterField'].value = val
+        self.cur_exp['CenterField'].value = np.around(val,3)
         time.sleep(2)  # Always wait 2s after a field change
         hw_log.info(f'Field position set to {val} G')
         if hold is True:

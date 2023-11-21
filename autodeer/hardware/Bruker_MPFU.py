@@ -178,6 +178,15 @@ class BrukerMPFU(Interface):
         if start:
             self.api.run_exp()
         pass
+
+    def tune_rectpulse(self,*, tp,**kwargs):
+        p90 = RectPulse(tp=tp,freq=0,t=0,flipangle=np.pi/2)
+        p180 = RectPulse(tp=tp*2,freq=0,t=0,flipangle=np.pi)
+
+        self.pulses[f"p90_{tp}"] = p90
+        self.pulses[f"p180_{tp*2}"] = p180
+
+        return self.pulses[f"p90_{tp}"], self.pulses[f"p180_{tp*2}"]
     
     def tune(self, sequence, B0, LO) -> None:
         channels = _MPFU_channels(sequence)
@@ -286,6 +295,15 @@ def _MPFU_channels(sequence):
 
 # =============================================================================
 
+
+def get_specjet_data(interface):
+    n_points  = interface.api.hidden['specJet.Data'].aqGetParDimSize(0)
+    array = np.zeros(n_points,dtype=np.complex128)
+    for i in range(n_points):
+        array[i] = interface.api.hidden['specJet.Data'][i] + 1j* interface.api.hidden['specJet.Data1'][i]
+
+    return array
+    
 def tune_power(
             interface, channel: str, tol=0.1, maxiter=30,
             bounds=[0, 100],hardware_wait=3) -> float:
@@ -328,13 +346,9 @@ def tune_power(
             def objective(x, *args):
                 interface.api.hidden[atten_channel].value = x  # Set phase to value
                 time.sleep(hardware_wait)
-                interface.api.run_exp()
-                while interface.api.is_exp_running():
-                    time.sleep(1)
-                data = interface.api.acquire_scan()
-                v = data.data
+                data = get_specjet_data(interface)
 
-                val = -1 * np.sum(np.abs(v))
+                val = -1 * np.sum(np.abs(data))
 
                 print(f'Power Setting = {x:.1f} \t Echo Amplitude = {-1*val:.2f}')
 
@@ -351,7 +365,9 @@ def tune_power(
 def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
              bounds=[0, 100],tau_value=400):
 
-    hardware_wait=5
+    hardware_wait=1
+
+    
     def tune_phase(
         channel: str, target: str, tol=0.1, maxiter=30) -> float:
         """Tunes the phase of a given channel to a given target using the
@@ -396,13 +412,13 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
         
 
         if target == 'R+':
-            test_fun = lambda x: -1 * np.real(x)
-        elif target == 'R-':
             test_fun = lambda x: 1 * np.real(x)
+        elif target == 'R-':
+            test_fun = lambda x: -1 * np.real(x)
         elif target == 'I+':
-            test_fun = lambda x: -1 * np.imag(x)
-        elif target == 'I-':
             test_fun = lambda x: 1 * np.imag(x)
+        elif target == 'I-':
+            test_fun = lambda x: -1 * np.imag(x)
 
         lb = 0.0
         ub = 100.0
@@ -411,13 +427,9 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
             # x = x[0]
             interface.api.hidden[phase_channel].value = x  # Set phase to value
             time.sleep(hardware_wait)
-            interface.api.run_exp()
-            while interface.api.is_exp_running():
-                time.sleep(1)
-            data = interface.api.acquire_scan()
-            v = data.data
+            data = get_specjet_data(interface)
 
-            val = test_fun(np.sum(v))
+            val = test_fun(np.sum(data))
 
             print(f'Phase Setting = {x:.1f} \t Echo Amplitude = {-1*val:.2f}')
 
@@ -474,10 +486,17 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
         seq._buildPhaseCycle()
         seq.evolution([tau])
 
-        interface.launch(seq, savename="autoTUNE", start=False, tune=False, MPFU_overwrite=[MPFU_chanel,MPFU_chanel])
+        interface.launch(seq, savename="autoTUNE", start=True, tune=False, MPFU_overwrite=[MPFU_chanel,MPFU_chanel])
 
+        time.sleep(3)
+        interface.terminate()
+        interface.api.cur_exp['ftEPR.StartPlsPrg'].value = True
+        
+        if not interface.api.hidden['specJet.AverageStart'].value:
+            interface.api.hidden['specJet.AverageStart'].value = True
+        
 
-        interface.api.set_PulseSpel_phase_cycling('auto')
+        # interface.api.set_PulseSpel_phase_cycling('auto')
         print(f"Tuning channel: {MPFU_chanel}")
         tune_power(interface, MPFU_chanel, tol=tol, bounds=bounds,hardware_wait=hardware_wait)
         tune_phase(MPFU_chanel, phase_to_echo(channel[1]), tol=tol)

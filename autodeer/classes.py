@@ -22,6 +22,7 @@ class Interface:
     """
 
     def __init__(self) -> None:
+        self.pulses = {}
         pass
 
     def connect(self) -> None:
