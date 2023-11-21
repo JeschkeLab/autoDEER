@@ -1752,7 +1752,7 @@ class ResonatorProfileSequence(Sequence):
         center_LO = self.LO.value
         self.LO = Parameter("LO", center_LO, start=-fwidth, step=fstep, dim=dim, unit="GHz", description="LO frequency")
         self.B = Parameter(
-            "B",((self.LO.value)/self.gyro), step=fstep/self.gyro, dim=dim,
+            "B",((self.LO.value)/self.gyro), start=-fwidth/self.gyro, step=fstep/self.gyro, dim=dim,
             unit="Guass",link=self.LO,description="B0 Field" )
         
         self.addPulse(RectPulse(  # Hard pulse

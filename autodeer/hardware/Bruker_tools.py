@@ -808,11 +808,20 @@ def build_unique_progtable(seq):
             start,_, step = get_arange(axis)
             steps.append(step)
         if np.any(steps):
-            common_step = gcd(steps)
+            if np.all(np.mod(steps,1) == 0):
+                common_step = gcd(steps)
+            else:
+                common_step = np.min(steps)
+                # idx = np.argmin(steps)
+                # start = get_arange(axes[idx])
             multipliers = np.array(steps)/common_step
         else:
             common_step = 0
             multipliers = np.ones(len(steps))
+
+        start = axes[0][0]/multipliers[0]
+
+
         index = progtable["axID"].index(axID)
         common_axis={"start":start,"dim":np.shape(axes[0])[0],"step":common_step,"reduce":progtable["reduce"][index]}
         n_steps = len(steps)
