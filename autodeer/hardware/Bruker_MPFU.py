@@ -70,7 +70,7 @@ class BrukerMPFU(Interface):
         self.api.connect()
         return super().connect()
 
-    def acquire_dataset(self) -> Dataset:
+    def acquire_dataset(self):
         if self.bg_thread is None:
             return self.api.acquire_dataset()
         else:
@@ -104,7 +104,7 @@ class BrukerMPFU(Interface):
         pass
         
     def launch(self, sequence: Sequence, savename: str, start=True, tune=True,
-               MPFU_overwrite=None,update_pulsespel=True):
+               MPFU_overwrite=None,update_pulsespel=True,**kwargs):
                     
         # First check if the sequence is pulsespel compatible
 
