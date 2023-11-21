@@ -893,11 +893,17 @@ def _addAWGPulse(self, sequence, pulse_num, id):
     return f"awg{id}"
 
 def check_variable(var:str, uprog):
-    for i in range(len(uprog['variables'])):
-        if uprog['variables'][i]["variable"][1] == var:
-            return True
-        
-    return False
+
+    if isinstance(uprog,list):
+        for up in uprog:
+            if check_variable(var,up):
+                return True
+        return False
+    else:
+        for i in range(len(uprog['variables'])):
+            if uprog['variables'][i]["variable"][1] == var:
+                return True
+        return False
     
 def write_pulsespel_file(sequence, AWG=False, MPFU=False):
     """Write the pulsespel file for a given sequence. 
@@ -927,6 +933,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
     possible_pulses= ["p0", "p1","p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9"]
     loop_iterators = ["i","j"]
     loop_dims = ["m","f"]
+    letter_vars = ['b','c','e','f','g']
 
     n_pulses = len(sequence.pulses)
     n_axes = len(uprogtable)
@@ -946,8 +953,8 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
     pcyc_str = ""
 
     # Add shot repetition time
-    
-    def_file += f"srt = {val_in_us(sequence.reptime, False):.0f} * srtu\n"
+    if not check_variable("reptime", uprogtable):
+        def_file += f"srt = {val_in_us(sequence.reptime, False):.0f} * srtu\n"
 
     prev_pulse = None
     for i,pulse in enumerate(sequence.pulses):
@@ -1055,6 +1062,16 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
                     sign = "-"
                 for k in range(int(np.abs(mult))):
                     foot = f"{mv_pulse_hash[pulse_id]}={mv_pulse_hash[pulse_id]}{sign}{axis_step_hash[ax]}\n"+ foot
+        if check_variable("reptime", uprog):
+            for var in uprog["variables"]:
+                if var["variable"][1] != "reptime":
+                    continue
+                reptime0_var = letter_vars.pop()
+                head += f"srt = {reptime0_var}\n"
+                def_file += f"{reptime0_var} = {val_in_us(sequence.reptime, False):.0f} * srtu\n"
+                srt_step_var = letter_vars.pop()
+                def_file += f"{srt_step_var} = {var['multiplier']*uprog['axis']['step']:.0f} * srtu\n"
+                foot = f"srt=srt + {srt_step_var}\n"+ foot
 
 
         # head +=  f"{axis_val_hash[ax]} = 0\n"
