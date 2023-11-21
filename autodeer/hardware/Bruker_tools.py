@@ -938,7 +938,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
 
     # Add shot repetition time
     
-    def_file += f"srt = {val_in_us(sequence.reptime):.0f} * srtu\n"
+    def_file += f"srt = {val_in_us(sequence.reptime, False):.0f} * srtu\n"
 
     prev_pulse = None
     for i,pulse in enumerate(sequence.pulses):

@@ -183,7 +183,7 @@ def gcd(values:list):
         return gcd(values)
     
 
-def val_in_us(Param):
+def val_in_us(Param, axis=True):
     """Returns the value or axis of a parameter in microseconds
 
     Parameters
@@ -195,12 +195,12 @@ def val_in_us(Param):
     -------
     float or numpy.ndarray
     """
-    if len(Param.axis) == 0:
+    if (len(Param.axis) == 0) or not axis:
         if Param.unit == "us":
             return Param.value
         elif Param.unit == "ns":
             return Param.value / 1e3
-    elif len(Param.axis) == 1:
+    elif len(Param.axis) == 1 and axis:
         if Param.unit == "us":
             return Param.value + Param.axis[0]['axis']
         elif Param.unit == "ns":
