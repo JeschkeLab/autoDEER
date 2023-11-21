@@ -1,4 +1,3 @@
-from autodeer.dataset import Dataset
 from autodeer.DEER_analysis import DEERanalysis
 import time
 import numpy as np
@@ -6,7 +5,10 @@ from deerlab.utils import der_snr
 
 
 class Criteria:
-
+    """
+    A class for defining criteria for terminating experiments. This should
+    only be subclassed and not used directly.
+    """
     def __init__(
             self, name: str, test, description: str = None) -> None:
  
@@ -34,7 +36,7 @@ class TimeCriteria(Criteria):
             _description_, by default None
         """
 
-        def test_func(Data: Dataset, verbosity=0):
+        def test_func(Data, verbosity=0):
             now = time.time()
 
             return now > end_time
@@ -69,7 +71,7 @@ class SNRCriteria(Criteria):
         2008, p5.4
         """
 
-        def test_func(data: Dataset, verbosity=verbosity):
+        def test_func(data, verbosity=verbosity):
             # Normalise data
             norm_data = data.data / data.data.max()
             std = der_snr(np.abs(norm_data))
@@ -132,7 +134,7 @@ class DEERCriteria(Criteria):
             MNR_threshold = 50
             regparamrange = None
 
-        def test_func(data: Dataset, verbosity=verbosity):
+        def test_func(data, verbosity=verbosity):
             # fit, _, _ = DEERanalysis(
             #     data.axes[0]/1000 - tau1, data.data,
             #     tau1, tau2, tau3, num_points=100,

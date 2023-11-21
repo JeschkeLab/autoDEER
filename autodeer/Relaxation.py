@@ -3,7 +3,6 @@ import numpy as np
 from deerlab import noiselevel
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-from autodeer.dataset import Dataset
 from autodeer.sequences import Sequence
 import deerlab as dl
 # ===========================================================================
@@ -11,21 +10,29 @@ import deerlab as dl
 
 class CarrPurcellAnalysis:
 
-    def __init__(self, dataset: Dataset, sequence: Sequence = None) -> None:
+    def __init__(self, dataset, sequence: Sequence = None) -> None:
         """Analysis and calculation of Carr Purcell decay. 
 
         Parameters
         ----------
-        dataset : Dataset
+        dataset : 
             _description_
         """
-        self.axis = dataset.axes[0]
+        # self.axis = dataset.axes[0]
+        # self.data = dataset.data
+        if 'tau1' in dataset.coords:
+            self.axis = dataset['tau1']
+        elif 't' in dataset.coords:
+            self.axis = dataset['t']
+        else:
+            self.axis = dataset['X']
+        
         self.data = dataset.data
         self.dataset = dataset
-        if sequence is None and hasattr(dataset,'sequence'):
-            self.seq = dataset.sequence
-        else:
-            self.seq = sequence
+        # if sequence is None and hasattr(dataset,'sequence'):
+        #     self.seq = dataset.sequence
+        # else:
+        #     self.seq = sequence
         pass
     
     def fit(self, type: str = "mono"):
@@ -120,7 +127,7 @@ class CarrPurcellAnalysis:
         data = np.abs(self.data)
         data /= np.max(data)
         if hasattr(self,"fit_result"):
-            calc_data = self.func(self.axis,*self.fit_result[0])
+            calc_data = self.func(self.axis.data,*self.fit_result[0])
         else:
             calc_data = data
 
@@ -132,29 +139,30 @@ class CarrPurcellAnalysis:
         # Target time
         target_time = target_time * 3600
 
-        g = (target_time * target_step / target_shrt) * 1/(self.axis)
+        g = (target_time * target_step / target_shrt) * 1/(self.axis.data)
         f = (SNR_target/data_snr_avgs)**2
 
-        self.optimal = self.axis[np.argmin(np.abs(g-f))]
+        self.optimal = self.axis.data[np.argmin(np.abs(g-f))]
         return self.optimal
 
 class ReptimeAnalysis():
 
-    def __init__(self, dataset: Dataset, sequence: Sequence = None) -> None:
+    def __init__(self, dataset, sequence: Sequence = None) -> None:
         """Analysis and calculation of Reptime based saturation recovery. 
 
         Parameters
         ----------
-        dataset : Dataset
+        dataset :
             The dataset to be analyzed.
         sequence : Sequence, optional
             The sequence object describing the experiment. (not currently used)
         """
-        self.axis = dataset.axes[0]
-
-        if self.axis.max() > 1e4:
-            self.axis /= 1e3 # ns -> us
-        self.data = dataset.data/np.max(dataset.data)
+        # self.axis = dataset.axes[0]
+        self.axis = dataset['reptime']
+        # if self.axis.max() > 1e4:
+        #     self.axis /= 1e3 # ns -> us
+        # self.data = dataset.data/np.max(dataset.data)
+        self.data = dataset
         self.seq = sequence
         pass
 
@@ -192,6 +200,7 @@ class ReptimeAnalysis():
         axs.set_xlabel('reptime (us)')
         axs.set_ylabel('normalized signal')
         axs.legend()
+        return fig
 
     def calc_optimal_reptime(self, recovery=0.8):
         # Calculates the x% recovery time

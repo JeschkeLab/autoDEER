@@ -42,6 +42,9 @@ class Sequence:
 
         self.pulses = []
         self.num_pulses = len(self.pulses)
+        self.axes_uuid = []
+        self.reduce_uuid = []
+
 
 
         if isinstance(B, Parameter):
@@ -259,8 +262,8 @@ class Sequence:
         return self.pcyc_vars, self.pcyc_cycles, self.pcyc_dets
 
     def evolution(self, params, reduce=[]):
-        axes_uuid = [param.uuid for param in params]
-        reduce_uuid = [param.uuid for param in reduce]
+        self.axes_uuid = [param.uuid for param in params]
+        self.reduce_uuid = [param.uuid for param in reduce]
 
 
         # Build the ProgTable
@@ -270,13 +273,13 @@ class Sequence:
         for n, pulse in enumerate(self.pulses):
             table = pulse.build_table()
             for i in range(len(table["uuid"])):
-                if table["uuid"][i] in axes_uuid:
-                    progTable["axID"].append(axes_uuid.index(table["uuid"][i]))
+                if table["uuid"][i] in self.axes_uuid:
+                    progTable["axID"].append(self.axes_uuid.index(table["uuid"][i]))
                     progTable["uuid"].append(table["uuid"][i]) 
                     progTable["EventID"].append(n)
                     progTable["Variable"].append(table["Variable"][i])
                     progTable["axis"].append(table["axis"][i])
-                    if table["uuid"][i] in reduce_uuid:
+                    if table["uuid"][i] in self.reduce_uuid:
                         progTable["reduce"].append(True)
                     else:
                         progTable["reduce"].append(False)
@@ -286,133 +289,18 @@ class Sequence:
             if type(var) is Parameter:
                 if not var.is_static() and not var.virtual:
                     for i in range(len(var.axis)):
-                        if var.axis[i]["uuid"] in axes_uuid:
-                            progTable["axID"].append(axes_uuid.index(var.axis[i]["uuid"]))
+                        if var.axis[i]["uuid"] in self.axes_uuid:
+                            progTable["axID"].append(self.axes_uuid.index(var.axis[i]["uuid"]))
                             progTable["EventID"].append(None)
                             progTable["Variable"].append(var_name) 
                             progTable["axis" ].append(var.axis[i]["axis"])
                             progTable["uuid"].append(var.axis[i]["uuid"]) 
-                            if var.axis[i]["uuid"] in reduce_uuid:
+                            if var.axis[i]["uuid"] in self.reduce_uuid:
                                 progTable["reduce"].append(True)
                             else:
                                 progTable["reduce"].append(False)
         self.progTable = progTable
         return self.progTable
-        
-    def _buildProgTable(self):
-        #           parvarid, pulse #, variable, axis
-        # progTable = [[], [], [], []]
-        progTable = {"EventID": [], "Variable": [], "axis": [],
-                     "axID": []}
-
-        for n, pulse in enumerate(self.pulses):
-            # Loop over all pulses
-            # for var_name in vars(pulse):
-            #     var = getattr(pulse, var_name)
-            #     # Loop over all pulse parameters
-            #     if type(var) is Parameter:
-            #         if var.progressive is True:
-            #             for i in range(0, len(var.prog)):
-            #                 progTable["axID"].append(var.prog[i][0]) 
-            #                 progTable["EventID"].append(n)
-            #                 progTable["Variable"].append(var_name) 
-            #                 progTable["axis"].append(var.prog[i][1]) 
-
-            table = pulse.build_table()
-            n_table = len(table["uuid"])
-            progTable["axID"] += table["uuid"]
-            progTable["EventID"] += [n] * n_table
-            progTable["Variable"] += table["Variable"] 
-            progTable["axis"] += table["axis"]  
-
-        # Sequence/ Experiment Parameters
-        for var_name in vars(self):
-            var = getattr(self, var_name)
-            if type(var) is Parameter:
-                if not var.is_static() and not var.virtual:
-                    for i in range(0, len(var.prog)):
-                        # progTable["axID"].append(var.prog[i][0]) 
-                        # progTable["EventID"].append(None)
-                        # progTable["Variable"].append(var_name) 
-                        # progTable["axis"].append(var.prog[i][1]) 
-                        progTable["axID"] += var.ax_id
-                        progTable["EventID"].append(None)
-                        progTable["Variable"].append(var_name) 
-                        progTable["axis" ]+= var.axis
-        self.progTable = progTable
-        return self.progTable
-        
-    def addPulseProg(self, pulse_id, variable, axis_id, axis) -> None:
-        """Adds a single progessive pulse element to the sequence.
-
-        It is strongly recomeneded that the axis is generated using `np.arange`
-        over `np.linspace`. Most spectrometers do not like inputs with a high
-        number of decimal places. `np.arange` allows control of the step size
-        reducing any risk of conflict with the interface.
-
-        Parameters
-        ----------
-        pulse_id : int
-            The iD of the moving pulse element. If it is a sequence parameter, 
-            such as `B` field, then `None` should be given.
-        variable : str
-            The name of the parameter.
-        axis_id : int
-            The iD of the axis. 
-        axis : np.ndarray
-            An array containing how the pulse element changes.
-        """
-        if pulse_id is None:
-            # Assume it is an experiment/sequence parameter
-            var = getattr(self, variable)
-            var.add_progression(axis_id, axis)
-        else:
-            var = getattr(self.pulses[pulse_id], variable)
-            var.add_progression(axis_id, axis)
-        
-        self._buildProgTable()
-        self._estimate_time()
-
-        pass
-    
-    def addPulsesProg(
-            self, pulses, variables, axis_id, axis, multipliers=None) -> None:
-        """Adds a multiple progessive pulse element to the sequence. This is
-        very useful when multiple elements are changing at the same time with
-        a constant relationship.
-
-        It is strongly recomeneded that the axis is generated using `np.arange`
-        over `np.linspace`. Most spectrometers do not like inputs with a high
-        number of decimal places. `np.arange` allows control of the step size
-        reducing any risk of conflict with the interface.
-
-
-        Parameters
-        ----------
-        pulses : list[int]
-            A list of pulse iDs that are changing
-        variables : list[str]
-            A list of variables that are changing
-        axis_id : int
-            The iD of the axis 
-        axis : np.ndaaray
-            An array containing how the pulse element changes
-        multipliers : list or np.ndaaray, optional
-            How the different variable are proportional to each other, by
-            default None. If `None` is specified then it is assumed that there
-            is a 1:1 relationship. The axs gives the values for the first
-            element.
-        """
-        
-        if multipliers is None:
-            multipliers = np.ones(len(pulses))
-
-        for i, pulse in enumerate(pulses):
-            self.addPulseProg(pulse, variables[i], axis_id,
-                              axis * multipliers[i])     
-
-        self._buildProgTable()
-        pass 
 
     def isPulseFocused(self):
         """

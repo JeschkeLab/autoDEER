@@ -1,5 +1,4 @@
 from autodeer.classes import Interface
-from autodeer.dataset import Dataset
 from autodeer.hardware.XeprAPI_link import XeprAPILink
 from autodeer.hardware.Bruker_tools import PulseSpel, run_general
 
@@ -57,7 +56,7 @@ class BrukerAWG(Interface):
         self.api.connect()
         return super().connect()
 
-    def acquire_dataset(self) -> Dataset:
+    def acquire_dataset(self):
         return self.api.acquire_dataset()
     
     def launch(self, sequence, savename: str, start=True):

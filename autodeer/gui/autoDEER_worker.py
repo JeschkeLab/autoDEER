@@ -331,6 +331,7 @@ class autoDEERWorker(QtCore.QRunnable):
             self.signals.status.emit('Running QuickDEER')
 
             tau2hrs = self.results['relax'].tau2hrs
+
             self.run_quick_deer(reptime,tau=tau2hrs)
             self.signals.status.emit('Analysing QuickDEER')
             self.pause_and_wait()

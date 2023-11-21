@@ -70,12 +70,31 @@ class Pulse:
         pass
 
     def _addPhaseCycle(self, phases, detections=None):
-        if detections is None:
-            detections = np.ones(len(phases))
-        self.pcyc = {"Phases": list(phases), "DetSigns": list(detections)}
-        pass
+            """
+            Adds a phase cycle to the pulse sequence.
+
+            Args:
+                phases (list): List of phases to add to the phase cycle.
+                detections (list, optional): List of detection signs. Defaults to None. If None then all cycles are summed.
+
+            Returns:
+                None
+            """
+            if detections is None:
+                detections = np.ones(len(phases))
+            self.pcyc = {"Phases": list(phases), "DetSigns": list(detections)}
+            pass
 
     def _buildFMAM(self, func):
+        """
+        Builds the amplitude modulation (AM) and frequency modulation (FM) of a given function.
+
+        Args:
+            func: A function that takes in an array of values and returns two arrays, representing the AM and FM of the function.
+
+        Returns:
+            Two arrays representing the AM and FM of the function.
+        """
         self.ax = np.linspace(-self.tp.value/2, self.tp.value/2, 1001)
         dt = self.ax[1]-self.ax[0]
         self.AM, self.FM = func(self.ax)
@@ -87,26 +106,38 @@ class Pulse:
     
 
     def build_table(self):
-        progTable = {"Variable": [], "axis": [],
-                "uuid": []}
-        for arg in vars(self):
-            attr = getattr(self,arg)
-            if type(attr) is Parameter and not attr.is_static():
-                for i, axes in enumerate(attr.axis):
-                    progTable["Variable"].append(arg)
-                    progTable["axis"].append(axes["axis"])
-                    progTable["uuid"].append(axes["uuid"])
+            """
+            Builds a table of variables, axes, and UUIDs for all non-static Parameters in the object.
 
-        return progTable
+            Returns:
+                dict: A dictionary containing the following keys: "Variable", "axis", and "uuid".
+                The values for each key are lists of the corresponding values for each non-static Parameter.
+            """
+            progTable = {"Variable": [], "axis": [],
+                    "uuid": []}
+            for arg in vars(self):
+                attr = getattr(self,arg)
+                if type(attr) is Parameter and not attr.is_static():
+                    for i, axes in enumerate(attr.axis):
+                        progTable["Variable"].append(arg)
+                        progTable["axis"].append(axes["axis"])
+                        progTable["uuid"].append(axes["uuid"])
+
+            return progTable
 
     
     def is_static(self):
+            """
+            Check if all parameters in the pulse object are static.
 
-        for arg in vars(self):
-            attr = getattr(self,arg)
-            if type(attr) is Parameter and not attr.is_static():
-                return False
-        return True
+            Returns:
+                bool: True if all parameters are static, False otherwise.
+            """
+            for arg in vars(self):
+                attr = getattr(self,arg)
+                if type(attr) is Parameter and not attr.is_static():
+                    return False
+            return True
 
     def isDelayFocused(self):
         """
@@ -255,7 +286,7 @@ class Pulse:
             Mag[1, iOffset] = -2 * (Sy @ Density.T).sum().real
             Mag[2, iOffset] = -2 * (Sz @ Density.T).sum().real
         
-        return Mag[0,:], Mag[1,:], Mag[2,:] 
+        return Mag[0,:], Mag[1,:], Mag[2,:]
 
 
     def plot_fft(self):
@@ -856,6 +887,6 @@ class GaussianPulse(Pulse):
     def func(self, ax):
         nx = ax.shape[0]
         FM = np.zeros(nx) + self.freq.value
-        AM = np.exp(-ax**2)
+        AM = np.exp(-ax**2/(((self.tp.value/2)**2)/(-1*np.log(0.001))))
 
         return AM, FM

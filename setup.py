@@ -3,14 +3,12 @@ from setuptools import setup, find_packages
 exec(open('autodeer/_version.py').read())
 
 extras={
-    "Bruker": ["XeprAPI"],
     "Matlab": ["matlabengine"],
     "Docs": ["sphinx", "pydata-sphinx-theme", "sphinx-gallery", "sphinx-design"],
     "GUI": ["PyQt6","threadpoolctl", "pyinstaller"],
+    "test": ["pytest", "pytest-cov", "pytest-qt", "pytest-xdist"],
 }
-extras["Dev"] = extras["Bruker"] + extras["Matlab"] + extras["Docs"] + \
-    ["pytest"]
-
+extras["Dev"] = extras["Bruker"] + extras["Matlab"] + extras["Docs"] + extras["test"]
 setup(
     name='autoDEER',
     version=str(__version__),
