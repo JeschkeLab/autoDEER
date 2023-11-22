@@ -162,7 +162,13 @@ class ReptimeAnalysis():
         # if self.axis.max() > 1e4:
         #     self.axis /= 1e3 # ns -> us
         # self.data = dataset.data/np.max(dataset.data)
-        self.data = dataset
+        
+        if np.iscomplexobj(dataset.data):
+            self.data = dataset.epr.correctphase
+        else:
+            self.data = dataset
+
+        self.data.data /= np.max(self.data.data)
         self.seq = sequence
         pass
 
@@ -179,7 +185,7 @@ class ReptimeAnalysis():
         # results = dl.fit(mymodel,self.data.real,self.axis,reg=False,**kwargs)
         # self.fit_result = results
 
-        self.fit_result = curve_fit(func, self.axis, self.data.real, p0=[1,1.8e3])
+        self.fit_result = curve_fit(func, self.axis, self.data, p0=[1,1.8e3])
 
         return self.fit_result
 

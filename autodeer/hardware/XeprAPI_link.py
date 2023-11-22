@@ -202,7 +202,8 @@ class XeprAPILink:
         else:
             dset = create_dataset_from_sequence(data, sequence)
             for par in params:
-                dset.attrs[par] = params['par']
+                dset.attrs[par] = params[par]
+            return dset
 
 
     def acquire_scan(self):

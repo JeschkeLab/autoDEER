@@ -99,7 +99,7 @@ class ResonatorProfileAnalysis:
         lorenz = dl.Model(lorenz_fcn, constants='x')
         lorenz.fc.par0 = 34
         lorenz.fc.set(lb=33, ub=35)
-        lorenz.q.set(lb=0, ub=100)
+        lorenz.q.set(lb=0, ub=500)
         lorenz.q.par0 = 80
 
         gauss_model = dl.dd_gauss

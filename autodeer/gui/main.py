@@ -102,12 +102,10 @@ def respro_process(dataset, freq_axis, fieldsweep=None,cores=1):
         freqs = freq_axis,
         dt=2
     )
-    print(1)
     respro.process_nutations(threshold=4)
     
     with threadpool_limits(limits=cores, user_api='blas'):
         respro.fit()
-    print(2)
 
     if fieldsweep is not None:
         LO_new = fieldsweep.LO + ad.optimise_spectra_position(respro, fieldsweep)
@@ -295,7 +293,7 @@ class autoDEERUI(QMainWindow):
         try:
             self.spectromterInterface.connect()
         except RuntimeError as e:
-            QMessageBox.about(self, 'Connection ERORR!',e)
+            QMessageBox.about(self, 'Connection ERORR!',str(e))
             
 
         self.connected = True
