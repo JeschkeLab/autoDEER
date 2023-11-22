@@ -51,7 +51,7 @@ def find_longest_pulse(sequence):
     return longest_pulse/1e3
 
 # =============================================================================
-def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, **kwargs):
+def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, **kwargs):
 
 
     Vexp:np.ndarray = dataset.data 
@@ -103,20 +103,20 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
         if 'tau1' in dataset.attrs:
             tau1 = dataset.attrs['tau1'] / 1e3
         elif 'tau1' in kwargs:
-            tau1 = kwargs['tau1']
+            tau1 = kwargs.pop('tau1')
         else:
             raise ValueError("tau1 not found in dataset or kwargs")
         if 'tau2' in dataset.attrs:
             tau2 = dataset.attrs['tau2'] / 1e3
         elif 'tau2' in kwargs:
-            tau2 = kwargs['tau2']
+            tau2 = kwargs.pop('tau2')
         else:
             raise ValueError("tau2 not found in dataset or kwargs")
         if 'tau3' in dataset.attrs:
             tau3 = dataset.attrs['tau3'] / 1e3
             exp_type = "5pDEER"
         elif 'tau3' in kwargs:
-            tau3 = kwargs['tau3']
+            tau3 = kwargs.pop('tau3')
             exp_type = "5pDEER"
         else:
             exp_type = "4pDEER"
@@ -124,14 +124,15 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     else:
         # Extract params from kwargs
         if "tau1" in kwargs:
-            tau1 = kwargs["tau1"]
+            tau1 = kwargs.pop("tau1")
         if "tau2" in kwargs:
-            tau2 = kwargs["tau2"]
+            tau2 = kwargs.pop("tau2")
         if "tau3" in kwargs:
-            tau3 = kwargs["tau3"]
-        exp_type = kwargs["exp_type"]
+            tau3 = kwargs.pop("tau3")
+        exp_type = kwargs.pop("exp_type")
         # t = dataset.axes[0]
         t = dataset['X']
+
 
     if t.max() > 500:
         t /= 1e3
@@ -142,7 +143,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
         print(f"Experimental Parameters set to: tau1 {tau1:.2f} us \t tau2 {tau2:.2f} us")
 
     if "pathways" in kwargs:
-        pathways = kwargs["pathways"]
+        pathways = kwargs.pop("pathways")
     else:
         pathways = None
 
@@ -150,7 +151,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
         pulselength = tp
     else:
         if "pulselength" in kwargs:
-            pulselength = kwargs["pulselength"]/1e3
+            pulselength = kwargs.pop("pulselength")/1e3
         else:
             pulselength = 16/1e3
         
@@ -164,10 +165,6 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     r = np.linspace(1.5,10,100)
 
 
-    if "regparamrange" in kwargs:
-        regparamrange = kwargs["regparamrange"]
-    else:
-        regparamrange = None
 
     # identify experiment
     
@@ -183,16 +180,6 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     else:
         compactness_penalty = None
 
-    if "bootstrap" in kwargs:
-        bootstrap = kwargs["bootstrap"]
-    else:
-        bootstrap = 0
-
-    if "bootcores" in kwargs:
-        bootcores = kwargs["bootcores"]
-    else:
-        bootcores = 1
-
     if "mask" in kwargs:
         mask = kwargs["mask"]
         noiselvl = dl.noiselevel(Vexp[mask])
@@ -200,30 +187,20 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
         noiselvl = dl.noiselevel(Vexp)
         mask=None
 
-    if "max_nfev" in kwargs:
-        max_nfev = kwargs["max_nfev"]
 
-    else: 
-        max_nfev = 100
-
-    if "lin_maxiter" in kwargs:
-        lin_maxiter = kwargs["lin_maxiter"]
-
-    else: 
-        lin_maxiter = 100
-
-    if "regparam" in kwargs:
-        regparam = kwargs["regparam"]
-    else:
-        regparam = "aic"
+    # Cleanup extra args
+    extra_args = ['tau1','tau2','tau3','exp_type','model','compactness','ROI','verbosity']
+    for arg in extra_args:
+        if arg in kwargs:
+            kwargs.pop(arg)
 
     # Core 
     if verbosity > 1:
         print('Starting Fitting')
     fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty, 
-                 bootstrap=bootstrap, mask=mask, noiselvl=noiselvl,
-                 regparamrange=regparamrange, bootcores=bootcores,verbose=verbosity,
-                 max_nfev = max_nfev,lin_maxiter=lin_maxiter,regparam=regparam)
+                 noiselvl=noiselvl,
+                 verbose=verbosity,
+                 **kwargs)
     if verbosity > 1:
         print('Fit complete')
     mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))

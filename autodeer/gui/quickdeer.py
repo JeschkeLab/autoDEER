@@ -59,6 +59,7 @@ class DEERplot(QWidget):
         self.create_figure()
         self.setup_inputs()
         self.toolbar()
+        self.DL_params={}
 
         self.current_folder = ''
         self.cores = 1
@@ -107,6 +108,18 @@ class DEERplot(QWidget):
                 self.Tau2doubleSpinBox.setValue(param_in_us(seq.tau2))
                 self.Tau3doubleSpinBox.setValue(param_in_us(seq.tau3))
                 self.PathwayslineEdit.setText('1,2,3,4,5')
+
+        elif 't' in dataset.coords:
+            self.Tau1doubleSpinBox.setValue( dataset.tau1*1e-3)
+            self.Tau2doubleSpinBox.setValue( dataset.tau2*1e-3)
+            if ('tau3' in dataset.attrs):
+                self.Tau3doubleSpinBox.setDisabled(0)
+                self.Tau3doubleSpinBox.setValue( dataset.tau3*1e-3)
+                self.PathwayslineEdit.setText('1,2,3,4,5')
+            else:
+                self.Tau3doubleSpinBox.setDisabled(1)
+                self.PathwayslineEdit.setText('1,2,3')
+            
         
 
 

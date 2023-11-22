@@ -208,7 +208,7 @@ class autoDEERWorker(QtCore.QRunnable):
         with threadpool_limits(limits=self.cores, user_api='blas'):
             self.interface.terminate_at(DEERCriteria(mode="high",verbosity=2,update_func=self.signals.longdeer_update.emit),verbosity=2,test_interval=0.5)
         self.signals.status.emit('DEER experiment complete')
-        self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
+        self.signals.longdeer_result.emit(self.interface.acquire_dataset())
 
     def run_reptime_opt(self,reptime_guess):
         LO = self.LO
