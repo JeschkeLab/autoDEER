@@ -31,7 +31,7 @@ class autoDEERSignals(QtCore.QObject):
     status = QtCore.pyqtSignal(str)
     fsweep_result  = QtCore.pyqtSignal(object)
     respro_result = QtCore.pyqtSignal(object)
-    optimise_pulses = QtCore.pyqtSignal(object)
+    # optimise_pulses = QtCore.pyqtSignal(object)
     relax_result = QtCore.pyqtSignal(object)
     quickdeer_result = QtCore.pyqtSignal(object)
     longdeer_result = QtCore.pyqtSignal(object)
@@ -54,7 +54,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
     '''
 
-    def __init__(self, interface, wait:QtCore.QWaitCondition, mutex:QtCore.QMutex, results:dict, LO, gyro, user_inputs:dict = None, *args, **kwargs):
+    def __init__(self, interface, wait:QtCore.QWaitCondition, mutex:QtCore.QMutex,pulses:dict, results:dict, LO, gyro, user_inputs:dict = None, *args, **kwargs):
         super(autoDEERWorker,self).__init__()
 
         # Store constructor arguments (re-used for processing)
@@ -66,10 +66,12 @@ class autoDEERWorker(QtCore.QRunnable):
         self.wait = wait
         self.mutex = mutex
         self.results = results
+        self.pulses = pulses
         self.samplename = user_inputs['sample']
         self.LO = LO
         self.gyro = gyro
         self.user_inputs = user_inputs
+        
 
         if not 'DEER_update_func' in self.user_inputs:
             self.user_inputs['DEER_update_func'] = None
@@ -206,7 +208,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('DEER experiment running')
         time.sleep(30) # Always wait for the experiment to properly start
         with threadpool_limits(limits=self.cores, user_api='blas'):
-            self.interface.terminate_at(DEERCriteria(mode="high",verbosity=2,update_func=self.signals.longdeer_update.emit),verbosity=2,test_interval=0.5)
+            self.interface.terminate_at(DEERCriteria(mode="speed",verbosity=2,update_func=self.signals.longdeer_update.emit),verbosity=2,test_interval=0.5) # Change criteria backagain
         self.signals.status.emit('DEER experiment complete')
         self.signals.longdeer_result.emit(self.interface.acquire_dataset())
 
@@ -244,77 +246,17 @@ class autoDEERWorker(QtCore.QRunnable):
         
         self.run_respro(reptime)
         
+    
+        self.pause_and_wait()
         
-        self.pause_and_wait()
-
-        # Define the pulses
-        if 'exc_pulse' in self.user_inputs.keys():
-            if self.user_inputs['exc_pulse'] == 'Rectangular':
-                exc_pulse = RectPulse(  
-                    tp=16, freq=0, flipangle=np.pi/2, scale=0
-                )
-            elif self.user_inputs['exc_pulse'] == 'Chirp':
-                exc_pulse = ChirpPulse(
-                    tp=16, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi/2, scale=0,
-                )
-            elif self.user_inputs['exc_pulse'] == 'HS':
-                exc_pulse = HSPulse(  
-                    tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi/2, scale=0,
-                    order1=6, order2=1, beta=10
-                )
-        else:
-            exc_pulse = RectPulse(  
-                    tp=16, freq=0, flipangle=np.pi/2, scale=0
-                )
-            
-        if 'ref_pulse' in self.user_inputs.keys():
-            if self.user_inputs['ref_pulse'] == 'Rectangular':
-                ref_pulse = RectPulse(  
-                    tp=16, freq=0, flipangle=np.pi, scale=0
-                )
-            elif self.user_inputs['ref_pulse'] == 'Chirp':
-                ref_pulse = ChirpPulse(
-                    tp=16, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
-                )
-            elif self.user_inputs['ref_pulse'] == 'HS':
-                ref_pulse = HSPulse(  
-                    tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
-                    order1=6, order2=1, beta=10
-                )
-        else:
-            ref_pulse = RectPulse(  
-                            tp=16, freq=0, flipangle=np.pi, scale=0
-                        )
-            
-        if 'pump_pulse' in self.user_inputs.keys():
-            if self.user_inputs['pump_pulse'] == 'Rectangular':
-                pump_pulse = RectPulse(  
-                    tp=16, freq=0, flipangle=np.pi, scale=0
-                )
-            elif self.user_inputs['pump_pulse'] == 'Chirp':
-                pump_pulse = ChirpPulse(
-                    tp=16, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
-                )
-            elif self.user_inputs['pump_pulse'] == 'HS':
-                pump_pulse = HSPulse(  
-                    tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
-                    order1=6, order2=1, beta=10
-                )
-        else:
-            pump_pulse = HSPulse(  
-                        tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
-                        order1=6, order2=1, beta=10
-                    )
-            
-        det_event = Detection(tp=512, freq=0)
-
-        self.pulses = {'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse, 'pump_pulse':pump_pulse, 'det_event':det_event}
-
-        # Optimise the pulse positions
-        self.signals.status.emit('Optimising pulses')
-        self.signals.optimise_pulses.emit(self.pulses)
-        self.pause_and_wait()
+        self.signals.status.emit('Tuning pulses')
+        
         # Tune the pulses
+        pump_pulse = self.pulses['pump_pulse']
+        ref_pulse = self.pulses['ref_pulse']
+        exc_pulse = self.pulses['exc_pulse']
+        det_event = self.pulses['det_event']
+        
         self.signals.status.emit('Tuning pulses')
         exc_pulse = self.interface.tune_pulse(exc_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
         ref_pulse = self.interface.tune_pulse(ref_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
@@ -355,5 +297,8 @@ class autoDEERWorker(QtCore.QRunnable):
 
     def new_data(self, data):
         self.results = data
+
+    def new_pulses(self, pulses):
+        self.pulses = pulses
 
 

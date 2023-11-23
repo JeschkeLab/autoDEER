@@ -759,9 +759,6 @@ class HSPulse(Pulse):
 
         return AM, FM
 
-
-
-
 # =============================================================================
 
 class ChirpPulse(Pulse):
@@ -820,7 +817,6 @@ class ChirpPulse(Pulse):
 
         return AM, FM
         
-
 # =============================================================================
 
 class SincPulse(Pulse):
@@ -890,3 +886,32 @@ class GaussianPulse(Pulse):
         AM = np.exp(-ax**2/(((self.tp.value/2)**2)/(-1*np.log(0.001))))
 
         return AM, FM
+    
+# =============================================================================
+
+def build_default_pulses(AWG=True):
+
+    exc_pulse = RectPulse(  
+                    tp=16, freq=0, flipangle=np.pi/2, scale=0
+                )
+    
+    ref_pulse = RectPulse(  
+                    tp=16, freq=0, flipangle=np.pi, scale=0
+                        )
+    
+    if AWG:
+        pump_pulse = HSPulse(  
+                    tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
+                        order1=6, order2=1, beta=10
+                    )
+        det_event = Detection(tp=512, freq=0)
+    else:
+        pump_pulse = RectPulse(
+                    tp=16, freq=-0.05, flipangle=np.pi, scale=0)
+        
+        # det_event = Detection(tp=exc_pulse.tp * 2, freq=0)
+        det_event = Detection(tp=128, freq=0)
+        
+    pulses = {'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse, 'pump_pulse':pump_pulse, 'det_event':det_event}
+
+    return pulses

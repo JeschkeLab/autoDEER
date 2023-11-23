@@ -209,6 +209,8 @@ class BrukerMPFU(Interface):
         pass
 
     def tune_rectpulse(self,*, tp,**kwargs):
+        """Mocks the tune_rectpulse command and returns a pair of RectPulses
+        with the given tp and 2*tp respectively. No scale is set."""
         p90 = RectPulse(tp=tp,freq=0,t=0,flipangle=np.pi/2)
         p180 = RectPulse(tp=tp*2,freq=0,t=0,flipangle=np.pi)
 
@@ -217,6 +219,12 @@ class BrukerMPFU(Interface):
 
         return self.pulses[f"p90_{tp}"], self.pulses[f"p180_{tp*2}"]
     
+    def tune_pulse(self,*, pulse,**kwargs):
+        """Mocks the tune_pulse command and returns the pulse unchanged.
+        """
+        return pulse
+    
+
     def tune(self, sequence, B0, LO) -> None:
         channels = _MPFU_channels(sequence)
         

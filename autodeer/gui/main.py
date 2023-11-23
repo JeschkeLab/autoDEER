@@ -15,6 +15,7 @@ from autodeer.gui.tools import *
 from autodeer.gui.autoDEER_worker import autoDEERWorker
 from autodeer.gui.quickdeer import DEERplot
 import yaml
+import time
 
 from queue import Queue
 
@@ -161,6 +162,7 @@ class autoDEERUI(QMainWindow):
         self.threadpool = QtCore.QThreadPool()
         self.current_results = {}
         self.current_data = {}
+        self.pulses = {}
         self.spectromterInterface = None
         self.waitCondition = None
         self.queue = Queue()
@@ -189,7 +191,7 @@ class autoDEERUI(QMainWindow):
         self.current_folder = str(Path.home())
         self.config = None
         self.connected = False
-        self.pulses = {}
+        
 
         self.LO = 0
         self.gyro = 0.0028087
@@ -280,6 +282,7 @@ class autoDEERUI(QMainWindow):
 
         # Set LO to resonator central frequency
         self.LO = self.config['Resonators'][key1]['Center Freq']
+        self.AWG = self.config['Spectrometer']['AWG']
 
         # Get user preferences
         try:
@@ -438,8 +441,8 @@ class autoDEERUI(QMainWindow):
         if len(args) > 1:
             self.LO = args[1]
 
-        if self.waitCondition is not None: # Wake up the runner thread
-            self.waitCondition.wakeAll()
+        # if self.waitCondition is not None: # Wake up the runner thread
+        #     self.waitCondition.wakeAll()
             
         self.respro_ax.cla()
 
@@ -457,9 +460,11 @@ class autoDEERUI(QMainWindow):
         self.qCI.setText(f"({fitresult.results.qUncert.ci(95)[0]:.2f},{fitresult.results.qUncert.ci(95)[1]:.2f})")
         self.Tab_widget.setCurrentIndex(2)
 
+        self.optimise_pulses_button()
+
 
     def optimise_pulses_button(self):
-        if self.pulses is None:
+        if (self.pulses is None) or (self.pulses == {}):
             self.optimise_pulses()
         elif self.pulses['pump_pulse'] is None:
             self.optimise_pulses()
@@ -468,19 +473,25 @@ class autoDEERUI(QMainWindow):
         
 
     def optimise_pulses(self, pulses=None):
-        if pulses is None:
-            pump_pulse = ad.HSPulse(tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0, order1=6, order2=1, beta=10)
-            exc_pulse = ad.RectPulse(tp=16, freq=0.02, flipangle=np.pi/2, scale=0)
-            ref_pulse = exc_pulse.copy(flipangle=np.pi)
-        else:
-            pump_pulse = pulses['pump_pulse']
-            ref_pulse = pulses['ref_pulse']
-            exc_pulse = pulses['exc_pulse']
+        if (pulses is None) or pulses == {}:
+            self.pulses = ad.build_default_pulses(self.AWG)
+            # pump_pulse = ad.HSPulse(tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0, order1=6, order2=1, beta=10)
+            # exc_pulse = ad.RectPulse(tp=16, freq=0.02, flipangle=np.pi/2, scale=0)
+            # ref_pulse = exc_pulse.copy(flipangle=np.pi)
+        
+        pump_pulse = self.pulses['pump_pulse']
+        ref_pulse = self.pulses['ref_pulse']
+        exc_pulse = self.pulses['exc_pulse']
 
         pump_pulse, exc_pulse, ref_pulse = ad.optimise_pulses(self.current_results['fieldsweep'], pump_pulse, exc_pulse, ref_pulse)
         
-        self.pulses = {'pump_pulse':pump_pulse, 'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse}    
-
+        # self.pulses = {'pump_pulse':pump_pulse, 'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse}    
+        self.pulses['pump_pulse'] = pump_pulse
+        self.pulses['ref_pulse'] = ref_pulse
+        self.pulses['exc_pulse'] = exc_pulse
+                
+        self.worker.new_pulses(self.pulses)
+        
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
 
@@ -651,16 +662,15 @@ class autoDEERUI(QMainWindow):
 
         self.waitCondition = QtCore.QWaitCondition()
         mutex = QtCore.QMutex()
-
         self.worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
-            results=self.current_results,LO=self.LO, gyro = self.gyro,
+            pulses=self.pulses,results=self.current_results ,LO=self.LO, gyro = self.gyro,
             user_inputs=userinput, cores=self.cores )
     
         self.worker.signals.status.connect(self.msgbar.setText)
         self.worker.signals.fsweep_result.connect(self.update_fieldsweep)
         self.worker.signals.respro_result.connect(self.update_respro)
-        self.worker.signals.optimise_pulses.connect(self.optimise_pulses)
+        # self.worker.signals.optimise_pulses.connect(self.optimise_pulses)
         self.worker.signals.relax_result.connect(self.update_relax)
         self.worker.signals.quickdeer_result.connect(self.update_quickdeer)
         self.worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
