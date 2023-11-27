@@ -162,7 +162,7 @@ def gcd(values:list):
     values : list
         _description_
     """
-
+    values = values.copy()
     if len(values) == 1:
         return values[0]
     

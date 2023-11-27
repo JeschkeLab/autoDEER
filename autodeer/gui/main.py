@@ -16,6 +16,7 @@ from autodeer.gui.autoDEER_worker import autoDEERWorker
 from autodeer.gui.quickdeer import DEERplot
 import yaml
 import time
+import datetime
 
 from queue import Queue
 
@@ -179,6 +180,7 @@ class autoDEERUI(QMainWindow):
         self.actionGitHub.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(github_url))
         self.actionIssues.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(issues_url))
         self.actionDiscussions.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(discussion_url))
+        self.actionOpen_Folder.triggered.connect(self.load_folder)
 
         self.actionLoadConfig.triggered.connect(lambda : self.load_spectrometer_config(None))
         self.actionConnect.triggered.connect(self.connect_spectrometer)
@@ -191,6 +193,7 @@ class autoDEERUI(QMainWindow):
         self.current_folder = str(Path.home())
         self.config = None
         self.connected = False
+        self.DL_params = {}
         
 
         self.LO = 0
@@ -199,14 +202,20 @@ class autoDEERUI(QMainWindow):
 
     def set_spectrometer_connected_light(self, state):
         if state == 0:
-            light_pixmap = QtGui.QPixmap('icons:red.png')
+            light_pixmap = QtGui.QPixmap('icons:Red.png')
         elif state == 1:
-            light_pixmap = QtGui.QPixmap('icons:green.png')
+            light_pixmap = QtGui.QPixmap('icons:Green.png')
         elif state == 2:
-            light_pixmap = QtGui.QPixmap('icons:yellow.png')
+            light_pixmap = QtGui.QPixmap('icons:Yellow.png')
         
         light_pixmap = light_pixmap.scaledToHeight(30)
         self.Connected_Light.setPixmap(light_pixmap)
+
+    def load_folder(self):
+        file = str(QFileDialog.getExistingDirectory(self, "Select Directory",self.current_folder))
+
+        self.current_folder = file
+    
     def load_epr_file(self, store_location):
 
         filename, _= QFileDialog.getOpenFileName(
@@ -253,13 +262,14 @@ class autoDEERUI(QMainWindow):
                 from autodeer.hardware.dummy import dummyInterface
                 self.spectromterInterface = dummyInterface(filename_edit)
             elif model == 'ETH_AWG':
-                from autodeer.hardware import ETH_awg_interface
+                from autodeer.hardware.ETH_awg import ETH_awg_interface
                 self.spectromterInterface = ETH_awg_interface()
             elif model == 'Bruker_MPFU':
-                from autodeer.hardware import BrukerMPFU
+                from autodeer.hardware.Bruker_MPFU import BrukerMPFU
                 self.spectromterInterface = BrukerMPFU(filename_edit)
+                self.spectromterInterface.savefolder = self.current_folder
             elif model == 'Bruker_AWG':
-                from autodeer.hardware import BrukerAWG
+                from autodeer.hardware.Bruker_AWG import BrukerAWG
                 self.spectromterInterface = BrukerAWG(filename_edit)
         except ImportError:
             QMessageBox.about(self,'ERORR!', 
@@ -296,6 +306,8 @@ class autoDEERUI(QMainWindow):
         # Extract DeerLab fit parameters
         if ('autoDEER' in self.config) and ('DeerLab' in self.config['autoDEER']):
             self.DL_params = self.config['autoDEER']['DeerLab']
+        else:
+            self.DL_params = {}
 
         self.q_DEER.DL_params = self.DL_params
         self.longDEER.DL_params = self.DL_params
@@ -314,6 +326,11 @@ class autoDEERUI(QMainWindow):
 
         self.connected = True
         self.set_spectrometer_connected_light(1)
+
+    def save_data(self,dataset,filename):
+        timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
+        fullname = timestamp + self.SampleName.text() + '_' +filename +'.h5'
+        dataset.to_netcdf(os.path.join(self.current_folder,fullname),engine='h5netcdf',invalid_netcdf=True)
 
     def fsweep_toolbar(self):
         upload_icon = QtGui.QIcon('icons:upload.png')
@@ -410,15 +427,17 @@ class autoDEERUI(QMainWindow):
             self.current_data['respro'] = dataset
 
         if hasattr(dataset, 'sequence'):
-            f_axis = dataset.sequence.LO.value + dataset.sequence.LO.axis[0]['axis'] - 0.3 # Fix this necessary offset
+            f_axis = dataset.sequence.LO.value + dataset.sequence.LO.axis[0]['axis']# - 0.3 # Fix this necessary offset
         else:
             # Assuming mat file
             # TODO: Change to new data format
-            f_axis = dataset['LO'].data - 0.3
+            f_axis = dataset['LO'].data #- 0.3
             # f_axis = dataset.params['parvars'][2]['vec'][:,1] + dataset.params['LO']
 
 
-        worker = Worker(respro_process, dataset, f_axis, cores=self.cores)
+        # worker = Worker(respro_process, dataset, f_axis,self.current_results['fieldsweep'], cores=self.cores)
+        worker = Worker(respro_process, dataset, f_axis, self.current_results['fieldsweep'], cores=self.cores)
+
         worker.signals.result.connect(self.refresh_respro)
 
         self.threadpool.start(worker)
@@ -435,12 +454,15 @@ class autoDEERUI(QMainWindow):
 
     def refresh_respro(self, *args):
 
-        fitresult = args[0]
+        
+
+        if len(args[0]) == 2:
+            fitresult = args[0][0]
+            self.LO = args[0][1]
+        else:
+            fitresult = args[0]
+
         self.current_results['respro'] = fitresult
-
-        if len(args) > 1:
-            self.LO = args[1]
-
         # if self.waitCondition is not None: # Wake up the runner thread
         #     self.waitCondition.wakeAll()
             
@@ -489,7 +511,8 @@ class autoDEERUI(QMainWindow):
         self.pulses['pump_pulse'] = pump_pulse
         self.pulses['ref_pulse'] = ref_pulse
         self.pulses['exc_pulse'] = exc_pulse
-                
+        self.pulses['det_event'].freq = exc_pulse.freq
+
         self.worker.new_pulses(self.pulses)
         
         if self.waitCondition is not None: # Wake up the runner thread
@@ -664,17 +687,23 @@ class autoDEERUI(QMainWindow):
         mutex = QtCore.QMutex()
         self.worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
-            pulses=self.pulses,results=self.current_results ,LO=self.LO, gyro = self.gyro,
+            pulses=self.pulses,results=self.current_results, AWG=self.AWG, LO=self.LO, gyro = self.gyro,
             user_inputs=userinput, cores=self.cores )
     
         self.worker.signals.status.connect(self.msgbar.setText)
         self.worker.signals.fsweep_result.connect(self.update_fieldsweep)
+        self.worker.signals.fsweep_result.connect(lambda x: self.save_data(x,'EDFS'))
         self.worker.signals.respro_result.connect(self.update_respro)
+        self.worker.signals.respro_result.connect(lambda x: self.save_data(x,'ResPro'))
         # self.worker.signals.optimise_pulses.connect(self.optimise_pulses)
         self.worker.signals.relax_result.connect(self.update_relax)
+        self.worker.signals.relax_result.connect(lambda x: self.save_data(x,'CP_Q'))
         self.worker.signals.quickdeer_result.connect(self.update_quickdeer)
+        self.worker.signals.quickdeer_result.connect(lambda x: self.save_data(x,'DEER_5P_Q_quick'))
         self.worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
         self.worker.signals.longdeer_update.connect(self.longDEER.refresh_deer)
+        self.worker.signals.longdeer_result.connect(lambda x: self.save_data(x,'DEER_5P_Q_long'))
+
         self.worker.signals.longdeer_result.connect(self.update_longdeer)
 
 

@@ -34,7 +34,7 @@ class Interface:
         """
 
         # data.sequence = self.cur_exp
-        data.attrs['time'] = datetime.datetime.now()
+        data.attrs['time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         return data
     
 
@@ -59,7 +59,7 @@ class Interface:
         """
         pass
 
-    def terminate_at(self, criterion, test_interval=10, keep_running=True, verbosity=0):
+    def terminate_at(self, criterion, test_interval=2, keep_running=True, verbosity=0):
         """Terminates the experiment upon a specific condition being
         satisified. 
 

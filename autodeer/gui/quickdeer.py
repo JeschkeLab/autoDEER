@@ -288,7 +288,7 @@ class DEERplot(QWidget):
         self.update_fit_result()
 
         if hasattr(self.fitresult,'dataset') and hasattr(self.fitresult.dataset,'time'):
-            self.Last_updated.setText(f"Last updated: {self.fitresult.dataset.time.strftime('%Y-%m-%d %H:%M:%S')}")
+            self.Last_updated.setText(f"Last updated: {self.fitresult.dataset.time}")
             self.num_scans.setText(f"# of scans: {self.fitresult.dataset.nAvgs}")
         else:
             self.Last_updated.setText(f"Last updated: never")

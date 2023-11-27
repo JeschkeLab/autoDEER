@@ -301,7 +301,24 @@ class Sequence:
                                 progTable["reduce"].append(False)
         self.progTable = progTable
         return self.progTable
-
+    
+    def shift_detfreq_to_zero(self):
+        det_pulse = None
+        for pulse in self.pulses:
+            if isinstance(pulse,Detection):
+                det_pulse = pulse
+        
+        det_freq = det_pulse.freq.value
+        self.LO.value -= det_freq
+        for pulse in self.pulses:
+            if hasattr(pulse,'freq'):
+                pulse.freq.value -= det_freq
+            if hasattr(pulse,'init_freq'):
+                pulse.init_freq.value -= det_freq
+            if hasattr(pulse,'final_freq'):
+                pulse.final_freq.value -= det_freq
+        return self
+    
     def isPulseFocused(self):
         """
         Is the sequence expressed to contain only pulses and no delays?

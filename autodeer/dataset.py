@@ -65,7 +65,7 @@ def get_all_fixed_param(sequence):
         param = sequence.__dict__[param_name]
         if not isinstance(param, Parameter):
             continue
-        if param.axis == []:
+        if (param.axis == []) and (param.value is not None):
             fixed_param[param_name] = param.value
         
 
@@ -78,7 +78,7 @@ def get_all_fixed_param(sequence):
             param = pulse.__dict__[param_name]
             if not isinstance(param, Parameter):
                 continue
-            if param.axis == []:
+            if (param.axis == []) and (param.value is not None):
                 fixed_param[f"{type}{i}_{param_name}"] = param.value
         
     return fixed_param

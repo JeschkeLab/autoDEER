@@ -998,7 +998,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
 
 
     # Setup averaging loop
-    head += "for k=1 to m \ntotscans(n) \n"
+    head += "for k=1 to m \ntotscans(m) \n"
     def_file += f"m = {sequence.averages.value}\n"
 
     foot = "scansdone(k) \nnext k \n"+foot

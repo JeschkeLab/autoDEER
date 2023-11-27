@@ -206,7 +206,7 @@ class XeprAPILink:
             return dset
 
 
-    def acquire_scan(self):
+    def acquire_scan(self,sequence = None):
         """
         This script detects the end of the scan and acquires the data set. 
         This requires that the experiment is still running, or recently 
@@ -222,11 +222,11 @@ class XeprAPILink:
             while self.cur_exp.getParam("NbScansDone").value == current_scan:
                 time.sleep(time_per_point)
             time.sleep(time_per_point)
-            return self.acquire_dataset()
+            return self.acquire_dataset(sequence)
         else:
-            return self.acquire_dataset()
+            return self.acquire_dataset(sequence)
 
-    def acquire_scan_at(self, scan_num: int):
+    def acquire_scan_at(self, scan_num: int,sequence = None):
         """
         This script acquires the scan after a specific number of scans
         """
@@ -235,9 +235,9 @@ class XeprAPILink:
             * self.cur_exp.getParam("ShotsPLoop").value * 2
         while self.cur_exp.getParam("NbScansDone").value != scan_num:
             time.sleep(time_per_point * x_length / 2)
-        return self.acquire_scan()
+        return self.acquire_scan(sequence)
 
-    def acquire_scan_2d(self):
+    def acquire_scan_2d(self,sequence = None):
         """
         This function acquires the dataset after a full 2D scan.
         This is done by identifying the number of scan steps per sweep and 
@@ -257,9 +257,9 @@ class XeprAPILink:
             current_sweep = np.floor(current_scan/scans_per_sweep)
             next_scan_target = (current_sweep + 1) * scans_per_sweep
 
-            return self.acquire_scan_at(next_scan_target)
+            return self.acquire_scan_at(next_scan_target,sequence)
         else:
-            return self.acquire_scan()
+            return self.acquire_scan(sequence)
 
     def set_PulseSpel_var(self, variable: str, value: int):
         """
