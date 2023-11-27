@@ -26,6 +26,13 @@ def test_write_pulsespel_file_MPFU(seq):
     channels = _MPFU_channels(seq)
     MPFU = ["+<x>","-<x>","+<y>","-<y>"]
     def_file, exp_file = write_pulsespel_file(seq,AWG=False,MPFU=MPFU)
+    if seq == 'deer' or seq == 'respro':
+        assert 'sweep' in exp_file
+    elif seq == 'fieldsweep':
+        assert 'bsweep' in exp_file
+    elif seq == 'reptime':
+        assert 'sweep' not in exp_file
+
     print(exp_file)
 
 def test_build_unique_progtable():

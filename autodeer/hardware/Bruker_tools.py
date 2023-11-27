@@ -1014,7 +1014,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
             loop_str = "bsweep {param}=1 to {stop} \n"
         else:
             reduce = uprogtable[index]['axis']["reduce"]
-            if ax == 0:
+            if ax == 0 and not check_variable("reptime", uprog):
                 loop_str = "sweep {param}=1 to {stop} \n"
             else:
                 loop_str = "for {param}=1 to {stop} \n"
