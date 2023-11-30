@@ -15,6 +15,8 @@ from autodeer.gui.tools import *
 from autodeer.gui.autoDEER_worker import autoDEERWorker
 from autodeer.gui.quickdeer import DEERplot
 import yaml
+import time
+import datetime
 
 from queue import Queue
 
@@ -102,12 +104,10 @@ def respro_process(dataset, freq_axis, fieldsweep=None,cores=1):
         freqs = freq_axis,
         dt=2
     )
-    print(1)
     respro.process_nutations(threshold=4)
     
     with threadpool_limits(limits=cores, user_api='blas'):
         respro.fit()
-    print(2)
 
     if fieldsweep is not None:
         LO_new = fieldsweep.LO + ad.optimise_spectra_position(respro, fieldsweep)
@@ -118,10 +118,12 @@ def respro_process(dataset, freq_axis, fieldsweep=None,cores=1):
 
 def relax_process(dataset):
 
-    if dataset.axes[0].max()>500:
-        dataset.axes = [dataset.axes[0]/1e3]
-    else:
-        dataset.axes = [dataset.axes[0]]
+    # if dataset.axes[0].max()>500:
+    #     dataset.axes = [dataset.axes[0]/1e3]
+    # else:
+    #     dataset.axes = [dataset.axes[0]]
+    if dataset['tau1'].max() > 1e4:
+        dataset['tau1'] /= 1e3
     CP_data = ad.CarrPurcellAnalysis(dataset)
     CP_data.fit('double')
 
@@ -161,6 +163,7 @@ class autoDEERUI(QMainWindow):
         self.threadpool = QtCore.QThreadPool()
         self.current_results = {}
         self.current_data = {}
+        self.pulses = {}
         self.spectromterInterface = None
         self.waitCondition = None
         self.queue = Queue()
@@ -177,8 +180,9 @@ class autoDEERUI(QMainWindow):
         self.actionGitHub.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(github_url))
         self.actionIssues.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(issues_url))
         self.actionDiscussions.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(discussion_url))
+        self.actionOpen_Folder.triggered.connect(self.load_folder)
 
-        self.actionLoadConfig.triggered.connect(self.load_spectrometer_config)
+        self.actionLoadConfig.triggered.connect(lambda : self.load_spectrometer_config(None))
         self.actionConnect.triggered.connect(self.connect_spectrometer)
         self.actionSaveReport.triggered.connect(self.create_report)
         self.show_respro.clicked.connect(lambda: self.update_respro())
@@ -189,7 +193,8 @@ class autoDEERUI(QMainWindow):
         self.current_folder = str(Path.home())
         self.config = None
         self.connected = False
-        self.pulses = {}
+        self.DL_params = {}
+        
 
         self.LO = 0
         self.gyro = 0.002803632236095
@@ -197,14 +202,20 @@ class autoDEERUI(QMainWindow):
 
     def set_spectrometer_connected_light(self, state):
         if state == 0:
-            light_pixmap = QtGui.QPixmap('icons:red.png')
+            light_pixmap = QtGui.QPixmap('icons:Red.png')
         elif state == 1:
-            light_pixmap = QtGui.QPixmap('icons:green.png')
+            light_pixmap = QtGui.QPixmap('icons:Green.png')
         elif state == 2:
-            light_pixmap = QtGui.QPixmap('icons:yellow.png')
+            light_pixmap = QtGui.QPixmap('icons:Yellow.png')
         
         light_pixmap = light_pixmap.scaledToHeight(30)
         self.Connected_Light.setPixmap(light_pixmap)
+
+    def load_folder(self):
+        file = str(QFileDialog.getExistingDirectory(self, "Select Directory",self.current_folder))
+
+        self.current_folder = file
+    
     def load_epr_file(self, store_location):
 
         filename, _= QFileDialog.getOpenFileName(
@@ -217,10 +228,11 @@ class autoDEERUI(QMainWindow):
         dataset = ad.eprload(filename_edit)
         self.current_data[store_location] = dataset
 
-    def load_spectrometer_config(self):
-
-        filename, _= QFileDialog.getOpenFileName(
-            self,"Select a File", self.current_folder,"Data (*.yaml)")
+    def load_spectrometer_config(self, filename=None):
+        
+        if filename is None:
+            filename, _= QFileDialog.getOpenFileName(
+                self,"Select a File", self.current_folder,"Data (*.yaml)")
         
         if filename:
             path = Path(filename)
@@ -245,26 +257,42 @@ class autoDEERUI(QMainWindow):
         elif spectrometer['Manufacturer'] == 'Dummy':
             model = 'Dummy'
         
-        if model == 'Dummy':
-            from autodeer.hardware.dummy import dummyInterface
-            self.spectromterInterface = dummyInterface()
-        elif model == 'ETH_AWG':
-            from autodeer.hardware import ETH_awg_interface
-            self.spectromterInterface = ETH_awg_interface()
-        elif model == 'Bruker_MPFU':
-            from autodeer.hardware import BrukerMPFU
-            self.spectromterInterface = BrukerMPFU(filename_edit)
-        elif model == 'Bruker_AWG':
-            from autodeer.hardware import BrukerAWG
-            self.spectromterInterface = BrukerAWG(filename_edit)
+        try:
+            if model == 'Dummy':
+                from autodeer.hardware.dummy import dummyInterface
+                self.spectromterInterface = dummyInterface(filename_edit)
+            elif model == 'ETH_AWG':
+                from autodeer.hardware.ETH_awg import ETH_awg_interface
+                self.spectromterInterface = ETH_awg_interface()
+            elif model == 'Bruker_MPFU':
+                from autodeer.hardware.Bruker_MPFU import BrukerMPFU
+                self.spectromterInterface = BrukerMPFU(filename_edit)
+                self.spectromterInterface.savefolder = self.current_folder
+            elif model == 'Bruker_AWG':
+                from autodeer.hardware.Bruker_AWG import BrukerAWG
+                self.spectromterInterface = BrukerAWG(filename_edit)
+        except ImportError:
+            QMessageBox.about(self,'ERORR!', 
+                              'The spectrometer interface could not be loaded!\n'+
+                              'Please check that the correct packages are installed!\n'+
+                              'See the documentation for more information.')
+            return None
+
+
+        resonator_list = list(self.config['Resonators'].keys())
 
         # Find resonators
         self.resonatorComboBox.clear()
         self.resonatorComboBox.addItems(self.config['Resonators'].keys())
 
+        if len(resonator_list) == 0:
+            QMessageBox.about(self,'ERORR!', 'No resonators found in config file!')
+            return None
+        key1 = resonator_list[0]
+
         # Set LO to resonator central frequency
-        key1 = list(self.config['Resonators'].keys())[0]
         self.LO = self.config['Resonators'][key1]['Center Freq']
+        self.AWG = self.config['Spectrometer']['AWG']
 
         # Get user preferences
         try:
@@ -275,7 +303,14 @@ class autoDEERUI(QMainWindow):
             self.q_DEER.cores = 1
             self.longDEER.cores = 1
 
+        # Extract DeerLab fit parameters
+        if ('autoDEER' in self.config) and ('DeerLab' in self.config['autoDEER']):
+            self.DL_params = self.config['autoDEER']['DeerLab']
+        else:
+            self.DL_params = {}
 
+        self.q_DEER.DL_params = self.DL_params
+        self.longDEER.DL_params = self.DL_params
 
     def connect_spectrometer(self):
         if self.spectromterInterface is None:
@@ -283,9 +318,19 @@ class autoDEERUI(QMainWindow):
             return None
 
 
-        self.spectromterInterface.connect()
+        try:
+            self.spectromterInterface.connect()
+        except RuntimeError as e:
+            QMessageBox.about(self, 'Connection ERORR!',str(e))
+            
+
         self.connected = True
         self.set_spectrometer_connected_light(1)
+
+    def save_data(self,dataset,filename):
+        timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
+        fullname = timestamp + self.SampleName.text() + '_' +filename +'.h5'
+        dataset.to_netcdf(os.path.join(self.current_folder,fullname),engine='h5netcdf',invalid_netcdf=True)
 
     def fsweep_toolbar(self):
         upload_icon = QtGui.QIcon('icons:upload.png')
@@ -382,15 +427,17 @@ class autoDEERUI(QMainWindow):
             self.current_data['respro'] = dataset
 
         if hasattr(dataset, 'sequence'):
-            f_axis = dataset.sequence.LO.value + dataset.sequence.LO.axis[0]['axis'] - 0.3 # Fix this necessary offset
+            f_axis = dataset.sequence.LO.value + dataset.sequence.LO.axis[0]['axis']# - 0.3 # Fix this necessary offset
         else:
             # Assuming mat file
             # TODO: Change to new data format
+            f_axis = dataset['LO'].data #- 0.3
+            # f_axis = dataset.params['parvars'][2]['vec'][:,1] + dataset.params['LO']
 
-            f_axis = dataset.params['parvars'][2]['vec'][:,1] + dataset.params['LO']
 
+        # worker = Worker(respro_process, dataset, f_axis,self.current_results['fieldsweep'], cores=self.cores)
+        worker = Worker(respro_process, dataset, f_axis, self.current_results['fieldsweep'], cores=self.cores)
 
-        worker = Worker(respro_process, dataset, f_axis, cores=self.cores)
         worker.signals.result.connect(self.refresh_respro)
 
         self.threadpool.start(worker)
@@ -407,14 +454,17 @@ class autoDEERUI(QMainWindow):
 
     def refresh_respro(self, *args):
 
-        fitresult = args[0]
+        
+
+        if len(args[0]) == 2:
+            fitresult = args[0][0]
+            self.LO = args[0][1]
+        else:
+            fitresult = args[0]
+
         self.current_results['respro'] = fitresult
-
-        if len(args) > 1:
-            self.LO = args[1]
-
-        if self.waitCondition is not None: # Wake up the runner thread
-            self.waitCondition.wakeAll()
+        # if self.waitCondition is not None: # Wake up the runner thread
+        #     self.waitCondition.wakeAll()
             
         self.respro_ax.cla()
 
@@ -432,9 +482,11 @@ class autoDEERUI(QMainWindow):
         self.qCI.setText(f"({fitresult.results.qUncert.ci(95)[0]:.2f},{fitresult.results.qUncert.ci(95)[1]:.2f})")
         self.Tab_widget.setCurrentIndex(2)
 
+        self.optimise_pulses_button()
+
 
     def optimise_pulses_button(self):
-        if self.pulses is None:
+        if (self.pulses is None) or (self.pulses == {}):
             self.optimise_pulses()
         elif self.pulses['pump_pulse'] is None:
             self.optimise_pulses()
@@ -443,19 +495,26 @@ class autoDEERUI(QMainWindow):
         
 
     def optimise_pulses(self, pulses=None):
-        if pulses is None:
-            pump_pulse = ad.HSPulse(tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0, order1=6, order2=1, beta=10)
-            exc_pulse = ad.RectPulse(tp=16, freq=0.02, flipangle=np.pi/2, scale=0)
-            ref_pulse = exc_pulse.copy(flipangle=np.pi)
-        else:
-            pump_pulse = pulses['pump_pulse']
-            ref_pulse = pulses['ref_pulse']
-            exc_pulse = pulses['exc_pulse']
+        if (pulses is None) or pulses == {}:
+            self.pulses = ad.build_default_pulses(self.AWG)
+            # pump_pulse = ad.HSPulse(tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0, order1=6, order2=1, beta=10)
+            # exc_pulse = ad.RectPulse(tp=16, freq=0.02, flipangle=np.pi/2, scale=0)
+            # ref_pulse = exc_pulse.copy(flipangle=np.pi)
+        
+        pump_pulse = self.pulses['pump_pulse']
+        ref_pulse = self.pulses['ref_pulse']
+        exc_pulse = self.pulses['exc_pulse']
 
         pump_pulse, exc_pulse, ref_pulse = ad.optimise_pulses(self.current_results['fieldsweep'], pump_pulse, exc_pulse, ref_pulse)
         
-        self.pulses = {'pump_pulse':pump_pulse, 'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse}    
+        # self.pulses = {'pump_pulse':pump_pulse, 'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse}    
+        self.pulses['pump_pulse'] = pump_pulse
+        self.pulses['ref_pulse'] = ref_pulse
+        self.pulses['exc_pulse'] = exc_pulse
+        self.pulses['det_event'].freq = exc_pulse.freq
 
+        self.worker.new_pulses(self.pulses)
+        
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
 
@@ -540,7 +599,10 @@ class autoDEERUI(QMainWindow):
         else:
             reptime = 3e3
         print(f"Reptime {reptime*1e-6:.2g} s")
-        averages = fitresult.seq.shots.value * fitresult.dataset.num_scans.value * 16
+
+        # averages = fitresult.dataset.shots.value * fitresult..num_scans.value * 16
+        averages = fitresult.dataset.attrs['shots'] * fitresult.dataset.attrs['nAvgs'] * 16
+
         tau2hrs = fitresult.find_optimal(averages=averages, SNR_target=45/0.5, target_time=2, target_shrt=reptime*1e-6, target_step=0.015)
         max_tau = fitresult.find_optimal(averages=averages, SNR_target=45/0.5, target_time=24, target_shrt=reptime*1e-6, target_step=0.015)
         self.current_results['relax'].tau2hrs = tau2hrs
@@ -561,9 +623,9 @@ class autoDEERUI(QMainWindow):
 
     def update_quickdeer(self, dataset=None):
         if dataset is None:
-            dataset = self.current_data['relax']
+            dataset = self.current_data['quickdeer']
         else:
-            self.current_data['relax'] = dataset
+            self.current_data['quickdeer'] = dataset
 
         self.Tab_widget.setCurrentIndex(4)
         self.q_DEER.current_data['quickdeer'] = dataset
@@ -573,13 +635,28 @@ class autoDEERUI(QMainWindow):
             self.current_results['quickdeer'] = x
         self.q_DEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
 
+    def update_longdeer(self, dataset=None):
+        if dataset is None:
+            dataset = self.current_data['longdeer']
+        else:
+            self.current_data['longdeer'] = dataset
+
+        self.Tab_widget.setCurrentIndex(4)
+        self.longDEER.current_data['longdeer'] = dataset
+        self.longDEER.update_inputs_from_dataset()
+        self.longDEER.update_figure()
+        def update_func(x):
+            self.current_results['longdeer'] = x
+        self.longDEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
+
     def update_reptime(self, dataset=None):
         if dataset is None:
             dataset = self.current_data['reptime']
         else:
             self.current_data['reptime'] = dataset
 
-        reptime_analysis = ad.ReptimeAnalysis(dataset,dataset.sequence)
+        # reptime_analysis = ad.ReptimeAnalysis(dataset,dataset.sequence)
+        reptime_analysis = ad.ReptimeAnalysis(dataset)
         reptime_analysis.fit()
         opt_reptime = reptime_analysis.calc_optimal_reptime(0.8)
 
@@ -608,27 +685,37 @@ class autoDEERUI(QMainWindow):
 
         self.waitCondition = QtCore.QWaitCondition()
         mutex = QtCore.QMutex()
-
-        worker = autoDEERWorker(
+        self.worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
-            results=self.current_results,LO=self.LO, gyro = self.gyro,
+            pulses=self.pulses,results=self.current_results, AWG=self.AWG, LO=self.LO, gyro = self.gyro,
             user_inputs=userinput, cores=self.cores )
-        worker.signals.status.connect(self.msgbar.setText)
-        worker.signals.fsweep_result.connect(self.update_fieldsweep)
-        worker.signals.respro_result.connect(self.update_respro)
-        worker.signals.optimise_pulses.connect(self.optimise_pulses)
-        worker.signals.relax_result.connect(self.update_relax)
-        worker.signals.quickdeer_result.connect(self.update_quickdeer)
-        worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
-        worker.signals.longdeer_update.connect(self.longDEER.refresh_deer)
+    
+        self.worker.signals.status.connect(self.msgbar.setText)
+        self.worker.signals.fsweep_result.connect(self.update_fieldsweep)
+        self.worker.signals.fsweep_result.connect(lambda x: self.save_data(x,'EDFS'))
+        self.worker.signals.respro_result.connect(self.update_respro)
+        self.worker.signals.respro_result.connect(lambda x: self.save_data(x,'ResPro'))
+        # self.worker.signals.optimise_pulses.connect(self.optimise_pulses)
+        self.worker.signals.relax_result.connect(self.update_relax)
+        self.worker.signals.relax_result.connect(lambda x: self.save_data(x,'CP_Q'))
+        self.worker.signals.quickdeer_result.connect(self.update_quickdeer)
+        self.worker.signals.quickdeer_result.connect(lambda x: self.save_data(x,'DEER_5P_Q_quick'))
+        self.worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
+        self.worker.signals.longdeer_update.connect(self.longDEER.refresh_deer)
+        self.worker.signals.longdeer_result.connect(lambda x: self.save_data(x,'DEER_5P_Q_long'))
 
-        worker.signals.reptime_scan_result.connect(self.update_reptime)
-
-        worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
-        worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
+        self.worker.signals.longdeer_result.connect(self.update_longdeer)
 
 
-        self.threadpool.start(worker)
+        self.worker.signals.reptime_scan_result.connect(self.update_reptime)
+
+        self.worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
+        self.worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
+
+
+        self.threadpool.start(self.worker)
+
+        return self.worker
 
     def RunAdvanedAutoDEER(self):
 
@@ -661,7 +748,7 @@ class autoDEERUI(QMainWindow):
         worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
             results=self.current_results,LO=self.LO, gyro = self.gyro,
-            user_inputs=userinput, cores=self.cores )
+            user_inputs=userinput, cores=self.cores)
         worker.signals.status.connect(self.msgbar.setText)
         worker.signals.fsweep_result.connect(self.update_fieldsweep)
         worker.signals.respro_result.connect(self.update_respro)
@@ -676,8 +763,8 @@ class autoDEERUI(QMainWindow):
         worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
         worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
 
-
-        self.threadpool.start(worker)
+        self.worker = worker
+        self.threadpool.start(self.worker)
 
     def create_report(self):
         save_path = QFileDialog.getSaveFileName(self, 'Save File', self.current_folder, ".pdf")

@@ -21,7 +21,8 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_Vexp(dataset, tmin=0):
-    t = dataset.axes[0]
+    # t = dataset.axes[0]
+    t = dataset['t'].data
     Vexp = dataset.data
 
     # normalise v
@@ -58,6 +59,7 @@ class DEERplot(QWidget):
         self.create_figure()
         self.setup_inputs()
         self.toolbar()
+        self.DL_params={}
 
         self.current_folder = ''
         self.cores = 1
@@ -106,6 +108,18 @@ class DEERplot(QWidget):
                 self.Tau2doubleSpinBox.setValue(param_in_us(seq.tau2))
                 self.Tau3doubleSpinBox.setValue(param_in_us(seq.tau3))
                 self.PathwayslineEdit.setText('1,2,3,4,5')
+
+        elif 't' in dataset.coords:
+            self.Tau1doubleSpinBox.setValue( dataset.tau1*1e-3)
+            self.Tau2doubleSpinBox.setValue( dataset.tau2*1e-3)
+            if ('tau3' in dataset.attrs):
+                self.Tau3doubleSpinBox.setDisabled(0)
+                self.Tau3doubleSpinBox.setValue( dataset.tau3*1e-3)
+                self.PathwayslineEdit.setText('1,2,3,4,5')
+            else:
+                self.Tau3doubleSpinBox.setDisabled(1)
+                self.PathwayslineEdit.setText('1,2,3')
+            
         
 
 
@@ -223,11 +237,11 @@ class DEERplot(QWidget):
 
         dataset= self.current_data['quickdeer']
 
-        if dataset.axes[0].max()>500: # Axis is in ns
-            dataset.axes[0] /= 1e3
+        # if dataset.axes[0].max()>500: # Axis is in ns
+        #     dataset.axes[0] /= 1e3
         
-        dataset.axes[0] -= dataset.axes[0].min()
-        dataset.axes[0] += self.tmindoubleSpinBox.value()
+        # dataset.axes[0] -= dataset.axes[0].min()
+        # dataset.axes[0] += self.tmindoubleSpinBox.value()
 
         if self.DistancecomboBox.currentText() == 'auto':
             settings['model'] = None
@@ -273,9 +287,9 @@ class DEERplot(QWidget):
         self.static_canvas.draw()
         self.update_fit_result()
 
-        if hasattr(self.fitresult,'dataset'):
-            self.Last_updated.setText(f"Last updated: {self.fitresult.dataset.time.strftime('%Y-%m-%d %H:%M:%S')}")
-            self.num_scans.setText(f"# of scans: {self.fitresult.dataset.num_scans.value}")
+        if hasattr(self.fitresult,'dataset') and hasattr(self.fitresult.dataset,'time'):
+            self.Last_updated.setText(f"Last updated: {self.fitresult.dataset.time}")
+            self.num_scans.setText(f"# of scans: {self.fitresult.dataset.nAvgs}")
         else:
             self.Last_updated.setText(f"Last updated: never")
             self.num_scans.setText(f"# of scans: 0")

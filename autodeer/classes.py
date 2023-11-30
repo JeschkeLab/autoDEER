@@ -22,6 +22,7 @@ class Interface:
     """
 
     def __init__(self) -> None:
+        self.pulses = {}
         pass
 
     def connect(self) -> None:
@@ -32,8 +33,8 @@ class Interface:
         Acquires the dataset.
         """
 
-        data.sequence = self.cur_exp
-        data.time = datetime.datetime.now()
+        # data.sequence = self.cur_exp
+        data.attrs['time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         return data
     
 
@@ -58,7 +59,7 @@ class Interface:
         """
         pass
 
-    def terminate_at(self, criterion, test_interval=10, keep_running=True, verbosity=0):
+    def terminate_at(self, criterion, test_interval=2, keep_running=True, verbosity=0):
         """Terminates the experiment upon a specific condition being
         satisified. 
 
@@ -90,7 +91,8 @@ class Interface:
             start_time = time.time()
             data = self.acquire_dataset()
             try:
-                nAvgs = data.num_scans.value
+                # nAvgs = data.num_scans.value
+                nAvgs = data.attrs['nAvgs']
             except AttributeError:
                 print("WARNING: Dataset missing number of averages(nAvgs)!")
                 nAvgs = 1
@@ -172,9 +174,9 @@ class Parameter:
         ```
         Creating a dynamic parameter
         ```
-        ```
-        Making a dynamic parameter
-        ```
+        Par1 = Parameter(
+            name="Par1", value=10, unit="us", description="The first parameter",
+            axis=np.arange(0,10,1), axis_id=0)
         ```
 
         Adding a parameter and a number:
@@ -214,7 +216,10 @@ class Parameter:
                 start = kwargs["start"]
             else:
                 start = 0
-            axis = np.arange(start=0, stop= dim*step+start,step=step)
+            if step == 0:
+                axis = np.zeros(dim)
+            else:
+                axis = np.arange(start=start, stop= dim*step+start,step=step)
             self.add_axis(axis=axis,axis_id=axis_id)
         
 

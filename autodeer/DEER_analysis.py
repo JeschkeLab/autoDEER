@@ -33,6 +33,15 @@ def calc_identifiability(profile):
 # =============================================================================
 
 def find_longest_pulse(sequence):
+    """
+    Finds the longest pulse duration in a given sequence.
+    
+    Args:
+    sequence (Sequence): The sequence to analyze.
+    
+    Returns:
+    float: The duration of the longest pulse in microseconds.
+    """
     longest_pulse = 0
     for pulse in sequence.pulses:
         tp = pulse.tp.value
@@ -42,7 +51,7 @@ def find_longest_pulse(sequence):
     return longest_pulse/1e3
 
 # =============================================================================
-def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, **kwargs):
+def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, **kwargs):
 
 
     Vexp:np.ndarray = dataset.data 
@@ -88,25 +97,53 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
 
         tp = find_longest_pulse(sequence)
         t = val_in_us(sequence.t)
+    
+    elif 't' in dataset.coords: # If the dataset is a xarray and has sequence data
+        t = dataset['t'].data
+        if 'tau1' in dataset.attrs:
+            tau1 = dataset.attrs['tau1'] / 1e3
+        elif 'tau1' in kwargs:
+            tau1 = kwargs.pop('tau1')
+        else:
+            raise ValueError("tau1 not found in dataset or kwargs")
+        if 'tau2' in dataset.attrs:
+            tau2 = dataset.attrs['tau2'] / 1e3
+        elif 'tau2' in kwargs:
+            tau2 = kwargs.pop('tau2')
+        else:
+            raise ValueError("tau2 not found in dataset or kwargs")
+        if 'tau3' in dataset.attrs:
+            tau3 = dataset.attrs['tau3'] / 1e3
+            exp_type = "5pDEER"
+        elif 'tau3' in kwargs:
+            tau3 = kwargs.pop('tau3')
+            exp_type = "5pDEER"
+        else:
+            exp_type = "4pDEER"
 
     else:
         # Extract params from kwargs
         if "tau1" in kwargs:
-            tau1 = kwargs["tau1"]
+            tau1 = kwargs.pop("tau1")
         if "tau2" in kwargs:
-            tau2 = kwargs["tau2"]
+            tau2 = kwargs.pop("tau2")
         if "tau3" in kwargs:
-            tau3 = kwargs["tau3"]
-        exp_type = kwargs["exp_type"]
-        t = dataset.axes[0]
+            tau3 = kwargs.pop("tau3")
+        exp_type = kwargs.pop("exp_type")
+        # t = dataset.axes[0]
+        t = dataset['X']
 
+
+    if t.max() > 500:
+        t /= 1e3
+    
 
     if verbosity > 1:
         print(f"")
         print(f"Experimental Parameters set to: tau1 {tau1:.2f} us \t tau2 {tau2:.2f} us")
 
     if "pathways" in kwargs:
-        pathways = kwargs["pathways"]
+        pathways = kwargs.pop("pathways")
     else:
         pathways = None
 
@@ -114,7 +151,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
         pulselength = tp
     else:
         if "pulselength" in kwargs:
-            pulselength = kwargs["pulselength"]/1e3
+            pulselength = kwargs.pop("pulselength")/1e3
         else:
             pulselength = 16/1e3
         
@@ -128,10 +165,6 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     r = np.linspace(1.5,10,100)
 
 
-    if "regparamrange" in kwargs:
-        regparamrange = kwargs["regparamrange"]
-    else:
-        regparamrange = None
 
     # identify experiment
     
@@ -147,16 +180,6 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     else:
         compactness_penalty = None
 
-    if "bootstrap" in kwargs:
-        bootstrap = kwargs["bootstrap"]
-    else:
-        bootstrap = 0
-
-    if "bootcores" in kwargs:
-        bootcores = kwargs["bootcores"]
-    else:
-        bootcores = 1
-
     if "mask" in kwargs:
         mask = kwargs["mask"]
         noiselvl = dl.noiselevel(Vexp[mask])
@@ -164,30 +187,20 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
         noiselvl = dl.noiselevel(Vexp)
         mask=None
 
-    if "max_nfev" in kwargs:
-        max_nfev = kwargs["max_nfev"]
 
-    else: 
-        max_nfev = 100
-
-    if "lin_maxiter" in kwargs:
-        lin_maxiter = kwargs["lin_maxiter"]
-
-    else: 
-        lin_maxiter = 100
-
-    if "regparam" in kwargs:
-        regparam = kwargs["regparam"]
-    else:
-        regparam = "aic"
+    # Cleanup extra args
+    extra_args = ['tau1','tau2','tau3','exp_type','model','compactness','ROI','verbosity']
+    for arg in extra_args:
+        if arg in kwargs:
+            kwargs.pop(arg)
 
     # Core 
     if verbosity > 1:
         print('Starting Fitting')
     fit = dl.fit(Vmodel, Vexp, penalties=compactness_penalty, 
-                 bootstrap=bootstrap, mask=mask, noiselvl=noiselvl,
-                 regparamrange=regparamrange, bootcores=bootcores,verbose=verbosity,
-                 max_nfev = max_nfev,lin_maxiter=lin_maxiter,regparam=regparam)
+                 noiselvl=noiselvl,
+                 verbose=verbosity,
+                 **kwargs)
     if verbosity > 1:
         print('Fit complete')
     mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
@@ -206,6 +219,11 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, verbosity=0, 
     fit.Vexp = Vexp
     fit.t = t
     fit.mask = mask
+
+    if not hasattr(fit, "P"):
+        fit.P = fit.evaluate(model,r)
+        fit.PUncert = fit.propagate(model,r, lb=np.zeros_like(r))
+    
     
     if ROI:
         tau_max = lambda r: (r**3) *(2/4**3)
@@ -423,7 +441,6 @@ def IdentifyROI(
 
 # =============================================================================
 
-
 def remove_echo(
         Vre: np.ndarray, Vim: np.ndarray, loc: int,
         criteria: float = 4, extent: int = 3) -> np.ndarray:
@@ -466,301 +483,60 @@ def remove_echo(
     mask = np.logical_not(mask)
     return mask
 
-
 # =============================================================================
-def calc_overlap_frac(fieldsweep, pump_pulse, exc_pulse):
-    
-    f_axis,f_pump = pump_pulse._calc_fft(pad=1e4)
-    f_pump = np.abs(f_pump)
-    f_pump /= f_pump.max()
-    
-    _, f_exc = exc_pulse._calc_fft(pad=1e4)
-    f_exc = np.abs(f_exc)
-    f_exc /= f_exc.max()
-
-    if np.iscomplexobj(fieldsweep.data):
-        fs_data = correctphase(fieldsweep.data)
-    else:
-        fs_data = fieldsweep.data
-    fs_data /= fs_data.max()
-
-    fs_axis = fieldsweep.fs_x
-
-    axis_min = np.fix(fieldsweep.fs_x.min()*1e2)/1e2
-    axis_max = np.fix(fieldsweep.fs_x.max()*1e2)/1e2
-    new_axis = np.linspace(axis_min, axis_max, 200)
-    fs_new = interp(fs_axis, fs_data, new_axis)
-    dead_spins = calc_overlap_region(
-        f_axis, f_pump, f_axis, f_exc,
-        new_axis=new_axis)
-
-    total = np.trapz(fs_new, new_axis)
-    num_pump = np.trapz(
-        fs_new * interp(f_axis, f_pump, new_axis)
-        - fs_new * dead_spins[1], new_axis)
-    num_exc = np.trapz(
-        fs_new * interp(f_axis, f_exc, new_axis) 
-        - fs_new * dead_spins[1], new_axis)
-    if np.isnan(num_exc):
-        raise RuntimeError
-    if np.isnan(num_pump):
-        raise RuntimeError
-    if total== 0:
-        raise RuntimeError
-    
-    perc_pump = np.abs(num_pump)/total
-    perc_exc = np.abs(num_exc)/total
-    return calc_optimal_perc(perc_pump, perc_exc)
-
-
-
-def calc_optimal_deer_frqs(
-        fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, pump_limits=None, exc_limits=None,
-        method="density", ):
-    """Calculates the necessary frequency shift to cause the maximal amount 
-    of pump-exc overlap.
-
-    Parameters
-    ----------
-    fieldsweep : FieldSweepAnalysis
-        The fieldsweep of the spectrum. There is an assumption that the whole
-        spectrum is spin 1/2
-    pump_pulse : Pulse
-        The pump pulse object.
-    exc_pulse : Pulse
-        The excitation pulse object.
-    ref_pulse : Pulse
-        The refocusing pulse object, this is used to adjust the efficacy of the 
-        excitation pulse. This is of particular importance if the excitation pulse is
-        wider than the refocusing pulse.
-    pump_limits : tuple, optional
-        The lower and upper limit of the pump frequency in GHz, by default 
-        +- 0.3GHz
-    exc_limits : tuple, optional
-        The lower and upper limit of the pump frequency in GHz, by default 
-        +- 0.3GHz
-    method: str, optional
-        Which method to calculate the excitation profiles. Either using
-        a density matrix approach (slower, more accurate) or an FFT approach 
-        (faster, less accurate). Options are "density" or "fft", by default
-        "density"
-    prof_res: float, optional
-        The resolution of the excitation profile in MHz, by default 1.
-
-    Returns
-    -------
-    pump frequency shift: float
-        Frequency shift to make optimal of pump pulse in GHz.
-    exc frequency shift: float
-        Frequency shift to make optimal of excitation pulse in GHz.
-    """
-
-    if method == "fft":
-        f_axis,f_pump = pump_pulse._calc_fft(pad=1e4)
-        f_pump = np.abs(f_pump)
-        f_pump /= f_pump.max()
-        
-        _, f_exc = exc_pulse._calc_fft(pad=1e4)
-        f_exc = np.abs(f_exc)
-        f_exc /= f_exc.max()
-    elif method == "density":
-        f_axis = np.arange(-1,1,0.005)
-        _,_,f_pump = pump_pulse.exciteprofile(f_axis)
-        f_pump = (f_pump - 1) * -0.5
-        _,_,f_exc = exc_pulse.exciteprofile(f_axis)
-        f_exc = (f_exc - 1) * -1
-    
-    if ref_pulse is not None:
-        _,_,f_ref = ref_pulse.exciteprofile(f_axis)
-        f_ref = (f_ref - 1) * -0.5
-        f_exc *= f_ref
-        f_exc *= f_ref
-
-    if np.iscomplexobj(fieldsweep.data):
-        fs_data = correctphase(fieldsweep.data)
-    else:
-        fs_data = fieldsweep.data
-    fs_data /= fs_data.max()
-
-    fs_axis = fieldsweep.fs_x
-
-    def calc_optimal(pump_frq, exc_frq):
-        axis_min = np.fix(fieldsweep.fs_x.min()*1e2)/1e2
-        axis_max = np.fix(fieldsweep.fs_x.max()*1e2)/1e2
-        new_axis = np.linspace(axis_min, axis_max, 200)
-        fs_new = interp(fs_axis, fs_data, new_axis)
-        dead_spins = calc_overlap_region(
-            f_axis + pump_frq, f_pump, f_axis + exc_frq, f_exc,
-            new_axis=new_axis)
-
-        total = np.trapz(fs_new, new_axis)
-        num_pump = np.trapz(
-            fs_new * interp(f_axis + pump_frq, f_pump, new_axis)
-            - fs_new * dead_spins[1], new_axis)
-        num_exc = np.trapz(
-            fs_new * interp(f_axis+exc_frq, f_exc, new_axis) 
-            - fs_new * dead_spins[1], new_axis)
-        if np.isnan(num_exc):
-            raise RuntimeError
-        if np.isnan(num_pump):
-            raise RuntimeError
-        if total== 0:
-            raise RuntimeError
-        
-        perc_pump = np.abs(num_pump)/total
-        perc_exc = np.abs(num_exc)/total
-        return calc_optimal_perc(perc_pump, perc_exc)
-
-    if pump_limits is not None:
-        Pump_offset = np.linspace(pump_limits[0], pump_limits[1], 100)
-    else:
-        Pump_offset = np.linspace(-0.3, 0.3, 100)
-    if exc_limits is not None:
-        Exc_offset = np.linspace(exc_limits[0], exc_limits[1], 100)
-    else:
-        Exc_offset = np.linspace(-0.3, 0.3, 100)
-    optimal_2d = np.array([[calc_optimal(p, e) for p in Pump_offset] for e in Exc_offset])
-
-    # optimal_2d = np.abs(optimal_2d).reshape(100, 100)
-    max_pos = np.unravel_index(np.nanargmax(optimal_2d), (100,100))
-    print(
-        f"Maximum achievable of {optimal_2d.max()*100:.2f}% optimal at"
-        f"{Pump_offset[max_pos[1]]*1e3:.1f}MHz pump position and" 
-        f" {Exc_offset[max_pos[0]]*1e3:.1f}MHz exc position.")
-
-    return [Pump_offset[max_pos[1]], Exc_offset[max_pos[0]]]
-
-def calc_optimal_perc(pump, exc):
-    base_value = 0.5 * 0.5
-    perc = (pump * exc) / base_value
-    if np.isnan(perc):
-        raise RuntimeError
-    return perc 
-
-
-def interp(x1, y1, xnew):
-    y1_interp = interp1d(x1, y1)
-    y1_new = y1_interp(xnew)
-
-    return y1_new
-
-
-def calc_overlap_region(x1, y1, x2, y2, new_axis=None):
-
-    # Normalise data
-    # y1 /= np.trapz(y1,x1)
-    # y2 /= np.trapz(y2,x2)
-    # create axis
-    if new_axis is None:
-        min_axis = np.max([np.min(x1), np.min(x2)])
-        max_axis = np.min([np.max(x1), np.max(x2)])
-        axis_mask = (x1 > min_axis) & (x1 < max_axis)
-        x_new = x1[axis_mask]
-        y1_new = y1[axis_mask]
-    else:
-        x_new = new_axis
-        y1_interp = interp1d(x1, y1)
-        y1_new = y1_interp(x_new)
-
-    # Interpolate y2
-    interp_y2 = interp1d(x2, y2)
-    y2_new = interp_y2(x_new)
-
-    return [x_new, np.minimum(y1_new, y2_new)]
-
-
-def plot_optimal_deer_frqs(
-        fieldsweep: FieldSweepAnalysis, pump_pulse,
-        exc_pulse, respro: ResonatorProfileAnalysis = None,
-        frq_shift: float = 0, axs=None, fig=None):
-    """Generate a plot that contains the field sweep, pump and excitation 
-    pulses as well as the resonator profile (optional). This should be used to 
-    check that a DEER measurment is setup correctly and in an optimal
-    configuration
-
-    Parameters
-    ----------
-    fieldsweep : FieldSweepAnalysis
-        The fieldsweep of the spectrum, with the frequency axis generated using
-        the fieldsweep.calc_gyro(det_frq) command.
-    pump_pulse : Pulse
-        The pump pulse object.
-    exc_pulse : int
-        The excitation pulse object.
-    respro : ResonatorProfileAnalysis, optional
-        The resonator profile, by default None
-    frq_shift : float, optional
-        The frequency shift between resonator profile and fieldsweep maximum
-        , by default 0
-    
-    """
-    
-    if fieldsweep.data.max() != 1.0:
-        fieldsweep.data /= fieldsweep.data.max()
-
-    # Build the pulses
-    f_ax_pump,f_pump = pump_pulse._calc_fft(pad=1e4)
-    f_pump = np.abs(f_pump)
-    f_pump /= f_pump.max()
-    
-    f_ax_exc, f_exc = exc_pulse._calc_fft(pad=1e4)
-    f_exc = np.abs(f_exc)
-    f_exc /= f_exc.max()
-
-    # Now build the plot
-    axis_min = np.fix(fieldsweep.fs_x.min()*1e2)/1e2
-    axis_max = np.fix(fieldsweep.fs_x.max()*1e2)/1e2
-    new_axis = np.linspace(axis_min, axis_max, 200)
-    fs_new = np.abs(interp(fieldsweep.fs_x, fieldsweep.data, new_axis))
-
-    if axs is None and fig is None:
-        fig, axs = plt.subplots()
-
-    axs.plot(new_axis, fs_new, label="Field Sweep")
-    dead_spins = calc_overlap_region(
-        f_ax_pump, f_pump, f_ax_exc, f_exc, new_axis=new_axis)
-
-    axs.fill(dead_spins[0], fs_new * dead_spins[1], color='0.6', label="Dead", 
-            alpha=0.5, lw=0)
-    axs.fill_between(
-        new_axis, fs_new * interp(f_ax_exc, f_exc, new_axis),
-        fs_new * dead_spins[1], label="Exc", color="C1", alpha=0.5, lw=0)
-    axs.fill_between(
-        new_axis, fs_new * interp(f_ax_pump, f_pump, new_axis),
-        fs_new * dead_spins[1], label="Pump", color="C2", alpha=0.5, lw=0)
-    if (respro is not None):
-        axs.plot(respro.frq-respro.fc+frq_shift, respro.labs, label="Res Pro")
-    axs.set_xlim(-0.25, 0.05)
-    axs.legend()
-    axs.set_ylabel(r"% flipped")
-    axs.set_xlabel("Frequency / GHz")
-    return fig
-
 # =============================================================================
 # Optimising pulse postions
 # =============================================================================
 
-def shift_pulse_freq(pulse,shift):
-    if hasattr(pulse,'freq'):
+def shift_pulse_freq(pulse, shift):
+    """
+    Shifts the frequency of a pulse by a given amount.
+
+    Args:
+        pulse: The pulse whose frequency should be shifted.
+        shift: The amount by which to shift the frequency.
+
+    Returns:
+        The pulse with the shifted frequency.
+    """
+    if hasattr(pulse, 'freq'):
         pulse.freq.value += shift
-    elif hasattr(pulse,'BW'):
-        if hasattr(pulse,'init_freq'):
+    elif hasattr(pulse, 'BW'):
+        if hasattr(pulse, 'init_freq'):
             pulse.init_freq.value += shift
-        elif hasattr(pulse,'final_freq'):
+        elif hasattr(pulse, 'final_freq'):
             pulse.final_freq.value += shift
-    elif hasattr(pulse,'init_freq') and hasattr(pulse,'final_freq'):
+    elif hasattr(pulse, 'init_freq') and hasattr(pulse, 'final_freq'):
         pulse.init_freq.value += shift
         pulse.final_freq.value += shift
     return pulse
 
 def normalise_01(A):
-    # Normalise the vector A to be between 0 and 1
+    """
+    Normalizes the input vector A to be between 0 and 1.
+
+    Parameters:
+    A (numpy.ndarray): Input vector to be normalized.
+
+    Returns:
+    numpy.ndarray: Normalized vector between 0 and 1.
+    """
     A = A - np.min(A)
     A = A / np.max(A)
     return A
 
 def resample_and_shift_vector(A,f,shift):
-    # Resample the vector A along axis f and shift it by shift and return on original axis f
+    """
+    Resample the vector A along axis f and shift it by shift and return on original axis f.
+
+    Parameters:
+    A (numpy.ndarray): The input vector to be resampled and shifted.
+    f (numpy.ndarray): The axis along which to resample the vector.
+    shift (float): The amount by which to shift the resampled vector.
+
+    Returns:
+    numpy.ndarray: The resampled and shifted vector.
+    """
     A = np.interp(f,f+shift,A)
     return A
 
@@ -818,8 +594,6 @@ def functional(f_axis,fieldsweep,A,B,filter=None,A_shift=0,B_shift=0):
         Noise = np.trapz(filter,f_axis)
 
     return -1*(Aspins * Bspins)/np.sqrt(Noise)
-
-
 
 
 def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute',
@@ -889,13 +663,15 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
             fA = f[f_idA]
             fB = f[f_idB]
             fval = Z.min()
+            grid = (X,Y)
+            Jout = Z
         elif method == 'brute':
-            [fA,fB] ,fval,_,_ = brute(fun,(slice(f.min(),f.max(),0.01),slice(f.min(),f.max(),0.01)),full_output=True)
+            [fA,fB] ,fval,grid,Jout = brute(fun,(slice(f.min(),f.max(),0.01),slice(f.min(),f.max(),0.01)),full_output=True)
         
             if verbosity > 1:
                 print(f"Filter: {filter:<8} Functional:{Z.min():.3f} \t Pump shift: {fA*1e3:.1f}MHz \t Exc/Ref shift: {fB*1e3:.1f}MHz")
 
-        return fval, fA, fB
+        return fval, fA, fB,grid,Jout
     
     if isinstance(filter, list):
         results = [optimise(f) for f in filter]
@@ -904,11 +680,11 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
         if verbosity > 0:
             print(f"Best filter: {filter[best]}")
     elif filter is None:
-        funct, fA, fB = optimise(None)
+        funct, fA, fB,grid,Jout = optimise(None)
         if verbosity > 0:
             print(f"Filter: None Functional:{funct:.3f} \t Pump shift: {fA*1e3:.1f}MHz \t Exc/Ref shift: {fB*1e3:.1f}MHz")
     else:
-        funct, fA, fB  = optimise(filter)
+        funct, fA, fB,grid,Jout  = optimise(filter)
         if verbosity > 0:
             print(f"Filter: {filter:<8} Functional:{funct:.3f} \t Pump shift: {fA*1e3:.1f}MHz \t Exc/Ref shift: {fB*1e3:.1f}MHz")
 
@@ -921,14 +697,15 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
     if not nDEER:
         new_ref_pulse = shift_pulse_freq(new_ref_pulse,fB)
 
+
     if isinstance(filter, list):
         if full_output:
-            return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best],funct
+            return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best],funct,grid,Jout
         else:
             return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best]
     else:
         if full_output:
-            return new_pump_pulse, new_exc_pulse, new_ref_pulse, funct
+            return new_pump_pulse, new_exc_pulse, new_ref_pulse, funct,grid,Jout
         else:
             return new_pump_pulse, new_exc_pulse, new_ref_pulse,
 
@@ -980,7 +757,7 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
 
     if filter == 'Matched':
         # Matched filter
-        filter_profile = exc_Mz
+        filter_profile  = lambda f_new: np.interp(f_new,f,exc_Mz)
     elif isinstance(filter, numbers.Number):
         filter_profile = build__lowpass_butter_filter(filter)
 

@@ -1,8 +1,9 @@
 from autodeer.classes import  Interface, Parameter
-from autodeer.dataset import  Dataset
+from autodeer.dataset import  create_dataset_from_sequence
 from autodeer.pulses import Pulse, RectPulse, ChirpPulse, HSPulse, Delay, Detection
 from autodeer.sequences import *
 from autodeer.FieldSweep import create_Nmodel
+import yaml
 
 import numpy as np
 import deerlab as dl
@@ -51,23 +52,32 @@ def add_phaseshift(data, phase):
 class dummyInterface(Interface):
 
 
-    def __init__(self, speedup=100,SNR=75) -> None:
+    def __init__(self,config_file) -> None:
+        with open(config_file, mode='r') as file:
+            config = yaml.safe_load(file)
+            self.config = config
+        
+        Dummy = config['Spectrometer']['Dummy']
+        Bridge = config['Spectrometer']['Bridge']
+        resonator_list = list(config['Resonators'].keys())
         self.state = False
-        self.speedup = speedup
+        self.speedup = Dummy['speedup']
         self.pulses = {}
         self.start_time = 0
-        self.SNR = SNR
+        self.SNR = Dummy['SNR']
 
         # Create virtual mode
-
+        key1 = resonator_list[0]
+        fc = self.config['Resonators'][key1]['Center Freq']
+        Q = self.config['Resonators'][key1]['Q']
         def lorenz_fcn(x, centre, sigma):
             y = (0.5*sigma)/((x-centre)**2 + (0.5*sigma)**2)
             return y
 
-        mode = lambda x: lorenz_fcn(x, 34.0, 34.0/60)
+        mode = lambda x: lorenz_fcn(x, fc, fc/Q)
         x = np.linspace(33,35)
         scale = 75/mode(x).max()
-        self.mode = lambda x: lorenz_fcn(x, 34.0, 34.0/60) * scale
+        self.mode = lambda x: lorenz_fcn(x, fc, fc/Q) * scale
         super().__init__()
 
     def launch(self, sequence, savename: str, **kwargs):
@@ -76,7 +86,7 @@ class dummyInterface(Interface):
         self.start_time = time.time()
         return super().launch(sequence, savename)
     
-    def acquire_dataset(self,**kwargs) -> Dataset:
+    def acquire_dataset(self,**kwargs):
 
         if isinstance(self.cur_exp, DEERSequence):
             if self.cur_exp.t.is_static():
@@ -93,14 +103,18 @@ class dummyInterface(Interface):
             raise NotImplementedError("Sequence not implemented")
 
         time_estimate = self.cur_exp._estimate_time()
-        time_estimate /= self.speedup
-        progress = (time.time() - self.start_time) / time_estimate
-        if progress > 1:
+        if self.speedup != np.inf:
+            time_estimate /= self.speedup
+            progress = (time.time() - self.start_time) / time_estimate
+            if progress > 1:
+                progress = 1
+            data = add_noise(data, 1/(self.SNR*progress))
+        else:
             progress = 1
-        data = add_noise(data, 1/(self.SNR*progress))
         scan_num = self.cur_exp.averages.value
-        dset = Dataset(axes, data, num_scans=int(scan_num*progress))
-        dset.LO = self.cur_exp.LO
+        dset = create_dataset_from_sequence(data,self.cur_exp)
+        dset.attrs['nAvgs'] = int(scan_num*progress)
+        
     
         return super().acquire_dataset(dset)
     
@@ -211,7 +225,7 @@ def _simulate_CP(sequence):
 
     func = lambda x, a, b, e: a*np.exp(-b*x**e)
     xaxis = val_in_ns(sequence.tau2)
-    data = func(xaxis,1,0.0000008,1.8)
+    data = func(xaxis,1,2e-6,1.8)
     data = add_phaseshift(data, 0.05)
     return xaxis, data
 

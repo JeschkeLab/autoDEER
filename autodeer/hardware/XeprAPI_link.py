@@ -1,13 +1,20 @@
 import numpy as np
 import time
 import os
+import sys
 import yaml
-import XeprAPI
-from autodeer.dataset import Dataset
+from autodeer.dataset import create_dataset_from_axes, create_dataset_from_sequence
 from scipy.optimize import minimize_scalar
 import logging
 import re
 
+try:
+    xepr_path = os.popen("Xepr --apipath").read()[:-1]
+    sys.path.append(xepr_path)
+    import XeprAPI
+
+except:
+    raise ImportError("Xepr >2.9 needs to be installed on the computer")
 hw_log = logging.getLogger('hardware.Xepr')
 
 # ============================================================================
@@ -146,7 +153,7 @@ class XeprAPILink:
     def is_exp_running(self):
         return self.cur_exp.isRunning
 
-    def acquire_dataset(self) -> Dataset:
+    def acquire_dataset(self, sequence = None):
         """
         This function acquire the dataset, this work both for a running 
         experiment or once it has finished.
@@ -156,25 +163,50 @@ class XeprAPILink:
         data_dim = len(size)
         data = dataclass.O
         params = {
-            "scans_done": self.cur_exp.getParam("NbScansDone").value,
-            "scans_todo": self.cur_exp.getParam("NbScansToDo").value,
-            "shrt": self.cur_exp.getParam("ShotRepTime").value,
-            "shots": self.cur_exp.getParam("ShotsPLoop").value
+            "nAvgs": self.cur_exp.getParam("NbScansDone").value,
+            "reptime": self.cur_exp.getParam("ShotRepTime").value,
+            "shots": self.cur_exp.getParam("ShotsPLoop").value,
+            "B": self.get_field(),
+            "LO": self.get_counterfreq(),
             }
 
-        if data_dim == 1:
-            # We have a 1D dataset
-            t = dataclass.X
-            hw_log.debug('Acquired Dataset')
-            return Dataset(t, data, params)
-        elif data_dim == 2:
-            # we have a 2D dataset
-            t1 = dataclass.X
-            t2 = dataclass.Y
-            hw_log.debug('Acquired Dataset')
-            return Dataset([t1, t2], data, params)
+        if sequence is None:
+            default_labels = ['X','Y','Z','T']
+            dims = default_labels[:data_dim]
+            labels = []
 
-    def acquire_scan(self):
+            for i in range(data_dim):
+                ax_label = default_labels[i]
+                axis_string = self.cur_exp[f'recorder.Abs{i+1}Data'].aqGetParUnits()
+                if "'" in axis_string:
+                    axis_string = axis_string.replace("'", "")
+                if axis_string == 'G':
+                    labels.append('B')
+                elif axis_string == 'ns':
+                    labels.append('t')
+                else:
+                    labels.append(None)
+
+            if data_dim == 1:
+                # We have a 1D dataset
+                t = dataclass.X
+                hw_log.debug('Acquired Dataset')
+                return create_dataset_from_axes(data, t, params,labels)
+            elif data_dim == 2:
+                # we have a 2D dataset
+                t1 = dataclass.X
+                t2 = dataclass.Y
+                hw_log.debug('Acquired Dataset')
+                return create_dataset_from_axes(data, [t1,t2], params,labels)
+            
+        else:
+            dset = create_dataset_from_sequence(data, sequence)
+            for par in params:
+                dset.attrs[par] = params[par]
+            return dset
+
+
+    def acquire_scan(self,sequence = None):
         """
         This script detects the end of the scan and acquires the data set. 
         This requires that the experiment is still running, or recently 
@@ -190,11 +222,11 @@ class XeprAPILink:
             while self.cur_exp.getParam("NbScansDone").value == current_scan:
                 time.sleep(time_per_point)
             time.sleep(time_per_point)
-            return self.acquire_dataset()
+            return self.acquire_dataset(sequence)
         else:
-            return self.acquire_dataset()
+            return self.acquire_dataset(sequence)
 
-    def acquire_scan_at(self, scan_num: int):
+    def acquire_scan_at(self, scan_num: int,sequence = None):
         """
         This script acquires the scan after a specific number of scans
         """
@@ -203,9 +235,9 @@ class XeprAPILink:
             * self.cur_exp.getParam("ShotsPLoop").value * 2
         while self.cur_exp.getParam("NbScansDone").value != scan_num:
             time.sleep(time_per_point * x_length / 2)
-        return self.acquire_scan()
+        return self.acquire_scan(sequence)
 
-    def acquire_scan_2d(self):
+    def acquire_scan_2d(self,sequence = None):
         """
         This function acquires the dataset after a full 2D scan.
         This is done by identifying the number of scan steps per sweep and 
@@ -225,9 +257,9 @@ class XeprAPILink:
             current_sweep = np.floor(current_scan/scans_per_sweep)
             next_scan_target = (current_sweep + 1) * scans_per_sweep
 
-            return self.acquire_scan_at(next_scan_target)
+            return self.acquire_scan_at(next_scan_target,sequence)
         else:
-            return self.acquire_scan()
+            return self.acquire_scan(sequence)
 
     def set_PulseSpel_var(self, variable: str, value: int):
         """
@@ -452,7 +484,7 @@ class XeprAPILink:
         int
             Field position in Gauss
         """
-        self.cur_exp['CenterField'].value = val
+        self.cur_exp['CenterField'].value = np.around(val,3)
         time.sleep(2)  # Always wait 2s after a field change
         hw_log.info(f'Field position set to {val} G')
         if hold is True:
@@ -528,32 +560,32 @@ class XeprAPILink:
             if self.bridge_config["Digital Source"]:
                 self.hidden['FineFreq'].value = val
                 hw_log.info(f'Bridge Frequency set to {val}Fset')
-            else:
-                if pol is None:
-                    if hasattr(self, "freq_cal"):
-                        pol = self.freq_cal
-                    else:
-                        pol = [-67652.70, 2050.203]
-
-                pol_func = np.polynomial.polynomial.Polynomial(pol)
-                pos = round(pol_func(val))
-                if precision:
-                    self.hidden['Frequency'].value = pos
-                    bounds = [pos-50, pos+50]
-
-                    def objective(x):
-                        self.hidden['Frequency'].value = x
-                        return self.get_counterfreq()
-
-                    output = minimize_scalar(
-                        objective, method='bounded', bounds=bounds,
-                        options={'xatol': 1e-3, 'maxiter': 30})
-                    pos = round(output.x)
-                    self.hidden['Frequency'].value = pos
+        else:
+            if pol is None:
+                if hasattr(self, "freq_cal"):
+                    pol = self.freq_cal
                 else:
-                    self.hidden['Frequency'].value = pos
-        
-                hw_log.info(f'Bridge Frequency set to {val} at position {pos}')
+                    pol = [-67652.70, 2050.203]
+
+            pol_func = np.polynomial.polynomial.Polynomial(pol)
+            pos = round(pol_func(val))
+            if precision:
+                self.hidden['Frequency'].value = pos
+                bounds = [pos-50, pos+50]
+
+                def objective(x):
+                    self.hidden['Frequency'].value = x
+                    return self.get_counterfreq()
+
+                output = minimize_scalar(
+                    objective, method='bounded', bounds=bounds,
+                    options={'xatol': 1e-3, 'maxiter': 30})
+                pos = round(output.x)
+                self.hidden['Frequency'].value = pos
+            else:
+                self.hidden['Frequency'].value = pos
+    
+            hw_log.info(f'Bridge Frequency set to {val} at position {pos}')
 
         return self.hidden['Frequency'].value
 
@@ -574,16 +606,16 @@ class XeprAPILink:
         if "Digital Source" in self.bridge_config.keys():
             if self.bridge_config["Digital Source"]:
                 return self.hidden['FineFreq'].value
-            else:
-                if pol is None:
-                    if hasattr(self, "freq_cal"):
-                        pol = self.freq_cal
-                    else:
-                        pol = [-67652.70, 2050.203]
-                inv_func = np.polynomial.polynomial.Polynomial(
-                    [-pol[0]/pol[1], 1/(pol[1])])
-    
-                return inv_func(self.hidden['Frequency'].value)
+        else:
+            if pol is None:
+                if hasattr(self, "freq_cal"):
+                    pol = self.freq_cal
+                else:
+                    pol = [-67652.70, 2050.203]
+            inv_func = np.polynomial.polynomial.Polynomial(
+                [-pol[0]/pol[1], 1/(pol[1])])
+
+            return inv_func(self.hidden['Frequency'].value)
 
     def get_spec_config(self) -> str:
         """get_spec_config Gets the name of the current spectrometer

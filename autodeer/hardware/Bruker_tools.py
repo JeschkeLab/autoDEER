@@ -1,5 +1,6 @@
 from autodeer.sequences import Sequence
 from autodeer.pulses import RectPulse, Delay, Detection
+from autodeer.utils import gcd, val_in_ns, val_in_us
 import numpy as np
 import re
 import time
@@ -786,8 +787,9 @@ def get_arange(array):
 
     return start,stop+step, step
 
+
 def build_unique_progtable(seq):
-    progtable = seq.progtable
+    progtable = seq.progTable
     unique_axs = np.unique(progtable["axID"])
     u_progtable = []
     d_shifts=[]
@@ -805,14 +807,25 @@ def build_unique_progtable(seq):
         for axis in axes:
             start,_, step = get_arange(axis)
             steps.append(step)
-        common_step = np.gcd.reduce(steps)
+        if np.any(steps):
+            if np.all(np.mod(steps,1) == 0):
+                common_step = gcd(steps)
+            else:
+                common_step = np.min(steps)
+                # idx = np.argmin(steps)
+                # start = get_arange(axes[idx])
+            multipliers = np.array(steps)/common_step
+        else:
+            common_step = 0
+            multipliers = np.ones(len(steps))
+
+        start = axes[0][0]/multipliers[0]
+
+
         index = progtable["axID"].index(axID)
         common_axis={"start":start,"dim":np.shape(axes[0])[0],"step":common_step,"reduce":progtable["reduce"][index]}
-        multipliers = np.array(steps)/common_step
         n_steps = len(steps)
         vars = [{"variable": variables[i],"multiplier":multipliers[i]} for i in range(n_steps)]
-        u_progtable.append({"axID":axID,"axis":common_axis,"variables":vars})
-
         n_pulses = len(seq.pulses)
         t_shift = np.zeros(n_pulses)
         for var,mul in zip(variables,multipliers):
@@ -820,11 +833,11 @@ def build_unique_progtable(seq):
                 continue
             t_shift[var[0]] = mul
         
-        d_shift = {"axID":axID, "delay_shifts": np.diff(t_shift,prepend=0), "axis":common_axis}
-        d_shifts.append(d_shift) 
+        u_progtable.append({"axID":axID,"axis":common_axis,"variables":vars, "delay_shifts": np.diff(t_shift,prepend=0)})
 
 
-    return u_progtable, d_shifts
+
+    return u_progtable
 
 def _addAWGPulse(self, sequence, pulse_num, id):
     awg_id = id
@@ -880,27 +893,55 @@ def _addAWGPulse(self, sequence, pulse_num, id):
     return f"awg{id}"
 
 def check_variable(var:str, uprog):
-    for i in range(len(uprog['variables'])):
-        if uprog['variables'][i]["variable"][1] == var:
-            return True
-        
-    return False
-    
-def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
 
-    uprogtable = build_unique_progtable(sequence.progTable,sequence)
+    if isinstance(uprog,list):
+        for up in uprog:
+            if check_variable(var,up):
+                return True
+        return False
+    else:
+        for i in range(len(uprog['variables'])):
+            if uprog['variables'][i]["variable"][1] == var:
+                return True
+        return False
+    
+def write_pulsespel_file(sequence, AWG=False, MPFU=False):
+    """Write the pulsespel file for a given sequence. 
+
+    Parameters
+    ----------
+    sequence : Sequence
+        The sequence class to be converted.
+    AWG : bool, optional
+        Is this a pulse spel file for an AWG spectrometer, by default False
+    MPFU : list, optional
+        A list of MPFU channels, by default False
+
+    Returns
+    -------
+    str
+        The string for the definition file
+    str
+        The string for the experiment file
+    """
+
+    uprogtable = build_unique_progtable(sequence)
     possible_delays = [
         "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d10", "d11", "d12",
         "d13", "d14", "d15", "d16", "d17", "d18", "d19", "d20", "d21", "d22",
         "d23", "d24", "d25", "d26", "d27", "d28", "d29", "d30"]
+    possible_pulses= ["p0", "p1","p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9"]
     loop_iterators = ["i","j"]
     loop_dims = ["m","f"]
+    letter_vars = ['b','c','e','f','g']
 
     n_pulses = len(sequence.pulses)
     n_axes = len(uprogtable)
 
     static_delay_hash = {0:"d9"}
+    static_pulse_hash = {}
     mv_delay_hash = {}
+    mv_pulse_hash = {}
     axis_start_hash = {}
     axis_step_hash = {}
     axis_val_hash = {}
@@ -911,13 +952,24 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
     dims = "begin defs \n dim s["
     pcyc_str = ""
 
+    # Add shot repetition time
+    if not check_variable("reptime", uprogtable):
+        def_file += f"srt = {val_in_us(sequence.reptime, False):.0f} * srtu\n"
+
+    prev_pulse = None
     for i,pulse in enumerate(sequence.pulses):
         static_delay_hash[i] = possible_delays.pop()
-        def_file += f"{static_delay_hash[i]} = {pulse.t.value}\n"
+        if prev_pulse is None:
+            def_file += f"{static_delay_hash[i]} = {pulse.t.value}\n"
+        else:
+            def_file += f"{static_delay_hash[i]} = {pulse.t.value - prev_pulse.t.value}\n"
+        
         if type(pulse) is Detection:
             def_file += f"pg = {pulse.tp.value}\n"
         else:
-            def_file += f"p{i} = {pulse.tp.value}\n"
+            static_pulse_hash[i] = possible_pulses.pop()
+            def_file += f"{static_pulse_hash[i]} = {pulse.tp.value}\n"
+        prev_pulse = pulse
 
     for axis in uprogtable:
         ax_ID = axis["axID"]
@@ -946,8 +998,8 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
 
 
     # Setup averaging loop
-    head += "for k=1 to m \ntotscans(n) \n"
-    def_file += f"k = {sequence.averages.value}\n"
+    head += "for k=1 to m \ntotscans(m) \n"
+    def_file += f"m = {sequence.averages.value}\n"
 
     foot = "scansdone(k) \nnext k \n"+foot
 
@@ -962,7 +1014,10 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
             loop_str = "bsweep {param}=1 to {stop} \n"
         else:
             reduce = uprogtable[index]['axis']["reduce"]
-            loop_str = "for {param}=1 to {stop} \n"
+            if ax == 0 and not check_variable("reptime", uprog):
+                loop_str = "sweep {param}=1 to {stop} \n"
+            else:
+                loop_str = "for {param}=1 to {stop} \n"
         
         if reduce:
             param = loop_iterators.pop()
@@ -975,7 +1030,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
             stop = 'sx'
             foot = f"dx=dx+{axis_step_hash[ax]}\n"+ foot
         elif param == 'y':
-            stop == 'sy'
+            stop = 'sy'
             foot = f"dy=dy+{axis_step_hash[ax]}\n"+ foot
         else:
             stop = loop_dims.pop()
@@ -986,11 +1041,44 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
             for i in changing_pulses:
                 if i not in mv_delay_hash:
                     mv_delay_hash[i] = possible_delays.pop()
-                    delay_build = f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n" + delay_build 
-                foot = f"{axis_val_hash[ax]}={axis_val_hash[ax]}+{axis_step_hash[ax]}\n"+ foot
-                delay_build += f"{mv_delay_hash[i]} = {mv_delay_hash[i]} + {axis_val_hash[ax]} \n"
+                    # delay_build = f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n" + delay_build 
+                    head += f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n"
+                for k in range(int(np.abs(uprog["delay_shifts"][i]))):
+                    if uprog["delay_shifts"][i] > 0: 
+                        sign = "+"
+                    else: 
+                        sign = "-"
+                    # foot = f"{axis_val_hash[ax]}={axis_val_hash[ax]}{sign}{axis_step_hash[ax]}\n"+ foot
+                    foot = f"{mv_delay_hash[i]}={mv_delay_hash[i]}{sign}{axis_step_hash[ax]}\n"+ foot
+                # delay_build += f"{mv_delay_hash[i]} = {mv_delay_hash[i]} + {axis_val_hash[ax]} \n"
+        if check_variable("tp", uprog):
+            for var in uprog["variables"]:
+                if var["variable"][1] != "tp":
+                    continue
+                pulse_id = var["variable"][0]
+                mult = var["multiplier"]
+                mv_pulse_hash[pulse_id] = possible_pulses.pop()
+                head += f"{mv_pulse_hash[pulse_id]} = {static_pulse_hash[pulse_id]}\n"
+                if mult > 0:
+                    sign = "+"
+                else:
+                    sign = "-"
+                for k in range(int(np.abs(mult))):
+                    foot = f"{mv_pulse_hash[pulse_id]}={mv_pulse_hash[pulse_id]}{sign}{axis_step_hash[ax]}\n"+ foot
+        if check_variable("reptime", uprog):
+            for var in uprog["variables"]:
+                if var["variable"][1] != "reptime":
+                    continue
+                reptime0_var = letter_vars.pop()
+                head += f"srt = {reptime0_var}\n"
+                axis = val_in_us(sequence.reptime, True)
+                def_file += f"{reptime0_var} = {axis[0]:.0f} * srtu\n"
+                srt_step_var = letter_vars.pop()
+                def_file += f"{srt_step_var} = {var['multiplier']*uprog['axis']['step']:.0f} * srtu\n"
+                foot = f"srt=srt + {srt_step_var}\n"+ foot
 
-        head +=  f"{axis_val_hash[ax]} = 0\n"
+
+        # head +=  f"{axis_val_hash[ax]} = 0\n"
         head += loop_str.format(param=param,stop=stop)
 
 
@@ -1021,7 +1109,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
         pcyc_str = pcyc.__str__()
 
     # Add Pulse Sequence
-    pulse_str = ""
+    pulse_str = "d9\n"
     for id, pulse in enumerate(sequence.pulses):
         if id in mv_delay_hash:
             pulse_str += f"{mv_delay_hash[id]}\n"
@@ -1031,8 +1119,10 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
         if type(pulse) == Detection:
             pulse_str += f"d0\nacq [sg1]\n"
         else:
-            pulse_str += f"p{id} [{pcyc_hash[id]}]\n"
-
+            if id in mv_pulse_hash:
+                pulse_str += f"{mv_pulse_hash[id]} [{pcyc_hash[id]}]\n"
+            else:
+                pulse_str += f"{static_pulse_hash[id]} [{pcyc_hash[id]}]\n"
 
 
     dims = dims[:-1]
