@@ -2,6 +2,7 @@ import matlab.engine
 from autodeer.classes import  Interface, Parameter
 from autodeer.pulses import Pulse, RectPulse, ChirpPulse, HSPulse, Delay, Detection
 from autodeer.sequences import Sequence, HahnEchoSequence
+from autodeer.hardware.ETH_awg_load import uwb_load
 import numpy as np
 import os
 import re
@@ -190,12 +191,13 @@ class ETH_awg_interface(Interface):
         while self.isrunning():
             time.sleep(10)
         dataset = self.acquire_dataset()
-        scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
+        scale = np.around(dataset.axes[0][dataset.data.argmax()],2)[0]
         if scale > 0.9:
             raise RuntimeError("Not enough power avaliable.")
-        
+        print(scale)
         self.pulses[f"p90_{tp}"] = amp_tune.pulses[0].copy(
             scale=scale, LO=amp_tune.LO)
+        
         self.pulses[f"p180_{tp*2}"] = amp_tune.pulses[1].copy(
             scale=scale, LO=amp_tune.LO)
 
