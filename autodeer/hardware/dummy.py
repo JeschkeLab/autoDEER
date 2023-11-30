@@ -232,7 +232,7 @@ def _simulate_CP(sequence):
 
 def _similate_respro(sequence, mode):
 
-    damped_oscilations = lambda x, f, c: np.sin(2*np.pi*f*x) * np.exp(-c*x)
+    damped_oscilations = lambda x, f, c: np.cos(2*np.pi*f*x) * np.exp(-c*x)
     damped_oscilations_vec = np.vectorize(damped_oscilations)
     LO_axis = sequence.LO.value + sequence.LO.axis[0]['axis']
     LO_len = LO_axis.shape[0]
