@@ -172,7 +172,7 @@ class DEERplot(QWidget):
             self.Pathways_Box.addWidget(QDoubleSpinBox(value=reftime, suffix=' us', readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
             self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"reftimeUncert"))),i,2,1,1)
             self.Pathways_Box.addWidget(QLabel(f"mod"),i+1,0,1,1)
-            self.Pathways_Box.addWidget(QDoubleSpinBox(value=lam, suffix=' us', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i+1,1,1,1)
+            self.Pathways_Box.addWidget(QDoubleSpinBox(value=lam, suffix='', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i+1,1,1,1)
             self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"modUncert"))),i+1,2,1,1)
 
         else:
@@ -192,7 +192,7 @@ class DEERplot(QWidget):
                 self.Pathways_Box.addWidget(QDoubleSpinBox(value=reftime, suffix=' us', readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
                 self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"reftime{pathway}Uncert"))),i,2,1,1)
                 self.Pathways_Box.addWidget(QLabel(f"lam {pathway}"),i+1,0,1,1)
-                self.Pathways_Box.addWidget(QDoubleSpinBox(value=lam, suffix=' us', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i+1,1,1,1)
+                self.Pathways_Box.addWidget(QDoubleSpinBox(value=lam, suffix='', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i+1,1,1,1)
                 self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"lam{pathway}Uncert"))),i+1,2,1,1)
 
 

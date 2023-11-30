@@ -5,7 +5,6 @@ from scipy.signal import hilbert
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-import pickle
 import deerlab as dl
 
 
