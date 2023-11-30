@@ -192,7 +192,7 @@ class autoDEERUI(QMainWindow):
         self.pulses = {}
 
         self.LO = 0
-        self.gyro = 0.0028087
+        self.gyro = 0.002803632236095
         self.cores = 1
 
     def set_spectrometer_connected_light(self, state):

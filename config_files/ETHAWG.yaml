@@ -14,8 +14,11 @@ Spectrometer:
     Det Res: 12  #bit
 
 Resonators:
-  Pent Loop-gap:
-    Center Freq: 34.2 #GHz
+  # Pent Loop-gap:
+  #   Center Freq: 34.2 #GHz
+  #   Q: 80
+  Banana 2:
+    Center Freq: 34.82 #GHz
     Q: 80
 
 autoDEER:

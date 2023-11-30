@@ -95,15 +95,15 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro_N = self.gyro
         p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=100)
-
         fsweep = FieldSweepSequence(
-            B=LO/gyro_N, LO=LO,reptime=reptime,averages=1,shots=40,
-            Bwidth = 500, 
+            B=LO/gyro_N, LO=LO,reptime=reptime,averages=2,shots=150,
+            Bwidth = 350, 
             pi2_pulse=p90, pi_pulse=p180,
         )
 
         self.interface.launch(fsweep,savename=f"{self.samplename}_fieldsweep")
         self.signals.status.emit('Field-sweep running')
+        # self.interface.terminate_at(SNRCriteria(5))
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.status.emit('Field-sweep complete')
@@ -150,9 +150,9 @@ class autoDEERWorker(QtCore.QRunnable):
         relax.pulses[3].scale.value = 0
         self.interface.launch(relax,savename=f"{self.samplename}_relaxation",IFgain=2)
         self.signals.status.emit('Relaxation experiment running')
-        self.interface.terminate_at(SNRCriteria(10))
-        # while self.interface.isrunning():
-        #     time.sleep(self.updaterate)
+        # self.interface.terminate_at(SNRCriteria(10))
+        while self.interface.isrunning():
+            time.sleep(self.updaterate)
         self.signals.status.emit('Relaxation experiment complete')
         self.signals.relax_result.emit(self.interface.acquire_dataset())
 
@@ -344,9 +344,10 @@ class autoDEERWorker(QtCore.QRunnable):
             self.run_long_deer(reptime,tau1,tau2,tau3,deertype =deertype)
         else:
             rec_tau = self.results['quickdeer'].rec_tau_max
+            dt = self.results['quickdeer'].rec_dt * 1e3
             max_tau = self.results['relax'].max_tau
             tau = np.min([rec_tau,max_tau])
-            self.run_long_deer(reptime,tau,tau,0.3,deertype ='5pDEER')
+            self.run_long_deer(reptime,tau,tau,0.3,dt=dt,deertype ='5pDEER')
 
         self.signals.finished.emit()
 

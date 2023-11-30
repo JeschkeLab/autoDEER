@@ -49,6 +49,9 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
                 for avg in dta:
                     dta_sum += avg
                 dta = [dta_sum]
+            
+        else:
+            raise ValueError('The file has no attached data.')
 
         return [dta, nAvgs]
     
