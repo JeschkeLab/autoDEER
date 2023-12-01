@@ -190,7 +190,7 @@ class autoDEERUI(QMainWindow):
 
         self.Tab_widget.setCurrentIndex(0)
         # set current folder to home directory
-        self.current_folder = str(Path.home())
+        self.current_folder = None
         self.config = None
         self.connected = False
         self.DL_params = {}
@@ -212,8 +212,8 @@ class autoDEERUI(QMainWindow):
         self.Connected_Light.setPixmap(light_pixmap)
 
     def load_folder(self):
-        file = str(QFileDialog.getExistingDirectory(self, "Select Directory",self.current_folder))
-
+        file = str(QFileDialog.getExistingDirectory(self, "Select Directory",str(Path.home())))
+        self.pathLineEdit.setText(file)
         self.current_folder = file
     
     def load_epr_file(self, store_location):
@@ -232,7 +232,7 @@ class autoDEERUI(QMainWindow):
         
         if filename is None:
             filename, _= QFileDialog.getOpenFileName(
-                self,"Select a File", self.current_folder,"Data (*.yaml)")
+                self,"Select a spectrometer configuration file", str(Path.home()),"Data (*.yaml)")
         
         if filename:
             path = Path(filename)
@@ -284,6 +284,8 @@ class autoDEERUI(QMainWindow):
         # Find resonators
         self.resonatorComboBox.clear()
         self.resonatorComboBox.addItems(self.config['Resonators'].keys())
+        self.resonatorComboBox.currentIndexChanged.connect(self.select_resonator)
+        self.fcDoubleSpinBox.valueChanged.connect(self.select_resonator)
 
         if len(resonator_list) == 0:
             QMessageBox.about(self,'ERORR!', 'No resonators found in config file!')
@@ -311,6 +313,10 @@ class autoDEERUI(QMainWindow):
 
         self.q_DEER.DL_params = self.DL_params
         self.longDEER.DL_params = self.DL_params
+
+    def select_resonator(self):
+        key = self.resonatorComboBox.currentText()
+        self.LO = self.config['Resonators'][key]['Center Freq']
 
     def connect_spectrometer(self):
         if self.spectromterInterface is None:
@@ -683,6 +689,7 @@ class autoDEERUI(QMainWindow):
         # Block the autoDEER buttons
         self.FullyAutoButton.setEnabled(False)
         self.AdvancedAutoButton.setEnabled(False)
+        self.resonatorComboBox.setEnabled(False)
 
         self.waitCondition = QtCore.QWaitCondition()
         mutex = QtCore.QMutex()
@@ -712,6 +719,7 @@ class autoDEERUI(QMainWindow):
 
         self.worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
         self.worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
+        self.worker.signals.finished.connect(lambda: self.resonatorComboBox.setEnabled(True))
 
 
         self.threadpool.start(self.worker)
@@ -723,6 +731,11 @@ class autoDEERUI(QMainWindow):
         if self.spectromterInterface is None or self.connected is False:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
             return None
+        
+        if self.current_folder is None:
+            QMessageBox.about(self,'ERORR!', 'A folder needs to be selected first!')
+            return None
+
         
         
         userinput = {}

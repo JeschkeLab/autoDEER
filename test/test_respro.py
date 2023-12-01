@@ -21,19 +21,17 @@ def test_ResonatorProfileAnalysis_from_sim():
 
     dset = create_dataset_from_sequence(data,seq)
 
-    respro = ResonatorProfileAnalysis(
-        nuts = dset.data.T,
-        freqs = dset.LO.data,
-        dt=2
+    respro = ResonatorProfileAnalysis(dset
     )
-    respro.process_nutations(threshold=4)
+    # respro.process_nutations(threshold=4)
     respro.fit()
     assert hasattr(respro,'results')
     assert hasattr(respro,'fc')
     assert hasattr(respro,'q')
 
-    assert respro.results['fc'] == pytest.approx(34,abs=0.1)
-    assert respro.results['q'] == pytest.approx(60,abs=2)
+    print(respro.fc)
+    assert respro.fc == pytest.approx(34,abs=0.1)
+    assert respro.q == pytest.approx(60,abs=2)
 
     fig = respro.plot()
     assert fig is not None
