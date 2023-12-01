@@ -83,13 +83,14 @@ def get_all_fixed_param(sequence):
         
     return fixed_param
 
-def create_dataset_from_sequence(data, sequence: Sequence):
+def create_dataset_from_sequence(data, sequence: Sequence,extra_params=None):
     ndims = data.ndim
     default_labels = ['X','Y','Z','T']
     dims = default_labels[:ndims]
     axes = get_all_axes(sequence)
     coords = {a:(default_labels[b['ax_id']],b['axis']) for a,b in axes.items()}
     attr = get_all_fixed_param(sequence)
+    attr.update(extra_params)
     
     return xr.DataArray(data, dims=dims, coords=coords,attrs=attr)
 

@@ -513,11 +513,10 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
                 axis.append(dta_x[i])
             else:
                 axis.append(dta_x[i][:, 0])
-
-
-        output = create_dataset_from_axes(dta_ev, axis,params)
+        output = create_dataset_from_axes(dta_ev, axis, params)
     else:
-        output = create_dataset_from_sequence(dta_ev, sequence)
+        params = {'nAvgs': nAvgs}
+        output = create_dataset_from_sequence(dta_ev, sequence,params)
     
 
     return output

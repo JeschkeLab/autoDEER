@@ -608,7 +608,8 @@ class autoDEERUI(QMainWindow):
             reptime = fitresult.sequence.reptime.value
         else:
             reptime = 3e3
-        print(f"Reptime {reptime*1e-6:.2g} s")
+            
+        print(f"Reptime {reptime*1e-6:.3g} ms")
 
         # averages = fitresult.dataset.shots.value * fitresult..num_scans.value * 16
         averages = fitresult.dataset.attrs['shots'] * fitresult.dataset.attrs['nAvgs'] * 16
