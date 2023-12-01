@@ -26,6 +26,8 @@ setup(
         'pyyaml',
         'reportlab',
         'svglib',
+        'xarray',
+        'h5netcdf'
     ],
     extras_require=extras
 )

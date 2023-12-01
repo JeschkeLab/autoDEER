@@ -104,7 +104,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi2_pulse=p90, pi_pulse=p180,
         )
 
-        self.interface.launch(fsweep,savename=f"{self.samplename}_fieldsweep")
+        self.interface.launch(fsweep,savename=f"{self.samplename}_fieldsweep",IFgain=2)
         self.signals.status.emit('Field-sweep running')
         # self.interface.terminate_at(SNRCriteria(5))
         while self.interface.isrunning():

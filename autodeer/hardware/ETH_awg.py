@@ -109,7 +109,6 @@ class ETH_awg_interface(Interface):
                 self.engine.dig_interface('savenow')
                 Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
                 data = uwb_load(Matfile, options=options, verbosity=verbosity,sequence=self.cur_exp)
-                data.attr['time'] = time.time()
             except OSError:
                 time.sleep(10)
             except IndexError:
@@ -191,10 +190,9 @@ class ETH_awg_interface(Interface):
         while self.isrunning():
             time.sleep(10)
         dataset = self.acquire_dataset()
-        scale = np.around(dataset.axes[0][dataset.data.argmax()],2)[0]
+        scale = np.around(dataset.pulse0_scale[dataset.data.argmax()].data,2)
         if scale > 0.9:
             raise RuntimeError("Not enough power avaliable.")
-        print(scale)
         self.pulses[f"p90_{tp}"] = amp_tune.pulses[0].copy(
             scale=scale, LO=amp_tune.LO)
         
@@ -298,7 +296,7 @@ class ETH_awg_interface(Interface):
             while self.isrunning():
                 time.sleep(10)
             dataset = self.acquire_dataset()
-            new_amp = np.around(dataset.axes[0][dataset.data.argmax()],2)
+            new_amp = np.around(dataset.pulse0_scale[dataset.data.argmax()].data,2)
             pulse.scale = Parameter('scale',new_amp,unit=None,description='The amplitude of the pulse 0-1')
             return pulse
 
@@ -335,15 +333,18 @@ class ETH_awg_interface(Interface):
             while self.isrunning():
                 time.sleep(10)
             dataset = self.acquire_dataset()
-            data = correctphase(dataset.data)
+            dataset.epr.correctphase
+            data = dataset.data
+            axis = dataset.pulse0_scale
+            # data = correctphase(dataset.data)
             if data[0] < 0:
                 data *= -1
 
             if np.isclose(pulse.flipangle.value, np.pi):
-                new_amp = np.around(dataset.axes[0][data.argmin()],2)
+                new_amp = np.around(axis[data.argmin()].data,2)
             elif np.isclose(pulse.flipangle.value, np.pi/2):
                 sign_changes = np.diff(np.sign(np.real(data)))
-                new_amp = np.around(dataset.axes[0][np.nonzero(sign_changes)[0][0]],2)
+                new_amp = np.around(axis[np.nonzero(sign_changes)[0][0]].data,2)
             else:
                 raise RuntimeError("Target pulse can only have a flip angle of either: ",
                                 "pi or pi/2.")
@@ -382,7 +383,7 @@ class ETH_awg_interface(Interface):
             while self.isrunning():
                 time.sleep(10)
             dataset = self.acquire_dataset()
-            scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
+            scale = np.around(dataset.pulse0_scale[dataset.data.argmax()].data,2)
             if scale > 0.9:
                 raise RuntimeError("Not enough power avaliable.")
             
@@ -436,7 +437,7 @@ class ETH_awg_interface(Interface):
                 while self.isrunning():
                     time.sleep(10)
                 dataset = self.acquire_dataset()
-                scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
+                scale = np.around(dataset.pulse0_scale[dataset.data.argmax()].data,2)
                 pulse.scale.value = scale
 
             return sequence

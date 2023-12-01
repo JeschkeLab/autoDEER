@@ -2,6 +2,7 @@ from autodeer.DEER_analysis import DEERanalysis
 import time
 import numpy as np
 from deerlab.utils import der_snr
+from deerlab import noiselevel
 
 
 class Criteria:
@@ -139,6 +140,9 @@ class DEERCriteria(Criteria):
             #     data.axes[0]/1000 - tau1, data.data,
             #     tau1, tau2, tau3, num_points=100,
             #     compactness=True, precision="Speed", plot=False)
+
+
+
             fit = DEERanalysis(
                 data, compactness=False, model=model, regparamrange=regparamrange,verbosity=verbosity,lin_maxiter=50,max_nfev=100
             )

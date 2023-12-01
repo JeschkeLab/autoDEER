@@ -133,6 +133,14 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
         # t = dataset.axes[0]
         t = dataset['X']
 
+    if exp_type == '4pDEER':
+        pathways = [1,2,3]
+    elif exp_type == '5pDEER':
+        pathways = [1,2,3,4,5]
+    elif exp_type == '3pDEER':
+        pathways = [1,2]
+    else:
+        pathways = None
 
     if t.max() > 500:
         t /= 1e3
@@ -144,8 +152,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
     if "pathways" in kwargs:
         pathways = kwargs.pop("pathways")
-    else:
-        pathways = None
+
 
     if hasattr(dataset,"sequence"):
         pulselength = tp
