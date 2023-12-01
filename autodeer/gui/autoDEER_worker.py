@@ -72,6 +72,11 @@ class autoDEERWorker(QtCore.QRunnable):
         self.gyro = gyro
         self.AWG = AWG
         self.user_inputs = user_inputs
+
+        if 'SampleConc' in self.user_inputs:
+            self.noise_mode = self.user_inputs['SampleConc']
+        else:
+            self.noise_mode = 1
         
 
         if not 'DEER_update_func' in self.user_inputs:
@@ -97,9 +102,9 @@ class autoDEERWorker(QtCore.QRunnable):
         '''
         LO = self.LO
         gyro_N = self.gyro
-        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=100)
+        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=int(100*self.noise_mode))
         fsweep = FieldSweepSequence(
-            B=LO/gyro_N, LO=LO,reptime=reptime,averages=2,shots=150,
+            B=LO/gyro_N, LO=LO,reptime=reptime,averages=2,shots=int(150*self.noise_mode),
             Bwidth = 350, 
             pi2_pulse=p90, pi_pulse=p180,
         )
@@ -118,10 +123,10 @@ class autoDEERWorker(QtCore.QRunnable):
         '''
         LO = self.LO
         gyro=self.gyro
-        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro, reptime = reptime,shots=100)
+        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro, reptime = reptime,shots=int(100*self.noise_mode))
 
         RPseq = ResonatorProfileSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=5,shots=40,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=5,shots=int(40*self.noise_mode),
             pi2_pulse=p90, pi_pulse=p180,
         )
 
@@ -141,7 +146,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro = self.gyro
         relax = DEERSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=4,shots=50,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=4,shots=int(50*self.noise_mode),
             tau1=0.5, tau2=0.5, tau3=0.2, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -167,7 +172,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro = self.gyro
         deer = DEERSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=150,shots=15,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=150,shots=int(15*self.noise_mode),
             tau1=tau, tau2=tau, tau3=0.3, dt=dt,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -191,7 +196,7 @@ class autoDEERWorker(QtCore.QRunnable):
         
         
         deer = DEERSequence(
-            B=LO/self.gyro, LO=LO,reptime=reptime,averages=1000,shots=50,
+            B=LO/self.gyro, LO=LO,reptime=reptime,averages=1000,shots=int(50*self.noise_mode),
             tau1=tau1, tau2=tau2, tau3=tau3, dt=dt,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -227,9 +232,9 @@ class autoDEERWorker(QtCore.QRunnable):
 
     def run_reptime_opt(self,reptime_guess):
         LO = self.LO
-        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/self.gyro, reptime = reptime_guess,shots=100)
+        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/self.gyro, reptime = reptime_guess,shots=int(100*self.noise_mode))
 
-        scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=12e3, averages=1, shots=50,
+        scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=12e3, averages=1, shots=int(50*self.noise_mode),
                            pi2_pulse=p90, pi_pulse=p180)
         self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",IFgain=2)
         # self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=0.5)
@@ -271,9 +276,9 @@ class autoDEERWorker(QtCore.QRunnable):
         det_event = self.pulses['det_event']
         
         self.signals.status.emit('Tuning pulses')
-        exc_pulse = self.interface.tune_pulse(exc_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
-        ref_pulse = self.interface.tune_pulse(ref_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
-        pump_pulse = self.interface.tune_pulse(pump_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=100)
+        exc_pulse = self.interface.tune_pulse(exc_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=int(100*self.noise_mode))
+        ref_pulse = self.interface.tune_pulse(ref_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=int(100*self.noise_mode))
+        pump_pulse = self.interface.tune_pulse(pump_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=int(100*self.noise_mode))
 
         # Run a relaxation experiment
         self.signals.status.emit('Running relaxation Experiment')

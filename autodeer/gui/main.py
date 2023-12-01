@@ -24,6 +24,7 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 
 QtCore.QDir.addSearchPath('icons', f"{package_directory}/resources")
 
+SampleConcComboBox_opts = {'Normal': 1, 'High (0.5x)':0.5, 'Low (2x)':2, 'Very Low (5x)':5}
 
 class WorkerSignals(QtCore.QObject):
     '''
@@ -188,6 +189,8 @@ class autoDEERUI(QMainWindow):
         self.show_respro.clicked.connect(lambda: self.update_respro())
         self.OptimisePulsesButton.clicked.connect(lambda: self.optimise_pulses_button())
 
+        self.SampleConcComboBox.addItems(list(SampleConcComboBox_opts.keys()))
+
         self.Tab_widget.setCurrentIndex(0)
         # set current folder to home directory
         self.current_folder = None
@@ -290,10 +293,9 @@ class autoDEERUI(QMainWindow):
         if len(resonator_list) == 0:
             QMessageBox.about(self,'ERORR!', 'No resonators found in config file!')
             return None
-        key1 = resonator_list[0]
-
         # Set LO to resonator central frequency
-        self.LO = self.config['Resonators'][key1]['Center Freq']
+        self.select_resonator()
+
         self.AWG = self.config['Spectrometer']['AWG']
 
         # Get user preferences
@@ -316,7 +318,9 @@ class autoDEERUI(QMainWindow):
 
     def select_resonator(self):
         key = self.resonatorComboBox.currentText()
+        
         self.LO = self.config['Resonators'][key]['Center Freq']
+        self.fcDoubleSpinBox.setValue(self.LO)
 
     def connect_spectrometer(self):
         if self.spectromterInterface is None:
@@ -684,11 +688,13 @@ class autoDEERUI(QMainWindow):
         userinput['sample'] = self.SampleName.text()
         userinput['Temp'] = self.TempValue.value()
         userinput['DEER_update_func'] = self.q_DEER.refresh_deer
+        userinput['SampleConc'] = SampleConcComboBox_opts[self.SampleConcComboBox.currentText()]
 
         # Block the autoDEER buttons
         self.FullyAutoButton.setEnabled(False)
         self.AdvancedAutoButton.setEnabled(False)
         self.resonatorComboBox.setEnabled(False)
+        self.fcDoubleSpinBox.setEnabled(False)
 
         self.waitCondition = QtCore.QWaitCondition()
         mutex = QtCore.QMutex()
@@ -719,6 +725,7 @@ class autoDEERUI(QMainWindow):
         self.worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
         self.worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
         self.worker.signals.finished.connect(lambda: self.resonatorComboBox.setEnabled(True))
+        self.worker.signals.finished.connect(lambda: self.fcDoubleSpinBox.setEnabled(True))
 
 
         self.threadpool.start(self.worker)

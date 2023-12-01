@@ -407,6 +407,16 @@
                <item row="7" column="1">
                 <widget class="QComboBox" name="PumpPulseSelect"/>
                </item>
+               <item row="8" column="1">
+                <widget class="QComboBox" name="SampleConcComboBox"/>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLabel" name="label_29">
+                 <property name="text">
+                  <string>Sample Conc. (# scans)</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </item>
              <item>
