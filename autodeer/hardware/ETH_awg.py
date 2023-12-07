@@ -104,7 +104,7 @@ class ETH_awg_interface(Interface):
         
         
         
-        for i in range(0, 10):
+        for i in range(0, 50):
             try:
                 self.engine.dig_interface('savenow')
                 Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
@@ -117,6 +117,7 @@ class ETH_awg_interface(Interface):
                 time.sleep(10)
             else:
                 return super().acquire_dataset(data)
+        raise RuntimeError("Data was unable to be retrieved")
         
     def launch(self, sequence , savename: str, IFgain: int = 0):
         """Launch a sequence on the spectrometer.

@@ -99,14 +99,10 @@ def fieldsweep_fit(fsweep_analysis):
 
     return fsweep_analysis
 
-def respro_process(dataset, freq_axis, fieldsweep=None,cores=1):
+def respro_process(dataset, fieldsweep=None,cores=1):
     respro = ad.ResonatorProfileAnalysis(
-        nuts = dataset.data.T,
-        freqs = freq_axis,
-        dt=2
-    )
-    respro.process_nutations(threshold=4)
-    
+        dataset
+    )    
     with threadpool_limits(limits=cores, user_api='blas'):
         respro.fit()
 
@@ -446,7 +442,7 @@ class autoDEERUI(QMainWindow):
 
 
         # worker = Worker(respro_process, dataset, f_axis,self.current_results['fieldsweep'], cores=self.cores)
-        worker = Worker(respro_process, dataset, f_axis, self.current_results['fieldsweep'], cores=self.cores)
+        worker = Worker(respro_process, dataset, self.current_results['fieldsweep'], cores=self.cores)
 
         worker.signals.result.connect(self.refresh_respro)
 

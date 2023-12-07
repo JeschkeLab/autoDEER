@@ -91,17 +91,17 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
                     n_skip = np.prod(estr["postsigns"]["dims"][0:ii-1])
                 else:
                     n_skip = 1
-                plus_idx = np.where(estr["postsigns"]["signs"][ii] == 1)
-                minus_idx = np.where(estr["postsigns"]["signs"][ii] == -1)
+                plus_idx = np.where(estr["postsigns"]["signs"][ii] == 1)[0]
+                minus_idx = np.where(estr["postsigns"]["signs"][ii] == -1)[0]
                 plus_mask = np.arange(0, n_skip) + (plus_idx - 1) * n_skip
                 minus_mask = np.arange(0, n_skip) + (minus_idx - 1) * n_skip
-                n_rep = np.size(dta[1], 2) / \
+                n_rep = np.size(dta[0], 1) // \
                     (n_skip * estr["postsigns"]["dims"][ii])
 
                 for kk in range(0, len(dta)):
                     #  re-allocate
                     tmp = dta[kk]
-                    dta[kk] = np.zeros(np.size(tmp, 0), n_rep*n_skip)
+                    dta[kk] = np.zeros((np.size(tmp, 0), n_rep*n_skip))
                     # subtract out
                     for jj in range(0, n_rep):
                         curr_offset = (jj) * n_skip
@@ -121,7 +121,7 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
             np.array(estr["postsigns"]["ids"]).reshape(-1)
         if not (elim_pcyc and cycled[ii]):
             if type(estr["parvars"]) is list:
-                vecs = estr["parvars"][estr["postsigns"]["ids"][ii]-1]["vec"]
+                vecs = estr["parvars"][estr["postsigns"]["ids"][ii]-1]["axis"]
                 if np.ndim(vecs) == 1:
                     dta_x.append(vecs.astype(np.float32))
 
@@ -413,8 +413,8 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
             if exp_dim == 2:
                 ref_echo_unravel = np.unravel_index(ref_echo, absofsum.shape)
                 e_idx = np.argmax(sig.convolve(
-                    np.abs(dta_dc[:, ref_echo_unravel[1],
-                    ref_echo_unravel[0]]), convshape, mode="same"))
+                    np.abs(dta_dc[:, ref_echo_unravel[0],
+                    ref_echo_unravel[1]]), convshape, mode="same"))
 
             else:
                 e_idx = np.argmax(sig.convolve(
