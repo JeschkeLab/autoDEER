@@ -3,7 +3,7 @@ import deerlab as dl
 import numpy as np
 import logging
 from autodeer.dataset import create_dataset_from_bruker
-from autodeer.hardware.ETH_awg_load import uwb_load
+from autodeer.hardware.ETH_awg_load import uwb_load, uwb_eval_match
 from scipy.io import loadmat
 
 log = logging.getLogger('core.Tools')
@@ -84,7 +84,8 @@ def eprload(
             opts={}
         # if 'ref_echo_2D_idx' not in opts:
         #     opts['ref_echo_2D_idx'] = 'end'
-        uwb_output = uwb_load(Matfile,opts)
+        # uwb_output = uwb_load(Matfile,opts)
+        uwb_output = uwb_eval_match(Matfile,)
         # axes = uwb_output.dta_x
         # data = uwb_output.dta_ev
 

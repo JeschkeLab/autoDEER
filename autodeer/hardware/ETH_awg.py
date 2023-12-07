@@ -12,7 +12,7 @@ import numpy as np
 import scipy.signal as sig
 from scipy.io import loadmat
 from autodeer.utils import transpose_list_of_dicts
-from autodeer.hardware.ETH_awg_load import uwb_load
+from autodeer.hardware.ETH_awg_load import uwb_eval_match
 
 
 class ETH_awg_interface(Interface):
@@ -108,7 +108,8 @@ class ETH_awg_interface(Interface):
             try:
                 self.engine.dig_interface('savenow')
                 Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
-                data = uwb_load(Matfile, options=options, verbosity=verbosity,sequence=self.cur_exp)
+                # data = uwb_load(Matfile, options=options, verbosity=verbosity,sequence=self.cur_exp)
+                data = uwb_eval_match(Matfile, self.cur_exp,verbosity=verbosity)
             except OSError:
                 time.sleep(10)
             except IndexError:
