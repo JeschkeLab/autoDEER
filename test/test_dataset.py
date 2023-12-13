@@ -46,6 +46,10 @@ def test_save_dataset(dataset):
 def test_correct_phase(dataset):
     dset = dataset.epr.correctphase
     assert not np.iscomplexobj(dset.data)
+
+def test_correct_phase_full_outoput(dataset):
+    dset = dataset.epr.correctphasefull
+    assert np.iscomplexobj(dset.data)
     
 
 def test_calc_snr(dataset):

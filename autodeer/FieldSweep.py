@@ -100,7 +100,9 @@ class FieldSweepAnalysis():
             self.axis = dataset['B']
         else:
             self.axis = dataset['X']
+        
         self.data = dataset
+        self.data.epr.correctphasefull
 
         if 'LO' in dataset.attrs:
             self.LO = dataset.attrs['LO']
@@ -189,17 +191,19 @@ class FieldSweepAnalysis():
             matplotlib figure
         """
 
+
         if norm is True:
             data = self.data
             data /= np.max(np.abs(data))
+        
 
         if axs is None and fig is None:
             fig, axs = plt.subplots(1, 1, figsize=(8, 6))              
 
         # Plot the data
         if axis.lower() == 'time':
-            axs.plot(self.axis, np.real(data), label='real')
-            axs.plot(self.axis, np.imag(data), label='imag')
+            axs.plot(self.axis, np.real(data), label='Re')
+            axs.plot(self.axis, np.imag(data), label='Im')
             axs.legend()
             axs.set_xlabel('Field G')
             axs.set_ylabel('Normalised Amplitude')

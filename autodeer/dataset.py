@@ -157,15 +157,24 @@ class EPRAccessor:
             self._obj.to_netcdf(f"{filename}.epr")
 
     @property
-    def correctphase(self, full_output=False, offset=False):
-
+    def correctphase(self):
 
         if np.iscomplexobj(self._obj.data):
-            self._obj.data = correctphase(self._obj.data, full_output=full_output, offset=offset)
+                self._obj.data = correctphase(self._obj.data)
         else:
             UserWarning("Data is not complex, phase correction not applied")
         return self._obj
     
+    @property
+    def correctphasefull(self):
+
+        if np.iscomplexobj(self._obj.data):
+                Re,Im,_ = correctphase(self._obj.data,full_output=True)
+                self._obj.data = Re + 1j*Im
+        else:
+            UserWarning("Data is not complex, phase correction not applied")
+        return self._obj
+
     @property
     def SNR(self):
         from deerlab import der_snr
