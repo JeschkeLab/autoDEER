@@ -15,7 +15,7 @@ try:
 
 except:
     raise ImportError("Xepr >2.9 needs to be installed on the computer")
-hw_log = logging.getLogger('hardware.Xepr')
+hw_log = logging.getLogger('interface.Xepr')
 
 # ============================================================================
 

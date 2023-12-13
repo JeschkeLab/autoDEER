@@ -83,7 +83,7 @@ def get_all_fixed_param(sequence):
         
     return fixed_param
 
-def create_dataset_from_sequence(data, sequence: Sequence,extra_params=None):
+def create_dataset_from_sequence(data, sequence: Sequence,extra_params={}):
     ndims = data.ndim
     default_labels = ['X','Y','Z','T']
     dims = default_labels[:ndims]

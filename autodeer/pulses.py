@@ -13,7 +13,6 @@ from autodeer import __version__
 import copy
 
 
-
 class Pulse:
     """
     Represents a general experimental pulse.

@@ -8,8 +8,13 @@ import yaml
 import numpy as np
 import deerlab as dl
 import time
+import logging
+
 
 rng = np.random.default_rng(12345)
+
+hw_log = logging.getLogger('interface.Dummy')
+
 def val_in_us(Param):
         if len(Param.axis) == 0:
             if Param.unit == "us":
@@ -81,13 +86,14 @@ class dummyInterface(Interface):
         super().__init__()
 
     def launch(self, sequence, savename: str, **kwargs):
+        hw_log.info(f"Launching {sequence.name} sequence")
         self.state = True
         self.cur_exp = sequence
         self.start_time = time.time()
         return super().launch(sequence, savename)
     
     def acquire_dataset(self,**kwargs):
-
+        hw_log.debug("Acquiring dataset")
         if isinstance(self.cur_exp, DEERSequence):
             if self.cur_exp.t.is_static():
                 axes, data = _simulate_CP(self.cur_exp)
@@ -137,19 +143,21 @@ class dummyInterface(Interface):
         return self.pulses[f"p90_{tp}"], self.pulses[f"p180_{tp}"]
     
     def tune_pulse(self, pulse, mode, LO, B , reptime, shots=400):
-
+        hw_log.debug(f"Tuning {pulse.name} pulse")
         pulse.scale = Parameter('scale',0.5,unit=None,description='The amplitude of the pulse 0-1')
+        hw_log.debug(f"Setting {pulse.name} pulse to {pulse.scale.value}")
         return pulse
             
     def isrunning(self) -> bool:
         current_time = time.time()
         if current_time - self.start_time > (self.cur_exp._estimate_time() / self.speedup):
             self.state = False
-
+    
         return self.state
     
     def terminate(self) -> None:
         self.state = False
+        hw_log.info("Terminating sequence")
         return super().terminate()
     
 

@@ -1,8 +1,8 @@
 import logging
 import logging.handlers as handlers
+import os
 
-
-def setup_logs():
+def setup_logs(folder: str):
     """
     General command to setup system wide logging.
 
@@ -17,13 +17,27 @@ def setup_logs():
     # A new log is created every week, after 4 weeks the oldest is deleated.
     # This might be changed to daily at a later date, we will see how it goes
     logHandler_core = handlers.TimedRotatingFileHandler(
-        'core.log', when='W0', backupCount=4)
+        os.path.join(folder,'autoDEER.log'), when='D', backupCount=4)
     logHandler_core.setLevel(logging.INFO)
     logHandler_core.setFormatter(formatter)
-    logging.getLogger('core').addHandler(logHandler_core)
+    logging.getLogger('autoDEER').addHandler(logHandler_core)
 
     logHandler_hardware = handlers.TimedRotatingFileHandler(
-        'hardware.log', when='W0', backupCount=4)
+        os.path.join(folder,'interface.log'), when='D', backupCount=4)
     logHandler_hardware.setLevel(logging.INFO)
     logHandler_hardware.setFormatter(formatter)
-    logging.getLogger('hardware').addHandler(logHandler_hardware)
+    logging.getLogger('interface').addHandler(logHandler_hardware)
+
+def change_log_level(core='INFO',interface='INFO'):
+    """
+    Change the log level of the core and hardware loggers.
+
+    Parameters
+    ----------
+    core : str
+        The log level for the core logger.
+    interface : str
+        The log level for the hardware logger.
+    """
+    logging.getLogger('autoDEER').setLevel(core)
+    logging.getLogger('interface').setLevel(interface)

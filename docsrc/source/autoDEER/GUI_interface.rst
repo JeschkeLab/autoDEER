@@ -15,7 +15,7 @@ Connecting to a spectrometer
 2. Click the "Spectrometer -> Load Config File" button and choose your spectrometer config file.
 3. Click the "Spectrometer -> Connect" button.
 4. A green light should appear in the top right corner of the GUI, indicating that the spectrometer is connected.
-5. If you have more than one resonator in your config file, please select the correct one in the top right of the GUI.
+5. A folder must be opened to save the data to. This can be done by clicking the "File -> Open Folder" button. The path will be displayed below the 'spectrometer connected' light.
 
 Starting an experiment
 ----------------------
@@ -27,8 +27,10 @@ Fully automatic experiment (recommended)
 2. Enter the maximum measurement time in the "Max Time" box.
 3. Enter your sample name in the "Sample Name" box.
 4. Enter the measurement temperature in the "Temperature" box.
+5. Select the resonator you wish to use in the "Resonator" box, and adjust the "Frequency" box if necessary.
+This frequency is the initial guess for the resonator frequency, it does not need to be the center but must be within the range of the resonator. 
 
-5. Click the "Run Fully Automatic DEER" button.
+6. Click the "Run Fully Automatic DEER" button.
 
 Advanced Mode
 ~~~~~~~~~~~~~
@@ -43,6 +45,8 @@ At the bottom of the GUI a text box will display the current status of the exper
 
 After an Experiment
 -------------------
-Once the experiment has finished, a PDF report can be now be saved. "File -> Save Report" will save a PDF report, in a chosen folder.
+Once the experiment has finished or during an experiment, a PDF report can be now be saved. "File -> Save Report" will save a PDF report, in a chosen folder.
 The report will contain all the data and graphs from the experiment, as well as a summary of the experiment parameters. This is somewhat akin to a lab book entry.
 It is recommended that this along with all saved data is kept for future reference.
+Data will be saved in both the spectrometers native format and as a '.h5' file. The '.h5' file is a HDF5 file, which is a standardised data format and used widely in the scientific community. It can be easily read by python and matlab, and is recommended for use with autoDEER.
+ 

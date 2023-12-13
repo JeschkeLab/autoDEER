@@ -17,7 +17,10 @@ from autodeer.gui.quickdeer import DEERplot
 import yaml
 import time
 import datetime
+import logging
+from autodeer.Logging import setup_logs, change_log_level
 
+main_log = logging.getLogger('autoDEER')
 from queue import Queue
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
@@ -141,7 +144,6 @@ class autoDEERUI(QMainWindow):
 
         self.setWindowTitle("autoDEER")
 
-        
 
         self.qDEER_tab.layout().addWidget(DEERplot())
         self.q_DEER = self.qDEER_tab.layout().itemAt(0).widget()
@@ -214,6 +216,11 @@ class autoDEERUI(QMainWindow):
         file = str(QFileDialog.getExistingDirectory(self, "Select Directory",str(Path.home())))
         self.pathLineEdit.setText(file)
         self.current_folder = file
+
+        setup_logs(self.current_folder)
+        global main_log
+        main_log = logging.getLogger('autoDEER')
+        main_log.debug(f"Loading folder {file}")
     
     def load_epr_file(self, store_location):
 
@@ -243,6 +250,15 @@ class autoDEERUI(QMainWindow):
         with open(filename_edit, mode='r') as f:
             config = yaml.safe_load(f)
             self.config = config
+
+        main_log.info(f"Loading config file {filename_edit}")
+
+        try:
+            loglevels = config['autoDEER']['Logging']
+            change_log_level(loglevels['autoDEER'],loglevels['interface'])
+        except KeyError:
+            pass
+
 
         spectrometer = config['Spectrometer']
 
@@ -275,6 +291,7 @@ class autoDEERUI(QMainWindow):
                               'The spectrometer interface could not be loaded!\n'+
                               'Please check that the correct packages are installed!\n'+
                               'See the documentation for more information.')
+            main_log.error('The spectrometer interface could not be loaded!')
             return None
 
 
@@ -288,6 +305,7 @@ class autoDEERUI(QMainWindow):
 
         if len(resonator_list) == 0:
             QMessageBox.about(self,'ERORR!', 'No resonators found in config file!')
+            main_log.error('No resonators found in config file!')
             return None
         # Set LO to resonator central frequency
         self.select_resonator()
@@ -314,13 +332,15 @@ class autoDEERUI(QMainWindow):
 
     def select_resonator(self):
         key = self.resonatorComboBox.currentText()
-        
+        main_log.info(f"Selecting resonator {key}")
         self.LO = self.config['Resonators'][key]['Center Freq']
         self.fcDoubleSpinBox.setValue(self.LO)
+        main_log.info(f"Setting LO to {self.LO} GHz")
 
     def connect_spectrometer(self):
         if self.spectromterInterface is None:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be loaded first!')
+            main_log.error('Could not connect to spectrometer. A interface needs to be loaded first!')
             return None
 
 
@@ -328,6 +348,7 @@ class autoDEERUI(QMainWindow):
             self.spectromterInterface.connect()
         except RuntimeError as e:
             QMessageBox.about(self, 'Connection ERORR!',str(e))
+            main_log.error(f"Could not connect to spectrometer. {e}")
             
 
         self.connected = True
@@ -337,6 +358,7 @@ class autoDEERUI(QMainWindow):
         timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
         fullname = timestamp + self.SampleName.text() + '_' +filename +'.h5'
         dataset.to_netcdf(os.path.join(self.current_folder,fullname),engine='h5netcdf',invalid_netcdf=True)
+        main_log.debug(f"Saving dataset to {fullname}")
 
     def fsweep_toolbar(self):
         upload_icon = QtGui.QIcon('icons:upload.png')
@@ -374,6 +396,7 @@ class autoDEERUI(QMainWindow):
 
         fsweep_analysis = ad.FieldSweepAnalysis(dataset)
         fsweep_analysis.calc_gyro()
+        main_log.info(f"Calculated gyro {fsweep_analysis.gyro*1e3:.3f} MHz/T")
         self.fsweep_ax.cla()
         fsweep_analysis.plot(axs=self.fsweep_ax,fig=self.fsweep_canvas.figure)
         self.fsweep_canvas.draw()
@@ -468,6 +491,7 @@ class autoDEERUI(QMainWindow):
             if self.worker is not None:
                 self.worker.update_LO(self.LO)
             print(f"New LO frequency: {self.LO:.2f} GHz")
+            main_log.info(f"Setting LO to {self.LO} GHz")
         else:
             fitresult = args[0]
 
@@ -490,7 +514,7 @@ class autoDEERUI(QMainWindow):
         self.qDoubleSpinBox.setValue(fitresult.results.q)
         self.qCI.setText(f"({fitresult.results.qUncert.ci(95)[0]:.2f},{fitresult.results.qUncert.ci(95)[1]:.2f})")
         self.Tab_widget.setCurrentIndex(2)
-
+        main_log.info(f"Resonator centre frequency {fitresult.results.fc:.2f} GHz")
         self.optimise_pulses_button()
 
 
@@ -521,6 +545,7 @@ class autoDEERUI(QMainWindow):
         self.pulses['ref_pulse'] = ref_pulse
         self.pulses['exc_pulse'] = exc_pulse
         self.pulses['det_event'].freq = exc_pulse.freq
+        main_log.info(f"Optimised pulses")
 
         self.worker.new_pulses(self.pulses)
         
@@ -608,8 +633,6 @@ class autoDEERUI(QMainWindow):
         else:
             reptime = 3e3
             
-        print(f"Reptime {reptime*1e-6:.3g} ms")
-
         # averages = fitresult.dataset.shots.value * fitresult..num_scans.value * 16
         averages = fitresult.dataset.attrs['shots'] * fitresult.dataset.attrs['nAvgs'] * 16
 
@@ -620,6 +643,8 @@ class autoDEERUI(QMainWindow):
         self.DipolarEvoMax.setValue(max_tau)
         self.DipolarEvo2hrs.setValue(tau2hrs)
         self.Tab_widget.setCurrentIndex(3)
+        main_log.info(f"2hr dipolar evo {tau2hrs:.2f} us")
+        main_log.info(f"Max dipolar evo {max_tau:.2f} us")
 
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
@@ -671,7 +696,7 @@ class autoDEERUI(QMainWindow):
         opt_reptime = reptime_analysis.calc_optimal_reptime(0.8)
 
         self.current_results['reptime'] = reptime_analysis
-        print(f"Reptime {opt_reptime*1e-3:.2g} s")
+        main_log.info(f"Reptime {opt_reptime*1e-3:.2g} s")
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
@@ -681,6 +706,7 @@ class autoDEERUI(QMainWindow):
 
         if self.spectromterInterface is None or self.connected is False:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
+            main_log.error('Could not run autoDEER. A interface needs to be connected first!')
             return None
 
         userinput = {}
@@ -729,6 +755,7 @@ class autoDEERUI(QMainWindow):
 
 
         self.threadpool.start(self.worker)
+        main_log.info(f"Starting autoDEER")
 
         return self.worker
 
@@ -736,10 +763,12 @@ class autoDEERUI(QMainWindow):
 
         if self.spectromterInterface is None or self.connected is False:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
+            main_log.error('Could not run autoDEER. A interface needs to be connected first!')
             return None
         
         if self.current_folder is None:
             QMessageBox.about(self,'ERORR!', 'A folder needs to be selected first!')
+            main_log.error('Could not run autoDEER. A folder needs to be selected first!')
             return None
 
         
@@ -785,6 +814,7 @@ class autoDEERUI(QMainWindow):
 
         self.worker = worker
         self.threadpool.start(self.worker)
+        main_log.info(f"Starting autoDEER with user inputs")
 
     def create_report(self):
         save_path = QFileDialog.getSaveFileName(self, 'Save File', self.current_folder, ".pdf")

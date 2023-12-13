@@ -23,6 +23,10 @@ Resonators:
     Q: 80
 
 autoDEER:
+  logging:
+    autoDEER: 'DEBUG' # Default: 'INFO
+    interface: 'DEBUG' # Default: 'INFO'
+    
   DeerLab:
     nnlsSolver: 'cvx'  # Default: 'cvx'
     xtol: 1e-3  # Default: 1e-8
