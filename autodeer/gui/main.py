@@ -14,6 +14,7 @@ import numpy as np
 from autodeer.gui.tools import *
 from autodeer.gui.autoDEER_worker import autoDEERWorker
 from autodeer.gui.quickdeer import DEERplot
+from autodeer.gui.log import LogDialog
 import yaml
 import time
 import datetime
@@ -250,11 +251,15 @@ class autoDEERUI(QMainWindow):
         with open(filename_edit, mode='r') as f:
             config = yaml.safe_load(f)
             self.config = config
+        
+        self.logDialog = LogDialog(self)
+        self.logDialog.hide()
+        self.logbutton.clicked.connect(self.logDialog.show)
 
         main_log.info(f"Loading config file {filename_edit}")
 
         try:
-            loglevels = config['autoDEER']['Logging']
+            loglevels = config['autoDEER']['logging']
             change_log_level(loglevels['autoDEER'],loglevels['interface'])
         except KeyError:
             pass

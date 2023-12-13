@@ -1,6 +1,34 @@
 import logging
 import logging.handlers as handlers
 import os
+import PyQt6.QtCore as QtCore
+
+
+class DictFormater(logging.Formatter):
+
+    def format(self, record):
+        
+        entry = {
+            'time': record.asctime,
+            'name': record.name,
+            'level': record.levelname,
+            'message': record.msg
+        }
+
+        return entry
+    
+
+class QtLogHandler(QtCore.QObject, logging.Handler):
+
+    signal = QtCore.pyqtSignal(dict)
+    def __init__(self, level=logging.NOTSET):
+        super().__init__(level=level)
+        
+
+    def emit(self, record):
+        entry = self.format(record)
+        self.signal.emit(entry)
+
 
 def setup_logs(folder: str):
     """
@@ -22,11 +50,17 @@ def setup_logs(folder: str):
     logHandler_core.setFormatter(formatter)
     logging.getLogger('autoDEER').addHandler(logHandler_core)
 
+    QTHandler = QtLogHandler()
+    QTHandler.setLevel(logging.INFO)
+    QTHandler.setFormatter(DictFormater())
+    logging.getLogger('autoDEER').addHandler(QTHandler)
+
     logHandler_hardware = handlers.TimedRotatingFileHandler(
         os.path.join(folder,'interface.log'), when='D', backupCount=4)
     logHandler_hardware.setLevel(logging.INFO)
     logHandler_hardware.setFormatter(formatter)
     logging.getLogger('interface').addHandler(logHandler_hardware)
+    logging.getLogger('interface').addHandler(QTHandler)
 
 def change_log_level(core='INFO',interface='INFO'):
     """
