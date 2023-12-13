@@ -320,4 +320,7 @@ class autoDEERWorker(QtCore.QRunnable):
     def new_pulses(self, pulses):
         self.pulses = pulses
 
+    def update_LO(self,LO):
+        self.LO = LO
+
 

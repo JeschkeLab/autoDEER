@@ -7,6 +7,7 @@ from scipy import signal
 from scipy.linalg import eig
 from scipy.sparse import bsr_array
 import deerlab as dl
+from xarray import DataArray
 
 
 def create_Nmodel(mwFreq):
@@ -81,7 +82,7 @@ def create_Nmodel(mwFreq):
         
 class FieldSweepAnalysis():
 
-    def __init__(self, dataset) -> None:
+    def __init__(self, dataset:DataArray) -> None:
         """Analysis and calculation of FieldSweep Experiment. 
 
         Parameters
@@ -100,6 +101,7 @@ class FieldSweepAnalysis():
         else:
             self.axis = dataset['X']
         self.data = dataset
+
         if 'LO' in dataset.attrs:
             self.LO = dataset.attrs['LO']
         

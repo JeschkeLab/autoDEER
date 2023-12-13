@@ -15,7 +15,7 @@ Spectrometer:
 
 Resonators:
   Pent Loop-gap:
-    Center Freq: 34.2 #GHz
+    Center Freq: 34.4 #GHz
     Q: 80
   Banana 2:
     Center Freq: 34.82 #GHz

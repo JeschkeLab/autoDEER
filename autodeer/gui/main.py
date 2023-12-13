@@ -104,7 +104,7 @@ def respro_process(dataset, fieldsweep=None,cores=1):
         dataset
     )    
     with threadpool_limits(limits=cores, user_api='blas'):
-        respro.fit()
+        respro.fit(cores=cores)
 
     if fieldsweep is not None:
         LO_new = fieldsweep.LO + ad.optimise_spectra_position(respro, fieldsweep)
@@ -465,6 +465,9 @@ class autoDEERUI(QMainWindow):
         if len(args[0]) == 2:
             fitresult = args[0][0]
             self.LO = args[0][1]
+            if self.worker is not None:
+                self.worker.update_LO(self.LO)
+            print(f"New LO frequency: {self.LO:.2f} GHz")
         else:
             fitresult = args[0]
 

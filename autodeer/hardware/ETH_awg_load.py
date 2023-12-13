@@ -838,7 +838,7 @@ def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=No
     else:
         dta_filt_dc = np.apply_along_axis(match_filter_dc, 0, dta_c,t, complex, det_frqs_perc)
     peak_echo_idx = np.unravel_index(np.argmax(np.abs(dta_filt_dc).max(axis=0)),dims)
-    echo_pos = np.argmax(np.abs(dta_filt_dc[:,*peak_echo_idx]))
+    echo_pos = np.argmax(np.abs(dta_filt_dc[tuple([slice(None)]) + peak_echo_idx]))
     dta_ev = dta_filt_dc[echo_pos,:]
     # dta_ev.reshape(30,40)
     if sequence is None:

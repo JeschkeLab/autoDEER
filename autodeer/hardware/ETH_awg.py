@@ -13,7 +13,7 @@ import scipy.signal as sig
 from scipy.io import loadmat
 from autodeer.utils import transpose_list_of_dicts
 from autodeer.hardware.ETH_awg_load import uwb_eval_match
-
+import warnings
 
 class ETH_awg_interface(Interface):
     """
@@ -192,16 +192,22 @@ class ETH_awg_interface(Interface):
         while self.isrunning():
             time.sleep(10)
         dataset = self.acquire_dataset()
-        scale = np.around(dataset.pulse0_scale[dataset.data.argmax()].data,2)
+        dataset.epr.correctphase
+
+        data = np.abs(dataset.data)
+        scale = np.around(dataset.pulse0_scale[data.argmax()].data,2)
         if scale > 0.9:
             raise RuntimeError("Not enough power avaliable.")
-        self.pulses[f"p90_{tp}"] = amp_tune.pulses[0].copy(
+        
+        if scale == 0:
+            warnings.warn("Pulse tuned with a scale of zero!")
+        p90 = amp_tune.pulses[0].copy(
             scale=scale, LO=amp_tune.LO)
         
-        self.pulses[f"p180_{tp*2}"] = amp_tune.pulses[1].copy(
+        p180 = amp_tune.pulses[1].copy(
             scale=scale, LO=amp_tune.LO)
 
-        return self.pulses[f"p90_{tp}"], self.pulses[f"p180_{tp*2}"]
+        return p90, p180
 
     
     def tune_pulse(self, pulse, mode, LO, B , reptime, shots=400):
@@ -245,42 +251,42 @@ class ETH_awg_interface(Interface):
 
         # Find rect pulses
 
-        all_rect_pulses = list(self.pulses.keys())
-        pulse_matches = []
-        for pulse_name in all_rect_pulses:
-            # if not re.match(r"^p180_",pulse_name):
-            #     continue
-            pulse_frq = self.pulses[pulse_name].LO.value + self.pulses[pulse_name].freq.value
-            if not np.abs(pulse_frq - c_frq) < 0.01: #Within 10MHz
-                continue
-            pulse_matches.append(pulse_name)
+        # all_rect_pulses = list(self.pulses.keys())
+        # pulse_matches = []
+        # for pulse_name in all_rect_pulses:
+        #     # if not re.match(r"^p180_",pulse_name):
+        #     #     continue
+        #     pulse_frq = self.pulses[pulse_name].LO.value + self.pulses[pulse_name].freq.value
+        #     if not np.abs(pulse_frq - c_frq) < 0.01: #Within 10MHz
+        #         continue
+        #     pulse_matches.append(pulse_name)
         
-        # Find best pi pulse
-        pi_length_best = 1e6
-        for pulse_name in pulse_matches:
-            if re.match(r"^p180_",pulse_name):
-                ps_length = int(re.search(r"p180_(\d+)",pulse_name).groups()[0])
-                if ps_length < pi_length_best:
-                    pi_length_best = ps_length
+        # # Find best pi pulse
+        # pi_length_best = 1e6
+        # for pulse_name in pulse_matches:
+        #     if re.match(r"^p180_",pulse_name):
+        #         ps_length = int(re.search(r"p180_(\d+)",pulse_name).groups()[0])
+        #         if ps_length < pi_length_best:
+        #             pi_length_best = ps_length
         
-        if pi_length_best == 1e6:
-            _, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=LO, reptime=reptime)
-        else:
-            pi_pulse = self.pulses[f"p180_{pi_length_best}"]
+        # if pi_length_best == 1e6:
+        #     _, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
+        # else:
+        #     pi_pulse = self.pulses[f"p180_{pi_length_best}"]
 
-        pi2_length_best = 1e6
-        for pulse_name in pulse_matches:
-            if re.match(r"^p90_",pulse_name):
-                ps_length = int(re.search(r"p90_(\d+)",pulse_name).groups()[0])
-                if ps_length < pi2_length_best:
-                    pi2_length_best = ps_length
+        # pi2_length_best = 1e6
+        # for pulse_name in pulse_matches:
+        #     if re.match(r"^p90_",pulse_name):
+        #         ps_length = int(re.search(r"p90_(\d+)",pulse_name).groups()[0])
+        #         if ps_length < pi2_length_best:
+        #             pi2_length_best = ps_length
         
-        if pi2_length_best == 1e6:
-            pi2_pulse, _ = self.tune_rectpulse(tp=12, B=B, LO=LO,reptime=reptime)
-        else:
-            pi2_pulse = self.pulses[f"p90_{pi2_length_best}"]
+        # if pi2_length_best == 1e6:
+        #     pi2_pulse, _ = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
+        # else:
+        #     pi2_pulse = self.pulses[f"p90_{pi2_length_best}"]
 
-
+        pi2_pulse, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
         if mode == "amp_hahn":
             amp_tune =HahnEchoSequence(
                 B=B, LO=LO, 
@@ -305,7 +311,7 @@ class ETH_awg_interface(Interface):
         elif mode == "amp_nut":
 
             nut_tune = Sequence(
-                name="nut_tune", B=B, LO=LO, reptime=reptime,
+                name="nut_tune", B=(B/LO*c_frq), LO=LO, reptime=reptime,
                 averages=1,shots=shots
             )
             nut_tune.addPulse(pulse.copy(
