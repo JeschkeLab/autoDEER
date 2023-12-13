@@ -189,6 +189,7 @@ class autoDEERUI(QMainWindow):
         self.OptimisePulsesButton.clicked.connect(lambda: self.optimise_pulses_button())
 
         self.SampleConcComboBox.addItems(list(SampleConcComboBox_opts.keys()))
+        
 
         self.Tab_widget.setCurrentIndex(0)
         # set current folder to home directory
@@ -701,7 +702,9 @@ class autoDEERUI(QMainWindow):
         opt_reptime = reptime_analysis.calc_optimal_reptime(0.8)
 
         self.current_results['reptime'] = reptime_analysis
-        main_log.info(f"Reptime {opt_reptime*1e-3:.2g} s")
+        if self.worker is not None:
+            self.worker.update_reptime(opt_reptime)
+        main_log.info(f"Reptime {opt_reptime*1e-3:.2g} ms")
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
@@ -735,6 +738,7 @@ class autoDEERUI(QMainWindow):
             user_inputs=userinput, cores=self.cores )
     
         self.worker.signals.status.connect(self.msgbar.setText)
+        self.worker.signals.status.connect(main_log.info)
         self.worker.signals.fsweep_result.connect(self.update_fieldsweep)
         self.worker.signals.fsweep_result.connect(lambda x: self.save_data(x,'EDFS'))
         self.worker.signals.respro_result.connect(self.update_respro)
@@ -747,6 +751,7 @@ class autoDEERUI(QMainWindow):
         self.worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
         self.worker.signals.longdeer_update.connect(self.longDEER.refresh_deer)
         self.worker.signals.longdeer_result.connect(lambda x: self.save_data(x,'DEER_5P_Q_long'))
+        
 
         self.worker.signals.longdeer_result.connect(self.update_longdeer)
 
@@ -757,6 +762,8 @@ class autoDEERUI(QMainWindow):
         self.worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
         self.worker.signals.finished.connect(lambda: self.resonatorComboBox.setEnabled(True))
         self.worker.signals.finished.connect(lambda: self.fcDoubleSpinBox.setEnabled(True))
+
+        self.stopButton.clicked.connect(self.worker.stop)
 
 
         self.threadpool.start(self.worker)

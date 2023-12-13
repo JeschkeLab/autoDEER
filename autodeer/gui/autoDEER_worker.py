@@ -72,6 +72,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.gyro = gyro
         self.AWG = AWG
         self.user_inputs = user_inputs
+        self.stop_flag = False
 
         if 'SampleConc' in self.user_inputs:
             self.noise_mode = self.user_inputs['SampleConc']
@@ -96,12 +97,13 @@ class autoDEERWorker(QtCore.QRunnable):
         self.mutex.unlock()
 
 
-    def run_fsweep(self, reptime):
+    def run_fsweep(self):
         '''
         Initialise the runner function with passed args, kwargs.
         '''
         LO = self.LO
         gyro_N = self.gyro
+        reptime = self.reptime
         p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=int(100*self.noise_mode))
         fsweep = FieldSweepSequence(
             B=LO/gyro_N, LO=LO,reptime=reptime,averages=2,shots=int(150*self.noise_mode),
@@ -117,12 +119,13 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('Field-sweep complete')
         self.signals.fsweep_result.emit(self.interface.acquire_dataset())
 
-    def run_respro(self, reptime):
+    def run_respro(self):
         '''
         Initialise the runner function for resonator profile.
         '''
         LO = self.LO
         gyro=self.gyro
+        reptime = self.reptime
         p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro, reptime = reptime,shots=int(100*self.noise_mode))
 
         RPseq = ResonatorProfileSequence(
@@ -139,12 +142,14 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('Resonator Profile complete')
         self.signals.respro_result.emit(self.interface.acquire_dataset())
 
-    def run_relax(self,reptime):
+    def run_relax(self):
         '''
         Initialise the runner function for relaxation. 
         '''
+        self.signals.status.emit('Running relaxation Experiment')
         LO = self.LO
         gyro = self.gyro
+        reptime = self.reptime
         relax = DEERSequence(
             B=LO/gyro, LO=LO,reptime=reptime,averages=4,shots=int(50*self.noise_mode),
             tau1=0.5, tau2=0.5, tau3=0.2, dt=15,
@@ -167,34 +172,58 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.relax_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('Relaxation experiment complete')
         
-
-    def run_quick_deer(self,reptime,tau=2.0, dt=16):
-        LO = self.LO
-        gyro = self.gyro
-        deer = DEERSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=150,shots=int(15*self.noise_mode),
-            tau1=tau, tau2=tau, tau3=0.3, dt=dt,
-            exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
-            pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
-            )
         
-        deer.five_pulse()
-        if self.AWG:
-            deer.select_pcyc("16step_5p")
+
+    def run_quick_deer(self, dt=16):
+        if ('tau1' in self.user_inputs) and (self.user_inputs['tau1'] != 0):
+            self.signals.status.emit('Skipping QuickDEER')
+            return 'skip'
         else:
-            deer.select_pcyc("DC")
-        deer._estimate_time();
-        self.interface.launch(deer,savename=f"{self.samplename}_quickdeer",IFgain=2)
-        self.signals.status.emit('DEER experiment running')
-        with threadpool_limits(limits=self.cores, user_api='blas'):
-            self.interface.terminate_at(DEERCriteria(mode="speed",verbosity=2,update_func=self.signals.quickdeer_update.emit),verbosity=2,test_interval=0.5)
-        self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
-        self.signals.status.emit('DEER experiment complete')
+            self.signals.status.emit('Running QuickDEER')
+            
+            tau = self.results['relax'].tau2hrs
+            
+            LO = self.LO
+            gyro = self.gyro
+            reptime = self.reptime
+            deer = DEERSequence(
+                B=LO/gyro, LO=LO,reptime=reptime,averages=150,shots=int(15*self.noise_mode),
+                tau1=tau, tau2=tau, tau3=0.3, dt=dt,
+                exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
+                pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
+                )
+            
+            deer.five_pulse()
+            if self.AWG:
+                deer.select_pcyc("16step_5p")
+            else:
+                deer.select_pcyc("DC")
+            deer._estimate_time();
+            self.interface.launch(deer,savename=f"{self.samplename}_quickdeer",IFgain=2)
+            with threadpool_limits(limits=self.cores, user_api='blas'):
+                self.interface.terminate_at(DEERCriteria(mode="speed",verbosity=2,update_func=self.signals.quickdeer_update.emit),verbosity=2,test_interval=0.5)
+            self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
+            self.signals.status.emit('QuickDEER experiment complete')
 
-    def run_long_deer(self, reptime,tau1,tau2,tau3=0, dt=16, deertype='5pDEER'):
+    def run_long_deer(self,tau1,tau2,tau3=0, dt=16, deertype='5pDEER'):
+        self.signals.status.emit('Running LongDEER')
         LO = self.LO
-        
-        
+        reptime = self.reptime
+
+        if ('tau1' in self.user_inputs) and (self.user_inputs['tau1'] != 0):
+            tau1 = self.user_inputs['tau1']
+            tau2 = self.user_inputs['tau2']
+            tau3 = self.user_inputs['tau3']
+            deertype = self.user_inputs['ExpType']
+        else:
+            rec_tau = self.results['quickdeer'].rec_tau_max
+            dt = self.results['quickdeer'].rec_dt * 1e3
+            max_tau = self.results['relax'].max_tau
+            tau = np.min([rec_tau,max_tau])
+            tau1 = tau
+            tau2 = tau
+            tau3 = 0.3
+
         deer = DEERSequence(
             B=LO/self.gyro, LO=LO,reptime=reptime,averages=1000,shots=int(50*self.noise_mode),
             tau1=tau1, tau2=tau2, tau3=tau3, dt=dt,
@@ -223,14 +252,14 @@ class autoDEERWorker(QtCore.QRunnable):
 
         deer._estimate_time();
         self.interface.launch(deer,savename=f"{self.samplename}_deer"+savename_suffix,IFgain=2)
-        self.signals.status.emit('DEER experiment running')
         time.sleep(30) # Always wait for the experiment to properly start
         with threadpool_limits(limits=self.cores, user_api='blas'):
             self.interface.terminate_at(DEERCriteria(mode="high",verbosity=2,update_func=self.signals.longdeer_update.emit),verbosity=2,test_interval=0.5) # Change criteria backagain
         self.signals.longdeer_result.emit(self.interface.acquire_dataset())
-        self.signals.status.emit('DEER experiment complete')
+        self.signals.status.emit('Long DEER experiment complete')
 
-    def run_reptime_opt(self,reptime_guess):
+    def run_reptime_opt(self):
+        reptime_guess = self.reptime
         LO = self.LO
         p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/self.gyro, reptime = reptime_guess,shots=int(100*self.noise_mode))
 
@@ -243,76 +272,47 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('Reptime scan complete')
         self.signals.reptime_scan_result.emit(self.interface.acquire_dataset())
 
-
-
-    @QtCore.pyqtSlot()    
-    def run(self):
-
-        reptime = 3e3
-        LO = self.LO
-        gyro_N = self.gyro
-
-        self.run_fsweep(reptime)
-        
-        self.pause_and_wait()
-
-        self.run_reptime_opt(reptime)
-
-        self.pause_and_wait()
-        
-        reptime = self.results['reptime'].optimal
-        
-        self.run_respro(reptime)
-        
-    
-        self.pause_and_wait()
-        
-        self.signals.status.emit('Tuning pulses')
-        
+    def tune_pulses(self):
         # Tune the pulses
+        self.signals.status.emit('Tuning pulses')
         pump_pulse = self.pulses['pump_pulse']
         ref_pulse = self.pulses['ref_pulse']
         exc_pulse = self.pulses['exc_pulse']
         det_event = self.pulses['det_event']
         
         self.signals.status.emit('Tuning pulses')
-        exc_pulse = self.interface.tune_pulse(exc_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=int(100*self.noise_mode))
-        ref_pulse = self.interface.tune_pulse(ref_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=int(100*self.noise_mode))
-        pump_pulse = self.interface.tune_pulse(pump_pulse, mode="amp_nut", B=LO/gyro_N,LO=LO,reptime=reptime,shots=int(100*self.noise_mode))
+        exc_pulse = self.interface.tune_pulse(exc_pulse, mode="amp_nut", B=self.LO/self.gyro,LO=self.LO,reptime=self.reptime,shots=int(100*self.noise_mode))
+        ref_pulse = self.interface.tune_pulse(ref_pulse, mode="amp_nut", B=self.LO/self.gyro,LO=self.LO,reptime=self.reptime,shots=int(100*self.noise_mode))
+        pump_pulse = self.interface.tune_pulse(pump_pulse, mode="amp_nut", B=self.LO/self.gyro,LO=self.LO,reptime=self.reptime,shots=int(100*self.noise_mode))
 
-        # Run a relaxation experiment
-        self.signals.status.emit('Running relaxation Experiment')
-        self.run_relax(reptime)
-        self.signals.status.emit('Analysing relaxation Experiment')
 
-        self.pause_and_wait()
+    @QtCore.pyqtSlot()    
+    def run(self):
 
-        if ('tau1' in self.user_inputs) and (self.user_inputs['tau1'] != 0):
-            self.signals.status.emit('Skipping QuickDEER')
-        else:
-            self.signals.status.emit('Running QuickDEER')
+        self.reptime = 3e3
+        self.stop_flag = False
 
-            tau2hrs = self.results['relax'].tau2hrs
 
-            self.run_quick_deer(reptime,tau=tau2hrs)
-            self.signals.status.emit('Analysing QuickDEER')
-            self.pause_and_wait()
+        methods = [self.run_fsweep,self.run_reptime_opt,self.run_respro,
+                   self.tune_pulses,self.run_relax,self.run_quick_deer,
+                   self.run_long_deer]
 
-        self.signals.status.emit('Running LongDEER')
-        if ('tau1' in self.user_inputs) and (self.user_inputs['tau1'] != 0):
-            tau1 = self.user_inputs['tau1']
-            tau2 = self.user_inputs['tau2']
-            tau3 = self.user_inputs['tau3']
-            deertype = self.user_inputs['ExpType']
-            self.run_long_deer(reptime,tau1,tau2,tau3,deertype =deertype)
-        else:
-            rec_tau = self.results['quickdeer'].rec_tau_max
-            dt = self.results['quickdeer'].rec_dt * 1e3
-            max_tau = self.results['relax'].max_tau
-            tau = np.min([rec_tau,max_tau])
-            self.run_long_deer(reptime,tau,tau,0.3,dt=dt,deertype ='5pDEER')
-
+        for method in methods:
+            if self.stop_flag:
+                self.signals.finished.emit()
+                return None
+            flag = method()
+            if flag is None:
+                self.pause_and_wait()
+            elif flag == 'skip':
+                continue
+            
+            if self.stop_flag:
+                self.signals.finished.emit()
+                return None
+            
         self.signals.finished.emit()
+
 
     def new_data(self, data):
         self.results = data
@@ -323,4 +323,11 @@ class autoDEERWorker(QtCore.QRunnable):
     def update_LO(self,LO):
         self.LO = LO
 
+    def update_reptime(self,reptime):
+        self.reptime = reptime
+
+    def stop(self):
+        self.stop_flag = True
+        self.signals.status.emit('Stopping experiment')
+        
 
