@@ -457,7 +457,7 @@ def optimise_spectra_position(resonator_profile, fieldsweep, verbosity=0):
     tck_s = splrep(edfs_x, edfs_y, s=smooth_condition)
     xc = signal.correlate(resonator_profile.model_func(x),BSpline_extra(tck_s)(x), mode='same')
     x_shift = np.linspace(-1*shift_range,shift_range,n_points)
-    new_LO = x_shift[xc.argmin()]
+    new_LO = x_shift[np.abs(xc).argmax()]
 
     return new_LO
 

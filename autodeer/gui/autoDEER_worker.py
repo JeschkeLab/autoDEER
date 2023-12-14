@@ -205,7 +205,7 @@ class autoDEERWorker(QtCore.QRunnable):
             self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
             self.signals.status.emit('QuickDEER experiment complete')
 
-    def run_long_deer(self,tau1,tau2,tau3=0, dt=16, deertype='5pDEER'):
+    def run_long_deer(self, dt=16, deertype='5pDEER'):
         self.signals.status.emit('Running LongDEER')
         LO = self.LO
         reptime = self.reptime
@@ -285,6 +285,7 @@ class autoDEERWorker(QtCore.QRunnable):
         ref_pulse = self.interface.tune_pulse(ref_pulse, mode="amp_nut", B=self.LO/self.gyro,LO=self.LO,reptime=self.reptime,shots=int(100*self.noise_mode))
         pump_pulse = self.interface.tune_pulse(pump_pulse, mode="amp_nut", B=self.LO/self.gyro,LO=self.LO,reptime=self.reptime,shots=int(100*self.noise_mode))
 
+        return 'skip'
 
     @QtCore.pyqtSlot()    
     def run(self):

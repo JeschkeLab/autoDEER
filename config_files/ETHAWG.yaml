@@ -28,8 +28,8 @@ autoDEER:
   
   DeerLab:
     nnlsSolver: 'cvx'  # Default: 'cvx'
-    xtol: 1e-8  # Default: 1e-8
-    ftol: 1e-8  # Default: 1e-8
+    xtol: 1e-4  # Default: 1e-8
+    ftol: 1e-4  # Default: 1e-8
     max_nfev: 1e8  # Default: 1e8
     lin_maxiter: 1e4  # Default: 1e4
     lin_tol: 1e-15  # Default: 1e-15
