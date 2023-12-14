@@ -160,8 +160,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
         # seach over all pulses to find the longest pulse using regex
         pulselength = np.max([dataset.attrs[i] for i in dataset.attrs if re.match(r"pulse\d*_tp", i)])
         pulselength /= 1e3 # Convert to us
-        
-    else:ß
+    else:
         if "pulselength" in kwargs:
             pulselength = kwargs.pop("pulselength")/1e3
         else:
