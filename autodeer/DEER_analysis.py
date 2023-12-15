@@ -200,7 +200,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
 
     # Cleanup extra args
-    extra_args = ['tau1','tau2','tau3','exp_type','model','compactness','ROI','verbosity']
+    extra_args = ['tau1','tau2','tau3','exp_type','model','compactness','ROI','verbosity','pulselength']
     for arg in extra_args:
         if arg in kwargs:
             kwargs.pop(arg)
