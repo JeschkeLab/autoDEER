@@ -1387,6 +1387,22 @@ class HahnEchoSequence(Sequence):
 
 # =============================================================================
 
+class T2RelaxationSequence(HahnEchoSequence):
+    """
+    Represents a T2 relaxation sequence. A Hahn Echo where the interpulse delay increases
+    """
+
+    def __init__(self, *, B, LO, reptime, averages, shots, step=20, dim=200, **kwargs) -> None:
+
+        self.tau = Parameter(name="tau", value=500,step=step,dim=dim, unit="ns", description="The interpulse delay",virtual=True)
+        super().__init__(B=B, LO=LO, reptime=reptime, averages=averages, shots=shots,tau=self.tau, **kwargs)
+
+        self.name = "T2 Relaxation"
+        self.evolution([self.tau])
+
+
+# =============================================================================
+
 class FieldSweepSequence(HahnEchoSequence):
     """
     Represents a Field Sweep (EDFS) sequence. 

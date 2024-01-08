@@ -200,7 +200,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
 
     # Cleanup extra args
-    extra_args = ['tau1','tau2','tau3','exp_type','model','compactness','ROI','verbosity']
+    extra_args = ['tau1','tau2','tau3','exp_type','model','compactness','ROI','verbosity','pulselength']
     for arg in extra_args:
         if arg in kwargs:
             kwargs.pop(arg)
@@ -716,7 +716,7 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
             return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best]
     else:
         if full_output:
-            return new_pump_pulse, new_exc_pulse, new_ref_pulse, funct,grid,Jout
+            return new_pump_pulse, new_exc_pulse, new_ref_pulse, funct, grid,Jout
         else:
             return new_pump_pulse, new_exc_pulse, new_ref_pulse,
 

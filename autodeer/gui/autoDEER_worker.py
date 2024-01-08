@@ -1,5 +1,6 @@
 import PyQt6.QtCore as QtCore
-from autodeer import FieldSweepSequence, ResonatorProfileSequence, DEERSequence, RectPulse, ChirpPulse, HSPulse, Detection, DEERCriteria, SNRCriteria, ReptimeScan
+from autodeer import RectPulse, ChirpPulse, HSPulse, Detection, DEERCriteria, SNRCriteria
+from autodeer.sequences import *
 import time
 import numpy as np
 from threadpoolctl import threadpool_limits
@@ -33,6 +34,7 @@ class autoDEERSignals(QtCore.QObject):
     respro_result = QtCore.pyqtSignal(object)
     # optimise_pulses = QtCore.pyqtSignal(object)
     relax_result = QtCore.pyqtSignal(object)
+    T2_result = QtCore.pyqtSignal(object)
     quickdeer_result = QtCore.pyqtSignal(object)
     longdeer_result = QtCore.pyqtSignal(object)
     quickdeer_update = QtCore.pyqtSignal(object)
@@ -142,11 +144,11 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('Resonator Profile complete')
         self.signals.respro_result.emit(self.interface.acquire_dataset())
 
-    def run_relax(self):
+    def run_CP_relax(self):
         '''
         Initialise the runner function for relaxation. 
         '''
-        self.signals.status.emit('Running relaxation Experiment')
+        self.signals.status.emit('Running Carr-Purcell Experiment')
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
@@ -164,15 +166,35 @@ class autoDEERWorker(QtCore.QRunnable):
         relax._estimate_time();
         relax.pulses[1].scale.value = 0
         relax.pulses[3].scale.value = 0
-        self.interface.launch(relax,savename=f"{self.samplename}_relaxation",IFgain=2)
-        self.signals.status.emit('Relaxation experiment running')
+        self.interface.launch(relax,savename=f"{self.samplename}_CP2relax",IFgain=2)
         # self.interface.terminate_at(SNRCriteria(30),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.relax_result.emit(self.interface.acquire_dataset())
-        self.signals.status.emit('Relaxation experiment complete')
+        self.signals.status.emit('Carr-Purcell experiment complete')
         
+    def run_T2_relax(self):
+        self.signals.status.emit('Running T2 experiment')
+        LO = self.LO
+        gyro = self.gyro
+        reptime = self.reptime
+
+        seq = T2RelaxationSequence(B=LO/gyro, LO=LO,reptime=reptime,averages=4,shots=int(50*self.noise_mode),
+            pi2_pulse=self.pulses['exc_pulse'], pi_pulse=self.pulses['ref_pulse'],
+            det_event=self.pulses['det_event'])
         
+        self.interface.launch(seq,savename=f"{self.samplename}_T2relax",IFgain=2)
+        while self.interface.isrunning():
+            time.sleep(self.updaterate)
+        self.signals.T2_result.emit(self.interface.acquire_dataset())
+        self.signals.status.emit('T2relax experiment complete')
+
+
+    def run_2D_relax(self):
+        self.signals.status.emit('Running 2D relaxation experiment')
+        LO = self.LO
+        gyro = self.gyro
+        reptime = self.reptime
 
     def run_quick_deer(self, dt=16):
         if ('tau1' in self.user_inputs) and (self.user_inputs['tau1'] != 0):
@@ -294,8 +316,8 @@ class autoDEERWorker(QtCore.QRunnable):
         self.stop_flag = False
 
 
-        methods = [self.run_fsweep,self.run_reptime_opt,self.run_respro,
-                   self.tune_pulses,self.run_relax,self.run_quick_deer,
+        methods = [self.run_fsweep,self.run_reptime_opt,self.run_respro,self.run_fsweep,
+                   self.tune_pulses,self.run_CP_relax,self.run_T2_relax,self.run_quick_deer,
                    self.run_long_deer]
 
         for method in methods:

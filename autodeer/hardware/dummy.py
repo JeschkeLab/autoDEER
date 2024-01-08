@@ -105,6 +105,8 @@ class dummyInterface(Interface):
             axes, data = _similate_respro(self.cur_exp,self.mode)
         elif isinstance(self.cur_exp, ReptimeScan):
             axes, data = _simulate_reptimescan(self.cur_exp)
+        elif isinstance(self.cur_exp,T2RelaxationSequence):
+            axes, data = _simulate_T2(self.cur_exp)
         else:
             raise NotImplementedError("Sequence not implemented")
 
@@ -237,6 +239,12 @@ def _simulate_CP(sequence):
     data = add_phaseshift(data, 0.05)
     return xaxis, data
 
+def _simulate_T2(sequence):
+    func = lambda x, a, b, e: a*np.exp(-b*x**e)
+    xaxis = val_in_ns(sequence.tau)
+    data = func(xaxis,1,10e-6,1.6)
+    data = add_phaseshift(data, 0.05)
+    return xaxis, data
 
 def _similate_respro(sequence, mode):
 

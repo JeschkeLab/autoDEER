@@ -22,11 +22,14 @@ class CarrPurcellAnalysis:
         # self.data = dataset.data
         if 'tau1' in dataset.coords:
             self.axis = dataset['tau1']
+        elif 'tau' in dataset.coords:
+            self.axis = dataset['tau']
         elif 't' in dataset.coords:
             self.axis = dataset['t']
         else:
             self.axis = dataset['X']
         
+        dataset.epr.correctphasefull
         self.data = dataset.data
         self.dataset = dataset
         # if sequence is None and hasattr(dataset,'sequence'):
@@ -59,7 +62,7 @@ class CarrPurcellAnalysis:
         else:
             raise ValueError("Type must be one of: mono")
         
-    
+        self.fit_type = type
         self.fit_result = curve_fit(self.func, self.axis, data, p0=p0, bounds=bounds)
         return self.fit_result
 
@@ -99,7 +102,7 @@ class CarrPurcellAnalysis:
         return fig
 
     def find_optimal(
-            self, averages: int, SNR_target, target_time: float, target_shrt: float, target_step) -> float:
+            self, SNR_target, target_time: float, target_step, averages=None) -> float:
         """Calculate the optimal inter pulse delay for a given total measurment
         time. 
 
@@ -124,8 +127,14 @@ class CarrPurcellAnalysis:
             The calculated optimal time in us
         """
         # time_per_point = shrt * averages
+        dataset = self.dataset
+        if averages is None:
+            averages = dataset.nAvgs * dataset.shots * dataset.nPcyc
+        target_shrt = dataset.reptime * 1e-6
+
         data = np.abs(self.data)
         data /= np.max(data)
+
         if hasattr(self,"fit_result"):
             calc_data = self.func(self.axis.data,*self.fit_result[0])
         else:

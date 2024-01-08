@@ -130,6 +130,12 @@ def relax_process(dataset):
 
     return CP_data
 
+def T2_process(dataset):
+    CP_data = ad.CarrPurcellAnalysis(dataset)
+    CP_data.fit('double')
+
+    return CP_data
+
 class autoDEERUI(QMainWindow):
 
 
@@ -238,6 +244,11 @@ class autoDEERUI(QMainWindow):
 
     def load_spectrometer_config(self, filename=None):
         
+        if self.current_folder is None:
+            QMessageBox.about(self,'ERORR!', 
+                              'Please open a folder first.')
+            return None
+
         if filename is None:
             filename, _= QFileDialog.getOpenFileName(
                 self,"Select a spectrometer configuration file", str(Path.home()),"Data (*.yaml)")
@@ -628,22 +639,49 @@ class autoDEERUI(QMainWindow):
         self.relax_v_left.addWidget(Navbar)
         self.relax_ax = axs
 
+    def refresh_relax_figure(self):
+        self.relax_ax.cla()
+
+        fig = self.relax_canvas.figure
+        axs = self.relax_ax
+
+        axs.set_xlabel("Time ($\mu s$)")
+        axs.set_ylabel("Signal (A. U.)")
+        
+        if 'relax' in self.current_results:
+            CP_results = self.current_results['relax']
+            CP_data = CP_results.data
+            CP_data /= CP_data.max()
+            if hasattr(CP_results, "fit_result"):
+                axs.plot(CP_results.axis, CP_data, '.', label='CP', color='C1', ms=6)
+                axs.plot(CP_results.axis, CP_results.func(
+                    CP_results.axis, *CP_results.fit_result[0]), label='CP-fit', color='C1', lw=2)
+            else:
+                axs.plot(CP_results.axis, CP_data, label='data', color='C1')
+        
+        if 'T2_relax' in self.current_results:
+            T2_results = self.current_results['T2_relax']
+            T2_data = T2_results.data
+            T2_data /= T2_data.max()
+            if hasattr(T2_results, "fit_result"):
+                axs.plot(T2_results.axis, T2_data, '.', label='T2', color='C2', ms=6)
+                axs.plot(T2_results.axis, T2_results.func(
+                    T2_results.axis, *T2_results.fit_result[0]), label='T2-fit', color='C2', lw=2)
+            else:
+                axs.plot(T2_results.axis, T2_data, label='data', color='C2')
+        self.relax_canvas.draw()
+
     def refresh_relax(self, fitresult):
         self.current_results['relax'] = fitresult
 
-        self.relax_ax.cla()
-        fitresult.plot(axs=self.relax_ax,fig=self.relax_canvas.figure)
-        self.relax_canvas.draw()
-        if hasattr(fitresult, 'sequence'):
-            reptime = fitresult.sequence.reptime.value
-        else:
-            reptime = 3e3
-            
-        # averages = fitresult.dataset.shots.value * fitresult..num_scans.value * 16
-        averages = fitresult.dataset.attrs['shots'] * fitresult.dataset.attrs['nAvgs'] * 16
+        # self.relax_ax.cla()
+        # fitresult.plot(axs=self.relax_ax,fig=self.relax_canvas.figure)
+        # self.relax_canvas.draw()
 
-        tau2hrs = fitresult.find_optimal(averages=averages, SNR_target=45/0.5, target_time=2, target_shrt=reptime*1e-6, target_step=0.015)
-        max_tau = fitresult.find_optimal(averages=averages, SNR_target=45/0.5, target_time=24, target_shrt=reptime*1e-6, target_step=0.015)
+        self.refresh_relax_figure()
+
+        tau2hrs = fitresult.find_optimal(SNR_target=45/0.5, target_time=2, target_step=0.015)
+        max_tau = fitresult.find_optimal(SNR_target=45/0.5, target_time=24, target_step=0.015)
         self.current_results['relax'].tau2hrs = tau2hrs
         self.current_results['relax'].max_tau = max_tau
         self.DipolarEvoMax.setValue(max_tau)
@@ -654,6 +692,26 @@ class autoDEERUI(QMainWindow):
 
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
+        
+    
+    def update_T2(self,dataset=None):
+        if dataset is None:
+            dataset = self.current_data['T2_relax']
+        else:
+            self.current_data['T2_relax'] = dataset
+        
+        # Since the T2 values are not used for anything there is no need pausing the spectrometer    
+        if self.waitCondition is not None: # Wake up the runner thread
+            self.waitCondition.wakeAll()
+
+        worker = Worker(T2_process, dataset)
+        worker.signals.result.connect(self.refresh_T2)
+
+        self.threadpool.start(worker)
+
+    def refresh_T2(self, fitresult):
+        self.current_results['T2_relax'] = fitresult
+        self.refresh_relax_figure()
 
         
     def advanced_mode_inputs(self):
@@ -746,6 +804,8 @@ class autoDEERUI(QMainWindow):
         # self.worker.signals.optimise_pulses.connect(self.optimise_pulses)
         self.worker.signals.relax_result.connect(self.update_relax)
         self.worker.signals.relax_result.connect(lambda x: self.save_data(x,'CP_Q'))
+        self.worker.signals.T2_result.connect(self.update_T2)
+        self.worker.signals.T2_result.connect(lambda x: self.save_data(x,'T2'))
         self.worker.signals.quickdeer_result.connect(self.update_quickdeer)
         self.worker.signals.quickdeer_result.connect(lambda x: self.save_data(x,'DEER_5P_Q_quick'))
         self.worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)

@@ -80,7 +80,8 @@ def get_all_fixed_param(sequence):
                 continue
             if (param.axis == []) and (param.value is not None):
                 fixed_param[f"{type}{i}_{param_name}"] = param.value
-        
+
+    fixed_param['nPcyc'] = sequence.pcyc_dets.shape[0]
     return fixed_param
 
 def create_dataset_from_sequence(data, sequence: Sequence,extra_params={}):
