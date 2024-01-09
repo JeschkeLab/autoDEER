@@ -788,6 +788,8 @@ def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
         single_scan_data = np.zeros(dim, dtype=np.complex128)
         
         for i in range(fixed_param.dim[0]):
+            if stop_flag.is_set():
+                    break
             droped_param.value = fixed_param.get_axis()[i]
             new_seq.evolution(new_params,new_reduce_param)
             
