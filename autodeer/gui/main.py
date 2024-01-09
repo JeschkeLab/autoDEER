@@ -366,6 +366,7 @@ class autoDEERUI(QMainWindow):
         except RuntimeError as e:
             QMessageBox.about(self, 'Connection ERORR!',str(e))
             main_log.error(f"Could not connect to spectrometer. {e}")
+            return None
             
 
         self.connected = True
