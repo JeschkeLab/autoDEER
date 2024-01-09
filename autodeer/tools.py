@@ -6,7 +6,7 @@ from autodeer.dataset import create_dataset_from_bruker
 from autodeer.hardware.ETH_awg_load import uwb_load, uwb_eval_match
 from scipy.io import loadmat
 
-log = logging.getLogger('core.Tools')
+log = logging.getLogger('autoDEER.Tools')
 
 
 def eprload(

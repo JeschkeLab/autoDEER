@@ -15,7 +15,7 @@ import scipy.signal as sig
 from scipy.optimize import minimize,brute
 
 
-log = logging.getLogger('core.DEER')
+log = logging.getLogger('autoDEER.DEER')
 
 
 MODULE_DIR = importlib.util.find_spec('autodeer').submodule_search_locations

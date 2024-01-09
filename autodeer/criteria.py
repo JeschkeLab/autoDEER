@@ -5,7 +5,7 @@ from deerlab.utils import der_snr
 from deerlab import noiselevel
 import logging
 
-log = logging.getLogger('core.terminate')
+log = logging.getLogger('autoDEER.criteria')
 
 
 class Criteria:
@@ -14,18 +14,50 @@ class Criteria:
     only be subclassed and not used directly.
     """
     def __init__(
-            self, name: str, test, description: str = None) -> None:
+            self, name: str, test, description: str = '', end_signal=None) -> None:
  
         self.name = name
         self.description = description
         self.test = test
+        self.end_signal = end_signal
         pass
+
+    def __add__(self, __o:object):
+
+        if not isinstance(__o,Criteria):
+            raise RuntimeError("Only objects of the `Criteria` class can be summed together")
+        
+        new_name = self.name +' + ' + __o.name
+        new_desc = self.description + ' + ' + __o.description
+
+        def new_func(data, verbosity=0):
+            test1 = self.test(data,verbosity)
+            test2 = __o.test(data,verbosity)
+            test = test1 or test2
+            test_msg = f"Test {new_name}: {test}"
+            log.debug(test_msg)
+            return test
+        
+        if callable(self.end_signal) and callable(__o.end_signal):
+            def end_signal():
+                self.end_signal()
+                __o.end_signal()
+        elif callable(self.end_signal):
+            end_signal = self.end_signal
+        elif callable(__o.end_signal):
+            end_signal = __o.end_signal
+        else:
+            end_signal = None
+        
+        new_crit = Criteria(new_name,new_func,new_desc,end_signal=end_signal)
+
+        return new_crit
 
 
 class TimeCriteria(Criteria):
     def __init__(
-            self, name: str, end_time: float, description: str = None,
-            ) -> None:
+            self, name: str, end_time: float, description: str = '',
+            **kwargs) -> None:
         """Criteria testing for a specific finishing time. The finishing time 
         is given as absolute time in the locale of the computer, it is *not* 
         how the long the measurment continues for. 
@@ -35,7 +67,7 @@ class TimeCriteria(Criteria):
         name : str
             _description_
         end_time : float
-            Finishing time
+            Finishing time in seconds since epoch
         description : str, optional
             _description_, by default None
         """
@@ -45,13 +77,13 @@ class TimeCriteria(Criteria):
 
             return now > end_time
 
-        super().__init__(name, test_func, description)
+        super().__init__(name, test_func, description,**kwargs)
 
 
 class SNRCriteria(Criteria):
 
     def __init__(
-            self, SNR_target: int, description: str = None,verbosity=0) -> None:
+            self, SNR_target: int, description: str = '',verbosity=0,**kwargs) -> None:
         """Criteria testing for signal to noise ratio. This checks the SNR of 
         the normalised absolute data using the deerlab SNR noise estimation
         which is based on the work by Stoher et. al. [1]
@@ -81,18 +113,18 @@ class SNRCriteria(Criteria):
             std = der_snr(np.abs(norm_data))
             snr = 1/std
             test = snr > SNR_target
-            test_msg = f"Test: {test}\t - SNR:{snr}"
+            test_msg = f"Test {self.name}: {test}\t - SNR:{snr}"
             log.debug(test_msg)
             if verbosity>1:
                 print(test_msg)
             return test
 
-        super().__init__("SNR Criteria", test_func, description)
+        super().__init__("SNR Criteria", test_func, description,**kwargs)
 
 
 class DEERCriteria(Criteria):
 
-    def __init__(self, mode="Speed", model=None, verbosity=0, update_func=None) -> None:
+    def __init__(self, mode="Speed", model=None, verbosity=0, update_func=None,**kwargs) -> None:
         """Criteria for running DEER experiments.
 
         Mode
@@ -157,11 +189,11 @@ class DEERCriteria(Criteria):
             
             if update_func is not None:
                 update_func(fit)
-            test_msg = f"Test: {test}\t - MNR:{fit.MNR}"
+            test_msg = f"Test {self.name}: {test}\t - MNR:{fit.MNR}"
             log.debug(test_msg)
             if verbosity > 0:
                 print(test_msg)
             
             return test
         
-        super().__init__(name, test_func, description)
+        super().__init__(name, test_func, description,**kwargs)

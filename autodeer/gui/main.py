@@ -21,7 +21,7 @@ import datetime
 import logging
 from autodeer.Logging import setup_logs, change_log_level
 
-main_log = logging.getLogger('autoDEER')
+# main_log = logging.getLogger('autoDEER')
 from queue import Queue
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
@@ -228,7 +228,7 @@ class autoDEERUI(QMainWindow):
         setup_logs(self.current_folder)
         global main_log
         main_log = logging.getLogger('autoDEER')
-        main_log.debug(f"Loading folder {file}")
+        main_log.info(f"Loading folder {file}")
     
     def load_epr_file(self, store_location):
 
@@ -275,6 +275,8 @@ class autoDEERUI(QMainWindow):
             change_log_level(loglevels['autoDEER'],loglevels['interface'])
         except KeyError:
             pass
+        
+        main_log.debug("debug level test")
 
 
         spectrometer = config['Spectrometer']
@@ -745,7 +747,7 @@ class autoDEERUI(QMainWindow):
             self.current_data['longdeer'] = dataset
 
         self.Tab_widget.setCurrentIndex(4)
-        self.longDEER.current_data['longdeer'] = dataset
+        self.longDEER.current_data['quickdeer'] = dataset
         self.longDEER.update_inputs_from_dataset()
         self.longDEER.update_figure()
         def update_func(x):
@@ -769,8 +771,14 @@ class autoDEERUI(QMainWindow):
         main_log.info(f"Reptime {opt_reptime*1e-3:.2g} ms")
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
-        
-
+    
+    def timeout(self):
+        """
+        Creates a pop up box as the experiment has timed out
+        """
+        msg = f'AutoDEER has timedout. The maximum specified time was {self.MaxTime.value()}'
+        QMessageBox.about(self,'Warning!', msg)
+        main_log.warning(msg)
 
     def RunFullyAutoDEER(self):
 
@@ -815,13 +823,13 @@ class autoDEERUI(QMainWindow):
         self.worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
         self.worker.signals.longdeer_update.connect(self.longDEER.refresh_deer)
         self.worker.signals.longdeer_result.connect(lambda x: self.save_data(x,'DEER_5P_Q_long'))
-        
 
         self.worker.signals.longdeer_result.connect(self.update_longdeer)
 
 
         self.worker.signals.reptime_scan_result.connect(self.update_reptime)
 
+        self.worker.signals.timeout.connect(self.timeout)
         self.worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
         self.worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
         self.worker.signals.finished.connect(lambda: self.resonatorComboBox.setEnabled(True))
