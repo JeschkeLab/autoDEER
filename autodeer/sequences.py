@@ -208,13 +208,7 @@ class Sequence:
         """
         self._buildPhaseCycle()
         acqs = self.averages.value * self.shots.value
-        if hasattr(self, 'pcyc_dets'):
-            acqs *= self.pcyc_dets.shape[0]
-        if hasattr(self, 'progTable'):
-            _, pos = np.unique(self.progTable['axID'], return_index=True)
-            for i in pos:
-                acqs *= self.progTable['axis'][i].shape[0]
-        
+        acqs *= np.prod([np.prod(param.dim) for param in self.evo_params])        
         time = acqs * self.reptime.value * 1e-6
 
         self.time = Parameter(name="time", value=f"{(time // 3600):.0f}:{(time % 3600) // 60:.0f}:{(time % 60):.0f}", unit="HH:MM:SS",
@@ -262,6 +256,7 @@ class Sequence:
         return self.pcyc_vars, self.pcyc_cycles, self.pcyc_dets
 
     def evolution(self, params, reduce=[]):
+        self.evo_params = params
         self.axes_uuid = [param.uuid for param in params]
         self.reduce_uuid = [param.uuid for param in reduce]
 
@@ -300,8 +295,14 @@ class Sequence:
                             else:
                                 progTable["reduce"].append(False)
         self.progTable = progTable
+        self._estimate_time()
         return self.progTable
     
+    @property
+    def seqtable_steps(self):
+        if len(self.evo_params) > 0:
+            return self.pcyc_dets.shape[0] * (len(self.pcyc_vars)+1) * np.prod([np.prod(param.dim) for param in self.evo_params])
+
     def shift_detfreq_to_zero(self):
         det_pulse = None
         for pulse in self.pulses:
@@ -737,6 +738,7 @@ class DEERSequence(Sequence):
 
         """
         name = "DEER sequence"
+        self.tau1us = tau1
         self.tau1 = Parameter(name="tau1", value=tau1 * 1e3, unit="ns", description="The first interpulse delays")
         self.tau2 = Parameter(name="tau2", value=tau2 * 1e3, unit="ns", description="The second interpulse delays")
         if tau3 is not None:
@@ -746,7 +748,9 @@ class DEERSequence(Sequence):
 
         self.dt = dt
         self.deadtime = 200
-        self.ESEEM_avg = ESEEM_avg
+        self.ESEEM = False
+        self.add_ESEEM_avg(ESEEM_avg)
+
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
@@ -759,6 +763,22 @@ class DEERSequence(Sequence):
             self.pump_pulse = kwargs["pump_pulse"]
         if "det_event" in kwargs:
             self.det_event = kwargs["det_event"]
+        
+    def add_ESEEM_avg(self, type=None):
+        if type is None:
+            self.tau1 = Parameter(name="tau1", value=self.tau1us * 1e3, unit="ns", description="The first interpulse delays",virtual=True)
+            self.ESEEM=False
+        elif (type.lower() == 'proton') or (type.lower() == 'p') or (type.lower() == 'h'):
+            self.tau1 = Parameter(
+                name="tau1", value=self.tau1us * 1e3, unit="ns", step=8, dim=8,
+                description="The first interpulse delays with proton ESEEM averaging",virtual=True)
+            self.ESEEM=True
+        elif (type.lower() == 'deuteron') or (type.lower() == 'd'):
+            self.tau1 = Parameter(
+                name="tau1", value=self.tau1us * 1e3, unit="ns", step=16, dim=8,
+                description="The first interpulse delays with deuteron ESEEM averaging",virtual=True)
+            self.ESEEM=True
+
 
     def three_pulse(self, tp=16):
         """
@@ -883,20 +903,10 @@ class DEERSequence(Sequence):
 
         if relaxation:
             self.evolution([self.tau2])
-
+        elif self.ESEEM:
+            self.evolution([self.t,self.tau1],[self.tau1])
         else:
             self.evolution([self.t])
-        # if self.ESEEM_avg is not None:
-        #     if self.ESEEM_avg.lower() == "proton":
-        #         ESEEM_axis = np.arange(0,8) * 8
-        #     elif self.ESEEM_avg.lower() == "deuteron":
-        #         ESEEM_axis = np.arange(0,8) * 16
-        #     self.addPulsesProg(
-        #         [1, 3, 4],
-        #         ["t"],
-        #         1,
-        #         [r1+ ESEEM_axis, r2 + 2*ESEEM_axis, d + 2*ESEEM_axis])
-        # pass
 
 
     def five_pulse(self, tp=16, relaxation=False, re_step=50, re_dim=100):
@@ -1400,7 +1410,6 @@ class T2RelaxationSequence(HahnEchoSequence):
         self.name = "T2 Relaxation"
         self.evolution([self.tau])
 
-
 # =============================================================================
 
 class FieldSweepSequence(HahnEchoSequence):
@@ -1598,12 +1607,6 @@ class CarrPurcellSequence(Sequence):
             self.addPulse(Detection(t=step*(2*n), tp=512))
         
         self.evolution([step])
-        # self.addPulsesProg(
-        #     list(range(1,n+2)),
-        #     ["t"]*(n+1),
-        #     0,
-        #     axis,
-        #     multipliers=multipliers)
 
 # =============================================================================
 

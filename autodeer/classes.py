@@ -243,6 +243,15 @@ class Parameter:
             return axes[0]
         else:
             return axes
+    
+    @property
+    def dim(self):
+        if self.axis is []:
+            return ()
+        dims = []
+        for ax in self.axis:
+            dims.append(ax['axis'].shape[0])
+        return tuple(dims)
 
     def remove_dynamic(self):
         self.axis = []

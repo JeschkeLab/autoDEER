@@ -13,8 +13,16 @@ import scipy.signal as sig
 from scipy.io import loadmat
 from autodeer.utils import transpose_list_of_dicts
 from autodeer.hardware.ETH_awg_load import uwb_eval_match
-import warnings
+from autodeer.utils import save_file, transpose_list_of_dicts, transpose_dict_of_list
+from autodeer import create_dataset_from_sequence
 
+from autodeer.hardware.Bruker_tools import build_unique_progtable
+import copy
+import threading
+import warnings
+import logging
+
+log = logging.getLogger("interface")
 class ETH_awg_interface(Interface):
     """
     Represents the interface for connecting to Andrin Doll style spectrometers.
@@ -43,6 +51,8 @@ class ETH_awg_interface(Interface):
         self.dig_rate = dig_rate
         self.pulses = {}
         self.cur_exp = None
+        self.bg_data = None
+        self.bg_thread = None
         pass
 
     def connect(self, session=None):
@@ -74,7 +84,15 @@ class ETH_awg_interface(Interface):
         self.engine = matlab.engine.connect_matlab(session)
         self.workspace = self.engine.workspace
 
-    def acquire_dataset(self, options={}, verbosity=0):
+    def acquire_dataset(self,verbosity=0):
+        if self.bg_data is None:
+            data = self.acquire_dataset_from_matlab(verbosity=verbosity)
+        else:
+            data = create_dataset_from_sequence(self.bg_data, self.cur_exp)
+
+        return super().acquire_dataset(data)
+    
+    def acquire_dataset_from_matlab(self, verbosity=0,**kwargs):
         """ Acquire and return the current or most recent dataset.
 
         Returns
@@ -109,7 +127,11 @@ class ETH_awg_interface(Interface):
                 self.engine.dig_interface('savenow')
                 Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
                 # data = uwb_load(Matfile, options=options, verbosity=verbosity,sequence=self.cur_exp)
-                data = uwb_eval_match(Matfile, self.cur_exp,verbosity=verbosity)
+                if 'cur_exp' in kwargs:
+                    exp = kwargs['cur_exp']
+                else:
+                    exp = self.cur_exp
+                data = uwb_eval_match(Matfile, exp,verbosity=verbosity)
             except OSError:
                 time.sleep(10)
             except IndexError:
@@ -117,7 +139,7 @@ class ETH_awg_interface(Interface):
             except ValueError:
                 time.sleep(10)
             else:
-                return super().acquire_dataset(data)
+                return data
         raise RuntimeError("Data was unable to be retrieved")
         
     def launch(self, sequence , savename: str, IFgain: int = 0):
@@ -132,6 +154,18 @@ class ETH_awg_interface(Interface):
         IFgain : int
             The IF gain, either [0,1,2], default 0.
         """
+        self.bg_thread=None
+        self.bg_data = None
+        if sequence.seqtable_steps > 2**18:
+            log.warning('Sequence too long. Breaking the problem down...')
+            self.launch_long(sequence,savename,IFgain)
+        try:
+            self.launch_normal(sequence,savename,IFgain)
+        except matlab.engine.MatlabExecutionError:
+            log.warning('Sequence too long. Breaking the problem down...')
+            self.launch_long(sequence,savename,IFgain)
+
+    def launch_normal(self, sequence , savename: str, IFgain: int = 0):
         struct = self._build_exp_struct(sequence)
         struct['savename'] = savename
         struct['IFgain'] = IFgain
@@ -139,8 +173,44 @@ class ETH_awg_interface(Interface):
         self.workspace['exp'] = struct
         self.engine.eval('launch(exp)', nargout=0)
 
+
+    def launch_long(self, sequence , savename: str, IFgain: int = 0, axID=-1):
+        """Launch a sequence on the spectrometer that is too long for a single file.
+        This is to get around the issues with the sequence table by running a background loop
+        that takes control. 
+
+        **current issues**:
+        - uses some bruker tools functions
+        - only works for a single averages
+        - creates many extra files
+
+        Parameters
+        ----------
+        sequence : Sequence
+            The pulse sequence to launched.
+        savename : str
+            The save name for the file.
+        IFgain : int
+            The IF gain, either [0,1,2], default 0.
+        """
+        dim = []
+        for p in sequence.evo_params:
+            if (p.uuid not in sequence.reduce_uuid):
+                for item in p.dim:
+                    dim.append(item)
+        self.stop_flag = threading.Event()
+        self.bg_thread = threading.Thread(target=bg_thread,args=[self,sequence,savename,IFgain,axID,self.stop_flag])
+        self.bg_data = np.zeros(dim,dtype=np.complex128)
+
+        self.bg_thread.start()
+        log.debug('Background thread starting')
+
     def isrunning(self) -> bool:
-        state = bool(self.engine.dig_interface('savenow'))
+        if self.bg_thread is None:
+            state = bool(self.engine.dig_interface('savenow'))
+            return state
+        else:
+            state= self.bg_thread.is_alive()
         return state
     
     def tune_rectpulse(self,*,tp, LO, B, reptime, shots=400):
@@ -677,8 +747,62 @@ class ETH_awg_interface(Interface):
     def terminate(self):
         """ Stops the current experiment
         """
-        self.engine.dig_interface('terminate', nargout=0)
+        if self.bg_thread is None:
+            self.engine.dig_interface('terminate', nargout=0)
+        else:
+            self.engine.dig_interface('terminate', nargout=0)
+            self.stop_flag.set()
         pass
 
 
 
+def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
+
+    # Add averaging loop here
+    dim = []
+    for p in seq.evo_params:
+        if (p.uuid not in seq.reduce_uuid):
+            for item in p.dim:
+                dim.append(item)
+
+
+    new_seq = seq.copy()
+    new_seq.averages.value=1
+    new_params = copy.copy(seq.evo_params)
+    droped_param = new_params.pop(axID)
+    fixed_param = seq.evo_params[axID]
+
+    # is removed axis a reduced axis
+    if fixed_param.uuid in seq.reduce_uuid:
+        reduced = True
+    new_reduce_param = []
+    for p in new_params:
+        if p.uuid == fixed_param.uuid:
+            continue
+        elif p.uuid in seq.reduce_uuid:
+            new_reduce_param.append(p)
+
+    
+    nAvg=seq.averages.value
+    for iavg in range(nAvg):    
+        single_scan_data = np.zeros(dim, dtype=np.complex128)
+        
+        for i in range(fixed_param.dim[0]):
+            droped_param.value = fixed_param.get_axis()[i]
+            new_seq.evolution(new_params,new_reduce_param)
+            
+            interface.launch_normal(new_seq, savename=f"{savename}_avg{iavg}of{nAvg}_{i}of{fixed_param.dim[0]}",IFgain=IFgain)
+
+            while bool(interface.engine.dig_interface('savenow')):
+                if stop_flag.is_set():
+                    break
+                time.sleep(1)
+
+            if reduced:
+                single_scan_data = interface.acquire_dataset_from_matlab(cur_exp=new_seq).data
+            else:
+                single_scan_data[:,i] = interface.acquire_dataset_from_matlab(cur_exp=new_seq).data
+        
+        if stop_flag.is_set():
+            break
+        interface.bg_data += single_scan_data
