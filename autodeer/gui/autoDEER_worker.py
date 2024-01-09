@@ -1,5 +1,5 @@
 import PyQt6.QtCore as QtCore
-from autodeer import RectPulse, ChirpPulse, HSPulse, Detection, DEERCriteria, SNRCriteria
+from autodeer import RectPulse, ChirpPulse, HSPulse, Detection, DEERCriteria, SNRCriteria, TimeCriteria
 from autodeer.sequences import *
 import time
 import numpy as np
@@ -40,6 +40,7 @@ class autoDEERSignals(QtCore.QObject):
     quickdeer_update = QtCore.pyqtSignal(object)
     longdeer_update = QtCore.pyqtSignal(object)
     reptime_scan_result = QtCore.pyqtSignal(object)
+    timeout = QtCore.pyqtSignal()
     
 
 class autoDEERWorker(QtCore.QRunnable):
@@ -89,7 +90,8 @@ class autoDEERWorker(QtCore.QRunnable):
             self.cores = kwargs['cores']
         else:
             self.cores = 1
-
+        
+        self.EndTimeCriteria = TimeCriteria('End Time',time.time() + self.user_inputs['MaxTime']*3600, "Overall end time",end_signal=self.signals.timeout.emit)
 
         # # Add the callback to our kwargs
         # self.kwargs['progress_callback'] = self.signals.progress
@@ -143,6 +145,14 @@ class autoDEERWorker(QtCore.QRunnable):
         #     time.sleep(self.updaterate)
         self.signals.status.emit('Resonator Profile complete')
         self.signals.respro_result.emit(self.interface.acquire_dataset())
+        self.pause_and_wait()
+        if np.abs(LO-self.LO) > 0.1:
+            # Rerun Resonator Profile
+            self.run_respro()
+
+        return 'skip'
+            
+
 
     def run_CP_relax(self):
         '''
@@ -221,9 +231,15 @@ class autoDEERWorker(QtCore.QRunnable):
             else:
                 deer.select_pcyc("DC")
             deer._estimate_time();
+
+            # build criteria
+            DEER_crit = DEERCriteria(mode="speed",verbosity=2,update_func=self.signals.quickdeer_update.emit)
+            time_crit = TimeCriteria('Max time criteria', time.time() + 4*60*60 ,'Max time criteria')
+            total_crit = DEER_crit + time_crit
+
             self.interface.launch(deer,savename=f"{self.samplename}_quickdeer",IFgain=2)
             with threadpool_limits(limits=self.cores, user_api='blas'):
-                self.interface.terminate_at(DEERCriteria(mode="speed",verbosity=2,update_func=self.signals.quickdeer_update.emit),verbosity=2,test_interval=0.5)
+                self.interface.terminate_at(total_crit,verbosity=2,test_interval=0.5)
             self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
             self.signals.status.emit('QuickDEER experiment complete')
 
@@ -273,10 +289,14 @@ class autoDEERWorker(QtCore.QRunnable):
             deer.select_pcyc("8step_3p")
 
         deer._estimate_time();
+        # build criteria
+        DEER_crit = DEERCriteria(mode="high",verbosity=2,update_func=self.signals.longdeer_update.emit)
+        total_crit = DEER_crit + self.EndTimeCriteria
+
         self.interface.launch(deer,savename=f"{self.samplename}_deer"+savename_suffix,IFgain=2)
         time.sleep(30) # Always wait for the experiment to properly start
         with threadpool_limits(limits=self.cores, user_api='blas'):
-            self.interface.terminate_at(DEERCriteria(mode="high",verbosity=2,update_func=self.signals.longdeer_update.emit),verbosity=2,test_interval=0.5) # Change criteria backagain
+            self.interface.terminate_at(total_crit,verbosity=2,test_interval=0.5) # Change criteria backagain
         self.signals.longdeer_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('Long DEER experiment complete')
 

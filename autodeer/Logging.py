@@ -42,25 +42,25 @@ def setup_logs(folder: str):
     formatter = logging.Formatter(
         '%(asctime)s [%(name)s] - %(levelname)s: %(message)s')
 
-    # A new log is created every week, after 4 weeks the oldest is deleated.
-    # This might be changed to daily at a later date, we will see how it goes
+    autoDEER_log = logging.getLogger('autoDEER')
+    interface_log = logging.getLogger('interface')
     logHandler_core = handlers.TimedRotatingFileHandler(
         os.path.join(folder,'autoDEER.log'), when='D', backupCount=4)
-    logHandler_core.setLevel(logging.INFO)
     logHandler_core.setFormatter(formatter)
-    logging.getLogger('autoDEER').addHandler(logHandler_core)
+    autoDEER_log.setLevel(logging.INFO)
+    autoDEER_log.addHandler(logHandler_core)
 
     QTHandler = QtLogHandler()
-    QTHandler.setLevel(logging.INFO)
     QTHandler.setFormatter(DictFormater())
-    logging.getLogger('autoDEER').addHandler(QTHandler)
+    autoDEER_log.addHandler(QTHandler)
 
     logHandler_hardware = handlers.TimedRotatingFileHandler(
         os.path.join(folder,'interface.log'), when='D', backupCount=4)
-    logHandler_hardware.setLevel(logging.INFO)
     logHandler_hardware.setFormatter(formatter)
-    logging.getLogger('interface').addHandler(logHandler_hardware)
-    logging.getLogger('interface').addHandler(QTHandler)
+    interface_log.setLevel(logging.INFO)
+    interface_log.addHandler(logHandler_hardware)
+    interface_log.addHandler(QTHandler)
+
 
 def change_log_level(core='INFO',interface='INFO'):
     """
@@ -74,4 +74,7 @@ def change_log_level(core='INFO',interface='INFO'):
         The log level for the hardware logger.
     """
     logging.getLogger('autoDEER').setLevel(core)
+    logging.getLogger('autoDEER').info(f'Level set to {core}')
     logging.getLogger('interface').setLevel(interface)
+    logging.getLogger('interface').info(f'Level set to {interface}')
+

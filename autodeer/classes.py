@@ -115,6 +115,8 @@ class Interface:
                         print("Sleeping")
                     time.sleep(test_interval_seconds - (end_time - start_time))
 
+        if callable(criterion.end_signal):
+            criterion.end_signal()
         self.terminate()
         pass
 

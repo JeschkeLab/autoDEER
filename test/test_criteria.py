@@ -49,3 +49,16 @@ def test_DEERCriteria():
     criteria = DEERCriteria("SPEED")
     assert criteria.test(create_DEER_data(50)) == True
     assert criteria.test(create_DEER_data(5)) == False
+
+def test_add_criteria():
+    criteria1 = SNRCriteria(20)
+    now = time.time()
+    criteria2 = TimeCriteria("Test Criteria", now, "")
+
+    criteria12 = criteria1 + criteria2
+
+    assert criteria12.name == criteria1.name + ' + ' + criteria2.name
+    assert criteria12.description == criteria1.description + ' + ' + criteria2.description
+
+    assert criteria12.test(create_DEER_data(30)) == True
+    assert criteria12.test(create_DEER_data(15)) == False
