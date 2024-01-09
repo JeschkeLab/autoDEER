@@ -3,6 +3,9 @@ import time
 import numpy as np
 from deerlab.utils import der_snr
 from deerlab import noiselevel
+import logging
+
+log = logging.getLogger('core.terminate')
 
 
 class Criteria:
@@ -78,8 +81,10 @@ class SNRCriteria(Criteria):
             std = der_snr(np.abs(norm_data))
             snr = 1/std
             test = snr > SNR_target
+            test_msg = f"Test: {test}\t - SNR:{snr}"
+            log.debug(test_msg)
             if verbosity>1:
-                print(f"Test: {test}\t - SNR:{snr}")
+                print(test_msg)
             return test
 
         super().__init__("SNR Criteria", test_func, description)
@@ -152,9 +157,10 @@ class DEERCriteria(Criteria):
             
             if update_func is not None:
                 update_func(fit)
-            
+            test_msg = f"Test: {test}\t - MNR:{fit.MNR}"
+            log.debug(test_msg)
             if verbosity > 0:
-                print(f"Test: {test}\t - MNR:{fit.MNR}")
+                print(test_msg)
             
             return test
         
