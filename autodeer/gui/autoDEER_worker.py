@@ -143,6 +143,14 @@ class autoDEERWorker(QtCore.QRunnable):
         #     time.sleep(self.updaterate)
         self.signals.status.emit('Resonator Profile complete')
         self.signals.respro_result.emit(self.interface.acquire_dataset())
+        self.pause_and_wait()
+        if np.abs(LO-self.LO) > 0.1:
+            # Rerun Resonator Profile
+            self.run_respro()
+        
+        return 'skip'
+            
+
 
     def run_CP_relax(self):
         '''

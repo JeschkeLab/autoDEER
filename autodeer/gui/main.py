@@ -318,7 +318,7 @@ class autoDEERUI(QMainWindow):
         self.resonatorComboBox.clear()
         self.resonatorComboBox.addItems(self.config['Resonators'].keys())
         self.resonatorComboBox.currentIndexChanged.connect(self.select_resonator)
-        self.fcDoubleSpinBox.valueChanged.connect(self.select_resonator)
+        self.fcDoubleSpinBox.valueChanged.connect(self.change_LO)
 
         if len(resonator_list) == 0:
             QMessageBox.about(self,'ERORR!', 'No resonators found in config file!')
@@ -352,6 +352,10 @@ class autoDEERUI(QMainWindow):
         main_log.info(f"Selecting resonator {key}")
         self.LO = self.config['Resonators'][key]['Center Freq']
         self.fcDoubleSpinBox.setValue(self.LO)
+        main_log.info(f"Setting LO to {self.LO} GHz")
+    
+    def change_LO(self):
+        self.LO = self.fcDoubleSpinBox.value()
         main_log.info(f"Setting LO to {self.LO} GHz")
 
     def connect_spectrometer(self):
@@ -508,13 +512,13 @@ class autoDEERUI(QMainWindow):
             if self.worker is not None:
                 self.worker.update_LO(self.LO)
             print(f"New LO frequency: {self.LO:.2f} GHz")
-            main_log.info(f"Setting LO to {self.LO} GHz")
+            main_log.info(f"Setting LO to {self.LO:.6f} GHz")
         else:
             fitresult = args[0]
 
         self.current_results['respro'] = fitresult
-        # if self.waitCondition is not None: # Wake up the runner thread
-        #     self.waitCondition.wakeAll()
+        if self.waitCondition is not None: # Wake up the runner thread
+            self.waitCondition.wakeAll()
             
         self.respro_ax.cla()
 
@@ -531,7 +535,7 @@ class autoDEERUI(QMainWindow):
         self.qDoubleSpinBox.setValue(fitresult.results.q)
         self.qCI.setText(f"({fitresult.results.qUncert.ci(95)[0]:.2f},{fitresult.results.qUncert.ci(95)[1]:.2f})")
         self.Tab_widget.setCurrentIndex(2)
-        main_log.info(f"Resonator centre frequency {fitresult.results.fc:.2f} GHz")
+        main_log.info(f"Resonator centre frequency {fitresult.results.fc:.4f} GHz")
         self.optimise_pulses_button()
 
 
