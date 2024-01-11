@@ -276,8 +276,6 @@ class autoDEERUI(QMainWindow):
         except KeyError:
             pass
         
-        main_log.debug("debug level test")
-
 
         spectrometer = config['Spectrometer']
 
@@ -348,6 +346,12 @@ class autoDEERUI(QMainWindow):
 
         self.q_DEER.DL_params = self.DL_params
         self.longDEER.DL_params = self.DL_params
+
+        try:
+            self.waveform_precision = spectrometer['Bridge']['Pulse dt']
+        except KeyError:
+            self.waveform_precision = 1 
+
 
     def select_resonator(self):
         key = self.resonatorComboBox.currentText()
@@ -739,6 +743,20 @@ class autoDEERUI(QMainWindow):
         self.q_DEER.update_figure()
         def update_func(x):
             self.current_results['quickdeer'] = x
+            rec_tau = self.results['quickdeer'].rec_tau_max
+            dt = self.results['quickdeer'].rec_dt * 1e3
+            dt = ad.round_step(dt,self.waveform_precision)
+            max_tau = self.results['relax'].max_tau
+            tau = np.min([rec_tau,max_tau])
+            tau1 = ad.round_step(tau,self.waveform_precision)
+            tau2 = ad.round_step(tau,self.waveform_precision)
+            tau3 = 0.3
+            self.worker.update_deersettings(
+                tau1=tau1,
+                tau2=tau2,
+                tau3=tau3,
+                dt=dt
+            )
         self.q_DEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
 
     def update_longdeer(self, dataset=None):
@@ -751,8 +769,10 @@ class autoDEERUI(QMainWindow):
         self.longDEER.current_data['quickdeer'] = dataset
         self.longDEER.update_inputs_from_dataset()
         self.longDEER.update_figure()
+        
         def update_func(x):
             self.current_results['longdeer'] = x
+        
         self.longDEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
 
     def update_reptime(self, dataset=None):
