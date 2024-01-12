@@ -743,8 +743,8 @@ class autoDEERUI(QMainWindow):
         self.q_DEER.update_figure()
         def update_func(x):
             self.current_results['quickdeer'] = x
-            rec_tau = self.results['quickdeer'].rec_tau_max
-            dt = self.results['quickdeer'].rec_dt * 1e3
+            rec_tau = self.current_data['quickdeer'].rec_tau_max
+            dt = self.current_data['quickdeer'].rec_dt * 1e3
             dt = ad.round_step(dt,self.waveform_precision)
             max_tau = self.results['relax'].max_tau
             tau = np.min([rec_tau,max_tau])

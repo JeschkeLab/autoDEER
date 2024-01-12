@@ -17,10 +17,14 @@ Spectrometer:
     Pulse dt: 2  #ns
     Det dt: 0.5  #ns
     Det res: 8  #bit
+    Video BW: 20
 
 Resonators:
   Pent Loop-gap:
-    Center Freq: 34.462 #GHz
+    Center Freq: 34.265 #GHz
+    Q: 80
+  Three Loop-gap:
+    Center Freq: 33.976 #GHz
     Q: 80
 
 autoDEER:

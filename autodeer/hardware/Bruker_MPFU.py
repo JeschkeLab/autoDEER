@@ -3,7 +3,7 @@ from autodeer.pulses import Delay, Detection, RectPulse
 from autodeer.hardware.XeprAPI_link import XeprAPILink
 from autodeer.hardware.Bruker_tools import PulseSpel, run_general,build_unique_progtable,PSPhaseCycle, write_pulsespel_file
 from autodeer.sequences import Sequence, HahnEchoSequence
-from autodeer.utils import save_file, transpose_list_of_dicts, transpose_dict_of_list
+from autodeer.utils import save_file, transpose_list_of_dicts, transpose_dict_of_list, round_step
 from autodeer import create_dataset_from_sequence
 
 import tempfile
@@ -18,7 +18,10 @@ import os
 from pathlib import Path
 import datetime
 from deerlab import correctphase
+import matplotlib.pyplot as plt
+import logging
 # =============================================================================
+hw_log = logging.getLogger('interface.Xepr')
 
 
 class BrukerMPFU(Interface):
@@ -73,15 +76,36 @@ class BrukerMPFU(Interface):
         self.pool = QThreadPool()
         self.savename = ''
         self.savefolder = str(Path.home())
+        self.setup_flag=False
         
         super().__init__()
 
 
-    def connect(self) -> None:
+    def connect(self, d0=None) -> None:
 
         self.api.connect()
+
+        time.sleep(1)
+        self.setup(d0)
+        
         return super().connect()
 
+    def setup(self,d0=None):
+
+        self.api.hidden['BrPlsMode'].value = True
+        self.api.hidden['OpMode'].value = 'Operate'
+        self.api.hidden['RefArm'].value = 'On'
+
+        self.api.cur_exp['VideoBW'].value = self.bridge_config['Video BW']
+        if d0 is None:
+            self.calc_d0()
+        else:
+            self.d0 = d0
+        self.api.hidden['Detection'].value = 'Signal'
+        self.setup_flag = True
+        pass
+    
+    
     def acquire_dataset(self):
         if self.bg_data is None:
             if not self.isrunning():
@@ -188,21 +212,30 @@ class BrukerMPFU(Interface):
         if update_pulsespel:
             # PSpel = PulseSpel(sequence, MPFU=self.MPFU)
             
-            def_file, exp_file = write_pulsespel_file(sequence,False,MPFU_chans)
+            def_text, exp_text = write_pulsespel_file(sequence,False,MPFU_chans)
             
-            # PSpel.save(PSpel_file)
-            try:
-                os.remove(PSpel_file +'.def')
-            except OSError:
-                pass
-            try:
-                os.remove(PSpel_file +'.exp')
-            except OSError:
-                pass
-            save_file(PSpel_file +'.def',def_file)
-            save_file(PSpel_file +'.exp',exp_file)
-        
-        
+            verbMsgParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELVerbMsg')
+            plsSPELCmdParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELCmd')
+            self.api.XeprCmds.aqPgSelectBuf(1)
+            self.api.XeprCmds.aqPgSelectBuf(2)
+            self.api.XeprCmds.aqPgSelectBuf(3)
+
+            self.api.cur_exp.getParam('*ftEpr.PlsSPELGlbTxt').value = def_text
+            self.api.XeprCmds.aqPgShowDef()
+
+            plsSPELCmdParam.value=3
+            time.sleep(5)
+            # while not "The variable values are set up" in verbMsgParam.value:
+            #     time.sleep(0.1)
+
+            self.api.XeprCmds.aqPgSelectBuf(2)
+
+            self.api.cur_exp.getParam('*ftEpr.PlsSPELPrgTxt').value = exp_text
+            plsSPELCmdParam.value=7
+            time.sleep(5)
+            # while not "Second pass ended" in verbMsgParam.value:
+            #     time.sleep(0.1)
+                
         self.api.set_field(sequence.B.value)
         self.api.set_freq(sequence.LO.value)
         
@@ -211,13 +244,19 @@ class BrukerMPFU(Interface):
             B_axis = sequence.progTable['axis'][idx]
             self.api.set_sweep_width(B_axis.max()-B_axis.min())
         
-        run_general(self.api,
-            ps_file= [PSpel_file],
-            exp=("auto","auto"),
-            settings={"ReplaceMode": False},
-            variables={"d0": self.d0},
-            run=False
-        )
+
+        self.api.set_ReplaceMode(False)
+        self.api.set_Acquisition_mode(1)
+        self.api.set_PhaseCycle(True)
+
+        d0 = self.d0-24
+        if d0 <0:
+            d0=0
+        d0 = round_step(d0,self.bridge_config['Pulse dt'])
+        self.api.set_PulseSpel_var('d0', d0)
+        self.api.set_PulseSpel_experiment('auto')
+        self.api.set_PulseSpel_phase_cycling('auto')
+
         if start:
             self.api.run_exp()
         pass
@@ -277,6 +316,81 @@ class BrukerMPFU(Interface):
             attempt = self.bg_thread.cancel()
             if not attempt:
                 raise RuntimeError("Thread failed to be canceled!")
+            
+    def calc_d0(self):
+        hw_log.info('Calcuating d0')
+        hw_log.debug('Setting Detection = TM')
+        self.api.hidden['Detection'].value = 'TM'
+        B = self.api.get_field()
+        LO = self.api.get_counterfreq()
+
+        self.api.set_attenuator('+<x>',100)
+
+        d0=0
+        self.d0=d0
+
+        seq = Sequence(name='single_pulse',B=B,LO=LO,reptime=3e3,averages=1,shots=20)
+        det_tp = Parameter('tp',value=16,dim=4,step=0)
+        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi))
+        seq.addPulse(Detection(tp=16,t=d0))
+
+        seq.evolution([det_tp])
+        self.launch(seq,savename='test',tune=False)
+        self.terminate()
+
+        self.api.cur_exp['ftEPR.StartPlsPrg'].value = True
+        self.api.hidden['specJet.NoOfAverages'].value = 20
+        self.api.hidden['specJet.NOnBoardAvgs'].value = 20
+                
+        if not self.api.hidden['specJet.AverageStart'].value:
+            self.api.hidden['specJet.AverageStart'].value = True
+
+        self.api.hidden['specJet.NoOfPoints'].value = 1024
+        time.sleep(3)
+        
+        
+        optimal = False
+        while not optimal:
+            max_value = np.abs(get_specjet_data(self)).max()
+            y_max = np.abs(self.api.hidden['specjet.DataRange'][0])
+            vg  =self.api.get_video_gain()
+            if max_value > 0.7* y_max:
+                self.api.set_video_gain(vg - 3)
+                time.sleep(0.5)
+            elif max_value < 0.3* y_max:
+                self.api.set_video_gain(vg + 3)
+                time.sleep(0.5)
+            else:
+                optimal=True
+        
+        specjet_data = np.abs(get_specjet_data(self))
+
+        calc_d0 = d0  + self.api.hidden['specJet.Abs1Data'][specjet_data.argmax()]
+
+        d0 = calc_d0 - 256
+
+        seq = Sequence(name='single_pulse',B=B,LO=LO,reptime=3e3,averages=1,shots=20)
+        det_tp = Parameter('tp',value=16,dim=4,step=0)
+        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi))
+        seq.addPulse(Detection(tp=16,t=d0))
+
+        seq.evolution([det_tp])
+        self.launch(seq,savename='test',tune=False)
+        self.terminate()
+
+        self.api.cur_exp['ftEPR.StartPlsPrg'].value = True
+                
+        if not self.api.hidden['specJet.AverageStart'].value:
+            self.api.hidden['specJet.AverageStart'].value = True
+
+        self.api.hidden['specJet.NoOfPoints'].value = 512
+        time.sleep(3)
+        specjet_data = np.abs(get_specjet_data(self))
+        
+        calc_d0 = d0 + self.api.hidden['specJet.Abs1Data'][specjet_data.argmax()]
+
+        self.d0 = calc_d0
+        self.api.hidden['Detection'].value = 'Signal'
         
     
 
@@ -352,6 +466,7 @@ def _MPFU_channels(sequence):
     
     return channels
 
+
 # =============================================================================
 
 
@@ -423,13 +538,58 @@ def tune_power(
                 print(f'Power Setting = {x:.1f} \t Echo Amplitude = {-1*val:.2f}')
 
                 return val
+            
+            # Rough Scan
+            start_point = 0
+            loops = 0
+            limit = np.abs(interface.api.hidden['specjet.DataRange'][0])
+            while start_point ==0:
+                overflow_flag = False
+                x = np.linspace(0,100,51,endpoint=True)
+                y = np.zeros_like(x)
+                vg = interface.api.get_video_gain()
+                interface.api.hidden[atten_channel].value = x[0]
+                time.sleep(2)
+                for i,xi in enumerate(x):
+                    interface.api.hidden[atten_channel].value = xi
+                    time.sleep(0.1)
+                    data = get_specjet_data(interface)
+                    
+                    if (np.abs(data.real).max() > 0.7*limit) or (np.abs(data.imag).max() > 0.7*limit):
+                        interface.api.set_video_gain(vg - 9)
+                        overflow_flag= True
+                        print('overflow')
+                        break
+                    
+                    val = tran_sum(data)
+                    print(f'Power Setting = {xi:.1f} \t Echo Amplitude = {-1*val:.2f}')
+                    y[i] = val
 
-            output = minimize_scalar(
-                objective, method='bounded', bounds=[lb, ub],
-                options={'xatol': tol, 'maxiter': maxiter})
-            result = output.x
+                if not overflow_flag:
+                    start_point = x[np.argmin(y)]  
+                elif (np.abs(y.real).max() < 0.3*limit) and (np.abs(y.imag).max() < 0.3*limit):
+                    interface.api.set_video_gain(vg + 6)
+                    overflow_flag= True
+                    print('underflow')
+                    break                  
+                loops += 1
+                if loops > 10:
+                    raise RuntimeError('Failed to optimise videogain')
+
+            # span = ub-lb
+            # ub = np.min([start_point+0.25*span,ub])
+            # lb = np.max([start_point-0.25*span,lb])
+
+            # output = minimize_scalar(
+            #     objective, method='bounded', bounds=[lb, ub],
+            #     options={'xatol': tol, 'maxiter': maxiter})
+            # result = output.x
+
+            result = start_point
+
             print(f"Optimal Power Setting for {atten_channel} is: {result:.1f}")
             interface.api.hidden[atten_channel].value = result
+
             return result
     
 def tune_phase(interface,
@@ -556,7 +716,7 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
         
         seq = HahnEchoSequence(
             B=sequence.B,LO=sequence.LO,reptime=sequence.reptime,averages=1,
-            shots=10, tau=tau, exc_pulse=exc_pulse, ref_pulse=ref_pulse)
+            shots=10, tau=tau, pi2_pulse=exc_pulse, pi_pulse=ref_pulse)
         seq.pulses[0].pcyc = {'Phases': [0], 'DetSigns': [1.0]}
         seq._buildPhaseCycle()
         seq.evolution([tau])
@@ -566,7 +726,9 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
         time.sleep(3)
         interface.terminate()
         interface.api.cur_exp['ftEPR.StartPlsPrg'].value = True
-        
+        interface.api.hidden['specJet.NoOfPoints'].value = 512
+        interface.api.hidden['specJet.NoOfAverages'].value = 20
+        interface.api.hidden['specJet.NOnBoardAvgs'].value = 20
         if not interface.api.hidden['specJet.AverageStart'].value:
             interface.api.hidden['specJet.AverageStart'].value = True
         
@@ -578,7 +740,7 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
 
 
 def ELDORtune(interface, sequence, freq,
-             tau_value=400):
+             tau_value=400,test_tp = 16,plot=True):
 
     sequence_gyro = sequence.B.value / sequence.LO.value
     new_freq = sequence.LO.value + freq
@@ -589,11 +751,11 @@ def ELDORtune(interface, sequence, freq,
 
 
     # tune a pair of 90/180 pulses at the eldor frequency
-    test_tp = 16
-    MPFUtune(interface, ref_echoseq, [(np.pi/2 / test_tp,0)],echo='Hahn')
+    channels = [(np.pi/2 / test_tp,0),(np.pi / test_tp,0)]
+    MPFUtune(interface, ref_echoseq, channels,echo='Hahn')
 
 
-    tp = Parameter("tp",16)
+    tp = Parameter("tp",test_tp)
     long_delay = Parameter("long_delay",2000)
     tau = Parameter("tau",tau_value,dim=4,step=0)
     ref_echoseq.addPulse(RectPulse(freq=0, t=0, tp=tp, flipangle=np.pi))
@@ -607,6 +769,9 @@ def ELDORtune(interface, sequence, freq,
     time.sleep(3)
     interface.terminate()
     interface.api.cur_exp['ftEPR.StartPlsPrg'].value = True
+    interface.api.hidden['specJet.NoOfPoints'].value = 512
+    interface.api.hidden['specJet.NoOfAverages'].value = 20
+    interface.api.hidden['specJet.NOnBoardAvgs'].value = 20
     if not interface.api.hidden['specJet.AverageStart'].value:
         interface.api.hidden['specJet.AverageStart'].value = True
 
@@ -623,6 +788,10 @@ def ELDORtune(interface, sequence, freq,
     data = correctphase(data)
     if data[0] < 1:
         data = -1*data
+
+    if plot:
+        plt.plot(x,data)
+        plt.xlim('Attenuator (dB)')
     new_value = np.around(atten_axis[data.argmin()],2)
     print(f"ELDOR Atten Set to: {new_value}")
     interface.api.hidden['ELDORAtt'].value = new_value
@@ -637,4 +806,5 @@ def test_if_MPFU_compatability(seq):
         return False 
     else:
         return True
+
 

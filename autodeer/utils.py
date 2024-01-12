@@ -236,4 +236,4 @@ def val_in_ns(Param):
 
 def round_step(value, step):
 
-    step * np.floor(np.round(value/step))
+    return step * np.floor(np.round(value/step))
