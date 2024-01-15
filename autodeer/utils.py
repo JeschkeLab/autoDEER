@@ -234,3 +234,6 @@ def val_in_ns(Param):
     else:
         raise ValueError("Parameter must have 0 or 1 axes")
 
+def round_step(value, step):
+
+    return step * np.floor(np.round(value/step))

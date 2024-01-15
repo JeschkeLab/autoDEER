@@ -213,16 +213,14 @@ class XeprAPILink:
         finished. Once it has been saved this will no longer work.
         """
         if self.is_exp_running():
-        
-            current_scan = self.cur_exp.getParam("NbScansDone").value
-            # x_length = int(self.cur_exp.getParam("XSpecRes").value)
-            time_per_point = self.cur_exp.getParam("ShotRepTime").value * 1e-6\
-                * self.cur_exp.getParam("ShotsPLoop").value*2
-            # trace = np.zeros(x_length, dtype=np.complex64)
-            while self.cur_exp.getParam("NbScansDone").value == current_scan:
-                time.sleep(time_per_point)
-            time.sleep(time_per_point)
-            return self.acquire_dataset(sequence)
+            
+            self.pause_exp()
+            while self.is_exp_running():
+                dataset = self.acquire_dataset(sequence)
+
+            self.rerun_exp()
+            time.sleep(0.5)
+            return dataset
         else:
             return self.acquire_dataset(sequence)
 
@@ -412,6 +410,22 @@ class XeprAPILink:
         self.cur_exp.aqExpRun()
         hw_log.info('Experiment started')
         time.sleep(5)  # Required
+        pass
+
+    def pause_exp(self):
+        """
+        Pauses the current experiment.
+        """
+        self.cur_exp.aqExpPause()
+        hw_log.info('Experiment Paused')
+        pass
+
+    def rerun_exp(self):
+        """
+        Re-runs the current experiment. Only for use after a pause commands
+        """
+        self.cur_exp.aqExpRun()
+        hw_log.info('Experiment rerun')
         pass
 
     def stop_exp(self):
@@ -643,7 +657,10 @@ class XeprAPILink:
         elif channel == 'ELDOR':
             atten_channel = 'ELDORAtt'
 
-        return self.hidden[atten_channel].value
+        if atten_channel == 'ELDORAtt':
+            return self.cur_exp[atten_channel].value
+        else:
+            return self.hidden[atten_channel].value
 
     def set_attenuator(self, channel: str, value) -> float:
 
@@ -660,7 +677,10 @@ class XeprAPILink:
         elif channel == 'ELDOR':
             atten_channel = 'ELDORAtt'
         
-        self.hidden[atten_channel].value = value
+        if atten_channel == 'ELDORAtt':
+            self.cur_exp[atten_channel].value = value
+        else:
+            self.hidden[atten_channel].value = value
         hw_log.debug(f"{channel} Attenuator set to {value} ")
 
         return self.get_attenuator(channel)

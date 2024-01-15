@@ -90,6 +90,8 @@ class autoDEERWorker(QtCore.QRunnable):
             self.cores = kwargs['cores']
         else:
             self.cores = 1
+
+        self.deer_inputs = {}
         
         self.EndTimeCriteria = TimeCriteria('End Time',time.time() + self.user_inputs['MaxTime']*3600, "Overall end time",end_signal=self.signals.timeout.emit)
 
@@ -253,6 +255,13 @@ class autoDEERWorker(QtCore.QRunnable):
             tau2 = self.user_inputs['tau2']
             tau3 = self.user_inputs['tau3']
             deertype = self.user_inputs['ExpType']
+        elif self.deer_inputs != {}:
+            tau1 = self.deer_inputs['tau1']
+            tau2 = self.deer_inputs['tau2']
+            tau3 = self.deer_inputs['tau3']
+            deertype = self.deer_inputs['ExpType']
+            dt = self.deer_inputs['dt']
+ 
         else:
             rec_tau = self.results['quickdeer'].rec_tau_max
             dt = self.results['quickdeer'].rec_dt * 1e3
@@ -261,6 +270,7 @@ class autoDEERWorker(QtCore.QRunnable):
             tau1 = tau
             tau2 = tau
             tau3 = 0.3
+
 
         deer = DEERSequence(
             B=LO/self.gyro, LO=LO,reptime=reptime,averages=1000,shots=int(50*self.noise_mode),
@@ -368,6 +378,14 @@ class autoDEERWorker(QtCore.QRunnable):
 
     def update_reptime(self,reptime):
         self.reptime = reptime
+
+    def update_deersettings(self,tau1,tau2,dt,tau3=None,ExpType='5pDEER'):
+        self.deer_inputs['tau1'] = tau1
+        self.deer_inputs['tau2'] = tau2
+        self.deer_inputs['tau3'] = tau3
+        self.deer_inputs['dt'] = dt
+        self.deer_inputs['ExpType'] = ExpType
+
 
     def stop(self):
         self.stop_flag = True

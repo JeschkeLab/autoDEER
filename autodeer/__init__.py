@@ -1,5 +1,6 @@
 from ._version import __version__
 from .tools import eprload
+from .utils import *
 from .FieldSweep import FieldSweepAnalysis
 from .ResPro import ResonatorProfileAnalysis, optimise_spectra_position
 from .DEER_analysis import *

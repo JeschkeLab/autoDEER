@@ -589,42 +589,69 @@ def run_general(
     ValueError
         If an input is of the wrong type.
     """
-    if os.path.isabs(ps_file[0]):
-        base_path = ""
-    else:
-        base_path = MODULE_DIR
 
-    if len(ps_file) == 1:
-        # Assuming that both the EXP file and the DEF file have the same 
-        # name bar-extention
-        exp_file = base_path + ps_file[0] + ".exp"
-        def_file = base_path + ps_file[0] + ".def"
+    if os.path.isfile(ps_file[0]):
+        if os.path.isabs(ps_file[0]):
+            base_path = ""
+        else:
+            base_path = MODULE_DIR
 
-    elif len(ps_file) == 2:
+        if len(ps_file) == 1:
+            # Assuming that both the EXP file and the DEF file have the same 
+            # name bar-extention
+            exp_file = base_path + ps_file[0] + ".exp"
+            def_file = base_path + ps_file[0] + ".def"
+
+        elif len(ps_file) == 2:
+            
+            # EXP and DEF file have seperate name
+            exp_file = base_path + ps_file[0] + ".exp"
+            def_file = base_path + ps_file[1] + ".def"
+
+        else:
+            raise ValueError(
+                "ps_file must be of form ['EXP file'] or ['EXP file','DEF file']")
         
-        # EXP and DEF file have seperate name
-        exp_file = base_path + ps_file[0] + ".exp"
-        def_file = base_path + ps_file[1] + ".def"
+        with open(exp_file, "r") as exp_file:
+            exp_text = exp_file.read()
 
+        with open(def_file, "r") as def_file:
+            def_text = def_file.read()
     else:
-        raise ValueError(
-            "ps_file must be of form ['EXP file'] or ['EXP file','DEF file']")
+        exp_text = ps_file[0]
+        def_text = ps_file[1]
 
-    # Identifying a dimension change in settings
-    r = re.compile("dim([0-9]*)")
-    match_list: list = list(filter(
-        lambda list: list is not None, [r.match(i) for i in variables.keys()]))
-    if len(match_list) >= 1:
-        for i in range(0, len(match_list)):
-            key = match_list[i][0]
-            dim = int(r.findall(key)[0])
-            new_length = int(variables[key])
-            change_dimensions(exp_file, dim, new_length)
+    # # Identifying a dimension change in settings
+    # r = re.compile("dim([0-9]*)")
+    # match_list: list = list(filter(
+    #     lambda list: list is not None, [r.match(i) for i in variables.keys()]))
+    # if len(match_list) >= 1:
+    #     for i in range(0, len(match_list)):
+    #         key = match_list[i][0]
+    #         dim = int(r.findall(key)[0])
+    #         new_length = int(variables[key])
+    #         change_dimensions(exp_file, dim, new_length)
         
-    api.set_PulseSpel_exp_filepath(exp_file)
-    api.set_PulseSpel_def_filepath(def_file)
-    api.compile_PulseSpel_prg()
-    api.compile_PulseSpel_def()   
+
+
+    verbMsgParam = api.cur_exp.getParam('*ftEPR.PlsSPELVerbMsg')
+    plsSPELCmdParam = api.cur_exp.getParam('*ftEPR.PlsSPELCmd')
+    api.XeprCmds.aqPgSelectBuf(1)
+
+    api.cur_exp.getParam('*ftEpr.PlsSPELGlbTxt').value = def_text
+    api.XeprCmds.aqPgShowDef()
+
+    plsSPELCmdParam.value=3
+    while not "The variable values are set up" in verbMsgParam.value:
+        time.sleep(0.1)
+
+    api.XeprCmds.aqPgSelectBuf(2)
+
+    api.cur_exp.getParam('*ftEpr.PlsSPELPrgTxt').value = exp_text
+    plsSPELCmdParam.value=7
+    while not "Second pass ended" in verbMsgParam.value:
+        time.sleep(0.1)
+
 
     if "ReplaceMode" in settings:
         api.set_ReplaceMode(settings["ReplaceMode"]) 
@@ -641,34 +668,12 @@ def run_general(
     else:    
         api.set_Acquisition_mode(1)
 
-    # setting PS Variables
-
-    # Some Defaults first, these are overwritten if needed
-
-#     api.set_PulseSpel_var("p0", 16)
-#     api.set_PulseSpel_var("p1", 32)
-
-#     api.set_PulseSpel_var("d0", 400)
-#     api.set_PulseSpel_var("d1", 500)
-
-#     api.set_PulseSpel_var("d30", 16)
-#     api.set_PulseSpel_var("d31", 16)
-
-#     api.set_PulseSpel_var("h", 20)
-#     api.set_PulseSpel_var("n", 1000)
-#     api.set_PulseSpel_var("m", 1)
-
-    # Change all variables
 
     for var in variables:
         api.set_PulseSpel_var(var.lower(), variables[var])
 
     api.set_PulseSpel_experiment(exp[0])
     api.set_PulseSpel_phase_cycling(exp[1])
-
-    # Compile Defs and Program
-    api.compile_PulseSpel_prg()
-    api.compile_PulseSpel_def()  
 
     # Run Experiment
     if run is True:
@@ -990,10 +995,10 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
         kept_axes_param = ["x"]
     elif n_axes - n_reduced == 2:
         kept_axes_param = ["x","y"]
-    elif n_axes - n_reduced == 0:
-        raise RuntimeWarning("Transient experiments are not currently supported")
-    elif n_axes - n_reduced > 2:
-        raise RuntimeWarning("A maximum of 2 non reduced axes are allowed.")
+    # elif n_axes - n_reduced == 0:
+    #     raise RuntimeWarning("Transient experiments are not currently supported")
+    # elif n_axes - n_reduced > 2:
+    #     raise RuntimeWarning("A maximum of 2 non reduced axes are allowed.")
 
 
 
