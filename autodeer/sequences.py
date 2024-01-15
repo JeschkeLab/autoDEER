@@ -208,7 +208,8 @@ class Sequence:
         """
         self._buildPhaseCycle()
         acqs = self.averages.value * self.shots.value
-        acqs *= np.prod([np.prod(param.dim) for param in self.evo_params])        
+        if hasattr(self,'evo_params'):
+            acqs *= np.prod([np.prod(param.dim) for param in self.evo_params])        
         time = acqs * self.reptime.value * 1e-6
 
         self.time = Parameter(name="time", value=f"{(time // 3600):.0f}:{(time % 3600) // 60:.0f}:{(time % 60):.0f}", unit="HH:MM:SS",
