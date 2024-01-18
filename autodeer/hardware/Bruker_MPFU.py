@@ -90,6 +90,7 @@ class BrukerMPFU(Interface):
         self.api.hidden['BrPlsMode'].value = True
         self.api.hidden['OpMode'].value = 'Operate'
         self.api.hidden['RefArm'].value = 'On'
+        self.api.set_attenuator('Main',0)
 
         self.api.cur_exp['VideoBW'].value = 20
         if d0 is None:
