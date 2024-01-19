@@ -779,6 +779,11 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     axs.fill_between(f,exc_Mz*fieldsweep_profile, label = 'Observer Profile',alpha=0.5,color='#42A399')
     if filter is not None:
         axs.plot(f,filter_profile(f),'--', label = 'Filter')
+
+    if respro is not None:
+        model_norm = respro.model / np.max(respro.model)
+        axs.plot(respro.model_x - Fieldsweep.LO, model_norm,'--', label='Resonator Profile')
+
     axs.legend()
     axs.set_xlabel('Frequency (MHz)')
     fig.tight_layout()
