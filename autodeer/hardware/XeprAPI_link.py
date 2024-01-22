@@ -151,7 +151,15 @@ class XeprAPILink:
             self.hidden = self.Xepr.XeprExperiment("AcqHidden")
 
     def is_exp_running(self):
-        return self.cur_exp.isRunning
+        
+        for i in range(50):
+            try: 
+                state = self.cur_exp.isRunning
+            except:
+                time.sleep(0.2)
+            else:
+                return state
+        raise RuntimeError("Xepr failed to find isRunning")
 
     def acquire_dataset(self, sequence = None):
         """
@@ -216,7 +224,8 @@ class XeprAPILink:
             
             self.pause_exp()
             while self.is_exp_running():
-                dataset = self.acquire_dataset(sequence)
+                time.sleep(1)
+            dataset = self.acquire_dataset(sequence)
 
             self.rerun_exp()
             time.sleep(0.5)
@@ -408,7 +417,7 @@ class XeprAPILink:
         Runs the current experiment.
         """
         self.cur_exp.aqExpRun()
-        hw_log.info('Experiment started')
+        hw_log.debug('Experiment started')
         time.sleep(5)  # Required
         pass
 
@@ -417,7 +426,7 @@ class XeprAPILink:
         Pauses the current experiment.
         """
         self.cur_exp.aqExpPause()
-        hw_log.info('Experiment Paused')
+        hw_log.debug('Experiment Paused')
         pass
 
     def rerun_exp(self):
@@ -425,7 +434,7 @@ class XeprAPILink:
         Re-runs the current experiment. Only for use after a pause commands
         """
         self.cur_exp.aqExpRun()
-        hw_log.info('Experiment rerun')
+        hw_log.debug('Experiment rerun')
         pass
 
     def stop_exp(self):
@@ -433,7 +442,7 @@ class XeprAPILink:
         Stops the current experiment.
         """
         self.cur_exp.aqExpStop()
-        hw_log.info('Experiment stopped')
+        hw_log.debug('Experiment stopped')
         pass
 
     def abort_exp(self):
@@ -441,7 +450,7 @@ class XeprAPILink:
         Aborts the current experiment.
         """
         self.cur_exp.aqExpAbort()
-        hw_log.info('Experiment aborted')
+        hw_log.debug('Experiment aborted')
         pass
 
     def xepr_save(self, path: str, title: str = None):

@@ -96,7 +96,7 @@ class BrukerMPFU(Interface):
         self.api.hidden['OpMode'].value = 'Operate'
         self.api.hidden['RefArm'].value = 'On'
 
-        self.api.cur_exp['VideoBW'].value = self.bridge_config['Video BW']
+        self.api.cur_exp['VideoBW'].value = 20
         if d0 is None:
             self.calc_d0()
         else:
@@ -109,7 +109,8 @@ class BrukerMPFU(Interface):
     def acquire_dataset(self):
         if self.bg_data is None:
             if not self.isrunning():
-                self.api.xepr_save(os.path.join(self.savefolder,self.savename))
+                if (self.savename is not None) and (self.savename != ''):
+                    self.api.xepr_save(os.path.join(self.savefolder,self.savename))
                 data = self.api.acquire_dataset(self.cur_exp)
             else:
                 data = self.api.acquire_scan(self.cur_exp)
@@ -248,12 +249,15 @@ class BrukerMPFU(Interface):
         self.api.set_ReplaceMode(False)
         self.api.set_Acquisition_mode(1)
         self.api.set_PhaseCycle(True)
+        pg = sequence.pulses[-1].tp.value
+        pg = round_step(pg/2,self.bridge_config['Pulse dt']*2)
+        d0 = self.d0-pg
 
-        d0 = self.d0-24
         if d0 <0:
             d0=0
         d0 = round_step(d0,self.bridge_config['Pulse dt'])
         self.api.set_PulseSpel_var('d0', d0)
+        self.api.set_PulseSpel_var('pg', pg)
         self.api.set_PulseSpel_experiment('auto')
         self.api.set_PulseSpel_phase_cycling('auto')
 
@@ -318,6 +322,9 @@ class BrukerMPFU(Interface):
                 raise RuntimeError("Thread failed to be canceled!")
             
     def calc_d0(self):
+        """
+        This creates an initial guess for d0. A better estimate can only be found after the field sweep. 
+        """
         hw_log.info('Calcuating d0')
         hw_log.debug('Setting Detection = TM')
         self.api.hidden['Detection'].value = 'TM'
@@ -390,7 +397,52 @@ class BrukerMPFU(Interface):
         calc_d0 = d0 + self.api.hidden['specJet.Abs1Data'][specjet_data.argmax()]
 
         self.d0 = calc_d0
+        hw_log.info(f"d0 set to {self.d0}")
         self.api.hidden['Detection'].value = 'Signal'
+
+    def calc_d0_from_Hahn_Echo(self, B=None, LO=None):
+        
+        B = self.api.get_field()
+        LO = self.api.get_counterfreq()
+
+        if B is not None:
+            self.api.set_field(B)
+        if LO is not None:
+            self.api.set_freq(LO)
+        
+        d0 = self.d0
+        self.api.set_PulseSpel_var('d0',d0)
+
+        self.api.cur_exp['ftEPR.StartPlsPrg'].value = True
+        self.api.hidden['specJet.NoOfAverages'].value = 20
+        self.api.hidden['specJet.NOnBoardAvgs'].value = 20
+                
+        if not self.api.hidden['specJet.AverageStart'].value:
+            self.api.hidden['specJet.AverageStart'].value = True
+
+        self.api.hidden['specJet.NoOfPoints'].value = 512
+
+        optimal = False
+        while not optimal:
+            max_value = np.abs(get_specjet_data(self)).max()
+            y_max = np.abs(self.api.hidden['specjet.DataRange'][0])
+            vg  =self.api.get_video_gain()
+            if max_value > 0.7* y_max:
+                self.api.set_video_gain(vg - 3)
+                time.sleep(0.5)
+            elif max_value < 0.3* y_max:
+                self.api.set_video_gain(vg + 3)
+                time.sleep(0.5)
+            else:
+                optimal=True
+        
+        specjet_data = np.abs(get_specjet_data(self))
+        calc_d0 = d0 + self.api.hidden['specJet.Abs1Data'][specjet_data.argmax()]
+
+        self.d0 = calc_d0
+        hw_log.info(f"d0 set to {self.d0}")
+        return self.d0
+
         
     
 

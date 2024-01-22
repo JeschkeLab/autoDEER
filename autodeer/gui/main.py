@@ -203,7 +203,8 @@ class autoDEERUI(QMainWindow):
         self.config = None
         self.connected = False
         self.DL_params = {}
-        
+        self.worker = None
+        self.Bruker=False
 
         self.LO = 0
         self.gyro = 0.002803632236095
@@ -233,7 +234,7 @@ class autoDEERUI(QMainWindow):
     def load_epr_file(self, store_location):
 
         filename, _= QFileDialog.getOpenFileName(
-            self,"Select a File", self.current_folder,"Data (*.DTA *.mat)")
+            self,"Select a File", self.current_folder,"Data (*.DTA *.mat *.h5)")
         
         if filename:
                 path = Path(filename)
@@ -293,16 +294,20 @@ class autoDEERUI(QMainWindow):
             if model == 'Dummy':
                 from autodeer.hardware.dummy import dummyInterface
                 self.spectromterInterface = dummyInterface(filename_edit)
+                self.Bruker=False
             elif model == 'ETH_AWG':
                 from autodeer.hardware.ETH_awg import ETH_awg_interface
                 self.spectromterInterface = ETH_awg_interface()
+                self.Bruker=True
             elif model == 'Bruker_MPFU':
                 from autodeer.hardware.Bruker_MPFU import BrukerMPFU
                 self.spectromterInterface = BrukerMPFU(filename_edit)
                 self.spectromterInterface.savefolder = self.current_folder
+                self.Bruker=True
             elif model == 'Bruker_AWG':
                 from autodeer.hardware.Bruker_AWG import BrukerAWG
                 self.spectromterInterface = BrukerAWG(filename_edit)
+                self.Bruker=False
         except ImportError:
             QMessageBox.about(self,'ERORR!', 
                               'The spectrometer interface could not be loaded!\n'+
@@ -430,6 +435,12 @@ class autoDEERUI(QMainWindow):
         self.fsweep_canvas.draw()
         self.Tab_widget.setCurrentIndex(1)
 
+        # For Bruker recalculate d0
+        if self.Bruker:
+            main_log.info("Calculating d0 from Hahn Echo")
+            B = self.LO/fsweep_analysis.gyro
+            self.spectromterInterface.calc_d0_from_Hahn_Echo(B=B, LO=self.LO)
+
         worker = Worker(fieldsweep_fit, fsweep_analysis)
         worker.signals.result.connect(self.refresh_fieldsweep_after_fit)
         
@@ -516,6 +527,7 @@ class autoDEERUI(QMainWindow):
         if len(args[0]) == 2:
             fitresult = args[0][0]
             self.LO = args[0][1]
+            self.LO = fitresult.results.fc
             if self.worker is not None:
                 self.worker.update_LO(self.LO)
             print(f"New LO frequency: {self.LO:.2f} GHz")
@@ -574,8 +586,8 @@ class autoDEERUI(QMainWindow):
         self.pulses['exc_pulse'] = exc_pulse
         self.pulses['det_event'].freq = exc_pulse.freq
         main_log.info(f"Optimised pulses")
-
-        self.worker.new_pulses(self.pulses)
+        if self.worker is not None:
+            self.worker.new_pulses(self.pulses)
         
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
@@ -743,10 +755,10 @@ class autoDEERUI(QMainWindow):
         self.q_DEER.update_figure()
         def update_func(x):
             self.current_results['quickdeer'] = x
-            rec_tau = self.current_data['quickdeer'].rec_tau_max
-            dt = self.current_data['quickdeer'].rec_dt * 1e3
+            rec_tau = self.current_results['quickdeer'].rec_tau_max
+            dt = self.current_results['quickdeer'].rec_dt * 1e3
             dt = ad.round_step(dt,self.waveform_precision)
-            max_tau = self.results['relax'].max_tau
+            max_tau = self.current_results['relax'].max_tau
             tau = np.min([rec_tau,max_tau])
             tau1 = ad.round_step(tau,self.waveform_precision)
             tau2 = ad.round_step(tau,self.waveform_precision)
@@ -785,6 +797,10 @@ class autoDEERUI(QMainWindow):
         reptime_analysis = ad.ReptimeAnalysis(dataset)
         reptime_analysis.fit()
         opt_reptime = reptime_analysis.calc_optimal_reptime(0.8)
+
+        if opt_reptime*1e-3 > 8:
+            main_log.warning(f"Reptime optimisation failed. Setting to default for spin system")
+            opt_reptime = 3e3
 
         self.current_results['reptime'] = reptime_analysis
         if self.worker is not None:
