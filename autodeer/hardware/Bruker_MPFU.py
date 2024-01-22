@@ -588,6 +588,7 @@ def tune_power(
             result = start_point
 
             print(f"Optimal Power Setting for {atten_channel} is: {result:.1f}")
+            hw_log.debug(f"Optimal Power Setting for {atten_channel} is: {result:.1f}")
             interface.api.hidden[atten_channel].value = result
 
             return result
@@ -666,6 +667,7 @@ def tune_phase(interface,
         options={'xatol': tol, 'maxiter': maxiter})
     result = output.x
     print(f"Optimal Phase Setting for {phase_channel} is: {result:.1f}")
+    hw_log.debug(f"Optimal Phase Setting for {phase_channel} is: {result:.1f}")
     try:
         interface.api.hidden[phase_channel].value = result
     except:
@@ -740,7 +742,7 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
 
 
 def ELDORtune(interface, sequence, freq,
-             tau_value=400,test_tp = 16,plot=True):
+             tau_value=400,test_tp = 16,plot=False):
 
     sequence_gyro = sequence.B.value / sequence.LO.value
     new_freq = sequence.LO.value + freq
@@ -790,10 +792,11 @@ def ELDORtune(interface, sequence, freq,
         data = -1*data
 
     if plot:
-        plt.plot(x,data)
+        plt.plot(atten_axis,data)
         plt.xlim('Attenuator (dB)')
     new_value = np.around(atten_axis[data.argmin()],2)
     print(f"ELDOR Atten Set to: {new_value}")
+    hw_log.debug(f"ELDOR Atten Set to: {new_value}")
     interface.api.hidden['ELDORAtt'].value = new_value
 
     # tune_power(interface, 'ELDOR', tol=1, bounds=[0,30],echo='R-')

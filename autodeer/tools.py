@@ -5,6 +5,7 @@ import logging
 from autodeer.dataset import create_dataset_from_bruker
 from autodeer.hardware.ETH_awg_load import uwb_load, uwb_eval_match
 from scipy.io import loadmat
+import xarray as xr
 
 log = logging.getLogger('autoDEER.Tools')
 
@@ -89,7 +90,11 @@ def eprload(
         # axes = uwb_output.dta_x
         # data = uwb_output.dta_ev
 
-        return uwb_output        
+        return uwb_output
+    
+    elif type == 'HDF5':
+        return xr.load_dataarray(path,engine='h5netcdf',invalid_netcdf=True)
+
 
 def progress_bar(progress, post=""):
 

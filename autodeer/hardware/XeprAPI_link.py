@@ -163,9 +163,9 @@ class XeprAPILink:
         data_dim = len(size)
         data = dataclass.O
         params = {
-            "nAvgs": self.cur_exp.getParam("NbScansDone").value,
-            "reptime": self.cur_exp.getParam("ShotRepTime").value,
-            "shots": self.cur_exp.getParam("ShotsPLoop").value,
+            "nAvgs": self.cur_exp.getParam("recorder.NbScansDone").value,
+            "reptime": self.cur_exp.getParam("ftEPR.ShotRepTime").value,
+            "shots": self.cur_exp.getParam("ftEPR.ShotsPLoop").value,
             "B": self.get_field(),
             "LO": self.get_counterfreq(),
             }
