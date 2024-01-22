@@ -85,7 +85,7 @@ def eprload(
         # if 'ref_echo_2D_idx' not in opts:
         #     opts['ref_echo_2D_idx'] = 'end'
         # uwb_output = uwb_load(Matfile,opts)
-        uwb_output = uwb_eval_match(Matfile,)
+        uwb_output = uwb_eval_match(Matfile,**kwargs)
         # axes = uwb_output.dta_x
         # data = uwb_output.dta_ev
 
