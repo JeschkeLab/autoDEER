@@ -8,6 +8,7 @@ import base64
 import numbers
 from scipy.signal import hilbert
 from scipy.io import savemat
+import scipy.fft as fft
 from autodeer.utils import autoEPRDecoder
 from autodeer import __version__
 from autodeer.pulses import Pulse,Detection
@@ -18,6 +19,7 @@ import autodeer.sequences as ad_seqs
 import xarray as xr
 from deerlab import correctphase
 from deerlab import deerload
+import copy
 
 # =============================================================================
 
@@ -180,7 +182,21 @@ class EPRAccessor:
     def SNR(self):
         from deerlab import der_snr
         norm_data = self._obj.data / np.abs(self._obj.data).max()
-        return 1/der_snr(norm_data)  
+        return 1/der_snr(norm_data)
+
+    @property
+    def fft(self):
+        new_obj = copy.deepcopy(self._obj)
+        new_obj.data = fft.fftshift(fft.fft(self._obj.data))
+        new_coords = {}
+        for key, coord in new_obj.coords.items():
+            new_coords[key] = (coord.dims[0],fft.fftshift(fft.fftfreq(coord.size, coord[1].data-coord[0].data)))
+        
+        new_obj = new_obj.assign_coords(**new_coords)
+        
+        return new_obj
+
+
 
         
         

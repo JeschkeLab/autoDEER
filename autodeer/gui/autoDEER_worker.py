@@ -277,7 +277,8 @@ class autoDEERWorker(QtCore.QRunnable):
             B=LO/self.gyro, LO=LO,reptime=reptime,averages=1000,shots=int(50*self.noise_mode),
             tau1=tau1, tau2=tau2, tau3=tau3, dt=dt,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
-            pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
+            pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event'],
+            ESEEM_avg = self.deer_inputs['ESEEM']
             )
         
         if deertype == '5pDEER':
@@ -380,13 +381,8 @@ class autoDEERWorker(QtCore.QRunnable):
     def update_reptime(self,reptime):
         self.reptime = reptime
 
-    def update_deersettings(self,tau1,tau2,dt,tau3=None,ExpType='5pDEER'):
-        self.deer_inputs['tau1'] = tau1
-        self.deer_inputs['tau2'] = tau2
-        self.deer_inputs['tau3'] = tau3
-        self.deer_inputs['dt'] = dt
-        self.deer_inputs['ExpType'] = ExpType
-
+    def update_deersettings(self,deer_settings):
+        self.deer_inputs = deer_settings
 
     def stop(self):
         self.stop_flag = True

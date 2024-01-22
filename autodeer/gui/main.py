@@ -210,6 +210,8 @@ class autoDEERUI(QMainWindow):
         self.gyro = 0.002803632236095
         self.cores = 1
 
+        self.deer_settings = {'ESEEM':None, 'ExpType':'5pDEER'}
+
     def set_spectrometer_connected_light(self, state):
         if state == 0:
             light_pixmap = QtGui.QPixmap('icons:Red.png')
@@ -722,7 +724,21 @@ class autoDEERUI(QMainWindow):
             dataset = self.current_data['T2_relax']
         else:
             self.current_data['T2_relax'] = dataset
+
         
+        d_ESEEM = ad.detect_ESEEM(dataset,'deuteron')
+        p_ESEEM = ad.detect_ESEEM(dataset,'proton')
+        if d_ESEEM:
+            self.deer_settings['ESEEM'] = 'deuteron'
+            main_log.info(f"Detected deuteron ESEEM")
+        elif p_ESEEM:
+            self.deer_settings['ESEEM'] = 'proton'
+            main_log.info(f"Detected proton ESEEM")
+        else:
+            self.deer_settings['ESEEM'] = None
+            main_log.info(f"No ESEEM detected")
+        
+
         # Since the T2 values are not used for anything there is no need pausing the spectrometer    
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
@@ -757,17 +773,14 @@ class autoDEERUI(QMainWindow):
             self.current_results['quickdeer'] = x
             rec_tau = self.current_results['quickdeer'].rec_tau_max
             dt = self.current_results['quickdeer'].rec_dt * 1e3
-            dt = ad.round_step(dt,self.waveform_precision)
+            self.deer_settings['dt'] = ad.round_step(dt,self.waveform_precision)
             max_tau = self.current_results['relax'].max_tau
             tau = np.min([rec_tau,max_tau])
-            tau1 = ad.round_step(tau,self.waveform_precision)
-            tau2 = ad.round_step(tau,self.waveform_precision)
-            tau3 = 0.3
+            self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision)
+            self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision)
+            self.deer_settings['tau3'] = 0.3
             self.worker.update_deersettings(
-                tau1=tau1,
-                tau2=tau2,
-                tau3=tau3,
-                dt=dt
+                self.deer_settings
             )
         self.q_DEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
 
@@ -1014,7 +1027,7 @@ class autoDEERUI(QMainWindow):
             fig,axs = plt.subplot_mosaic([['Primary_time'], 
                                           ['Primary_dist']], figsize=(6,6))
             
-            ad.DEERanalysis_plot(self.q_DEER.fitresult, background=False, ROI=self.q_DEER.fitresult.ROI, axs= axs, fig=fig,text=False)
+            ad.DEERanalysis_plot(self.q_DEER.fitresult, background=True, ROI=self.q_DEER.fitresult.ROI, axs= axs, fig=fig,text=False)
             report.add_figure('quickdeer', fig)
             
             if 'quickdeer' in self.current_results:

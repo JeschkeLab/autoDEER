@@ -70,6 +70,10 @@ class dummyInterface(Interface):
         self.pulses = {}
         self.start_time = 0
         self.SNR = Dummy['SNR']
+        if 'ESEEM_depth' in Dummy.keys():
+            self.ESEEM = Dummy['ESEEM_depth']
+        else:
+            self.ESEEM = 0
 
         # Create virtual mode
         key1 = resonator_list[0]
@@ -106,7 +110,7 @@ class dummyInterface(Interface):
         elif isinstance(self.cur_exp, ReptimeScan):
             axes, data = _simulate_reptimescan(self.cur_exp)
         elif isinstance(self.cur_exp,T2RelaxationSequence):
-            axes, data = _simulate_T2(self.cur_exp)
+            axes, data = _simulate_T2(self.cur_exp,self.ESEEM)
         else:
             raise NotImplementedError("Sequence not implemented")
 
@@ -239,11 +243,13 @@ def _simulate_CP(sequence):
     data = add_phaseshift(data, 0.05)
     return xaxis, data
 
-def _simulate_T2(sequence):
+def _simulate_T2(sequence,ESEEM_depth):
     func = lambda x, a, b, e: a*np.exp(-b*x**e)
     xaxis = val_in_ns(sequence.tau)
     data = func(xaxis,1,10e-6,1.6)
     data = add_phaseshift(data, 0.05)
+    if ESEEM_depth != 0:
+        data *= _gen_ESEEM(xaxis, 7.842, ESEEM_depth)
     return xaxis, data
 
 def _similate_respro(sequence, mode):
@@ -270,3 +276,13 @@ def _simulate_reptimescan(sequence):
     data = add_phaseshift(data, 0.05)
     return t, data
 
+def _simulate_2D_relax(sequence):
+
+    def func(x,y,T2):
+        
+
+def _gen_ESEEM(t,freq,depth):
+    # Generate an ESEEM modulation
+    modulation = np.ones_like(t,dtype=np.float64)
+    modulation -= depth *(0.5 + 0.5*np.cos(2*np.pi*t*freq)) + depth * (0.5+0.5*np.cos(2*np.pi*t*freq/2))
+    return modulation
