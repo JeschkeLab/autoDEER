@@ -112,16 +112,16 @@ class autoDEERWorker(QtCore.QRunnable):
         reptime = self.reptime
         p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=int(100*self.noise_mode))
         fsweep = FieldSweepSequence(
-            B=LO/gyro_N, LO=LO,reptime=reptime,averages=2,shots=int(150*self.noise_mode),
+            B=LO/gyro_N, LO=LO,reptime=reptime,averages=10,shots=int(150*self.noise_mode),
             Bwidth = 350, 
             pi2_pulse=p90, pi_pulse=p180,
         )
 
         self.interface.launch(fsweep,savename=f"{self.samplename}_fieldsweep",IFgain=2)
         self.signals.status.emit('Field-sweep running')
-        # self.interface.terminate_at(SNRCriteria(5))
-        while self.interface.isrunning():
-            time.sleep(self.updaterate)
+        self.interface.terminate_at(SNRCriteria(10))
+        # while self.interface.isrunning():
+        #     time.sleep(self.updaterate)
         self.signals.status.emit('Field-sweep complete')
         self.signals.fsweep_result.emit(self.interface.acquire_dataset())
 
@@ -135,7 +135,7 @@ class autoDEERWorker(QtCore.QRunnable):
         p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro, reptime = reptime,shots=int(100*self.noise_mode))
 
         RPseq = ResonatorProfileSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=5,shots=int(40*self.noise_mode),
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(40*self.noise_mode),
             pi2_pulse=p90, pi_pulse=p180,
         )
 
@@ -191,9 +191,10 @@ class autoDEERWorker(QtCore.QRunnable):
         gyro = self.gyro
         reptime = self.reptime
 
-        seq = T2RelaxationSequence(B=LO/gyro, LO=LO,reptime=reptime,averages=4,shots=int(50*self.noise_mode),
-            pi2_pulse=self.pulses['exc_pulse'], pi_pulse=self.pulses['ref_pulse'],
-            det_event=self.pulses['det_event'])
+        seq = T2RelaxationSequence(
+            B=LO/gyro, LO=LO,reptime=reptime,averages=4,shots=int(50*self.noise_mode),
+            step=60,dim=200,pi2_pulse=self.pulses['exc_pulse'],
+            pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
         self.interface.launch(seq,savename=f"{self.samplename}_T2relax",IFgain=2)
         while self.interface.isrunning():
@@ -315,12 +316,12 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/self.gyro, reptime = reptime_guess,shots=int(100*self.noise_mode))
 
-        scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=12e3, averages=1, shots=int(50*self.noise_mode),
+        scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=12e3, averages=10, shots=int(50*self.noise_mode),
                            pi2_pulse=p90, pi_pulse=p180)
         self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",IFgain=2)
-        # self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=0.5)
-        while self.interface.isrunning():
-            time.sleep(self.updaterate)
+        self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=0.5)
+        # while self.interface.isrunning():
+        #     time.sleep(self.updaterate)
         self.signals.status.emit('Reptime scan complete')
         self.signals.reptime_scan_result.emit(self.interface.acquire_dataset())
 
