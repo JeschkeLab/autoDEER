@@ -209,6 +209,7 @@ class autoDEERUI(QMainWindow):
         self.LO = 0
         self.gyro = 0.002803632236095
         self.cores = 1
+        self.Min_tp=12
 
     def set_spectrometer_connected_light(self, state):
         if state == 0:
@@ -344,13 +345,18 @@ class autoDEERUI(QMainWindow):
             self.longDEER.cores = 1
 
         # Extract DeerLab fit parameters
-        if ('autoDEER' in self.config) and ('DeerLab' in self.config['autoDEER']):
-            self.DL_params = self.config['autoDEER']['DeerLab']
-        else:
-            self.DL_params = {}
+        if ('autoDEER' in self.config):
+            if ('DeerLab' in self.config['autoDEER']):
+                self.DL_params = self.config['autoDEER']['DeerLab']
+            else:
+                self.DL_params = {}
+            
+            if ('Min_tp' in self.config['autoDEER']):
+                self.Min_tp = self.config['autoDEER']['Min_tp']
 
         self.q_DEER.DL_params = self.DL_params
         self.longDEER.DL_params = self.DL_params
+        
 
         try:
             self.waveform_precision = spectrometer['Bridge']['Pulse dt']
@@ -441,6 +447,8 @@ class autoDEERUI(QMainWindow):
             B = self.LO/fsweep_analysis.gyro
             self.spectromterInterface.calc_d0_from_Hahn_Echo(B=B, LO=self.LO)
 
+        if self.worker is not None:
+            self.worker.update_gyro(fsweep_analysis.gyro)
         worker = Worker(fieldsweep_fit, fsweep_analysis)
         worker.signals.result.connect(self.refresh_fieldsweep_after_fit)
         
@@ -569,7 +577,7 @@ class autoDEERUI(QMainWindow):
 
     def optimise_pulses(self, pulses=None):
         if (pulses is None) or pulses == {}:
-            self.pulses = ad.build_default_pulses(self.AWG)
+            self.pulses = ad.build_default_pulses(self.AWG,tp = self.Min_tp)
             # pump_pulse = ad.HSPulse(tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0, order1=6, order2=1, beta=10)
             # exc_pulse = ad.RectPulse(tp=16, freq=0.02, flipangle=np.pi/2, scale=0)
             # ref_pulse = exc_pulse.copy(flipangle=np.pi)
@@ -585,6 +593,7 @@ class autoDEERUI(QMainWindow):
         self.pulses['ref_pulse'] = ref_pulse
         self.pulses['exc_pulse'] = exc_pulse
         self.pulses['det_event'].freq = exc_pulse.freq
+        self.pulses['det_event'].tp.value = 2*np.max([exc_pulse.tp.value,ref_pulse.tp.value])
         main_log.info(f"Optimised pulses")
         if self.worker is not None:
             self.worker.new_pulses(self.pulses)
@@ -830,6 +839,7 @@ class autoDEERUI(QMainWindow):
         userinput['Temp'] = self.TempValue.value()
         userinput['DEER_update_func'] = self.q_DEER.refresh_deer
         userinput['SampleConc'] = SampleConcComboBox_opts[self.SampleConcComboBox.currentText()]
+        userinput['tp'] = self.Min_tp
 
         # Block the autoDEER buttons
         self.FullyAutoButton.setEnabled(False)

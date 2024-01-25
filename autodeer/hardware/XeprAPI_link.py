@@ -275,6 +275,10 @@ class XeprAPILink:
         the next scan
         """
 
+        if self.is_exp_running():
+            raise RuntimeWarning('Variable can not be set when experiment is running')
+            hw_log.warning(f"Variable {variable} not set as experiment is running.")
+
         if re.search(r"[pd]\d+", variable) is not None:
             if value % self.bridge_config["Pulse dt"] != 0:
                 msg = "Pulse/delay parameter must be of same resolution as" \

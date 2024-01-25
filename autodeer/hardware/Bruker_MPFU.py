@@ -4,7 +4,7 @@ from autodeer.hardware.XeprAPI_link import XeprAPILink
 from autodeer.hardware.Bruker_tools import PulseSpel, run_general,build_unique_progtable,PSPhaseCycle, write_pulsespel_file
 from autodeer.sequences import Sequence, HahnEchoSequence
 from autodeer.utils import save_file, transpose_list_of_dicts, transpose_dict_of_list, round_step
-from autodeer import create_dataset_from_sequence
+from autodeer import create_dataset_from_sequence, create_dataset_from_axes
 
 import tempfile
 import time
@@ -158,9 +158,9 @@ class BrukerMPFU(Interface):
         sequence.shift_detfreq_to_zero()
 
         if self.isrunning():
-            self.terminate()
-            time.sleep(2)
-        
+            self.terminate(now=True)
+            time.sleep(4)
+                    
         if reset_bg_data:
             self.bg_data = None
 
@@ -250,14 +250,14 @@ class BrukerMPFU(Interface):
         self.api.set_Acquisition_mode(1)
         self.api.set_PhaseCycle(True)
         pg = sequence.pulses[-1].tp.value
-        pg = round_step(pg/2,self.bridge_config['Pulse dt']*2)
+        pg = round_step(pg/2,self.bridge_config['Pulse dt'])
         d0 = self.d0-pg
 
         if d0 <0:
             d0=0
         d0 = round_step(d0,self.bridge_config['Pulse dt'])
         self.api.set_PulseSpel_var('d0', d0)
-        self.api.set_PulseSpel_var('pg', pg)
+        self.api.set_PulseSpel_var('pg', pg*2)
         self.api.set_PulseSpel_experiment('auto')
         self.api.set_PulseSpel_phase_cycling('auto')
 
@@ -343,7 +343,8 @@ class BrukerMPFU(Interface):
 
         seq.evolution([det_tp])
         self.launch(seq,savename='test',tune=False)
-        self.terminate()
+        self.terminate(now=True)
+        time.sleep(3)
 
         self.api.cur_exp['ftEPR.StartPlsPrg'].value = True
         self.api.hidden['specJet.NoOfAverages'].value = 20
@@ -396,7 +397,8 @@ class BrukerMPFU(Interface):
         
         calc_d0 = d0 + self.api.hidden['specJet.Abs1Data'][specjet_data.argmax()]
 
-        self.d0 = calc_d0
+        self.d0 = calc_d0 + 64 # 64ns added to compensate for hahn echo center in field sweep
+        
         hw_log.info(f"d0 set to {self.d0}")
         self.api.hidden['Detection'].value = 'Signal'
 
@@ -411,7 +413,11 @@ class BrukerMPFU(Interface):
             self.api.set_freq(LO)
         
         d0 = self.d0
-        self.api.set_PulseSpel_var('d0',d0)
+        # self.api.set_PulseSpel_var('d0',d0)
+        self.api.run_exp()
+        self.api.abort_exp()
+        while self.api.is_exp_running():
+            time.sleep(1)
 
         self.api.cur_exp['ftEPR.StartPlsPrg'].value = True
         self.api.hidden['specJet.NoOfAverages'].value = 20
@@ -437,9 +443,9 @@ class BrukerMPFU(Interface):
                 optimal=True
         
         specjet_data = np.abs(get_specjet_data(self))
-        calc_d0 = d0 + self.api.hidden['specJet.Abs1Data'][specjet_data.argmax()]
+        calc_d0 = d0 - 64 + self.api.hidden['specJet.Abs1Data'][specjet_data.argmax()]
 
-        self.d0 = calc_d0
+        self.d0 = calc_d0 
         hw_log.info(f"d0 set to {self.d0}")
         return self.d0
 
@@ -532,7 +538,7 @@ def get_specjet_data(interface):
     
 def tune_power(
             interface, channel: str, tol=0.1, maxiter=30,
-            bounds=[0, 100],hardware_wait=3, echo='abs') -> float:
+            bounds=[0, 100],hardware_wait=3, echo='abs',save=True) -> float:
             """Tunes the attenuator of a given channel to a given target using the
             standard scipy optimisation scripts. 
 
@@ -618,7 +624,10 @@ def tune_power(
                     y[i] = val
 
                 if not overflow_flag:
-                    start_point = x[np.argmin(y)]  
+                    if y[np.abs(y).argmax()].max() < 1:
+                        y *= -1
+                    start_point = x[np.argmax(y)]  
+                
                 elif (np.abs(y.real).max() < 0.3*limit) and (np.abs(y.imag).max() < 0.3*limit):
                     interface.api.set_video_gain(vg + 6)
                     overflow_flag= True
@@ -636,7 +645,12 @@ def tune_power(
             #     objective, method='bounded', bounds=[lb, ub],
             #     options={'xatol': tol, 'maxiter': maxiter})
             # result = output.x
-
+            if save:
+                dataset = create_dataset_from_axes(y,x,axes_labels=['amp'])
+                timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
+                fullname = timestamp + channel + 'amptune.h5'
+                dataset.to_netcdf(os.path.join(interface.savefolder,fullname),engine='h5netcdf',invalid_netcdf=True)
+            
             result = start_point
 
             print(f"Optimal Power Setting for {atten_channel} is: {result:.1f}")
@@ -794,7 +808,7 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
 
 
 def ELDORtune(interface, sequence, freq,
-             tau_value=400,test_tp = 16,plot=False):
+             tau_value=400,test_tp = 16,plot=False,save=True):
 
     sequence_gyro = sequence.B.value / sequence.LO.value
     new_freq = sequence.LO.value + freq
@@ -835,21 +849,28 @@ def ELDORtune(interface, sequence, freq,
     atten_axis = np.arange(30,0,-1)
     data = np.zeros(atten_axis.shape,dtype=np.complex128)
     for i,x in enumerate(atten_axis):
-        interface.api.hidden['ELDORAtt'].value = x  # Set phase to value
+        interface.api.set_attenuator('ELDOR',x)  # Set phase to value
         time.sleep(1)
         data[i] = np.trapz(get_specjet_data(interface))
     
     data = correctphase(data)
-    if data[0] < 1:
+    if data[np.abs(data).argmax()].max() < 1:
         data = -1*data
 
     if plot:
         plt.plot(atten_axis,data)
-        plt.xlim('Attenuator (dB)')
+        plt.xlabel('Attenuator (dB)')
+
+    if save:
+        dataset = create_dataset_from_axes(data,atten_axis,axes_labels=['amp'])
+        timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
+        fullname = timestamp + 'ELDOR_amptune.h5'
+        dataset.to_netcdf(os.path.join(interface.savefolder,fullname),engine='h5netcdf',invalid_netcdf=True)
+
     new_value = np.around(atten_axis[data.argmin()],2)
     print(f"ELDOR Atten Set to: {new_value}")
     hw_log.debug(f"ELDOR Atten Set to: {new_value}")
-    interface.api.hidden['ELDORAtt'].value = new_value
+    interface.api.set_attenuator('ELDOR',new_value)
 
     # tune_power(interface, 'ELDOR', tol=1, bounds=[0,30],echo='R-')
 
