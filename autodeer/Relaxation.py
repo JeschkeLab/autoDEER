@@ -221,3 +221,52 @@ class ReptimeAnalysis():
         # Calculates the x% recovery time
         self.optimal = self.fit_result[0][1]*np.log(1/(1-recovery))
         return self.optimal
+
+def detect_ESEEM(dataset,type='deuteron', threshold=1.5):
+    """Detect if the dataset is an ESEEM experiment.
+
+    Parameters
+    ----------
+    dataset : xr.DataArray
+        The dataset to be analyzed.
+    
+    type : str, optional
+        The type of ESEEM experiment, either deuteron or proton, by default 'deuteron'
+    
+    threshold : float, optional
+        The SNR threshold for detection, by default 1.5
+
+    Returns
+    -------
+    bool
+        True if ESEEM is detected, False if not.
+    """
+    
+
+    D_freq = 4.10663 * dataset.B *1e-4 *np.pi /2
+    P_freq = 26.75221 * dataset.B *1e-4 *np.pi /2
+
+    def find_pnl(freq):
+        fft_data = np.abs(dataset.epr.fft)
+        index = np.abs(fft_data.X - freq).argmin().data
+
+        peak = 2 /fft_data.size * fft_data[index]
+
+        noiselevel = 2/fft_data.size * fft_data[index-8:index+8].mean()
+
+        return peak/noiselevel
+        
+    if type == 'deuteron':
+        peak = find_pnl(D_freq)
+    elif type == 'proton':
+        peak = find_pnl(P_freq)
+    else:
+        raise ValueError('type must be deuteron or proton')
+
+    if peak > threshold:
+        return True
+    else:
+        return False
+
+    
+    

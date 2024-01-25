@@ -283,7 +283,7 @@ class DEERplot(QWidget):
 
         self._static_ax['Primary_time'].cla()
         self._static_ax['Primary_dist'].cla()
-        ad.DEERanalysis_plot(self.fitresult, background=False, ROI=self.fitresult.ROI, axs= self._static_ax, fig=self.static_canvas.figure)
+        ad.DEERanalysis_plot(self.fitresult, background=True, ROI=self.fitresult.ROI, axs= self._static_ax, fig=self.static_canvas.figure)
         self.static_canvas.draw()
         self.update_fit_result()
 

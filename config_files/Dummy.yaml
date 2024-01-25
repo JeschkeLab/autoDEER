@@ -16,6 +16,7 @@ Spectrometer:
   Dummy:
     speedup: 100 # Default: 100
     SNR: 75
+    ESEEM_depth: 0.15
 
 Resonators:
   Pent Loop-gap:
