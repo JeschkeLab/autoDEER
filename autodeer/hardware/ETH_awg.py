@@ -11,6 +11,7 @@ from deerlab import correctphase
 import numpy as np
 import scipy.signal as sig
 from scipy.io import loadmat
+from scipy.io.matlab import MatReadError
 from autodeer.utils import transpose_list_of_dicts
 from autodeer.hardware.ETH_awg_load import uwb_eval_match
 from autodeer.utils import save_file, transpose_list_of_dicts, transpose_dict_of_list
@@ -137,6 +138,8 @@ class ETH_awg_interface(Interface):
             except IndexError:
                 time.sleep(10)
             except ValueError:
+                time.sleep(10)
+            except MatReadError:
                 time.sleep(10)
             else:
                 return data

@@ -109,9 +109,10 @@ class SNRCriteria(Criteria):
 
         def test_func(data, verbosity=verbosity):
             # Normalise data
-            norm_data = data.data / data.data.max()
-            std = der_snr(np.abs(norm_data))
-            snr = 1/std
+            # norm_data = data.data / data.data.max()
+            # std = der_snr(np.abs(norm_data))
+            # snr = 1/std
+            snr=data.epr.correctphase.epr.SNR
             test = snr > SNR_target
             test_msg = f"Test {self.name}: {test}\t - SNR:{snr}"
             log.debug(test_msg)

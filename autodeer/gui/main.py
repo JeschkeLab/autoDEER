@@ -203,6 +203,8 @@ class autoDEERUI(QMainWindow):
         self.config = None
         self.connected = False
         self.DL_params = {}
+        self.worker = None
+        self.starttime = time.time()
         
 
         self.LO = 0
@@ -425,6 +427,9 @@ class autoDEERUI(QMainWindow):
         fsweep_analysis = ad.FieldSweepAnalysis(dataset)
         fsweep_analysis.calc_gyro()
         main_log.info(f"Calculated gyro {fsweep_analysis.gyro*1e3:.3f} MHz/T")
+        if self.worker is not None:
+            self.worker.set_noise_mode(np.min([fsweep_analysis.calc_noise_level(),20]))
+        
         self.fsweep_ax.cla()
         fsweep_analysis.plot(axs=self.fsweep_ax,fig=self.fsweep_canvas.figure)
         self.fsweep_canvas.draw()
@@ -448,13 +453,13 @@ class autoDEERUI(QMainWindow):
 
         self.current_results['fieldsweep'] = fitresult
         self.gyro = fitresult.gyro
+        
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
         self.fsweep_ax.cla()
         fitresult.plot(axs=self.fsweep_ax,fig=self.fsweep_canvas.figure)
         self.fsweep_canvas.draw()
-
 
         # Add fit resultss
 
@@ -691,9 +696,16 @@ class autoDEERUI(QMainWindow):
 
         self.refresh_relax_figure()
 
-        tau2hrs = fitresult.find_optimal(SNR_target=45/0.5, target_time=2, target_step=0.015)
-        max_tau = fitresult.find_optimal(SNR_target=45/0.5, target_time=24, target_step=0.015)
-        self.current_results['relax'].tau2hrs = tau2hrs
+        tau2hrs = fitresult.find_optimal(SNR_target=25/0.6, target_time=2, target_step=0.015)
+        tau4hrs = fitresult.find_optimal(SNR_target=25/0.6, target_time=4, target_step=0.015)
+        max_tau = fitresult.find_optimal(SNR_target=45/0.6, target_time=24, target_step=0.015)
+    
+
+        if tau2hrs < 1.5:
+            self.current_results['relax'].tau2hrs = tau4hrs
+            main_log.warning(f"2hr dipolar evo too short. Using 4hr number")
+        else:  
+            self.current_results['relax'].tau2hrs = tau2hrs
         self.current_results['relax'].max_tau = max_tau
         self.DipolarEvoMax.setValue(max_tau)
         self.DipolarEvo2hrs.setValue(tau2hrs)
@@ -743,11 +755,13 @@ class autoDEERUI(QMainWindow):
         self.q_DEER.update_figure()
         def update_func(x):
             self.current_results['quickdeer'] = x
-            rec_tau = self.current_data['quickdeer'].rec_tau_max
-            dt = self.current_data['quickdeer'].rec_dt * 1e3
+            rec_tau = self.current_results['quickdeer'].rec_tau_max
+            dt = self.current_results['quickdeer'].rec_dt * 1e3
             dt = ad.round_step(dt,self.waveform_precision)
-            max_tau = self.results['relax'].max_tau
-            tau = np.min([rec_tau,max_tau])
+            mod_depth = x.MNR * x.noiselvl
+            remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60))
+            max_tau = self.current_results['relax'].find_optimal(SNR_target=45/mod_depth, target_time=remaining_time, target_step=dt / 1e3)
+            tau = np.min([rec_tau/2,max_tau])
             tau1 = ad.round_step(tau,self.waveform_precision)
             tau2 = ad.round_step(tau,self.waveform_precision)
             tau3 = 0.3
@@ -827,6 +841,8 @@ class autoDEERUI(QMainWindow):
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
             pulses=self.pulses,results=self.current_results, AWG=self.AWG, LO=self.LO, gyro = self.gyro,
             user_inputs=userinput, cores=self.cores )
+        
+        self.starttime = time.time()
     
         self.worker.signals.status.connect(self.msgbar.setText)
         self.worker.signals.status.connect(main_log.info)

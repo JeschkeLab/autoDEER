@@ -155,6 +155,15 @@ class FieldSweepAnalysis():
         self.fs_x = LO - self.gyro*self.axis
         return self.gyro
     
+    def calc_noise_level(self,SNR_target=30):
+        SNR = self.data.epr.correctphase.epr.SNR
+        SNRp1k = SNR / (self.data.nPcyc * self.data.nAvgs * self.data.shots *1e-3)**0.5
+        level = np.round((SNR_target/SNRp1k)**2 / (self.data.nPcyc * 2 * 50* 1e-3))
+        if level < 0.2:
+            level = 0.2
+        return level 
+        
+    
     def fit(self, spintype='N', **kwargs):
 
         if spintype != 'N':

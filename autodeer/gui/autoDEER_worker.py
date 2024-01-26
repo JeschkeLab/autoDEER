@@ -112,8 +112,8 @@ class autoDEERWorker(QtCore.QRunnable):
         reptime = self.reptime
         p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=int(100*self.noise_mode))
         fsweep = FieldSweepSequence(
-            B=LO/gyro_N, LO=LO,reptime=reptime,averages=10,shots=int(150*self.noise_mode),
-            Bwidth = 350, 
+            B=LO/gyro_N, LO=LO,reptime=reptime,averages=50,shots=int(50*self.noise_mode),
+            Bwidth = 250, 
             pi2_pulse=p90, pi_pulse=p180,
         )
 
@@ -135,7 +135,7 @@ class autoDEERWorker(QtCore.QRunnable):
         p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro, reptime = reptime,shots=int(100*self.noise_mode))
 
         RPseq = ResonatorProfileSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(40*self.noise_mode),
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(50*self.noise_mode),
             pi2_pulse=p90, pi_pulse=p180,
         )
 
@@ -392,4 +392,6 @@ class autoDEERWorker(QtCore.QRunnable):
         self.stop_flag = True
         self.signals.status.emit('Stopping experiment')
         
+    def set_noise_mode(self,level):
+        self.noise_mode = level
 
