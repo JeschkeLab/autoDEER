@@ -1384,10 +1384,10 @@ class HahnEchoSequence(Sequence):
             ))
 
         if hasattr(self, "pi_pulse"):
-            self.addPulse(self.pi_pulse.copy(
+            pi_pulse = self.addPulse(self.pi_pulse.copy(
                 t=tau, pcyc={"phases":[0], "dets": [1]}))
         else:
-            self.addPulse(RectPulse( # Pump 1 pulse
+            pi_pulse = self.addPulse(RectPulse( # Pump 1 pulse
                 t=tau, tp=tp, freq=0, flipangle=np.pi
             ))
 
@@ -1403,7 +1403,7 @@ class T2RelaxationSequence(HahnEchoSequence):
     Represents a T2 relaxation sequence. A Hahn Echo where the interpulse delay increases
     """
 
-    def __init__(self, *, B, LO, reptime, averages, shots, step=20, dim=200, **kwargs) -> None:
+    def __init__(self, *, B, LO, reptime, averages, shots, step=40, dim=200, **kwargs) -> None:
 
         self.tau = Parameter(name="tau", value=500,step=step,dim=dim, unit="ns", description="The interpulse delay",virtual=True)
         super().__init__(B=B, LO=LO, reptime=reptime, averages=averages, shots=shots,tau=self.tau, **kwargs)

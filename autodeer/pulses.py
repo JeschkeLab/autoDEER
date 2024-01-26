@@ -888,14 +888,14 @@ class GaussianPulse(Pulse):
     
 # =============================================================================
 
-def build_default_pulses(AWG=True):
+def build_default_pulses(AWG=True,tp=12):
 
     exc_pulse = RectPulse(  
-                    tp=12, freq=0, flipangle=np.pi/2, scale=0
+                    tp=tp, freq=0, flipangle=np.pi/2, scale=0
                 )
     
     ref_pulse = RectPulse(  
-                    tp=12, freq=0, flipangle=np.pi, scale=0
+                    tp=tp, freq=0, flipangle=np.pi, scale=0
                         )
     
     if AWG:
@@ -906,7 +906,7 @@ def build_default_pulses(AWG=True):
         det_event = Detection(tp=512, freq=0)
     else:
         pump_pulse = RectPulse(
-                    tp=12, freq=-0.07, flipangle=np.pi, scale=0)
+                    tp=tp, freq=-0.07, flipangle=np.pi, scale=0)
         
         # det_event = Detection(tp=exc_pulse.tp * 2, freq=0)
         det_event = Detection(tp=128, freq=0)

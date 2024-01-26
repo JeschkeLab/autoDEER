@@ -76,6 +76,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.AWG = AWG
         self.user_inputs = user_inputs
         self.stop_flag = False
+        
 
         if 'SampleConc' in self.user_inputs:
             self.noise_mode = self.user_inputs['SampleConc']
@@ -90,6 +91,11 @@ class autoDEERWorker(QtCore.QRunnable):
             self.cores = kwargs['cores']
         else:
             self.cores = 1
+
+        if 'tp' in kwargs:
+            self.tp = kwargs['tp']
+        else:
+            self.tp=12
 
         self.deer_inputs = {}
         
@@ -110,7 +116,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro_N = self.gyro
         reptime = self.reptime
-        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro_N, reptime = reptime,shots=int(100*self.noise_mode))
+        p90, p180 = self.interface.tune_rectpulse(tp=self.tp, LO=LO, B=LO/gyro_N, reptime = reptime,shots=int(100*self.noise_mode))
         fsweep = FieldSweepSequence(
             B=LO/gyro_N, LO=LO,reptime=reptime,averages=50,shots=int(50*self.noise_mode),
             Bwidth = 250, 
@@ -120,8 +126,8 @@ class autoDEERWorker(QtCore.QRunnable):
         self.interface.launch(fsweep,savename=f"{self.samplename}_fieldsweep",IFgain=2)
         self.signals.status.emit('Field-sweep running')
         self.interface.terminate_at(SNRCriteria(10))
-        # while self.interface.isrunning():
-        #     time.sleep(self.updaterate)
+        while self.interface.isrunning():
+            time.sleep(self.updaterate)
         self.signals.status.emit('Field-sweep complete')
         self.signals.fsweep_result.emit(self.interface.acquire_dataset())
 
@@ -132,7 +138,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro=self.gyro
         reptime = self.reptime
-        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/gyro, reptime = reptime,shots=int(100*self.noise_mode))
+        p90, p180 = self.interface.tune_rectpulse(tp=self.tp, LO=LO, B=LO/gyro, reptime = reptime,shots=int(100*self.noise_mode))
 
         RPseq = ResonatorProfileSequence(
             B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(50*self.noise_mode),
@@ -143,8 +149,8 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.status.emit('Resonator Profile running')
 
         self.interface.terminate_at(SNRCriteria(5))
-        # while self.interface.isrunning():
-        #     time.sleep(self.updaterate)
+        while self.interface.isrunning():
+            time.sleep(self.updaterate)
         self.signals.status.emit('Resonator Profile complete')
         self.signals.respro_result.emit(self.interface.acquire_dataset())
         self.pause_and_wait()
@@ -243,6 +249,9 @@ class autoDEERWorker(QtCore.QRunnable):
             self.interface.launch(deer,savename=f"{self.samplename}_quickdeer",IFgain=2)
             with threadpool_limits(limits=self.cores, user_api='blas'):
                 self.interface.terminate_at(total_crit,verbosity=2,test_interval=0.5)
+            while self.interface.isrunning():
+                time.sleep(self.updaterate)
+
             self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
             self.signals.status.emit('QuickDEER experiment complete')
 
@@ -277,7 +286,8 @@ class autoDEERWorker(QtCore.QRunnable):
             B=LO/self.gyro, LO=LO,reptime=reptime,averages=1000,shots=int(50*self.noise_mode),
             tau1=tau1, tau2=tau2, tau3=tau3, dt=dt,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
-            pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
+            pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event'],
+            ESEEM_avg = self.deer_inputs['ESEEM']
             )
         
         if deertype == '5pDEER':
@@ -308,20 +318,22 @@ class autoDEERWorker(QtCore.QRunnable):
         time.sleep(30) # Always wait for the experiment to properly start
         with threadpool_limits(limits=self.cores, user_api='blas'):
             self.interface.terminate_at(total_crit,verbosity=2,test_interval=0.5) # Change criteria backagain
+        while self.interface.isrunning():
+            time.sleep(self.updaterate)
         self.signals.longdeer_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('Long DEER experiment complete')
 
     def run_reptime_opt(self):
         reptime_guess = self.reptime
         LO = self.LO
-        p90, p180 = self.interface.tune_rectpulse(tp=12, LO=LO, B=LO/self.gyro, reptime = reptime_guess,shots=int(100*self.noise_mode))
+        p90, p180 = self.interface.tune_rectpulse(tp=self.tp, LO=LO, B=LO/self.gyro, reptime = reptime_guess,shots=int(100*self.noise_mode))
 
         scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=12e3, averages=10, shots=int(50*self.noise_mode),
                            pi2_pulse=p90, pi_pulse=p180)
         self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",IFgain=2)
         self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=0.5)
-        # while self.interface.isrunning():
-        #     time.sleep(self.updaterate)
+        while self.interface.isrunning():
+            time.sleep(self.updaterate)
         self.signals.status.emit('Reptime scan complete')
         self.signals.reptime_scan_result.emit(self.interface.acquire_dataset())
 
@@ -380,13 +392,10 @@ class autoDEERWorker(QtCore.QRunnable):
     def update_reptime(self,reptime):
         self.reptime = reptime
 
-    def update_deersettings(self,tau1,tau2,dt,tau3=None,ExpType='5pDEER'):
-        self.deer_inputs['tau1'] = tau1
-        self.deer_inputs['tau2'] = tau2
-        self.deer_inputs['tau3'] = tau3
-        self.deer_inputs['dt'] = dt
-        self.deer_inputs['ExpType'] = ExpType
-
+    def update_gyro(self,gyro):
+        self.gyro = gyro
+    def update_deersettings(self,deer_settings):
+        self.deer_inputs = deer_settings
 
     def stop(self):
         self.stop_flag = True

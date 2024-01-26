@@ -205,11 +205,14 @@ class autoDEERUI(QMainWindow):
         self.DL_params = {}
         self.worker = None
         self.starttime = time.time()
-        
+        self.Bruker=False
 
         self.LO = 0
         self.gyro = 0.002803632236095
         self.cores = 1
+        self.Min_tp=12
+
+        self.deer_settings = {'ESEEM':None, 'ExpType':'5pDEER'}
 
     def set_spectrometer_connected_light(self, state):
         if state == 0:
@@ -235,7 +238,7 @@ class autoDEERUI(QMainWindow):
     def load_epr_file(self, store_location):
 
         filename, _= QFileDialog.getOpenFileName(
-            self,"Select a File", self.current_folder,"Data (*.DTA *.mat)")
+            self,"Select a File", self.current_folder,"Data (*.DTA *.mat *.h5)")
         
         if filename:
                 path = Path(filename)
@@ -295,16 +298,20 @@ class autoDEERUI(QMainWindow):
             if model == 'Dummy':
                 from autodeer.hardware.dummy import dummyInterface
                 self.spectromterInterface = dummyInterface(filename_edit)
+                self.Bruker=False
             elif model == 'ETH_AWG':
                 from autodeer.hardware.ETH_awg import ETH_awg_interface
                 self.spectromterInterface = ETH_awg_interface()
+                self.Bruker=True
             elif model == 'Bruker_MPFU':
                 from autodeer.hardware.Bruker_MPFU import BrukerMPFU
                 self.spectromterInterface = BrukerMPFU(filename_edit)
                 self.spectromterInterface.savefolder = self.current_folder
+                self.Bruker=True
             elif model == 'Bruker_AWG':
                 from autodeer.hardware.Bruker_AWG import BrukerAWG
                 self.spectromterInterface = BrukerAWG(filename_edit)
+                self.Bruker=False
         except ImportError:
             QMessageBox.about(self,'ERORR!', 
                               'The spectrometer interface could not be loaded!\n'+
@@ -341,13 +348,18 @@ class autoDEERUI(QMainWindow):
             self.longDEER.cores = 1
 
         # Extract DeerLab fit parameters
-        if ('autoDEER' in self.config) and ('DeerLab' in self.config['autoDEER']):
-            self.DL_params = self.config['autoDEER']['DeerLab']
-        else:
-            self.DL_params = {}
+        if ('autoDEER' in self.config):
+            if ('DeerLab' in self.config['autoDEER']):
+                self.DL_params = self.config['autoDEER']['DeerLab']
+            else:
+                self.DL_params = {}
+            
+            if ('Min_tp' in self.config['autoDEER']):
+                self.Min_tp = self.config['autoDEER']['Min_tp']
 
         self.q_DEER.DL_params = self.DL_params
         self.longDEER.DL_params = self.DL_params
+        
 
         try:
             self.waveform_precision = spectrometer['Bridge']['Pulse dt']
@@ -435,6 +447,14 @@ class autoDEERUI(QMainWindow):
         self.fsweep_canvas.draw()
         self.Tab_widget.setCurrentIndex(1)
 
+        # For Bruker recalculate d0
+        if self.Bruker:
+            main_log.info("Calculating d0 from Hahn Echo")
+            B = self.LO/fsweep_analysis.gyro
+            self.spectromterInterface.calc_d0_from_Hahn_Echo(B=B, LO=self.LO)
+
+        if self.worker is not None:
+            self.worker.update_gyro(fsweep_analysis.gyro)
         worker = Worker(fieldsweep_fit, fsweep_analysis)
         worker.signals.result.connect(self.refresh_fieldsweep_after_fit)
         
@@ -521,6 +541,7 @@ class autoDEERUI(QMainWindow):
         if len(args[0]) == 2:
             fitresult = args[0][0]
             self.LO = args[0][1]
+            self.LO = fitresult.results.fc
             if self.worker is not None:
                 self.worker.update_LO(self.LO)
             print(f"New LO frequency: {self.LO:.2f} GHz")
@@ -562,7 +583,7 @@ class autoDEERUI(QMainWindow):
 
     def optimise_pulses(self, pulses=None):
         if (pulses is None) or pulses == {}:
-            self.pulses = ad.build_default_pulses(self.AWG)
+            self.pulses = ad.build_default_pulses(self.AWG,tp = self.Min_tp)
             # pump_pulse = ad.HSPulse(tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0, order1=6, order2=1, beta=10)
             # exc_pulse = ad.RectPulse(tp=16, freq=0.02, flipangle=np.pi/2, scale=0)
             # ref_pulse = exc_pulse.copy(flipangle=np.pi)
@@ -578,9 +599,10 @@ class autoDEERUI(QMainWindow):
         self.pulses['ref_pulse'] = ref_pulse
         self.pulses['exc_pulse'] = exc_pulse
         self.pulses['det_event'].freq = exc_pulse.freq
+        self.pulses['det_event'].tp.value = 2*np.max([exc_pulse.tp.value,ref_pulse.tp.value])
         main_log.info(f"Optimised pulses")
-
-        self.worker.new_pulses(self.pulses)
+        if self.worker is not None:
+            self.worker.new_pulses(self.pulses)
         
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
@@ -722,7 +744,21 @@ class autoDEERUI(QMainWindow):
             dataset = self.current_data['T2_relax']
         else:
             self.current_data['T2_relax'] = dataset
+
         
+        d_ESEEM = ad.detect_ESEEM(dataset,'deuteron')
+        p_ESEEM = ad.detect_ESEEM(dataset,'proton')
+        if d_ESEEM:
+            self.deer_settings['ESEEM'] = 'deuteron'
+            main_log.info(f"Detected deuteron ESEEM")
+        elif p_ESEEM:
+            self.deer_settings['ESEEM'] = 'proton'
+            main_log.info(f"Detected proton ESEEM")
+        else:
+            self.deer_settings['ESEEM'] = None
+            main_log.info(f"No ESEEM detected")
+        
+
         # Since the T2 values are not used for anything there is no need pausing the spectrometer    
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
@@ -762,14 +798,12 @@ class autoDEERUI(QMainWindow):
             remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60))
             max_tau = self.current_results['relax'].find_optimal(SNR_target=45/mod_depth, target_time=remaining_time, target_step=dt / 1e3)
             tau = np.min([rec_tau/2,max_tau])
-            tau1 = ad.round_step(tau,self.waveform_precision)
-            tau2 = ad.round_step(tau,self.waveform_precision)
-            tau3 = 0.3
+            self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision)
+            self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision)
+            self.deer_settings['tau3'] = 0.3
+            self.deer_settings['dt'] = dt
             self.worker.update_deersettings(
-                tau1=tau1,
-                tau2=tau2,
-                tau3=tau3,
-                dt=dt
+                self.deer_settings
             )
         self.q_DEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
 
@@ -800,6 +834,10 @@ class autoDEERUI(QMainWindow):
         reptime_analysis.fit()
         opt_reptime = reptime_analysis.calc_optimal_reptime(0.8)
 
+        if opt_reptime*1e-3 > 8:
+            main_log.warning(f"Reptime optimisation failed. Setting to default for spin system")
+            opt_reptime = 3e3
+
         self.current_results['reptime'] = reptime_analysis
         if self.worker is not None:
             self.worker.update_reptime(opt_reptime)
@@ -828,6 +866,7 @@ class autoDEERUI(QMainWindow):
         userinput['Temp'] = self.TempValue.value()
         userinput['DEER_update_func'] = self.q_DEER.refresh_deer
         userinput['SampleConc'] = SampleConcComboBox_opts[self.SampleConcComboBox.currentText()]
+        userinput['tp'] = self.Min_tp
 
         # Block the autoDEER buttons
         self.FullyAutoButton.setEnabled(False)
@@ -1014,7 +1053,7 @@ class autoDEERUI(QMainWindow):
             fig,axs = plt.subplot_mosaic([['Primary_time'], 
                                           ['Primary_dist']], figsize=(6,6))
             
-            ad.DEERanalysis_plot(self.q_DEER.fitresult, background=False, ROI=self.q_DEER.fitresult.ROI, axs= axs, fig=fig,text=False)
+            ad.DEERanalysis_plot(self.q_DEER.fitresult, background=True, ROI=self.q_DEER.fitresult.ROI, axs= axs, fig=fig,text=False)
             report.add_figure('quickdeer', fig)
             
             if 'quickdeer' in self.current_results:
