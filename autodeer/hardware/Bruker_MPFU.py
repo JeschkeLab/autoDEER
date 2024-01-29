@@ -29,7 +29,7 @@ class BrukerMPFU(Interface):
     Represents the interface for connecting to MPFU based Bruker ELEXSYS-II 
     Spectrometers.
     """
-    def __init__(self, config_file:str, d0=650) -> None:
+    def __init__(self, config_file:str) -> None:
         """An interface for connecting to MPFU based Bruker ELEXSYS-II 
         Spectrometers.
 
@@ -45,15 +45,10 @@ class BrukerMPFU(Interface):
         Parameters
         ----------
         config_file : str
-            _description_
-        d0 : int, optional
-            _description_, by default 600
+            The path to a YAML configuration file.
 
         Attributes
         ----------
-        temp_dir:str
-            A linux tmp directory for storing pulsespel files
-
         bg_thread: None or threading.Thread
             If a background thread is needed, it is stored here.
         

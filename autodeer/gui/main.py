@@ -302,7 +302,7 @@ class autoDEERUI(QMainWindow):
             elif model == 'ETH_AWG':
                 from autodeer.hardware.ETH_awg import ETH_awg_interface
                 self.spectromterInterface = ETH_awg_interface()
-                self.Bruker=True
+                self.Bruker=False
             elif model == 'Bruker_MPFU':
                 from autodeer.hardware.Bruker_MPFU import BrukerMPFU
                 self.spectromterInterface = BrukerMPFU(filename_edit)
