@@ -728,18 +728,21 @@ def change_dimensions(path, dim: int, new_length):
     with open(path, 'w') as file:
         file.writelines(data)
 
-def _addAWGPulse(sequence, pulse_num, id, pcyc_str):
+def _addAWGPulse(sequence, pulse_num, id, pcyc_str,amp_var=None):
     awg_id = id
     pulse=sequence.pulses[pulse_num]
     if type(pulse) is RectPulse:
         shape = 0
         init_freq = pulse.freq.value
         final_freq = init_freq
-        if hasattr(pulse,"scale"):
-            amplitude = pulse.scale.value
+        if amp_var is not None:
+            amplitude = amp_var
         else:
-            amplitude = 0
-    
+            if hasattr(pulse,"scale"):
+                amplitude = pulse.scale.value
+            else:
+                amplitude = 0
+        
 
     def add_AWG_line(elements, comment=None, indent=2, repeat=1):
         string = ""
@@ -785,6 +788,7 @@ def get_arange(array):
     if np.ndim(array) > 1:
         raise ValueError("The array must be 1D")
 
+    array = np.around(array,6)
     unique_diff = np.unique(np.diff(array))
     step = unique_diff[0]
     start = array[0]
@@ -807,6 +811,9 @@ def build_unique_progtable(seq):
             axes.append(progtable["axis"][i])
             variables.append((progtable["EventID"][i], progtable["Variable"][i]))
         
+        if np.any([a[1]=='scale' for a in variables]):
+            axes = [ax * 100 for ax in axes]
+
         # Find unique axis
         steps = []
         for axis in axes:
@@ -844,58 +851,58 @@ def build_unique_progtable(seq):
 
     return u_progtable
 
-def _addAWGPulse(self, sequence, pulse_num, id):
-    awg_id = id
-    pulse=sequence.pulses[pulse_num]
-    if type(pulse) is RectPulse:
-        shape = 0
-        init_freq = pulse.freq.value
-        final_freq = init_freq
-        if hasattr(pulse,"scale"):
-            amplitude = pulse.scale.value
-        else:
-            amplitude = 0
+# def _addAWGPulse(self, sequence, pulse_num, id):
+#     awg_id = id
+#     pulse=sequence.pulses[pulse_num]
+#     if type(pulse) is RectPulse:
+#         shape = 0
+#         init_freq = pulse.freq.value
+#         final_freq = init_freq
+#         if hasattr(pulse,"scale"):
+#             amplitude = pulse.scale.value
+#         else:
+#             amplitude = 0
     
 
-    def add_AWG_line(elements, comment=None, indent=2, repeat=1):
-        string = ""
-        string += " "*indent
-        for i in range(0,repeat):
-            if isinstance(elements,list) or isinstance(elements,np.ndarray):
-                for ele in elements:
-                    string += f"{ele:<4}  "
-            else:
-                string += f"{elements:<4}  "
+#     def add_AWG_line(elements, comment=None, indent=2, repeat=1):
+#         string = ""
+#         string += " "*indent
+#         for i in range(0,repeat):
+#             if isinstance(elements,list) or isinstance(elements,np.ndarray):
+#                 for ele in elements:
+#                     string += f"{ele:<4}  "
+#             else:
+#                 string += f"{elements:<4}  "
         
-        if comment is not None:
-            string += ";  " + comment
+#         if comment is not None:
+#             string += ";  " + comment
         
-        string += "\n"
-        return string
+#         string += "\n"
+#         return string
 
-    string = ""
+#     string = ""
     
-    # phase = np.round(np.degrees(pulse.pcyc["Phases"]))
-    phase = np.round(np.degrees(sequence.pcyc_cycles[:,sequence.pcyc_vars.index(pulse_num)]))
+#     # phase = np.round(np.degrees(pulse.pcyc["Phases"]))
+#     phase = np.round(np.degrees(sequence.pcyc_cycles[:,sequence.pcyc_vars.index(pulse_num)]))
 
-    num_cycles = len(phase)
+#     num_cycles = len(phase)
     
-    string += f"begin awg{awg_id}\n"
-    string += add_AWG_line(
-        init_freq, repeat=num_cycles, comment="Initial Frequency [MHz]")
-    string += add_AWG_line(
-        final_freq, repeat=num_cycles, comment="Final Frequency [MHz]")
-    string += add_AWG_line(
-        phase, repeat=1, comment="Phase")
-    string += add_AWG_line(
-        amplitude, repeat=num_cycles, comment="Amplitude")
-    string += add_AWG_line(
-        shape, repeat=num_cycles, comment="Shape")
-    string += f"end awg{awg_id}\n"
+#     string += f"begin awg{awg_id}\n"
+#     string += add_AWG_line(
+#         init_freq, repeat=num_cycles, comment="Initial Frequency [MHz]")
+#     string += add_AWG_line(
+#         final_freq, repeat=num_cycles, comment="Final Frequency [MHz]")
+#     string += add_AWG_line(
+#         phase, repeat=1, comment="Phase")
+#     string += add_AWG_line(
+#         amplitude, repeat=num_cycles, comment="Amplitude")
+#     string += add_AWG_line(
+#         shape, repeat=num_cycles, comment="Shape")
+#     string += f"end awg{awg_id}\n"
 
-    self.pcyc_str += string
+#     self.pcyc_str += string
 
-    return f"awg{id}"
+#     return f"awg{id}"
 
 def check_variable(var:str, uprog):
 
@@ -939,6 +946,9 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
     loop_iterators = ["i","j"]
     loop_dims = ["m","f"]
     letter_vars = ['b','c','e','f','g']
+    possible_amps = ["aa1","aa2","aa3","aa4","aa5","aa6","aa7","aa8","aa9","aa10",
+                     "ab1","ab2","ab3","ab4","ab5","ab6","ab7","ab8","ab9","ab10",
+                     "ac1","ac2","ac3","ac4","ac5","ac6","ac7","ac8","ac9","ac10"]
 
     n_pulses = len(sequence.pulses)
     n_axes = len(uprogtable)
@@ -950,7 +960,12 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
     axis_start_hash = {}
     axis_step_hash = {}
     axis_val_hash = {}
+    mv_pulse_amp_hash = {}
+    static_pulse_amp_hash = {}
+    
     axs_ids = []
+
+
     head = "begin exp \"auto\" [INTG QUAD] \n"
     foot = "end exp"
     def_file = "begin defs \n"
@@ -974,6 +989,10 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
         else:
             static_pulse_hash[i] = possible_pulses.pop()
             def_file += f"{static_pulse_hash[i]} = {pulse.tp.value}\n"
+
+        if AWG and (not isinstance(pulse,Detection)):
+            static_pulse_amp_hash[i] = possible_amps.pop()
+            def_file += f"{static_pulse_amp_hash[i]} = {int(pulse.scale.value * 100):d}\n"
         prev_pulse = pulse
 
     for axis in uprogtable:
@@ -1081,6 +1100,21 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
                 srt_step_var = letter_vars.pop()
                 def_file += f"{srt_step_var} = {var['multiplier']*uprog['axis']['step']:.0f} * srtu\n"
                 foot = f"srt=srt + {srt_step_var}\n"+ foot
+        if check_variable("scale", uprog):
+            for var in uprog["variables"]:
+                if var["variable"][1] != "scale":
+                    continue
+                pulse_id = var["variable"][0]
+                mult = var["multiplier"]
+                mv_pulse_amp_hash[pulse_id] = possible_amps.pop()
+                head += f"{mv_pulse_amp_hash[pulse_id]} = {static_pulse_amp_hash[pulse_id]}\n"
+                
+                if mult > 0:
+                    sign = "+"
+                else:
+                    sign = "-"
+                for k in range(int(np.abs(mult))):
+                    foot = f"{mv_pulse_amp_hash[pulse_id]}={mv_pulse_amp_hash[pulse_id]}{sign}{axis_step_hash[ax]}\n"+ foot
 
 
         # head +=  f"{axis_val_hash[ax]} = 0\n"
@@ -1103,7 +1137,8 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
             if (type(pulse) is Detection):
                 continue
             id += 1
-            pcyc_str, awg_id = _addAWGPulse(sequence,pulse_num, id, pcyc_str)
+            amp_var = mv_pulse_amp_hash[pulse_num] if pulse_num in mv_pulse_amp_hash else static_pulse_amp_hash[pulse_num]
+            pcyc_str, awg_id = _addAWGPulse(sequence,pulse_num, id, pcyc_str,amp_var)
             pcyc_hash[pulse_num] = awg_id
 
         pcyc = PSPhaseCycle(sequence, MPFU=None, OnlyDet=True)
