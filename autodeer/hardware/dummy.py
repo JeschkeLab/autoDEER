@@ -276,9 +276,9 @@ def _simulate_reptimescan(sequence):
     data = add_phaseshift(data, 0.05)
     return t, data
 
-def _simulate_2D_relax(sequence):
+# def _simulate_2D_relax(sequence):
 
-    def func(x,y,T2):
+#     def func(x,y,T2):
         
 
 def _gen_ESEEM(t,freq,depth):

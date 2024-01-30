@@ -84,7 +84,7 @@ class BrukerAWG(Interface):
         self.setup_flag = True
         pass
 
-        def acquire_dataset(self):
+    def acquire_dataset(self):
         if self.bg_data is None:
             if not self.isrunning():
                 if (self.savename is not None) and (self.savename != ''):
@@ -97,8 +97,8 @@ class BrukerAWG(Interface):
             data = create_dataset_from_sequence(self.bg_data, self.cur_exp)
         return super().acquire_dataset(data)
 
-    
-        def _launch_complex_thread(self,sequence,axID=1,tune=True):
+
+    def _launch_complex_thread(self,sequence,axID=1,tune=True):
     
         uProgTable = build_unique_progtable(sequence)
         reduced_seq = sequence.copy()
@@ -131,8 +131,8 @@ class BrukerAWG(Interface):
         pass
         
     def launch(self, sequence: Sequence, savename: str, start=True, tune=True,
-               MPFU_overwrite=None,update_pulsespel=True, reset_bg_data = True,
-               reset_cur_exp=True,**kwargs):
+            MPFU_overwrite=None,update_pulsespel=True, reset_bg_data = True,
+            reset_cur_exp=True,**kwargs):
         
         sequence.shift_detfreq_to_zero()
 
@@ -212,63 +212,63 @@ class BrukerAWG(Interface):
 
     
     def tune_rectpulse(self,*,tp, LO, B, reptime, shots=400):
-            """Generates a rectangular pi and pi/2 pulse of the given length at 
-            the given field position. This value is stored in the pulse cache. 
+        """Generates a rectangular pi and pi/2 pulse of the given length at 
+        the given field position. This value is stored in the pulse cache. 
 
-            Parameters
-            ----------
-            tp : float
-                Pulse length in ns
-            LO : float
-                Central frequency of this pulse in GHz
-            B : float
-                Magnetic B0 field position in Gauss
-            reptime: float
-                Shot repetion time in us.
-            shots: int
-                The number of shots
+        Parameters
+        ----------
+        tp : float
+            Pulse length in ns
+        LO : float
+            Central frequency of this pulse in GHz
+        B : float
+            Magnetic B0 field position in Gauss
+        reptime: float
+            Shot repetion time in us.
+        shots: int
+            The number of shots
 
-            Returns
-            -------
-            p90: RectPulse
-                A tuned rectangular pi/2 pulse of length tp
-            p180: RectPulse
-                A tuned rectangular pi pulse of length tp
-            """
+        Returns
+        -------
+        p90: RectPulse
+            A tuned rectangular pi/2 pulse of length tp
+        p180: RectPulse
+            A tuned rectangular pi pulse of length tp
+        """
 
-            amp_tune =HahnEchoSequence(
-                B=B, LO=LO, reptime=reptime, averages=1, shots=shots
-            )
+        amp_tune =HahnEchoSequence(
+            B=B, LO=LO, reptime=reptime, averages=1, shots=shots
+        )
 
-            scale = Parameter("scale",0,dim=45,step=0.02)
-            amp_tune.pulses[0].tp.value = tp
-            amp_tune.pulses[0].scale = scale
-            amp_tune.pulses[1].tp.value = tp * 2
-            amp_tune.pulses[1].scale = scale
+        scale = Parameter("scale",0,dim=45,step=0.02)
+        amp_tune.pulses[0].tp.value = tp
+        amp_tune.pulses[0].scale = scale
+        amp_tune.pulses[1].tp.value = tp * 2
+        amp_tune.pulses[1].scale = scale
 
-            amp_tune.evolution([scale])
-            
-            self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+        amp_tune.evolution([scale])
+        
+        self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
 
-            while self.isrunning():
-                time.sleep(10)
-            dataset = self.acquire_dataset()
-            dataset.epr.correctphase
+        while self.isrunning():
+            time.sleep(10)
+        dataset = self.acquire_dataset()
+        dataset.epr.correctphase
 
-            data = np.abs(dataset.data)
-            scale = np.around(dataset.pulse0_scale[data.argmax()].data,2)
-            if scale > 0.9:
-                raise RuntimeError("Not enough power avaliable.")
-            
-            if scale == 0:
-                warnings.warn("Pulse tuned with a scale of zero!")
-            p90 = amp_tune.pulses[0].copy(
-                scale=scale, LO=amp_tune.LO)
-            
-            p180 = amp_tune.pulses[1].copy(
-                scale=scale, LO=amp_tune.LO)
+        data = np.abs(dataset.data)
+        scale = np.around(dataset.pulse0_scale[data.argmax()].data,2)
+        if scale > 0.9:
+            raise RuntimeError("Not enough power avaliable.")
+        
+        if scale == 0:
+            warnings.warn("Pulse tuned with a scale of zero!")
+        p90 = amp_tune.pulses[0].copy(
+            scale=scale, LO=amp_tune.LO)
+        
+        p180 = amp_tune.pulses[1].copy(
+            scale=scale, LO=amp_tune.LO)
 
-            return p90, p180
+        return p90, p180
     
     def tune_pulse(self, pulse, mode, LO, B , reptime, shots=400):
         """Tunes a single pulse a range of methods.

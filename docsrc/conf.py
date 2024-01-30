@@ -32,7 +32,8 @@ release = '0.4-alpha'
 # ones.
 extensions = [# 'sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
-              'sphinx.ext.autosummary',
+              #'sphinx.ext.autosummary',
+              'autoapi.extension',
               'sphinx_toolbox.collapse',
               'sphinx_toolbox.code',
               'sphinx_copybutton',
@@ -45,16 +46,21 @@ extensions = [# 'sphinx.ext.autodoc',
 # ----------------------------------------------------------------------
 add_module_names = True
 # Turn on sphinx.ext.autosummary
-autosummary_generate = True 
-# autodoc_class_signature = "separated"
-autoclass_content= "class"
-autodoc_inherit_docstrings=True
-autodoc_mock_imports = ["matlabengine", "matlab.engine", "XeprAPI"]
-# napoleon_numpy_docstring = True
-numpydoc_show_inherited_class_members=True
-numpydoc_show_class_members=True
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+autoapi_dirs = ['../autodeer']
+autodoc_typehints = "description"
+autoapi_template_dir = "_templates/autoapi"
+# autoapi_options = [
+#     "members",
+#     "undoc-members",
+#     "show-inheritance",
+#     # "show-module-summary",
+#     "imported-members",
+# ]
+autoapi_keep_files = True
+autoapi_add_toctree_entry = False
+autoapi_python_class_content= "both"
+suppress_warnings = ["autoapi"]
+
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -75,7 +81,7 @@ html_theme = "furo"
 html_title = " "
 html_static_path = ["_static"]
 html_theme_options = {
-    "announcement": "Version 0.4 alpha out now!",
+    "announcement": "Version 0.7 alpha out now!",
     "light_logo": "autoDEER_EPR_light.svg",
     "dark_logo": "autoDEER_EPR_dark.svg",
 
