@@ -557,7 +557,8 @@ class ETH_awg_interface(Interface):
         event["t"] = float(pulse.t.value)
 
         if type(pulse) is Detection:
-            event["det_len"] = float(pulse.tp.value * self.dig_rate)
+            # event["det_len"] = float(pulse.tp.value * self.dig_rate)
+            event["det_len"] = float(1024)
             event["det_frq"] = float(pulse.freq.value) + self.awg_freq
             event["name"] = "det"
             return event
