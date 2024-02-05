@@ -89,7 +89,8 @@ class ResonatorProfileAnalysis:
         self.profile_ci = np.zeros(self.n_LO)
 
         fun = lambda x, f, tau,a,k: a*np.cos(2*np.pi*f*x)*np.exp(-x/tau)+ k
-        bounds = ([5e-3,0,0,-1],[0.3,np.inf,2,1])
+        bounds = ([5e-3,10,0,-1],[0.3,2000,2,1])
+        p0 = [50e-3,150,1,0]
 
         R2 = lambda y, yhat: 1 - np.sum((y - yhat)**2) / np.sum((y - np.mean(y))**2)
 
@@ -98,7 +99,7 @@ class ResonatorProfileAnalysis:
             nutation = nutation/np.max(nutation)
             x = self.t
             try:
-                results = curve_fit(fun, x, nutation, bounds=bounds,xtol=1e-4,ftol=1e-4)
+                results = curve_fit(fun, x, nutation, bounds=bounds,xtol=1e-4,ftol=1e-4,p0=p0)
                 if R2(nutation,fun(x,*results[0])) > R_limit:
                     self.profile[i] = results[0][0]
 
