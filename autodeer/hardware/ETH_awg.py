@@ -47,6 +47,7 @@ class ETH_awg_interface(Interface):
         dig_rate : float
             The speed of the digitser in GSa/s
         """
+        super().__init__()
             
         self.awg_freq = awg_freq
         self.dig_rate = dig_rate
@@ -54,7 +55,19 @@ class ETH_awg_interface(Interface):
         self.cur_exp = None
         self.bg_data = None
         self.bg_thread = None
+        
         pass
+
+    @property
+    def savefolder(self):
+        return self._savefolder
+    
+    @savefolder.setter
+    def savefolder(self, folder):
+        self._savefolder = folder
+        if hasattr(self, 'engine'):
+            self.engine.cd(folder)
+
 
     def connect(self, session=None):
         """Connect to a running matlab session. If more than one session has 
@@ -84,6 +97,7 @@ class ETH_awg_interface(Interface):
         
         self.engine = matlab.engine.connect_matlab(session)
         self.workspace = self.engine.workspace
+        self.engine.cd(self._savefolder)
 
     def acquire_dataset(self,verbosity=0):
         if self.bg_data is None:

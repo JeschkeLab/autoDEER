@@ -173,15 +173,17 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     elif exp_type == "3pDEER":
         experimentInfo = dl.ex_3pdeer(tau=tau1,pathways=pathways,pulselength=pulselength)
 
-    r = np.linspace(1.5,10,100)
+    r = np.linspace(1.2,10,100)
 
 
 
     # identify experiment
     
-
-    Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo, Pmodel=model)
-    Vmodel.pathways = pathways
+    if 'Vmodel' in kwargs:
+        Vmodel = kwargs['Vmodel']
+    else:
+        Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo, Pmodel=model)
+        Vmodel.pathways = pathways
 
     if compactness:
         compactness_penalty = dl.dipolarpenalty(model, r, 'compactness', 'icc')
@@ -200,7 +202,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
 
     # Cleanup extra args
-    extra_args = ['tau1','tau2','tau3','exp_type','model','compactness','ROI','verbosity','pulselength']
+    extra_args = ['tau1','tau2','tau3','exp_type','model','compactness','ROI','verbosity','pulselength','Vmodel']
     for arg in extra_args:
         if arg in kwargs:
             kwargs.pop(arg)
@@ -783,6 +785,7 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     if respro is not None:
         model_norm = respro.model / np.max(respro.model)
         axs.plot(respro.model_x - Fieldsweep.LO, model_norm,'--', label='Resonator Profile')
+    axs.set_xlim(f.min(),f.max())
 
     axs.legend()
     axs.set_xlabel('Frequency (MHz)')

@@ -12,6 +12,7 @@ import uuid
 import json
 import base64
 from autodeer.utils import autoEPRDecoder
+from pathlib import Path
 
 
 # =============================================================================
@@ -23,6 +24,7 @@ class Interface:
 
     def __init__(self) -> None:
         self.pulses = {}
+        self._savefolder = str(Path.home())
         pass
 
     def connect(self) -> None:
