@@ -9,6 +9,8 @@ from reportlab.platypus.doctemplate import PageTemplate
 from reportlab.platypus.frames import Frame
 from functools import partial
 from datetime import date
+import matplotlib.pyplot as plt
+from autodeer.DEER_analysis import DEERanalysis_plot, plot_overlap
 
 from svglib.svglib import svg2rlg
 from io import BytesIO
@@ -61,7 +63,7 @@ class Reporter():
             
             self.story = OrderedDict()  # possibly change to a normal dict in the future
             frame = Frame(self.pdf.leftMargin, self.pdf.bottomMargin, self.pdf.width, self.pdf.height, id='normal')
-            template = PageTemplate(id='normal', frames=frame, onPage=self.header, onPageEnd=self.footer)
+            template = PageTemplate(id=None, frames=frame, onPage=self.header, onPageEnd=self.footer)
             self.pdf.addPageTemplates([template])
 
             pass
@@ -138,3 +140,100 @@ class Reporter():
     
     def add_page_break(self, key):
         self.story[key].append(PageBreak())
+
+    def add_table(self, key, lists):
+        """Generates a table as a reportlab flowable from a list of lists
+        """
+        t = Table(lists)
+        t.setStyle(TableStyle([('ALIGN',(1,1),(-2,-2),'RIGHT'),]))
+        self.story[key].append(t)   
+
+
+def create_report(save_path, Results:dict, SpectrometerInfo:dict=None, UserInputs:dict=None, Pulses=None):
+        report = Reporter(filepath=save_path,pagesize='A4')
+
+        report.add_title('title','autoDEER Report')
+        if SpectrometerInfo is not None:
+            report.add_new_section('spec',' Spectrometer')
+            report.add_text('spec', 'Local Name: ' + SpectrometerInfo['Local Name'])
+            report.add_text('spec', 'Manufacturer: ' + SpectrometerInfo['Manufacturer'])
+            report.add_text('spec', 'Model: ' + SpectrometerInfo['Model'])
+
+            report.add_text('spec', 'Resonator: ' + SpectrometerInfo['Resonator'])
+            report.add_space('spec', height=10)
+        report.add_new_section('inputs',' User Inputs')
+        if UserInputs is not None:
+            report.add_text('inputs', 'Sample Name: ' + UserInputs['Sample Name'])
+            report.add_text('inputs', f"Temperature: {UserInputs['Temp']:.3f} K")
+            report.add_text('inputs', f"Max Time: {UserInputs['MaxTime']} hrs")
+
+        report.add_page_break('inputs')
+
+        if 'fieldsweep' in Results:
+            report.add_new_section('fieldsweep',' Field Sweep')
+            fig,axs = plt.subplots(1,1,figsize=(5, 3))
+            Results['fieldsweep'].plot(axs=axs, fig=fig)
+            report.add_figure('fieldsweep', fig)
+            report.add_text('fieldsweep', f"Gyromagnetic Ratio: {Results['fieldsweep'].gyro:.3g} GHz/G")
+            if hasattr(Results['fieldsweep'], 'results'):
+                report.add_space('fieldsweep')
+                report.add_code_block('fieldsweep', Results['fieldsweep'].results.__str__(), title='Fit Results')
+            report.add_page_break('fieldsweep')
+
+        if 'respro' in Results:
+            report.add_new_section('respro',' Resonator Profile')
+            fig,axs = plt.subplots(1,1,figsize=(5, 5))
+            fitresult = Results['respro']
+            if 'fieldsweep'in Results:
+                fitresult.plot(fieldsweep=Results['fieldsweep'],axs=axs, fig=fig);
+            else:
+                fitresult.plot(axs=axs,fig=fig)
+
+            report.add_figure('respro', fig)
+            if hasattr(Results['respro'], 'results'):
+                report.add_space('respro')
+                report.add_code_block('respro', Results['respro'].results.__str__(), title='Fit Results')
+            report.add_page_break('respro')
+
+        if Pulses is not None:
+            pump_pulse = Pulses['pump_pulse']
+            exc_pulse = Pulses['exc_pulse']
+            ref_pulse = Pulses['ref_pulse']
+            report.add_new_section('pulses',' Optimised Pulses')
+            fig,axs = plt.subplots(1,1,figsize=(5, 5))
+            plot_overlap(Results['fieldsweep'], pump_pulse, exc_pulse,ref_pulse, axs=axs,fig=fig)
+
+            report.add_figure('pulses', fig)
+            report.add_space('pulses')
+
+            report.add_code_block('pulses', exc_pulse.__str__(), title='Excitation Pulse')
+            report.add_code_block('pulses', ref_pulse.__str__(), title='Refocusing Pulse')
+            report.add_code_block('pulses', pump_pulse.__str__(), title='Pump Pulse')
+
+
+        if 'relax' in Results:
+            report.add_new_section('relax',' Relaxation')
+            fig,axs = plt.subplots(1,1,figsize=(5, 5))
+            Results['relax'].plot(axs=axs, fig=fig)
+            report.add_figure('relax', fig)
+            if hasattr(Results['relax'], 'results'):
+                report.add_space('relax')
+                report.add_code_block('relax', Results['relax'].results.__str__(), title='Fit Results')
+            report.add_page_break('relax') 
+
+
+        if 'quickdeer' in Results:
+            report.add_new_section('quickdeer',' QuickDEER')
+            fig,axs = plt.subplot_mosaic([['Primary_time'], 
+                                          ['Primary_dist']], figsize=(6,6))
+            
+            DEERanalysis_plot(Results['quickdeer'], background=True, ROI=Results['quickdeer'].ROI, axs= axs, fig=fig,text=False)
+            report.add_figure('quickdeer', fig)
+            
+            if 'quickdeer' in Results:
+                report.add_space('quickdeer')
+                report.add_code_block('quickdeer', Results['quickdeer'].__str__(), title='Fit Results')
+            report.add_page_break('quickdeer')
+            
+        report._build()
+        pass
