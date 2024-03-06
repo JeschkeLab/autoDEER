@@ -79,10 +79,8 @@ class XeprAPILink:
             except Exception as e:
                 time.sleep(1)
                 continue
-            else:
-                return func(*args, **kwargs)
         
-        raise Exception("Failed to get Xepr parameter. Message: " + str(e))
+        raise Exception("Failed to get Xepr parameter.")
 
     def get_param(self, param_name: str):
         
@@ -92,12 +90,19 @@ class XeprAPILink:
         
         return self._xepr_retry(lambda: self.hidden[param_name].value)
     
+    def _set_cur_exp_param(self, param_name, value):
+        self.cur_exp[param_name].value = value
+    
+    def _set_hidden_param(self, param_name, value):
+        self.hidden[param_name].value = value
+    
     def set_param(self, param_name: str, value):
-        self._xepr_retry(lambda: self.cur_exp[param_name].value = value)
+        self._xepr_retry(self._set_cur_exp_param, param_name, value)
         return self.get_param(param_name)
 
     def set_hidden_param(self, param_name: str, value):
-        self._xepr_retry(lambda: self.hidden[param_name].value = value)
+        self._set_hidden_param(param_name, value)
+        # self._xepr_retry(self._set_hidden_param, param_name, value)
         return self.get_hidden_param(param_name)
 
     def find_Xepr(self):
@@ -192,9 +197,9 @@ class XeprAPILink:
         data_dim = len(size)
         data = dataclass.O
         params = {
-            "nAvgs": self.getParam("recorder.NbScansDone"),
-            "reptime": self.getParam("ftEPR.ShotRepTime"),
-            "shots": self.getParam("ftEPR.ShotsPLoop"),
+            "nAvgs": self.get_param("recorder.NbScansDone"),
+            "reptime": self.get_param("ftEPR.ShotRepTime"),
+            "shots": self.get_param("ftEPR.ShotsPLoop"),
             "B": self.get_field(),
             "LO": self.get_counterfreq(),
             }
@@ -258,10 +263,10 @@ class XeprAPILink:
         """
         This script acquires the scan after a specific number of scans
         """
-        x_length = int(self.getParam("XSpecRes"))
-        time_per_point = self.getParam("ShotRepTime") * 1e-6 \
-            * self.getParam("ShotsPLoop") * 2
-        while self.getParam("NbScansDone") != scan_num:
+        x_length = int(self.get_param("XSpecRes"))
+        time_per_point = self.get_param("ShotRepTime") * 1e-6 \
+            * self.get_param("ShotsPLoop") * 2
+        while self.get_param("NbScansDone") != scan_num:
             time.sleep(time_per_point * x_length / 2)
         return self.acquire_scan(sequence)
 
@@ -273,15 +278,15 @@ class XeprAPILink:
         This requires that the experiment has not been saved. 
         """
         if self.is_exp_running():
-            total_num_scan = self.getParam("NbScansToDo")
-            total_num_sweeps = self.getParam("SweepsPExp")
+            total_num_scan = self.get_param("NbScansToDo")
+            total_num_sweeps = self.get_param("SweepsPExp")
             scans_per_sweep = total_num_scan/total_num_sweeps
 
             if not scans_per_sweep.is_integer():
                 raise RuntimeError("There is a non integer number of scans per"
                                    " sweep")
 
-            current_scan = self.getParam("NbScansDone")
+            current_scan = self.get_param("NbScansDone")
             current_sweep = np.floor(current_scan/scans_per_sweep)
             next_scan_target = (current_sweep + 1) * scans_per_sweep
 
@@ -336,7 +341,7 @@ class XeprAPILink:
         if state != init_state:
             hw_log.info(f"On-Board Phase Cycling set to {state}")
             self.set_param("PCycleOn", state)  
-        return self.set_PhaseCycle()
+        return self.get_PhaseCycle()
 
     def get_PulseSpel_exp_filename(self):
         return os.path.basename(self.get_param("ftEPR.PlsSPELPrgPaF"))
@@ -373,7 +378,7 @@ class XeprAPILink:
 
     def set_PulseSpel_experiment(self, name):
         hw_log.info(f"Set PulseSpel experiment to {name}")
-        self.get_param("ftEPR.PlsSPELEXPSlct",name)
+        self.set_param("ftEPR.PlsSPELEXPSlct",name)
 
     def save_PulseSpel_exp(self, name: str = None):
         if name is None:
