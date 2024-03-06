@@ -1,7 +1,7 @@
 import matlab.engine
 from autodeer.classes import  Interface, Parameter
 from autodeer.pulses import Pulse, RectPulse, ChirpPulse, HSPulse, Delay, Detection
-from autodeer.sequences import Sequence, HahnEchoSequence
+from autodeer.sequences import Sequence, HahnEchoSequence, FieldSweepSequence
 from autodeer.hardware.ETH_awg_load import uwb_load
 import numpy as np
 import os
@@ -146,7 +146,10 @@ class ETH_awg_interface(Interface):
                     exp = kwargs['cur_exp']
                 else:
                     exp = self.cur_exp
-                data = uwb_eval_match(Matfile, exp,verbosity=verbosity)
+                if isinstance(exp, FieldSweepSequence):
+                    data = uwb_eval_match(Matfile, exp,verbosity=verbosity,filter_type='cheby2',filter_width=0.01)
+                else:
+                    data = uwb_eval_match(Matfile, exp,verbosity=verbosity)
             except OSError:
                 time.sleep(10)
             except IndexError:

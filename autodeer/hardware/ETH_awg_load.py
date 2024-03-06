@@ -2,6 +2,7 @@ import numpy as np
 import scipy.signal as sig
 from autodeer.classes import Parameter
 from autodeer.dataset import create_dataset_from_axes, create_dataset_from_sequence
+from autodeer.pulses import Pulse
 from scipy.integrate import cumulative_trapezoid
 from deerlab import correctphase
 
@@ -529,7 +530,29 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
 # uwb_eval rewritten to use a matched filter
 # ---------------------------------------------------------------------------
 
-def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=None,verbosity=0, **kwargs):
+def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=None,filter_type='match',filter_width=None,verbosity=0, **kwargs):
+    """
+    
+    Parameters
+    ----------
+    matfile : np.ndarray
+        The data file to be loaded.
+    sequence : ad.Sequence, optional
+        The sequence used to generate the data.
+    scans : list, optional
+        The scans to be loaded.
+    mask : list, optional
+        The mask to be used.
+    filter_pulse : ad.Pulse, optional
+        The pulse to be used as a matched filter. If None, the maximum pulse width will be used. This is only used if filter_type is 'match'
+    filter_type : str, optional
+        The type of filter to be used. Options are 'match', 'cheby2' and 'butter. Default is 'match'
+    filter_width : float, optional
+        The width of the filter to be used. This is only used if filter_type is 'cheby2' or 'butter'
+    verbosity : int, optional
+        The verbosity of the function. Default is 0.
+    
+    """
     # imports Andrin Doll AWG datafiles using a matched filter
 
     estr = matfile[matfile['expname']]
@@ -801,23 +824,33 @@ def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=No
                         f"level will be on the order of {best_lev}.")
                     
     det_frqs_perc = calc_percieved_freq(fsmp,det_frq)
-    
+    echo_len = dta[0].shape[0]
+    dt = 1/fsmp
+    t = np.linspace(0,echo_len//2,echo_len,endpoint=False)
     # Create the matched filter
-    if filter_pulse is None:
+    if (filter_pulse is None) and (filter_type.lower() == 'match'):
         # If no filter pulse is given, use a rectangular pulse matching the length of the longest fixed pulse
-        echo_len = dta[0].shape[0]
-        dt = 1/fsmp
-        t = np.linspace(0,echo_len//2,echo_len,endpoint=False)
         tp = find_max_pulse_length(estr)
         tp *= fsmp
         AM,FM = np.zeros((2,echo_len))
         AM[echo_len//2-tp//2:echo_len//2+tp//2] = 1
         FM[echo_len//2-tp//2:echo_len//2+tp//2] = 0
         FM_arg = 2*np.pi*cumulative_trapezoid(FM, initial=0) * dt
-        complex = AM * (np.cos(FM_arg) +1j* np.sin(FM_arg))
+        complex_shape = AM * (np.cos(FM_arg) +1j* np.sin(FM_arg))
 
-    else:
-        complex = filter_pulse
+        filter_func = lambda dta, det_frq: match_filter_dc(dta,t,complex_shape,det_frq)
+    
+    elif isinstance(filter_pulse,Pulse):
+        complex_shape = filter_pulse.build_shape(t)
+        filter_func = lambda dta, det_frq: match_filter_dc(dta,t,complex_shape,det_frq)
+
+
+    elif (filter_type.lower() == 'cheby2') or (filter_type.lower() == 'butter'):
+        if filter_width is None:
+            raise ValueError('You must provide a filter width for the cheby2 or butter filter')
+        
+        filter_func = lambda dta, det_frq: scipy_filter_dc(dta,t,filter_width,det_frq,filter_type)
+            
 
 
     # Apply the matched filter
@@ -833,10 +866,10 @@ def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=No
     dta_c=dta_c.reshape(echo_len,*dims,order='F')
     if isinstance(det_frqs_perc,np.ndarray) and (len(det_frq) > 1):
         n_det_frqs = len(det_frqs_perc)
-        dta_filt_dc = np.array([np.apply_along_axis(match_filter_dc, 0, np.take(dta_c,i,det_frq_dim+1),t, complex, det_frqs_perc[i]) for i in range(n_det_frqs)])
+        dta_filt_dc = np.array([np.apply_along_axis(filter_func, 0, np.take(dta_c,i,det_frq_dim+1), det_frqs_perc[i]) for i in range(n_det_frqs)])
         dta_filt_dc = np.moveaxis(dta_filt_dc,0,det_frq_dim+1)
     else:
-        dta_filt_dc = np.apply_along_axis(match_filter_dc, 0, dta_c,t, complex, det_frqs_perc)
+        dta_filt_dc = np.apply_along_axis(filter_func, 0, dta_c,det_frqs_perc)
     peak_echo_idx = np.unravel_index(np.argmax(np.abs(dta_filt_dc).max(axis=0)),dims)
     echo_pos = np.argmax(np.abs(dta_filt_dc[tuple([slice(None)]) + peak_echo_idx]))
     dta_ev = dta_filt_dc[echo_pos,:]
@@ -872,9 +905,18 @@ def digitally_upconvert(t,complex,fc):
 def calc_percieved_freq(sampling_freq,fc):
     return np.abs(fc - sampling_freq * np.around(sampling_freq/2))
 
-def match_filter_dc(pulse,t, win, sampling_freq):
-    win_fc = digitally_upconvert(t,win,sampling_freq)
+def match_filter_dc(pulse,t, win, offset_freq):
+    win_fc = digitally_upconvert(t,win,offset_freq)
     filtered = sig.convolve(pulse,win_fc,mode='same')
-    filtered_dc = digitally_upconvert(t,filtered,-sampling_freq)
+    filtered_dc = digitally_upconvert(t,filtered,-offset_freq)
+    return filtered_dc
+
+def scipy_filter_dc(dta,t,filter_width,offset_freq,filter_type='cheby2'):
+    if filter_type == 'cheby2':
+        filter_sos = sig.cheby2(10,40,(offset_freq-filter_width,offset_freq+filter_width),fs=2,btype="bandpass",output='sos')
+    elif filter_type == 'butter':
+        filter_sos = sig.butter(10,(offset_freq-filter_width,offset_freq+filter_width),fs=2,btype="bandpass",output='sos')
+    filtered = sig.sosfilt(filter_sos,dta)
+    filtered_dc = digitally_upconvert(t,filtered,-offset_freq)
     return filtered_dc
 
