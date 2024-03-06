@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
@@ -106,9 +106,10 @@ def fieldsweep_fit(fsweep_analysis):
 def respro_process(dataset, fieldsweep=None,cores=1):
     respro = ad.ResonatorProfileAnalysis(
         dataset
-    )    
+    )
+    fc_guess = dataset.LO.values[dataset.LO.values.shape[0]//2]
     with threadpool_limits(limits=cores, user_api='blas'):
-        respro.fit(cores=cores)
+        respro.fit(cores=cores,fc_guess=fc_guess)
 
     if fieldsweep is not None:
         LO_new = fieldsweep.LO + ad.optimise_spectra_position(respro, fieldsweep)
@@ -398,6 +399,10 @@ class autoDEERUI(QMainWindow):
         self.connected = True
         self.set_spectrometer_connected_light(1)
 
+    def raise_warning(self, message):
+        # QDialog.about(self,'Warning!', message)
+        main_log.warning(message)
+
     def save_data(self,dataset,filename):
         timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
         fullname = timestamp + self.SampleName.text() + '_' +filename +'.h5'
@@ -501,7 +506,7 @@ class autoDEERUI(QMainWindow):
         self.gzCI.setText(getCIstring(fitresult.results.gzUncert))
         self.Tab_widget.setCurrentIndex(1)
 
-        if not (self.pulses is None) or (self.pulses == {}):
+        if not ((self.pulses is None) or (self.pulses == {})):
             self.update_optimise_pulses_figure()
 
 
@@ -686,7 +691,7 @@ class autoDEERUI(QMainWindow):
         fig = self.relax_canvas.figure
         axs = self.relax_ax
 
-        axs.set_xlabel("Time ($\mu s$)")
+        axs.set_xlabel("Total Sequence Length ($\mu s$)")
         axs.set_ylabel("Signal (A. U.)")
         
         if 'relax' in self.current_results:
@@ -694,22 +699,24 @@ class autoDEERUI(QMainWindow):
             CP_data = CP_results.data
             CP_data /= CP_data.max()
             if hasattr(CP_results, "fit_result"):
-                axs.plot(CP_results.axis, CP_data, '.', label='CP', color='C1', ms=6)
-                axs.plot(CP_results.axis, CP_results.func(
+                axs.plot(CP_results.axis*4, CP_data, '.', label='CP', color='C1', ms=6)
+                axs.plot(CP_results.axis*4, CP_results.func(
                     CP_results.axis, *CP_results.fit_result[0]), label='CP-fit', color='C1', lw=2)
             else:
-                axs.plot(CP_results.axis, CP_data, label='data', color='C1')
+                axs.plot(CP_results.axis*4, CP_data, label='data', color='C1')
         
         if 'T2_relax' in self.current_results:
             T2_results = self.current_results['T2_relax']
             T2_data = T2_results.data
             T2_data /= T2_data.max()
             if hasattr(T2_results, "fit_result"):
-                axs.plot(T2_results.axis, T2_data, '.', label='T2', color='C2', ms=6)
-                axs.plot(T2_results.axis, T2_results.func(
+                axs.plot(T2_results.axis*2, T2_data, '.', label='T2', color='C2', ms=6)
+                axs.plot(T2_results.axis*2, T2_results.func(
                     T2_results.axis, *T2_results.fit_result[0]), label='T2-fit', color='C2', lw=2)
             else:
-                axs.plot(T2_results.axis, T2_data, label='data', color='C2')
+                axs.plot(T2_results.axis*2, T2_data, label='data', color='C2')
+            
+        axs.legend()
         self.relax_canvas.draw()
 
     def refresh_relax(self, fitresult):
@@ -725,19 +732,42 @@ class autoDEERUI(QMainWindow):
         tau4hrs = fitresult.find_optimal(SNR_target=25/est_lambda, target_time=4, target_step=0.015)
         max_tau = fitresult.find_optimal(SNR_target=45/est_lambda, target_time=24, target_step=0.015)
     
+        self.current_results['relax'].tau2hrs = tau2hrs
+        
+        if (tau2hrs < 1.5) and (tau4hrs > 1.5):
+            self.raise_warning(f"2hr dipolar evo too short. Using 4hr number")
+            self.deer_settings['tau1'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
+            self.deer_settings['tau2'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
+            self.deer_settings['ExpType'] = '5pDEER'
+        
+        elif (tau2hrs < 1.5) and (tau4hrs < 1.5):
+            self.current_results['relax'].tau2hrs = 2.5
+            self.raise_warning(f"2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time")
+            self.deer_settings['tau1'] = ad.round_step(0.4,self.waveform_precision/1e3)
+            self.deer_settings['tau2'] = ad.round_step(2.5,self.waveform_precision/1e3)
+            self.deer_settings['ExpType'] = '4pDEER'
+            self.raise_warning(f"2hr dipolar evo {tau2hrs:.2f} us, using 4pDEER")
 
-        if tau2hrs < 1.5:
-            self.current_results['relax'].tau2hrs = tau4hrs
-            main_log.warning(f"2hr dipolar evo too short. Using 4hr number")
         else:  
-            self.current_results['relax'].tau2hrs = tau2hrs
+            self.deer_settings['tau1'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
+            self.deer_settings['tau2'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
+            self.deer_settings['ExpType'] = '5pDEER'
+            
+        self.deer_settings['tau3'] = 0.3
+        self.deer_settings['dt'] = 16
+        self.worker.update_deersettings(
+            self.deer_settings
+            )
+        
+        main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
+        main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
+        main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")
+
         self.current_results['relax'].max_tau = max_tau
         self.DipolarEvoMax.setValue(max_tau)
         self.DipolarEvo2hrs.setValue(tau2hrs)
         self.Tab_widget.setCurrentIndex(3)
-        main_log.info(f"2hr dipolar evo {tau2hrs:.2f} us")
-        main_log.info(f"Max dipolar evo {max_tau:.2f} us")
-
+        
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
@@ -799,11 +829,12 @@ class autoDEERUI(QMainWindow):
             dt = ad.round_step(dt,self.waveform_precision)
             mod_depth = x.MNR * x.noiselvl
             remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60))
-            max_tau = self.current_results['relax'].find_optimal(SNR_target=45/mod_depth, target_time=remaining_time, target_step=dt / 1e3)
+            max_tau = self.current_results['relax'].find_optimal(SNR_target=45/mod_depth, target_time=remaining_time, target_step=dt/1e3)
             tau = np.min([rec_tau/2,max_tau])
-            self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision)
-            self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision)
+            self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
+            self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
             self.deer_settings['tau3'] = 0.3
+            self.deer_settings['ExpType'] = '5pDEER'
             self.deer_settings['dt'] = dt
             self.worker.update_deersettings(
                 self.deer_settings
