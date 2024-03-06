@@ -119,7 +119,7 @@ class ResonatorProfileAnalysis:
 
 
 
-    def fit(self,f_diff_threshold=2,cores=1,multi_mode=False):
+    def fit(self,f_diff_threshold=2,cores=1,multi_mode=False,fc_guess=34.05):
         """Fit the resonator profile with a sum of lorentzians.
 
         Parameters
@@ -132,10 +132,10 @@ class ResonatorProfileAnalysis:
         frq_limits = {'lb': self.f_lims[0]-1, 'ub': self.f_lims[1]+1}
         def fit_gauss1():
             gauss_model = dl.dd_gauss
-            gauss_model.mean.set(par0=34.05, **frq_limits)
+            gauss_model.mean.set(par0=fc_guess, **frq_limits)
             gauss_model.std.set(par0=0.2, lb=0.01, ub=10)
 
-            result_gauss1 = dl.fit(gauss_model, self.profile, self.freqs,reg=False,multistart=4)
+            result_gauss1 = dl.fit(gauss_model, self.profile, self.freqs,reg=False)
             return result_gauss1
 
         def fit_gauss2():
@@ -145,7 +145,7 @@ class ResonatorProfileAnalysis:
             gauss_model.mean2.set(par0=34.05, **frq_limits)
             gauss_model.std2.set(par0=0.3, lb=0.01, ub=10)
 
-            result_gauss2 = dl.fit(gauss_model, self.profile, self.freqs,reg=False,multistart=4)
+            result_gauss2 = dl.fit(gauss_model, self.profile, self.freqs,reg=False)
             return result_gauss2
             
         def fit_gauss3():
@@ -157,7 +157,7 @@ class ResonatorProfileAnalysis:
             gauss_model.mean3.set(par0=34.05, **frq_limits)
             gauss_model.std3.set(par0=0.3, lb=0.01, ub=10)
 
-            result_gauss3 = dl.fit(gauss_model, self.profile, self.freqs,reg=False,multistart=4)
+            result_gauss3 = dl.fit(gauss_model, self.profile, self.freqs,reg=False)
             return result_gauss3
 
         def lorenz_fcn(x, fc, q):
@@ -171,7 +171,7 @@ class ResonatorProfileAnalysis:
             lorenz.q.set(lb=0, ub=np.inf)
             lorenz.q.par0 = uni_means[0]/uni_stds[0]
             lorenz.fc.set(par0=uni_means[0],lb=uni_means[0]-0.1,ub=uni_means[0]+0.1)
-            result_lorenz1 = dl.fit(lorenz, self.profile, self.freqs,reg=False, **fit_kwargs,multistart=4)
+            result_lorenz1 = dl.fit(lorenz, self.profile, self.freqs,reg=False, **fit_kwargs)
             return result_lorenz1, lorenz_fcn, lorenz
 
         def fit_lorenz2(uni_means,uni_stds,uni_amps,fit_kwargs):
@@ -189,7 +189,7 @@ class ResonatorProfileAnalysis:
             lorenz2.q2.par0 = uni_means[1]/uni_stds[1]
             lorenz2.amp1.set(lb=0, ub=np.inf, par0=uni_amps[0])
             lorenz2.amp2.set(lb=0, ub=np.inf, par0=uni_amps[1])
-            result_lorenz2 = dl.fit(lorenz2, self.profile, self.freqs,reg=False, **fit_kwargs,multistart=4)
+            result_lorenz2 = dl.fit(lorenz2, self.profile, self.freqs,reg=False, **fit_kwargs)
             return result_lorenz2, lorenz2_fcn, lorenz2
 
         def fit_lorenz3(uni_means,uni_stds,uni_amps,fit_kwargs):
@@ -212,7 +212,7 @@ class ResonatorProfileAnalysis:
             lorenz3.amp2.set(lb=0, ub=np.inf, par0=uni_amps[1])
             lorenz3.amp3.set(lb=0, ub=np.inf, par0=uni_amps[2])
 
-            result_lorenz3 = dl.fit(lorenz3, self.profile, self.freqs,reg=False, **fit_kwargs,multistart=4)
+            result_lorenz3 = dl.fit(lorenz3, self.profile, self.freqs,reg=False, **fit_kwargs)
             return result_lorenz3, lorenz3_fcn, lorenz3
 
         if multi_mode:
