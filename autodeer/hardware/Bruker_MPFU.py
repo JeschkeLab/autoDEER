@@ -208,7 +208,7 @@ class BrukerMPFU(Interface):
         if update_pulsespel:
             # PSpel = PulseSpel(sequence, MPFU=self.MPFU)
             
-            def_text, exp_text = write_pulsespel_file(sequence,False,MPFU_chans)
+            def_text, exp_text = write_pulsespel_file(sequence,self.d0,False,MPFU_chans)
             
             verbMsgParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELVerbMsg')
             plsSPELCmdParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELCmd')
@@ -331,15 +331,16 @@ class BrukerMPFU(Interface):
         d0=0
         self.d0=d0
 
-        seq = Sequence(name='single_pulse',B=B,LO=LO,reptime=3e3,averages=1,shots=20)
+        seq = Sequence(name='single_pulse',B=B,LO=LO,reptime=3e3,averages=1,shots=4)
         det_tp = Parameter('tp',value=16,dim=4,step=0)
         seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi))
         seq.addPulse(Detection(tp=16,t=d0))
 
         seq.evolution([det_tp])
         self.launch(seq,savename='test',tune=False)
-        self.terminate(now=True)
-        time.sleep(3)
+        time.sleep(5)
+        # self.terminate(now=True)
+        # time.sleep(3)
 
         self.api.cur_exp['ftEPR.StartPlsPrg'].value = True
         self.api.hidden['specJet.NoOfAverages'].value = 20
@@ -737,7 +738,7 @@ def tune_phase(interface,
     return result
     
 def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
-             bounds=[0, 100],tau_value=400):
+             bounds=[0, 100],tau_value=550):
 
     hardware_wait=1
 
@@ -803,7 +804,7 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
 
 
 def ELDORtune(interface, sequence, freq,
-             tau_value=400,test_tp = 16,plot=False,save=True):
+             tau_value=550,test_tp = 16,plot=False,save=True):
 
     sequence_gyro = sequence.B.value / sequence.LO.value
     new_freq = sequence.LO.value + freq
