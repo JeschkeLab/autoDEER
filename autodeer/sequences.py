@@ -1513,7 +1513,7 @@ class CarrPurcellSequence(Sequence):
     Represents a Carr-Purcell sequence. 
     """
     def __init__(self, *, B, LO, reptime, averages, shots,
-            tau, n, **kwargs) -> None:
+            tau, n, dim=100,**kwargs) -> None:
         """Build a Carr-Purcell dynamical decoupling sequence using either 
         rectangular pulses or specified pulses.
 
@@ -1533,6 +1533,8 @@ class CarrPurcellSequence(Sequence):
             The maximum total sequence length in us
         n : int
             The number refocusing pulses
+        dim : int
+            The number of points in the X axis
 
         Optional Parameters
         -------------------
@@ -1549,9 +1551,11 @@ class CarrPurcellSequence(Sequence):
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
         self.tau = Parameter(name="tau", value=tau*1e3, unit="ns",
-            description="Total sequence length")
+            description="Total sequence length", virtual=True)
         self.n = Parameter(name="n", value=n,
-            description="The number of pi pulses", unit="None")
+            description="The number of pi pulses", unit="None", virtual=True)
+        self.dim = Parameter(name="dim", value=dim, unit="None",
+            description="The number of points in the X axis", virtual=True)
 
         if "pi_pulse" in kwargs:
             self.pi_pulse = kwargs["pi_pulse"]
@@ -1566,8 +1570,11 @@ class CarrPurcellSequence(Sequence):
 
         n = self.n.value
         deadtime = 300
-        dt = 20
-        dim = np.floor((self.tau.value/(2*self.n.value) -deadtime)/dt)
+        # dt = 20
+        # dim = np.floor((self.tau.value/(2*self.n.value) -deadtime)/dt)
+        dim = self.dim.value
+        tau_interval = self.tau.value/(2*n)
+        dt = (tau_interval-deadtime)/dim
         step = Parameter("step",deadtime,unit="ns",step=dt, dim=dim)
         # # multipliers = [1]
         # # multipliers += [1+2*i for i in range(1,n)]
