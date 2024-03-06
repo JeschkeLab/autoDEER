@@ -84,7 +84,7 @@ class Pulse:
             self.pcyc = {"Phases": list(phases), "DetSigns": list(detections)}
             pass
 
-    def _buildFMAM(self, func):
+    def _buildFMAM(self, func, ax=None):
         """
         Builds the amplitude modulation (AM) and frequency modulation (FM) of a given function.
 
@@ -103,6 +103,21 @@ class Pulse:
         self.AM
         return self.AM, self.FM
     
+    def build_shape(self,ax=None):
+        if ax is None:
+            ax = self.ax
+        dt = ax[1]-ax[0]
+        pulse_points = int(np.around(self.tp.value/dt))
+        total_points = ax.shape[0]
+        remaining_points = total_points-pulse_points
+        pulse_axis = np.zeros(pulse_points)
+        AM, FM = self.func(pulse_axis)
+        AM = np.pad(AM,(int(np.floor(remaining_points/2)),int(np.ceil(remaining_points/2))),'constant',constant_values=0)
+        FM = np.pad(FM,(int(np.floor(remaining_points/2)),int(np.ceil(remaining_points/2))),'constant',constant_values=0)
+        FM_arg = 2*np.pi*cumulative_trapezoid(FM, initial=0) * dt
+        shape = AM * (np.cos(FM_arg) +1j* np.sin(FM_arg))
+ 
+        return shape
 
     def build_table(self):
             """
