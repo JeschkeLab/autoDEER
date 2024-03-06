@@ -32,7 +32,7 @@ def get_Vexp(dataset, tmin=0):
         # guess this is in us not ns
         t /= 1e3
 
-    t -= t.min()
+    # t -= t.min()
     t += tmin
 
     return t, Vexp

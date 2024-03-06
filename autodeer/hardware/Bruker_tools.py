@@ -271,7 +271,7 @@ def calc_rel_positions(sequence):
 
 class PulseSpel:
 
-    def __init__(self, sequence, MPFU=None, AWG=False) -> None:
+    def __init__(self, sequence, d0, MPFU=None, AWG=False) -> None:
 
         self._check_sequence(sequence)
         self.convert_progtable(sequence.progTable)
@@ -306,6 +306,7 @@ class PulseSpel:
         self._addDef(f"h = {sequence.shots.value}")
         self._addDef(f"n = {sequence.averages.value}")
         self._addDef(f"srt = {sequence.reptime.value:.0f} * srtu")
+        self._addDef(f"d0 = {d0:.0f} ")
 
 
         # Build table of parvars
@@ -917,7 +918,7 @@ def check_variable(var:str, uprog):
                 return True
         return False
     
-def write_pulsespel_file(sequence, AWG=False, MPFU=False):
+def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
     """Write the pulsespel file for a given sequence. 
 
     Parameters
@@ -976,6 +977,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False):
     if not check_variable("reptime", uprogtable):
         def_file += f"srt = {val_in_us(sequence.reptime, False):.0f} * srtu\n"
 
+    def_file += f"d0 = {d0:.0f}\n"
     prev_pulse = None
     for i,pulse in enumerate(sequence.pulses):
         static_delay_hash[i] = possible_delays.pop()
