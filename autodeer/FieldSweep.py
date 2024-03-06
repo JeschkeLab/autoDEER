@@ -216,11 +216,6 @@ class FieldSweepAnalysis():
             axs.legend()
             axs.set_xlabel('Field G')
             axs.set_ylabel('Normalised Amplitude')
-            if hasattr(self, "max_field"):
-                min_value = np.min(np.hstack([np.real(data), np.imag(data)]))
-                max_value = np.min(np.hstack([np.real(data), np.imag(data)]))
-                axs.vlines(
-                    self.max_field, min_value, max_value, label="Maximum")
                 
         elif axis.lower() == 'freq':
 
