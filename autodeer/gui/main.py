@@ -302,6 +302,7 @@ class autoDEERUI(QMainWindow):
             elif model == 'ETH_AWG':
                 from autodeer.hardware.ETH_awg import ETH_awg_interface
                 self.spectromterInterface = ETH_awg_interface()
+                self.spectromterInterface.savefolder = self.current_folder
                 self.Bruker=False
             elif model == 'Bruker_MPFU':
                 from autodeer.hardware.Bruker_MPFU import BrukerMPFU
@@ -311,7 +312,8 @@ class autoDEERUI(QMainWindow):
             elif model == 'Bruker_AWG':
                 from autodeer.hardware.Bruker_AWG import BrukerAWG
                 self.spectromterInterface = BrukerAWG(filename_edit)
-                self.Bruker=False
+                self.spectromterInterface.savefolder = self.current_folder
+                self.Bruker=True
         except ImportError:
             QMessageBox.about(self,'ERORR!', 
                               'The spectrometer interface could not be loaded!\n'+
@@ -489,7 +491,7 @@ class autoDEERUI(QMainWindow):
         self.gzSpinBox.setValue(fitresult.results.gz)
         self.AxSpinBox.setValue(fitresult.results.axy*28.0328)
         self.AySpinBox.setValue(fitresult.results.axy*28.0328)
-        self.AzSpinBox.setValue(fitresult.results.az)
+        self.AzSpinBox.setValue(fitresult.results.az*28.0328)
         self.GBSpinBox.setValue(fitresult.results.GB)
         self.BoffsetSpinBox.setValue(fitresult.results.Boffset)
 
@@ -499,6 +501,9 @@ class autoDEERUI(QMainWindow):
         self.gzCI.setText(getCIstring(fitresult.results.gzUncert))
         self.Tab_widget.setCurrentIndex(1)
 
+        if not (self.pulses is None) or (self.pulses == {}):
+            self.update_optimise_pulses_figure()
+
 
 
     def update_respro(self, dataset=None):
@@ -507,15 +512,6 @@ class autoDEERUI(QMainWindow):
             dataset = self.current_data['respro']
         else:
             self.current_data['respro'] = dataset
-
-        if hasattr(dataset, 'sequence'):
-            f_axis = dataset.sequence.LO.value + dataset.sequence.LO.axis[0]['axis']# - 0.3 # Fix this necessary offset
-        else:
-            # Assuming mat file
-            # TODO: Change to new data format
-            f_axis = dataset['LO'].data #- 0.3
-            # f_axis = dataset.params['parvars'][2]['vec'][:,1] + dataset.params['LO']
-
 
         # worker = Worker(respro_process, dataset, f_axis,self.current_results['fieldsweep'], cores=self.cores)
         worker = Worker(respro_process, dataset, self.current_results['fieldsweep'], cores=self.cores)
@@ -535,13 +531,20 @@ class autoDEERUI(QMainWindow):
 
 
     def refresh_respro(self, *args):
-
-        
-
         if len(args[0]) == 2:
+            LO = self.LO
             fitresult = args[0][0]
             self.LO = args[0][1]
             self.LO = fitresult.results.fc
+
+            LO_sweep_width = fitresult.dataset.LO.max() - fitresult.dataset.LO.min()
+            LO_shift = self.LO - LO
+            if np.abs(LO_shift) > LO_sweep_width:
+                if LO_shift > 0:
+                    self.LO + LO_sweep_width/2
+                else:
+                    self.LO - LO_sweep_width/2
+
             if self.worker is not None:
                 self.worker.update_LO(self.LO)
             print(f"New LO frequency: {self.LO:.2f} GHz")
@@ -616,7 +619,7 @@ class autoDEERUI(QMainWindow):
         ref_pulse = self.pulses['ref_pulse']
 
         self.respro_ax.cla()
-        ad.plot_overlap(self.current_results['fieldsweep'], pump_pulse, exc_pulse,ref_pulse, axs=self.respro_ax,fig=self.respro_canvas.figure)
+        ad.plot_overlap(self.current_results['fieldsweep'], pump_pulse, exc_pulse,ref_pulse, axs=self.respro_ax,fig=self.respro_canvas.figure, respro=self.current_results['respro'])
         self.respro_canvas.draw()
 
         # update the pulse parameter grid
@@ -717,10 +720,10 @@ class autoDEERUI(QMainWindow):
         # self.relax_canvas.draw()
 
         self.refresh_relax_figure()
-
-        tau2hrs = fitresult.find_optimal(SNR_target=25/0.6, target_time=2, target_step=0.015)
-        tau4hrs = fitresult.find_optimal(SNR_target=25/0.6, target_time=4, target_step=0.015)
-        max_tau = fitresult.find_optimal(SNR_target=45/0.6, target_time=24, target_step=0.015)
+        est_lambda = 0.3
+        tau2hrs = fitresult.find_optimal(SNR_target=25/est_lambda, target_time=2, target_step=0.015)
+        tau4hrs = fitresult.find_optimal(SNR_target=25/est_lambda, target_time=4, target_step=0.015)
+        max_tau = fitresult.find_optimal(SNR_target=45/est_lambda, target_time=24, target_step=0.015)
     
 
         if tau2hrs < 1.5:
