@@ -65,7 +65,10 @@ def get_all_fixed_param(sequence):
     fixed_param = {}
     for param_name in sequence.__dict__:
         param = sequence.__dict__[param_name]
-        if not isinstance(param, Parameter):
+        if param_name == "name":
+            fixed_param[param_name] = param
+            continue
+        elif not isinstance(param, Parameter):
             continue
         if (param.axis == []) and (param.value is not None):
             fixed_param[param_name] = param.value

@@ -773,6 +773,8 @@ class ETH_awg_interface(Interface):
         else:
             self.engine.dig_interface('terminate', nargout=0)
             self.stop_flag.set()
+            self.bg_thread = None
+            self.bg_data = None
         pass
 
 
