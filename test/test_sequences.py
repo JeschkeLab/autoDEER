@@ -40,13 +40,13 @@ def test_add_pulse_evolution():
 def test_sequence():
     seq=Sequence(name="name", B=12220, LO=34.0,reptime=3e3, averages=1, shots=100)
     t = Parameter(name="t", value=-160, step=24, dim=120, unit="ns", description="The time axis")
-    pulse = RectPulse(t=t, freq=0, tp=12, flipangle=np.pi/2)
+    pulse = RectPulse(t=t, freq=0, tp=12, flipangle=np.pi/2,pcyc={"phases":[0, np.pi], "dets":[1,-1]})
     seq.addPulse(pulse)
     seq.evolution([t])
     return seq
 
 def test_estimate_time(test_sequence):
-    assert test_sequence._estimate_time() == pytest.approx(36, abs=1)
+    assert test_sequence._estimate_time() == pytest.approx(72, abs=0.5)
 
 def test_print(test_sequence):
     assert isinstance(test_sequence.__str__(),str)

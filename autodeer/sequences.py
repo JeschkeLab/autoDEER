@@ -207,7 +207,7 @@ class Sequence:
         Calculates the estimated experiment time in seconds.
         """
         self._buildPhaseCycle()
-        acqs = self.averages.value * self.shots.value
+        acqs = self.averages.value * self.shots.value * self.pcyc_dets.shape[0]
         if hasattr(self,'evo_params'):
             acqs *= np.prod([np.prod(param.dim) for param in self.evo_params])        
         time = acqs * self.reptime.value * 1e-6
