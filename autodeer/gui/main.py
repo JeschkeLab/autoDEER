@@ -207,6 +207,7 @@ class autoDEERUI(QMainWindow):
         self.worker = None
         self.starttime = time.time()
         self.Bruker=False
+        self.userinput = {'label_eff':100,'MaxTime':24}
 
         self.LO = 0
         self.gyro = 0.002803632236095
@@ -727,10 +728,10 @@ class autoDEERUI(QMainWindow):
         # self.relax_canvas.draw()
 
         self.refresh_relax_figure()
-        est_lambda = 0.3
-        tau2hrs = fitresult.find_optimal(SNR_target=25/est_lambda, target_time=2, target_step=0.015)
-        tau4hrs = fitresult.find_optimal(SNR_target=25/est_lambda, target_time=4, target_step=0.015)
-        max_tau = fitresult.find_optimal(SNR_target=45/est_lambda, target_time=24, target_step=0.015)
+        est_lambda = 0.4 * (self.userinput['label_eff']/100)
+        tau2hrs = fitresult.find_optimal(SNR_target=20/est_lambda, target_time=2, target_step=0.015)
+        tau4hrs = fitresult.find_optimal(SNR_target=20/est_lambda, target_time=4, target_step=0.015)
+        max_tau = fitresult.find_optimal(SNR_target=45/est_lambda, target_time=self.userinput['MaxTime'], target_step=0.015)
     
         self.current_results['relax'].tau2hrs = tau2hrs
         
@@ -896,11 +897,15 @@ class autoDEERUI(QMainWindow):
 
         userinput = {}
         userinput['MaxTime'] = self.MaxTime.value()
+        userinput['project'] = self.ProjectName.text()
         userinput['sample'] = self.SampleName.text()
+        userinput['label_eff'] = self.LabellingEffSpinBox.value()
         userinput['Temp'] = self.TempValue.value()
         userinput['DEER_update_func'] = self.q_DEER.refresh_deer
         userinput['SampleConc'] = SampleConcComboBox_opts[self.SampleConcComboBox.currentText()]
         userinput['tp'] = self.Min_tp
+
+        self.userinput = userinput
 
         # Block the autoDEER buttons
         self.FullyAutoButton.setEnabled(False)

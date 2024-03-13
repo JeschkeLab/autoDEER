@@ -71,12 +71,27 @@ class autoDEERWorker(QtCore.QRunnable):
         self.results = results
         self.pulses = pulses
         self.samplename = user_inputs['sample']
+        self.project = user_inputs['project']
         self.LO = LO
         self.gyro = gyro
         self.AWG = AWG
         self.user_inputs = user_inputs
         self.stop_flag = False
         self.quick_deer_state = True
+
+        if (self.project is None) or (self.project == ''):
+            def savename(exp, suffix=""):
+                if suffix != "":
+                    return f"({self.samplename})_({exp})_({suffix})"
+                else:
+                    return f"({self.samplename})_({x})"
+        else:
+            def savename(exp,suffix=""):
+                if suffix != "":
+                    return f"({self.project})_({self.samplename})_({exp})_({suffix})"
+                else:
+                    return f"({self.project})_({self.samplename})_({exp})"
+        self.savename = savename
         
 
         if 'SampleConc' in self.user_inputs:
@@ -124,7 +139,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi2_pulse=p90, pi_pulse=p180,
         )
 
-        self.interface.launch(fsweep,savename=f"{self.samplename}_fieldsweep",IFgain=2)
+        self.interface.launch(fsweep,savename=self.savename("EDFS_Q"),IFgain=2)
         self.signals.status.emit('Field-sweep running')
         self.interface.terminate_at(SNRCriteria(20))
         while self.interface.isrunning():
@@ -146,7 +161,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi2_pulse=p90, pi_pulse=p180,
         )
 
-        self.interface.launch(RPseq,savename=f"{self.samplename}_resonator_profile",IFgain=2)
+        self.interface.launch(RPseq,savename=self.savename("ResPro"),IFgain=2)
         self.signals.status.emit('Resonator Profile running')
 
         self.interface.terminate_at(SNRCriteria(5))
@@ -185,7 +200,7 @@ class autoDEERWorker(QtCore.QRunnable):
         relax._estimate_time();
         relax.pulses[1].scale.value = 0
         relax.pulses[3].scale.value = 0
-        self.interface.launch(relax,savename=f"{self.samplename}_CP2relax",IFgain=2)
+        self.interface.launch(relax,savename=self.savename("CP_Q"),IFgain=2)
         self.interface.terminate_at(SNRCriteria(30),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
@@ -203,7 +218,7 @@ class autoDEERWorker(QtCore.QRunnable):
             step=60,dim=200,pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
-        self.interface.launch(seq,savename=f"{self.samplename}_T2relax",IFgain=2)
+        self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=2)
         self.interface.terminate_at(SNRCriteria(30),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
@@ -313,13 +328,16 @@ class autoDEERWorker(QtCore.QRunnable):
         
         if deertype == '5pDEER':
             deer.five_pulse()
-            savename_suffix = f"5p)_{tau1:.3f}us_{tau2:.3f}us_{tau3:.3f}us"
+            savename_type = 'DEER_5P_Q'
+            savename_suffix = f"{tau1:.3f}us_{tau2:.3f}us_{tau3:.3f}us"
         elif deertype == '4pDEER':
             deer.four_pulse()
-            savename_suffix = f"4p)_{tau1:.3f}us_{tau2:.3f}us"
+            savename_type = 'DEER_4P_Q'
+            savename_suffix = f"{tau1:.3f}us_{tau2:.3f}us"
         elif deertype == '3pDEER':
             deer.four_pulse()
-            savename_suffix = f"3p)_{tau1:.3f}u"
+            savename_type = 'DEER_3P_Q'
+            savename_suffix = f"{tau1:.3f}u"
         
         if not self.AWG:
             deer.select_pcyc('DC')
@@ -332,7 +350,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
         deer._estimate_time();
 
-        self.interface.launch(deer,savename=f"{self.samplename}_(Q_DEER"+savename_suffix,IFgain=2)
+        self.interface.launch(deer,savename=self.savename(savename_type,savename_suffix),IFgain=2)
         time.sleep(30) # Always wait for the experiment to properly start
         with threadpool_limits(limits=self.cores, user_api='blas'):
             self.interface.terminate_at(end_criteria,verbosity=2,test_interval=0.5) # Change criteria backagain
