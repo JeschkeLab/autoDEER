@@ -304,7 +304,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
 
         deer = DEERSequence(
-            B=LO/self.gyro, LO=LO,reptime=reptime,averages=1000,shots=int(50*self.noise_mode),
+            B=LO/self.gyro, LO=LO,reptime=reptime,averages=2000,shots=int(50*self.noise_mode),
             tau1=tau1, tau2=tau2, tau3=tau3, dt=dt,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event'],
