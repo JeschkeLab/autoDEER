@@ -4,7 +4,7 @@ import numpy as np
 from deerlab.utils import der_snr
 from deerlab import noiselevel
 import logging
-
+import datetime
 log = logging.getLogger('autoDEER.criteria')
 
 
@@ -71,6 +71,8 @@ class TimeCriteria(Criteria):
         description : str, optional
             _description_, by default None
         """
+        log.debug(f"Creating TimeCriteria with end_time: {datetime.datetime.fromtimestamp(end_time).strftime('%Y-%m-%d %H:%M:%S')}")
+
 
         def test_func(Data, verbosity=0):
             now = time.time()
