@@ -738,7 +738,7 @@ class DEERSequence(Sequence):
             with an offset frequency of 0MHz. 
 
         """
-        name = "DEER sequence"
+        name = "DEERSequence"
         self.tau1us = tau1
         self.tau1 = Parameter(name="tau1", value=tau1 * 1e3, unit="ns", description="The first interpulse delays")
         self.tau2 = Parameter(name="tau2", value=tau2 * 1e3, unit="ns", description="The second interpulse delays")
@@ -1351,7 +1351,7 @@ class HahnEchoSequence(Sequence):
 
         """
         
-        name = "Hahn Echo"
+        name = "HahnEchoSequence"
         
         if "pi_pulse" in kwargs:
             self.pi_pulse = kwargs["pi_pulse"]
@@ -1408,7 +1408,7 @@ class T2RelaxationSequence(HahnEchoSequence):
         self.tau = Parameter(name="tau", value=500,step=step,dim=dim, unit="ns", description="The interpulse delay",virtual=True)
         super().__init__(B=B, LO=LO, reptime=reptime, averages=averages, shots=shots,tau=self.tau, **kwargs)
 
-        self.name = "T2 Relaxation"
+        self.name = "T2RelaxationSequence"
         self.evolution([self.tau])
 
 # =============================================================================
@@ -1448,7 +1448,7 @@ class FieldSweepSequence(HahnEchoSequence):
         super().__init__(
             B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
-        self.name = "Field Sweep"
+        self.name = "FieldSweepSequence"
 
 
         self.B = Parameter(
@@ -1502,7 +1502,7 @@ class ReptimeScan(HahnEchoSequence):
         super().__init__(
             B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
-        self.name = "reptime Scan"
+        self.name = "ReptimeScan"
 
         self.evolution([self.reptime])
 
@@ -1546,7 +1546,7 @@ class CarrPurcellSequence(Sequence):
             not specified a RectPulse will be created instead. 
         """
 
-        name = "Carr-Purcell"
+        name = "CarrPurcellSequence"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
@@ -1757,7 +1757,7 @@ class ResonatorProfileSequence(Sequence):
             not specified a RectPulse will be created instead. 
         """
 
-        name = "Resonator-Profile"
+        name = "ResonatorProfileSequence"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
@@ -1838,7 +1838,7 @@ class TWTProfileSequence(Sequence):
     
     def __init__(self,*,B,LO,reptime,averages=1,shots=100,**kwargs) -> None:
 
-        name = "TWT-Profile"
+        name = "TWTProfileSequence"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)

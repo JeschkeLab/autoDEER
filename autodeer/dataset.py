@@ -65,10 +65,15 @@ def get_all_fixed_param(sequence):
     fixed_param = {}
     for param_name in sequence.__dict__:
         param = sequence.__dict__[param_name]
-        if not isinstance(param, Parameter):
+        if param_name == 'name':
+            if param is not None:
+                fixed_param[f"seq_{param_name}"] = param
+                continue 
+        elif not isinstance(param, Parameter):
             continue
-        if (param.axis == []) and (param.value is not None):
-            fixed_param[param_name] = param.value
+        else:
+            if (param.axis == []) and (param.value is not None):
+                fixed_param[param_name] = param.value
         
 
     for i,pulse in enumerate(sequence.pulses):
@@ -78,10 +83,15 @@ def get_all_fixed_param(sequence):
             type="pulse"
         for param_name in pulse.__dict__:
             param = pulse.__dict__[param_name]
-            if not isinstance(param, Parameter):
+            if param_name == 'name':
+                if param is not None:
+                    fixed_param[f"{type}{i}_{param_name}"] = param
+                    continue
+            elif not isinstance(param, Parameter):
                 continue
-            if (param.axis == []) and (param.value is not None):
-                fixed_param[f"{type}{i}_{param_name}"] = param.value
+            else:
+                if (param.axis == []) and (param.value is not None):
+                    fixed_param[f"{type}{i}_{param_name}"] = param.value
 
     fixed_param['nPcyc'] = sequence.pcyc_dets.shape[0]
     return fixed_param
