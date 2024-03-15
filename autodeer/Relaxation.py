@@ -8,7 +8,7 @@ import deerlab as dl
 # ===========================================================================
 
 
-class CarrPurcellAnalysis:
+class CarrPurcellAnalysis():
 
     def __init__(self, dataset, sequence: Sequence = None) -> None:
         """Analysis and calculation of Carr Purcell decay. 
@@ -108,9 +108,6 @@ class CarrPurcellAnalysis:
 
         Parameters
         ----------
-
-        averages : int
-            The number of averages in the data, shots, scans and phase cycles
         SNR_target: float,
             The Signal to Noise ratio target.
         target_time : float
@@ -118,7 +115,10 @@ class CarrPurcellAnalysis:
         target_shrt : float
             The shot repettition time of target in seconds
         target_step: float
-            The target step size in us.
+            The target step size in ns.
+        averages : int, optional
+            The total number of shots taken, by default None. If None, the
+            number of shots will be calculated from the dataset.
         
 
         Returns
@@ -147,7 +147,7 @@ class CarrPurcellAnalysis:
 
         # Target time
         target_time = target_time * 3600
-
+        target_step_us = target_step * 1e-3
         g = (target_time * target_step / target_shrt) * 1/(self.axis.data)
         f = (SNR_target/data_snr_avgs)**2
 

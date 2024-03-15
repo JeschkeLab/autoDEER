@@ -300,6 +300,7 @@ class autoDEERUI(QMainWindow):
             if model == 'Dummy':
                 from autodeer.hardware.dummy import dummyInterface
                 self.spectromterInterface = dummyInterface(filename_edit)
+                self.spectromterInterface.savefolder = self.current_folder
                 self.Bruker=False
             elif model == 'ETH_AWG':
                 from autodeer.hardware.ETH_awg import ETH_awg_interface
