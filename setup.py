@@ -8,7 +8,7 @@ extras={
     "GUI": ["PyQt6","threadpoolctl", "pyinstaller"],
     "test": ["pytest", "pytest-cov", "pytest-qt", "pytest-xdist"],
 }
-extras["Dev"] = extras["Bruker"] + extras["Matlab"] + extras["Docs"] + extras["test"]
+extras["Dev"] = extras["Docs"] + extras["test"]
 setup(
     name='autoDEER',
     version=str(__version__),
