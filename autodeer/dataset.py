@@ -164,9 +164,14 @@ class EPRAccessor:
 
         if np.iscomplexobj(self._obj.data):
                 corr_data = correctphase(self._obj.data)
-                self._obj.data = corr_data / np.abs(corr_data).max()
+                self._obj.data = corr_data
         else:
             UserWarning("Data is not complex, phase correction not applied")
+        return self._obj
+    
+    @property
+    def normalise(self):
+        self._obj.data = self._obj.data / np.abs(self._obj.data).max()
         return self._obj
     
     @property
