@@ -74,6 +74,8 @@ def get_all_fixed_param(sequence):
         else:
             if (param.axis == []) and (param.value is not None):
                 fixed_param[param_name] = param.value
+            elif param.axis[0]['uuid'] in sequence.reduce_uuid:
+                fixed_param[param_name] = param.value
         
 
     for i,pulse in enumerate(sequence.pulses):

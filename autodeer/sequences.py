@@ -1575,7 +1575,7 @@ class CarrPurcellSequence(Sequence):
         dim = self.dim.value
         tau_interval = self.tau.value/(2*n)
         dt = (tau_interval-deadtime)/dim
-        step = Parameter("step",deadtime,unit="ns",step=dt, dim=dim)
+        self.step = Parameter("step",deadtime,unit="ns",step=dt, dim=dim)
         # # multipliers = [1]
         # # multipliers += [1+2*i for i in range(1,n)]
         # # multipliers += [2*n]
@@ -1603,18 +1603,18 @@ class CarrPurcellSequence(Sequence):
                 dets = [1,-1,1,-1]
             if hasattr(self, "pi_pulse"):
                 self.addPulse(self.pi_pulse.copy(
-                    t=step*(2*i + 1), pcyc={"phases":phases, "dets": dets}))
+                    t=self.step*(2*i + 1), pcyc={"phases":phases, "dets": dets}))
             else:
                 self.addPulse(RectPulse(  # pi
-                    t=step*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
+                    t=self.step*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
                     pcyc={"phases":phases, "dets": dets}
                 ))
         if hasattr(self, "det_event"):
-            self.addPulse(self.det_event.copy(t=step*(2*n)))
+            self.addPulse(self.det_event.copy(t=self.step*(2*n)))
         else:
-            self.addPulse(Detection(t=step*(2*n), tp=512))
+            self.addPulse(Detection(t=self.step*(2*n), tp=512))
         
-        self.evolution([step])
+        self.evolution([self.step])
 
 # =============================================================================
 

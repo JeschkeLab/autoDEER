@@ -112,11 +112,13 @@ class DEERplot(QWidget):
         elif 't' in dataset.coords:
             self.Tau1doubleSpinBox.setValue( dataset.tau1*1e-3)
             self.Tau2doubleSpinBox.setValue( dataset.tau2*1e-3)
-            if ('tau3' in dataset.attrs):
+            if (dataset.attrs['name'] == '5pDEER'):
+                self.ExperimentcomboBox.setCurrentText('5pDEER')
                 self.Tau3doubleSpinBox.setDisabled(0)
                 self.Tau3doubleSpinBox.setValue( dataset.tau3*1e-3)
                 self.PathwayslineEdit.setText('1,2,3,4,5')
-            else:
+            elif (dataset.attrs['name'] == '4pDEER'):
+                self.ExperimentcomboBox.setCurrentText('4pDEER')
                 self.Tau3doubleSpinBox.setDisabled(1)
                 self.PathwayslineEdit.setText('1,2,3')
             

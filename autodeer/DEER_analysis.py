@@ -100,26 +100,40 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     
     elif 't' in dataset.coords: # If the dataset is a xarray and has sequence data
         t = dataset['t'].data
-        if 'tau1' in dataset.attrs:
-            tau1 = dataset.attrs['tau1'] / 1e3
-        elif 'tau1' in kwargs:
-            tau1 = kwargs.pop('tau1')
+        if 'name' in dataset.attrs:
+            if dataset.attrs['name'] == "4pDEER":
+                exp_type = "4pDEER"
+                tau1 = dataset.attrs['tau1'] / 1e3
+                tau2 = dataset.attrs['tau2'] / 1e3
+            elif dataset.attrs['name'] == "5pDEER":
+                exp_type = "5pDEER"
+                tau1 = dataset.attrs['tau1'] / 1e3
+                tau2 = dataset.attrs['tau2'] / 1e3
+                tau3 = dataset.attrs['tau3'] / 1e3
+            elif dataset.attrs['name'] == "3pDEER":
+                exp_type = "3pDEER"
+                tau1 = dataset.attrs['tau1'] / 1e3
         else:
-            raise ValueError("tau1 not found in dataset or kwargs")
-        if 'tau2' in dataset.attrs:
-            tau2 = dataset.attrs['tau2'] / 1e3
-        elif 'tau2' in kwargs:
-            tau2 = kwargs.pop('tau2')
-        else:
-            raise ValueError("tau2 not found in dataset or kwargs")
-        if 'tau3' in dataset.attrs:
-            tau3 = dataset.attrs['tau3'] / 1e3
-            exp_type = "5pDEER"
-        elif 'tau3' in kwargs:
-            tau3 = kwargs.pop('tau3')
-            exp_type = "5pDEER"
-        else:
-            exp_type = "4pDEER"
+            if 'tau1' in dataset.attrs:
+                tau1 = dataset.attrs['tau1'] / 1e3
+            elif 'tau1' in kwargs:
+                tau1 = kwargs.pop('tau1')
+            else:
+                raise ValueError("tau1 not found in dataset or kwargs")
+            if 'tau2' in dataset.attrs:
+                tau2 = dataset.attrs['tau2'] / 1e3
+            elif 'tau2' in kwargs:
+                tau2 = kwargs.pop('tau2')
+            else:
+                raise ValueError("tau2 not found in dataset or kwargs")
+            if 'tau3' in dataset.attrs:
+                tau3 = dataset.attrs['tau3'] / 1e3
+                exp_type = "5pDEER"
+            elif 'tau3' in kwargs:
+                tau3 = kwargs.pop('tau3')
+                exp_type = "5pDEER"
+            else:
+                exp_type = "4pDEER"
 
     else:
         # Extract params from kwargs
@@ -147,7 +161,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     
 
     if verbosity > 1:
-        print(f"")
+        print(f"Experiment type: {exp_type}, pathways: {pathways}")
         print(f"Experimental Parameters set to: tau1 {tau1:.2f} us \t tau2 {tau2:.2f} us")
 
     if "pathways" in kwargs:
@@ -160,6 +174,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
         # seach over all pulses to find the longest pulse using regex
         pulselength = np.max([dataset.attrs[i] for i in dataset.attrs if re.match(r"pulse\d*_tp", i)])
         pulselength /= 1e3 # Convert to us
+        pulselength /= 2 # Account for the too long range permitted by deerlab
     else:
         if "pulselength" in kwargs:
             pulselength = kwargs.pop("pulselength")/1e3

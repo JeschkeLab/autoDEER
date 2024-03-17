@@ -22,6 +22,8 @@ import copy
 import threading
 import warnings
 import logging
+import collections
+
 
 log = logging.getLogger("interface")
 class ETH_awg_interface(Interface):
@@ -174,10 +176,40 @@ class ETH_awg_interface(Interface):
         IFgain : int
             The IF gain, either [0,1,2], default 0.
         """
+
+        def detect_incompatible(seq):
+            # Check if two pulse parameters are shifted by diffent axes
+            duplicates = [item for item, count in collections.Counter(seq.progTable['EventID']).items() if count > 1]
+
+            for duplicate in duplicates:
+                indices = [i for i, x in enumerate(seq.progTable['EventID']) if x == duplicate]
+                print(indices)
+                axIDs = [seq.progTable['axID'][i] for i in indices]
+                axIDs.sort()
+                vars = [seq.progTable['Variable'][i] for i in indices]
+                vars.sort()
+                unique_vars = list(set(vars))
+                unique_vars.sort()
+                axIDs.sort()
+                unique_axIDs = list(set(axIDs))
+                unique_axIDs.sort()
+                if len(axIDs) == 1:
+                    print(False)
+                elif vars == unique_vars:
+                    print(False)
+                elif axIDs == unique_axIDs:
+                    print(True)
+                else:
+                    raise ValueError('Pulse time is not unique for the same eventID')
+
+
         self.bg_thread=None
         self.bg_data = None
         if sequence.seqtable_steps > 2**18:
             log.warning('Sequence too long. Breaking the problem down...')
+            self.launch_long(sequence,savename,IFgain)
+        elif detect_incompatible(sequence):
+            log.warning('Incompatible axes detected. Breaking the problem down...')
             self.launch_long(sequence,savename,IFgain)
         try:
             self.launch_normal(sequence,savename,IFgain)
@@ -185,11 +217,12 @@ class ETH_awg_interface(Interface):
             log.warning('Sequence too long. Breaking the problem down...')
             self.launch_long(sequence,savename,IFgain)
 
-    def launch_normal(self, sequence , savename: str, IFgain: int = 0):
+    def launch_normal(self, sequence , savename: str, IFgain: int = 0,reset_cur_exp=True):
         struct = self._build_exp_struct(sequence)
         struct['savename'] = savename
         struct['IFgain'] = IFgain
-        self.cur_exp = sequence
+        if reset_cur_exp:
+            self.cur_exp = sequence
         self.workspace['exp'] = struct
         self.engine.eval('launch(exp)', nargout=0)
 
@@ -218,6 +251,7 @@ class ETH_awg_interface(Interface):
             if (p.uuid not in sequence.reduce_uuid):
                 for item in p.dim:
                     dim.append(item)
+        self.cur_exp = sequence
         self.stop_flag = threading.Event()
         self.bg_thread = threading.Thread(target=bg_thread,args=[self,sequence,savename,IFgain,axID,self.stop_flag])
         self.bg_data = np.zeros(dim,dtype=np.complex128)
@@ -773,6 +807,8 @@ class ETH_awg_interface(Interface):
         else:
             self.engine.dig_interface('terminate', nargout=0)
             self.stop_flag.set()
+            self.bg_thread = None
+            self.bg_data = None
         pass
 
 
@@ -814,7 +850,7 @@ def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
             droped_param.value = fixed_param.get_axis()[i]
             new_seq.evolution(new_params,new_reduce_param)
             
-            interface.launch_normal(new_seq, savename=f"{savename}_avg{iavg}of{nAvg}_{i}of{fixed_param.dim[0]}",IFgain=IFgain)
+            interface.launch_normal(new_seq, savename=f"{savename}_avg{iavg}of{nAvg}_{i}of{fixed_param.dim[0]}",IFgain=IFgain,reset_cur_exp=False)
 
             while bool(interface.engine.dig_interface('savenow')):
                 if stop_flag.is_set():

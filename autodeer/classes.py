@@ -142,7 +142,7 @@ class Parameter:
     Represents a sequence or pulse parameter.
     """
 
-    def __init__(self, name, value, unit=None, description=None, virtual=False,
+    def __init__(self, name, value, unit="", description="", virtual=False,
                   **kwargs) -> None:
         """A general parameter.
 

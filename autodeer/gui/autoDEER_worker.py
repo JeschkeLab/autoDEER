@@ -187,7 +187,7 @@ class autoDEERWorker(QtCore.QRunnable):
         gyro = self.gyro
         reptime = self.reptime
         relax = DEERSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(20*self.noise_mode),
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(10*self.noise_mode),
             tau1=0.5, tau2=0.5, tau3=0.2, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -201,7 +201,7 @@ class autoDEERWorker(QtCore.QRunnable):
         relax.pulses[1].scale.value = 0
         relax.pulses[3].scale.value = 0
         self.interface.launch(relax,savename=self.savename("CP_Q"),IFgain=2)
-        self.interface.terminate_at(SNRCriteria(30),test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(20),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.relax_result.emit(self.interface.acquire_dataset())
