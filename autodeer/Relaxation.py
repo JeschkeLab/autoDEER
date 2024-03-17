@@ -26,6 +26,8 @@ class CarrPurcellAnalysis:
             self.axis = dataset['tau']
         elif 't' in dataset.coords:
             self.axis = dataset['t']
+        elif 'step' in dataset.coords:
+            self.axis = dataset['step'] 
         else:
             self.axis = dataset['X']
         
