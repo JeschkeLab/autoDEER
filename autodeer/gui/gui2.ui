@@ -199,19 +199,56 @@
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="label_12">
+                <widget class="QLabel" name="projectLabel">
                  <property name="text">
-                  <string>Temperature</string>
+                  <string>Project:</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="1">
+                <widget class="QLineEdit" name="ProjectName">
+                 <property name="placeholderText">
+                  <string>No Project</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_12">
+                 <property name="text">
+                  <string>Temperature:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
                 <widget class="QDoubleSpinBox" name="TempValue">
                  <property name="suffix">
                   <string> K</string>
                  </property>
                  <property name="value">
                   <double>50.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="estLabellingEfficiencyLabel">
+                 <property name="text">
+                  <string>Est. Labelling Efficiency</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QDoubleSpinBox" name="LabellingEffSpinBox">
+                 <property name="suffix">
+                  <string> %</string>
+                 </property>
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>100.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>100.000000000000000</double>
                  </property>
                 </widget>
                </item>

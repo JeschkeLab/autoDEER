@@ -232,10 +232,13 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     if verbosity > 1:
         print('Fit complete')
     mod_labels = re.findall(r"(lam\d*)'", str(fit.keys()))
+    if mod_labels == []:
+        mod_labels= ['mod']
 
     lam = 0
     for mod in mod_labels:
         lam += getattr(fit, mod)
+
     MNR = lam/fit.noiselvl
     fit.MNR = MNR
     fit.lam = lam

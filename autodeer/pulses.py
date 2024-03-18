@@ -683,7 +683,7 @@ class RectPulse(Pulse):
             The flip angle in radians, by default None
         """
         Pulse.__init__(
-            self, tp=tp, t=t, flipangle=flipangle, **kwargs)
+            self, tp=tp, t=t, flipangle=flipangle,name='RectPulse', **kwargs)
         self.freq = Parameter("freq", freq, "GHz", "Frequency of the Pulse")
         self._buildFMAM(self.func)
         pass
@@ -702,7 +702,7 @@ class HSPulse(Pulse):
     Represents a hyperboilc secant frequency-swept pulse.
     """
     def __init__(self, *, tp=128, order1=1, order2=6, beta=20, **kwargs) -> None:
-        Pulse.__init__(self, tp=tp, **kwargs)
+        Pulse.__init__(self, tp=tp,name='HSPulse', **kwargs)
         self.order1 = Parameter(
             "order1", order1, None, "Order 1 of the HS Pulse")
         self.order2 = Parameter(
@@ -781,7 +781,7 @@ class ChirpPulse(Pulse):
     """
 
     def __init__(self, *, tp=128, **kwargs) -> None:
-        Pulse.__init__(self, tp=tp, **kwargs)
+        Pulse.__init__(self, tp=tp,name='ChirpPulse', **kwargs)
 
         # Frequency Infomation
         if "BW" in kwargs:
@@ -852,7 +852,7 @@ class SincPulse(Pulse):
             The window function, by default None
         """
 
-        Pulse.__init__(self, tp=tp, **kwargs)
+        Pulse.__init__(self, tp=tp,name='SincPulse', **kwargs)
         self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
 
         self.order = Parameter("Order", order, None, "The sinc pulse order")
@@ -887,7 +887,7 @@ class GaussianPulse(Pulse):
             The frequency of the pulse, by default 0
         """
 
-        Pulse.__init__(self, tp=tp, **kwargs)
+        Pulse.__init__(self, tp=tp,name='GaussianPulse', **kwargs)
         self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
 
         self._buildFMAM(self.func)

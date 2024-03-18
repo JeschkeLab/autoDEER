@@ -207,7 +207,7 @@ class Sequence:
         Calculates the estimated experiment time in seconds.
         """
         self._buildPhaseCycle()
-        acqs = self.averages.value * self.shots.value
+        acqs = self.averages.value * self.shots.value * self.pcyc_dets.shape[0]
         if hasattr(self,'evo_params'):
             acqs *= np.prod([np.prod(param.dim) for param in self.evo_params])        
         time = acqs * self.reptime.value * 1e-6
@@ -738,7 +738,7 @@ class DEERSequence(Sequence):
             with an offset frequency of 0MHz. 
 
         """
-        name = "DEER sequence"
+        name = "DEERSequence"
         self.tau1us = tau1
         self.tau1 = Parameter(name="tau1", value=tau1 * 1e3, unit="ns", description="The first interpulse delays")
         self.tau2 = Parameter(name="tau2", value=tau2 * 1e3, unit="ns", description="The second interpulse delays")
@@ -1351,7 +1351,7 @@ class HahnEchoSequence(Sequence):
 
         """
         
-        name = "Hahn Echo"
+        name = "HahnEchoSequence"
         
         if "pi_pulse" in kwargs:
             self.pi_pulse = kwargs["pi_pulse"]
@@ -1408,7 +1408,7 @@ class T2RelaxationSequence(HahnEchoSequence):
         self.tau = Parameter(name="tau", value=500,step=step,dim=dim, unit="ns", description="The interpulse delay",virtual=True)
         super().__init__(B=B, LO=LO, reptime=reptime, averages=averages, shots=shots,tau=self.tau, **kwargs)
 
-        self.name = "T2 Relaxation"
+        self.name = "T2RelaxationSequence"
         self.evolution([self.tau])
 
 # =============================================================================
@@ -1448,7 +1448,7 @@ class FieldSweepSequence(HahnEchoSequence):
         super().__init__(
             B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
-        self.name = "Field Sweep"
+        self.name = "FieldSweepSequence"
 
 
         self.B = Parameter(
@@ -1502,7 +1502,7 @@ class ReptimeScan(HahnEchoSequence):
         super().__init__(
             B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
-        self.name = "reptime Scan"
+        self.name = "ReptimeScan"
 
         self.evolution([self.reptime])
 
@@ -1513,7 +1513,7 @@ class CarrPurcellSequence(Sequence):
     Represents a Carr-Purcell sequence. 
     """
     def __init__(self, *, B, LO, reptime, averages, shots,
-            tau, n, **kwargs) -> None:
+            tau, n, dim=100,**kwargs) -> None:
         """Build a Carr-Purcell dynamical decoupling sequence using either 
         rectangular pulses or specified pulses.
 
@@ -1533,6 +1533,8 @@ class CarrPurcellSequence(Sequence):
             The maximum total sequence length in us
         n : int
             The number refocusing pulses
+        dim : int
+            The number of points in the X axis
 
         Optional Parameters
         -------------------
@@ -1544,14 +1546,16 @@ class CarrPurcellSequence(Sequence):
             not specified a RectPulse will be created instead. 
         """
 
-        name = "Carr-Purcell"
+        name = "CarrPurcellSequence"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
         self.tau = Parameter(name="tau", value=tau*1e3, unit="ns",
-            description="Total sequence length")
+            description="Total sequence length", virtual=True)
         self.n = Parameter(name="n", value=n,
-            description="The number of pi pulses", unit="None")
+            description="The number of pi pulses", unit="None", virtual=True)
+        self.dim = Parameter(name="dim", value=dim, unit="None",
+            description="The number of points in the X axis", virtual=True)
 
         if "pi_pulse" in kwargs:
             self.pi_pulse = kwargs["pi_pulse"]
@@ -1566,9 +1570,12 @@ class CarrPurcellSequence(Sequence):
 
         n = self.n.value
         deadtime = 300
-        dt = 20
-        dim = np.floor((self.tau.value/(2*self.n.value) -deadtime)/dt)
-        step = Parameter("step",deadtime,unit="ns",step=dt, dim=dim)
+        # dt = 20
+        # dim = np.floor((self.tau.value/(2*self.n.value) -deadtime)/dt)
+        dim = self.dim.value
+        tau_interval = self.tau.value/(2*n)
+        dt = (tau_interval-deadtime)/dim
+        self.step = Parameter("step",deadtime,unit="ns",step=dt, dim=dim)
         # # multipliers = [1]
         # # multipliers += [1+2*i for i in range(1,n)]
         # # multipliers += [2*n]
@@ -1596,18 +1603,18 @@ class CarrPurcellSequence(Sequence):
                 dets = [1,-1,1,-1]
             if hasattr(self, "pi_pulse"):
                 self.addPulse(self.pi_pulse.copy(
-                    t=step*(2*i + 1), pcyc={"phases":phases, "dets": dets}))
+                    t=self.step*(2*i + 1), pcyc={"phases":phases, "dets": dets}))
             else:
                 self.addPulse(RectPulse(  # pi
-                    t=step*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
+                    t=self.step*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
                     pcyc={"phases":phases, "dets": dets}
                 ))
         if hasattr(self, "det_event"):
-            self.addPulse(self.det_event.copy(t=step*(2*n)))
+            self.addPulse(self.det_event.copy(t=self.step*(2*n)))
         else:
-            self.addPulse(Detection(t=step*(2*n), tp=512))
+            self.addPulse(Detection(t=self.step*(2*n), tp=512))
         
-        self.evolution([step])
+        self.evolution([self.step])
 
 # =============================================================================
 
@@ -1750,7 +1757,7 @@ class ResonatorProfileSequence(Sequence):
             not specified a RectPulse will be created instead. 
         """
 
-        name = "Resonator-Profile"
+        name = "ResonatorProfileSequence"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
@@ -1831,7 +1838,7 @@ class TWTProfileSequence(Sequence):
     
     def __init__(self,*,B,LO,reptime,averages=1,shots=100,**kwargs) -> None:
 
-        name = "TWT-Profile"
+        name = "TWTProfileSequence"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)

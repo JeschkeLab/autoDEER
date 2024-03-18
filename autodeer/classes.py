@@ -25,6 +25,7 @@ class Interface:
     def __init__(self) -> None:
         self.pulses = {}
         self._savefolder = str(Path.home())
+        self.savename = ""
         pass
 
     def connect(self) -> None:
@@ -48,8 +49,10 @@ class Interface:
         sequence : Sequence
             The sequence to be launched
         savename : str
-            The savename/path for this measurement.
+            The savename for this measurement. A timestamp will be added to the value.
         """
+        timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
+        self.savename=timestamp + savename + '.h5'
         pass
 
     def isrunning(self) -> bool:
@@ -61,7 +64,7 @@ class Interface:
         """
         pass
 
-    def terminate_at(self, criterion, test_interval=2, keep_running=True, verbosity=0):
+    def terminate_at(self, criterion, test_interval=2, keep_running=True, verbosity=0,autosave=True):
         """Terminates the experiment upon a specific condition being
         satisified. 
 
@@ -71,6 +74,13 @@ class Interface:
             The criteria to be tested.
         test_interval : int, optional
             How often should the criteria be tested in minutes, by default 10.
+        keep_running : bool, optional
+            If True, an error will not be raised if the experiment finishes before the criteria is met, by default True.
+        verbosity : int, optional
+            The verbosity level, by default 0. 
+        autosave : bool, optional
+            If True, the data will be autosaved, by default True.
+
         """
 
 
@@ -92,6 +102,9 @@ class Interface:
 
             start_time = time.time()
             data = self.acquire_dataset()
+            if autosave:
+                data.to_netcdf(os.path.join(self._savefolder,self.savename),engine='h5netcdf',invalid_netcdf=True)
+
             try:
                 # nAvgs = data.num_scans.value
                 nAvgs = data.attrs['nAvgs']
@@ -129,7 +142,7 @@ class Parameter:
     Represents a sequence or pulse parameter.
     """
 
-    def __init__(self, name, value, unit=None, description=None, virtual=False,
+    def __init__(self, name, value, unit="", description="", virtual=False,
                   **kwargs) -> None:
         """A general parameter.
 
