@@ -219,7 +219,7 @@ class ReptimeAnalysis():
         axs.legend()
         return fig
 
-    def calc_optimal_reptime(self, recovery=0.8):
+    def calc_optimal_reptime(self, recovery=0.9):
         # Calculates the x% recovery time
         self.optimal = self.fit_result[0][1]*np.log(1/(1-recovery))
         return self.optimal

@@ -100,17 +100,17 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     
     elif 't' in dataset.coords: # If the dataset is a xarray and has sequence data
         t = dataset['t'].data
-        if 'name' in dataset.attrs:
-            if dataset.attrs['name'] == "4pDEER":
+        if 'seq_name' in dataset.attrs:
+            if dataset.attrs['seq_name'] == "4pDEER":
                 exp_type = "4pDEER"
                 tau1 = dataset.attrs['tau1'] / 1e3
                 tau2 = dataset.attrs['tau2'] / 1e3
-            elif dataset.attrs['name'] == "5pDEER":
+            elif dataset.attrs['seq_name'] == "5pDEER":
                 exp_type = "5pDEER"
                 tau1 = dataset.attrs['tau1'] / 1e3
                 tau2 = dataset.attrs['tau2'] / 1e3
                 tau3 = dataset.attrs['tau3'] / 1e3
-            elif dataset.attrs['name'] == "3pDEER":
+            elif dataset.attrs['seq_name'] == "3pDEER":
                 exp_type = "3pDEER"
                 tau1 = dataset.attrs['tau1'] / 1e3
         else:
