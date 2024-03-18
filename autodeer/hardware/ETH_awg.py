@@ -16,7 +16,7 @@ from autodeer.utils import transpose_list_of_dicts
 from autodeer.hardware.ETH_awg_load import uwb_eval_match
 from autodeer.utils import save_file, transpose_list_of_dicts, transpose_dict_of_list
 from autodeer import create_dataset_from_sequence
-
+import datetime
 from autodeer.hardware.Bruker_tools import build_unique_progtable
 import copy
 import threading
@@ -205,6 +205,8 @@ class ETH_awg_interface(Interface):
 
         self.bg_thread=None
         self.bg_data = None
+        timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
+        self.savename = timestamp + savename + '.h5'
         if sequence.seqtable_steps > 2**18:
             log.warning('Sequence too long. Breaking the problem down...')
             self.launch_long(sequence,savename,IFgain)
