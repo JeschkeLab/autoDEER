@@ -84,7 +84,7 @@ class autoDEERWorker(QtCore.QRunnable):
                 if suffix != "":
                     return f"({self.samplename})_({exp})_({suffix})"
                 else:
-                    return f"({self.samplename})_({x})"
+                    return f"({self.samplename})_({exp})"
         else:
             def savename(exp,suffix=""):
                 if suffix != "":
@@ -178,7 +178,7 @@ class autoDEERWorker(QtCore.QRunnable):
             
 
 
-    def run_CP_relax(self):
+    def run_CP_relax(self,dt=200):
         '''
         Initialise the runner function for relaxation. 
         '''
@@ -192,7 +192,7 @@ class autoDEERWorker(QtCore.QRunnable):
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
             )
-        relax.five_pulse(relaxation=True, re_step=200)
+        relax.five_pulse(relaxation=True, re_step=dt)
         if self.AWG:
             relax.select_pcyc("16step_5p")
         else:
@@ -207,7 +207,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.relax_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('Carr-Purcell experiment complete')
         
-    def run_T2_relax(self):
+    def run_T2_relax(self,dt=60):
         self.signals.status.emit('Running T2 experiment')
         LO = self.LO
         gyro = self.gyro
@@ -215,7 +215,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
         seq = T2RelaxationSequence(
             B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(20*self.noise_mode),
-            step=60,dim=200,pi2_pulse=self.pulses['exc_pulse'],
+            step=dt,dim=200,pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
         self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=2)
@@ -287,7 +287,7 @@ class autoDEERWorker(QtCore.QRunnable):
         DEER_crit = DEERCriteria(mode="high",verbosity=2,update_func=self.signals.longdeer_update.emit)
         total_crit = DEER_crit + self.EndTimeCriteria
         signal = self.signals.longdeer_result.emit
-        self.run_deer(total_crit,signal, dt=16,shot=50,averages=1000)
+        self.run_deer(total_crit,signal, dt=16,shot=50,averages=1e4)
 
 
     def run_deer(self,end_criteria,signal, dt=16,shot=50,averages=1000,):
@@ -318,8 +318,9 @@ class autoDEERWorker(QtCore.QRunnable):
             tau3 = 0.3
 
 
+
         deer = DEERSequence(
-            B=LO/self.gyro, LO=LO,reptime=reptime,averages=1000,shots=int(50*self.noise_mode),
+            B=LO/self.gyro, LO=LO,reptime=reptime,averages=averages,shots=int(50*self.noise_mode),
             tau1=tau1, tau2=tau2, tau3=tau3, dt=dt,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event'],
