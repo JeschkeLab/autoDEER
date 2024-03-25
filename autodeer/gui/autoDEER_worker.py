@@ -84,7 +84,7 @@ class autoDEERWorker(QtCore.QRunnable):
                 if suffix != "":
                     return f"({self.samplename})_({exp})_({suffix})"
                 else:
-                    return f"({self.samplename})_({x})"
+                    return f"({self.samplename})_({exp})"
         else:
             def savename(exp,suffix=""):
                 if suffix != "":

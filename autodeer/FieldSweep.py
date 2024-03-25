@@ -184,7 +184,7 @@ class FieldSweepAnalysis():
         self.model = mymodel
         return result
 
-    def plot(self, norm: bool = True, axis: str = "time", axs=None, fig=None) -> Figure:
+    def plot(self, norm: bool = True, axis: str = "field", axs=None, fig=None) -> Figure:
         """Generate a field sweep plot
 
         Parameters
@@ -192,7 +192,7 @@ class FieldSweepAnalysis():
         norm : bool, optional
             Nomarlisation of the plot to a maximum of 1, by default True
         axis : str, optional
-            plot field sweep on either the "time" axis or "freq" axis
+            plot field sweep on either the "field" axis or "freq" axis
 
         Returns
         -------
@@ -204,15 +204,20 @@ class FieldSweepAnalysis():
         if norm is True:
             data = self.data
             data /= np.max(np.abs(data))
+        else:
+            data = self.data
         
 
         if axs is None and fig is None:
             fig, axs = plt.subplots(1, 1, figsize=(8, 6))              
 
         # Plot the data
-        if axis.lower() == 'time':
-            axs.plot(self.axis, np.real(data), label='Re')
-            axs.plot(self.axis, np.imag(data), label='Im')
+        if axis.lower() == 'field':
+            if np.iscomplexobj(data):
+                axs.plot(self.axis, np.real(data), label='Re')
+                axs.plot(self.axis, np.imag(data), label='Im')
+            else:
+                axs.plot(self.axis, data, label='Re')
             axs.legend()
             axs.set_xlabel('Field G')
             axs.set_ylabel('Normalised Amplitude')
@@ -228,11 +233,14 @@ class FieldSweepAnalysis():
 
         # Plot the fit
         if hasattr(self,"results"):
-            if axis.lower() == 'time':
-                axs.plot(self.axis, self.results.evaluate(self.model,self.axis*0.1), label='fit')
+            data = self.results.evaluate(self.model,self.axis*0.1)
+            if norm is True:
+                data /= self.results.scale
+            if axis.lower() == 'field':
+                axs.plot(self.axis, data, label='fit')
             elif axis.lower() == 'freq':
 
-                axs.plot(self.fs_x, np.flip(self.results.model(self.axis*0.1)), label='fit')
+                axs.plot(self.fs_x, np.flip(data), label='fit')
             axs.legend()
 
         return fig
