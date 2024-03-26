@@ -102,6 +102,26 @@ class CarrPurcellAnalysis():
         axs.set_xlabel('Time / us')
         axs.set_ylabel('Normalised Amplitude')
         return fig
+    
+    def check_decay(self,level=0.05):
+        """
+        Checks that the data has decayed to 5% in the time lenght of the dataset.
+
+        Parameters
+        ----------
+        level : float, optional
+            The level to check the decay, by default 0.05
+        
+        """
+
+        if hasattr(self,"fit_result"):
+            decay = self.func(self.axis, *self.fit_result[0]).data
+            if decay.min() < level:
+                return True
+            else:
+                return False
+        else:
+            raise ValueError("No fit result found")
 
     def find_optimal(
             self, SNR_target, target_time: float, target_step, averages=None) -> float:
