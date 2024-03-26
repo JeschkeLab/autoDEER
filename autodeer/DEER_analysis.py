@@ -188,7 +188,9 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     elif exp_type == "3pDEER":
         experimentInfo = dl.ex_3pdeer(tau=tau1,pathways=pathways,pulselength=pulselength)
 
-    r = np.linspace(1.2,10,100)
+
+    r_max = np.ceil(np.cbrt(t.max()*6**3/2))
+    r = np.linspace(1.2,r_max,100)
 
 
 
