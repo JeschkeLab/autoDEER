@@ -314,6 +314,14 @@ def background_func(t, fit):
 
     return fit.P_scale * scale * prod
 
+def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
+
+    dataset = fit_result.dataset
+    runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e6
+
+    factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
+    return factor
+
 
 def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=True):
     """DEERanalysis_plot Generates a figure showing both the time domain and

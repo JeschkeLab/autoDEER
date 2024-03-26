@@ -215,6 +215,7 @@ class autoDEERUI(QMainWindow):
         self.Min_tp=12
 
         self.deer_settings = {'ESEEM':None, 'ExpType':'5pDEER'}
+        self.correction_factor=1
 
     def set_spectrometer_connected_light(self, state):
         if state == 0:
@@ -730,17 +731,22 @@ class autoDEERUI(QMainWindow):
 
         self.refresh_relax_figure()
         est_lambda = 0.4 * (self.userinput['label_eff']/100)
-        tau2hrs = fitresult.find_optimal(SNR_target=20/est_lambda, target_time=2, target_step=0.015)
-        tau4hrs = fitresult.find_optimal(SNR_target=20/est_lambda, target_time=4, target_step=0.015)
+        self.aim_time = 2
+        self.aim_MNR = 20 / est_lambda
+        tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR, target_time=self.aim_time, target_step=0.015)
+        tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR, target_time=4, target_step=0.015)
         max_tau = fitresult.find_optimal(SNR_target=45/est_lambda, target_time=self.userinput['MaxTime'], target_step=0.015)
     
         self.current_results['relax'].tau2hrs = tau2hrs
+
+        
         
         if (tau2hrs < 1.5) and (tau4hrs > 1.5):
             self.raise_warning(f"2hr dipolar evo too short. Using 4hr number")
             self.deer_settings['tau1'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
             self.deer_settings['tau2'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
             self.deer_settings['ExpType'] = '5pDEER'
+            self.aim_time = 4
         
         elif (tau2hrs < 1.5) and (tau4hrs < 1.5):
             self.current_results['relax'].tau2hrs = 2.5
@@ -831,7 +837,9 @@ class autoDEERUI(QMainWindow):
             dt = ad.round_step(dt,self.waveform_precision)
             mod_depth = x.MNR * x.noiselvl
             remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60))
-            max_tau = self.current_results['relax'].find_optimal(SNR_target=45/mod_depth, target_time=remaining_time, target_step=dt/1e3)
+
+            self.correction_factor = ad.calc_correction_factor(self.current_results['quickdeer'],self.aim_MNR,self.aim_time)
+            max_tau = self.current_results['relax'].find_optimal(SNR_target=45/(mod_depth*self.correction_factor), target_time=remaining_time, target_step=dt/1e3)
             tau = np.min([rec_tau/2,max_tau])
             self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
             self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
