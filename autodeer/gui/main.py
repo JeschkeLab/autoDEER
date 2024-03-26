@@ -770,6 +770,8 @@ class autoDEERUI(QMainWindow):
         self.DipolarEvo2hrs.setValue(tau2hrs)
         self.Tab_widget.setCurrentIndex(3)
         
+        self.check_CP(fitresult)
+
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
@@ -783,6 +785,8 @@ class autoDEERUI(QMainWindow):
         
         d_ESEEM = ad.detect_ESEEM(dataset,'deuteron')
         p_ESEEM = ad.detect_ESEEM(dataset,'proton')
+        d_ESEEM = False # Turn off ESEEM detection
+        p_ESEEM = False
         if d_ESEEM:
             self.deer_settings['ESEEM'] = 'deuteron'
             main_log.info(f"Detected deuteron ESEEM")
@@ -795,13 +799,44 @@ class autoDEERUI(QMainWindow):
         
 
         # Since the T2 values are not used for anything there is no need pausing the spectrometer    
-        if self.waitCondition is not None: # Wake up the runner thread
-            self.waitCondition.wakeAll()
+        
 
-        worker = Worker(T2_process, dataset)
-        worker.signals.result.connect(self.refresh_T2)
+        T2_worker = Worker(T2_process, dataset)
+        T2_worker.signals.result.connect(self.refresh_T2)
+        T2_worker.signals.result.connect(self.check_T2)
 
-        self.threadpool.start(worker)
+        self.threadpool.start(T2_worker)
+
+    def check_T2(self, fitresult):
+        # Check if the T2 measurment is too short. 
+
+        test_result = fitresult.check_decay()
+
+        if test_result:
+            if self.waitCondition is not None: # Wake up the runner thread
+                self.waitCondition.wakeAll()
+        else:
+            test_dt = fitresult.axis[1] - fitresult.axis[0]
+            test_dt *= 1e3
+            new_dt = ad.round_step(test_dt*2,self.waveform_precision)
+            if self.worker is not None:
+                self.worker.run_T2_relax(dt=new_dt)
+
+    def check_CP(self, fitresult):
+        # Check if the T2 measurment is too short. 
+
+        test_result = fitresult.check_decay()
+
+        if test_result:
+            if self.waitCondition is not None: # Wake up the runner thread
+                self.waitCondition.wakeAll()
+        else:
+            test_dt = fitresult.axis[1] - fitresult.axis[0]
+            test_dt *= 1e3
+            new_dt = ad.round_step(test_dt*2,self.waveform_precision)
+            if self.worker is not None:
+                self.worker.run_CP_relax(dt=new_dt)
+
 
     def refresh_T2(self, fitresult):
         self.current_results['T2_relax'] = fitresult
@@ -868,9 +903,9 @@ class autoDEERUI(QMainWindow):
         # reptime_analysis = ad.ReptimeAnalysis(dataset,dataset.sequence)
         reptime_analysis = ad.ReptimeAnalysis(dataset)
         reptime_analysis.fit()
-        opt_reptime = reptime_analysis.calc_optimal_reptime(0.8)
+        opt_reptime = reptime_analysis.calc_optimal_reptime(0.9)
 
-        if opt_reptime*1e-3 > 8:
+        if (opt_reptime*1e-3 > 8) or (opt_reptime*1e-3 < 0.5):
             main_log.warning(f"Reptime optimisation failed. Setting to default for spin system")
             opt_reptime = 3e3
 
