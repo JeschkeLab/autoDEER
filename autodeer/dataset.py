@@ -1,6 +1,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import re
 import os
 import uuid
 import json
@@ -213,6 +214,60 @@ class EPRAccessor:
         new_obj = new_obj.assign_coords(**new_coords)
         
         return new_obj
+    
+    
+    @property
+    def sequence(self):
+        dataset_attrs = self._obj.attrs
+        dataset_coords = self._obj.coords
+
+        pulses = len([key for key in dataset_attrs.keys() if re.match(r"pulse\d+_name$", key)])
+
+        seq_param_types = ['seq_name','B','LO','reptime','shots','averages','det_window']
+        seq_params = {}
+
+        for param_type in seq_param_types:
+            if param_type in dataset_attrs:
+                seq_params[param_type] = dataset_attrs[param_type]
+            elif param_type in dataset_coords:
+                coord = dataset_coords[param_type]
+                min = coord.min()
+                dim = coord.shape[0]
+                step = coord[1] - coord[0]
+
+                seq_params[param_type] = Parameter(name = param_type, value = min, dim=dim, step=step)
+
+        seq_params['name'] = seq_params.pop('seq_name')
+
+        pulses_obj = []
+        for i in range(pulses):
+            pulse_type = dataset_attrs[f"pulse{i}_name"]
+            param_types = ['t','tp','freq','flipangle','scale','order1','order2','inti_freq','BW','final_freq','beta']
+            params = {}
+
+            for param_type in param_types:
+                if f"pulse{i}_{param_type}" in dataset_attrs:
+                    params[param_type] = dataset_attrs[f"pulse{i}_{param_type}"]
+                elif f"pulse{i}_{param_type}" in dataset_coords:
+                    coord = dataset_coords[f"pulse{i}_{param_type}"]
+                    min = coord.min()
+                    dim = coord.shape[0]
+                    step = coord[1] - coord[0]
+
+                    params[param_type] = Parameter(name = param_type, value = min, dim=dim, step=step)
+            
+            try:
+                pulse_build = getattr(ad_pulses,pulse_type)
+                pulses_obj.append(pulse_build(**params))
+            except:
+                continue
+
+        sequence = Sequence(**seq_params)
+        sequence.pulses = pulses_obj
+
+        return sequence
+
+
 
 
 

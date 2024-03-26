@@ -237,3 +237,48 @@ def create_report(save_path, Results:dict, SpectrometerInfo:dict=None, UserInput
             
         report._build()
         pass
+
+def combo_figure(EDFS, respro, pulses:dict, relaxation:list, init_deer, long_deer ,title=None):
+    """
+    Creates a 2x2 summary figure. 
+        - The top left plot is the EDFS and resonator profile, overlapped with the optimised pulses. 
+        - The top right plot is the relaxation data and fits.
+        - The bottom left plot is the initial DEER data and fits.
+        - The bottom right plot is the final DEER data and fits.
+    
+    Parameters
+    ----------
+    EDFS: ad.FieldSweepAnalysis
+        The Echo-Detected Field Sweep analysis.
+    respro: ad.ResonatorProfileAnalysis
+        The resonator profile analysis
+    pulses: dict
+        A dictionary containing the optimised pulses.
+    relaxation: list
+        A list containing the relaxation data and fits.
+    init_deer: deerlab.FitResult
+        The initial DEER data and fits.
+    long_deer: deerlab.FitResult
+        The final DEER data and fits.
+    title: str, optional
+        The title of the figure, by default None
+    
+    
+    """
+    figure = plt.figure(figsize=(10, 10),constrained_layout=True)
+    figs = figure.subfigures(2, 2, height_ratios=(4,6), width_ratios=(1,1),wspace=.12)
+
+    if title is not None:
+        figure.suptitle(title,size=20)
+    
+    figs[0,0].suptitle('a. EDFS',size=15)
+    plot_overlap(EDFS, pulses['pump_pulse'], pulses['exc_pulse'],pulses['ref_pulse'],respro=respro,fig=figs[0,0]);
+    figs[0,0].axes[0].set_xlim(-0.3,0.1)
+    figs[0,1].suptitle('b. Relaxation',size=15)
+    plot_1Drelax(*relaxation,figs[0,1])
+    figs[1,0].suptitle('c. Intial DEER',size=15)
+    DEERanalysis_plot_pub(init_deer[0],figs[1,0]);
+    figs[1,1].suptitle('d. Final DEER',size=15)
+    DEERanalysis_plot_pub(long_deer,figs[1,1]);
+
+    return figure
