@@ -305,8 +305,11 @@ def plot_1Drelax(*args,fig=None, axs=None,cmap=cmap):
         elif arg.dataset.seq_name == 'DEERSequence':
             xscale = 4
             label='CP-2'
+        else:
+            xscale = 4
+            label='CP-2'
         
-        axs.plot(arg.axis*xscale, arg.data/arg.data.max(), '.', label=label,alpha=0.5,color=cmap[i],edgecolors='none')
+        axs.plot(arg.axis*xscale, arg.data/arg.data.max(), '.', label=label,alpha=0.5,color=cmap[i],mec='none')
         axs.plot(arg.axis*xscale, arg.func(arg.axis,*arg.fit_result[0]), '-',alpha=1,color=cmap[i], lw=2)
 
     axs.legend()
