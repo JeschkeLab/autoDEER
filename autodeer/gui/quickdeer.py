@@ -15,6 +15,7 @@ import deerlab as dl
 
 from autodeer.gui.tools import * 
 from functools import partial
+from scipy.stats import norm
 
 QtCore.QDir.addSearchPath('icons', 'gui/resources')
 package_directory = os.path.dirname(os.path.abspath(__file__))
@@ -154,6 +155,9 @@ class DEERplot(QWidget):
 
         self.MNRDoubleSpinBox.setValue(results.MNR)
         self.Chi2DoubleSpinBox.setValue(results.stats['chi2red'])
+        self.conc_value.setValue(results.conc)
+        self.conc_uncert.setText(getCIstring(results.concUncert))
+
         try:
             self.regparamDoubleSpinBox.setValue(results.regparam)
             self.regparamDoubleSpinBox.setDisabled(0)
@@ -165,10 +169,18 @@ class DEERplot(QWidget):
 
         # Find pathways in the fit results
         pathways = []
+        total_mod = 0
+        total_mod_uncert_covmat = None
+        total_mod_lb = 0
+        total_mod_ub = 0
         if 'mod' in results.paramlist:
             pathways = [1]
             reftime = getattr(results,f"reftime")
             lam = getattr(results,f"mod")
+            total_mod = lam
+            total_mod_uncert_covmat = np.sqrt(getattr(results,f"modUncert").covmat)
+            total_mod_lb = getattr(results,f"modUncert")._UQResult__lb
+            total_mod_ub = getattr(results,f"modUncert")._UQResult__ub
             i=0
             self.Pathways_Box.addWidget(QLabel(f"reftime"),i,0,1,1)
             self.Pathways_Box.addWidget(QDoubleSpinBox(value=reftime, suffix=' us', readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
@@ -190,6 +202,13 @@ class DEERplot(QWidget):
                 # Creating a new lay out that is formed from a label and 2 double spin boxes and 2 more labels. in a 1x2x2 pattern
                 reftime = getattr(results,f"reftime{pathway}")
                 lam = getattr(results,f"lam{pathway}")
+                if total_mod_uncert_covmat is not None:
+                    total_mod_uncert_covmat += np.sqrt(getattr(results,f"lam{pathway}Uncert").covmat)
+                else:
+                    total_mod_uncert_covmat = np.sqrt(getattr(results,f"lam{pathway}Uncert").covmat)
+                total_mod_lb += getattr(results,f"lam{pathway}Uncert")._UQResult__lb
+                total_mod_ub += getattr(results,f"lam{pathway}Uncert")._UQResult__ub
+                total_mod += lam
                 self.Pathways_Box.addWidget(QLabel(f"reftime {pathway}"),i,0,1,1)
                 self.Pathways_Box.addWidget(QDoubleSpinBox(value=reftime, suffix=' us', readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
                 self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"reftime{pathway}Uncert"))),i,2,1,1)
@@ -197,7 +216,17 @@ class DEERplot(QWidget):
                 self.Pathways_Box.addWidget(QDoubleSpinBox(value=lam, suffix='', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i+1,1,1,1)
                 self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"lam{pathway}Uncert"))),i+1,2,1,1)
 
+        total_mod_uncert_covmat = np.sqrt(np.diag(total_mod_uncert_covmat))
 
+        coverage = 95
+        alpha = 1 - coverage/100
+        p = 1 - alpha/2
+        standardError = norm.ppf(p) * total_mod_uncert_covmat[0]
+        minCI = np.max([total_mod - standardError,total_mod_lb[0]])
+        maxCI = np.min([total_mod + standardError,total_mod_ub[0]])
+
+        self.Total_mod_value.setValue(total_mod)
+        self.Total_mod_uncert.setText(f"({minCI:.{2}f},{maxCI:.{2}f})")
 
     def create_figure(self):
         fig, axs = plt.subplot_mosaic([

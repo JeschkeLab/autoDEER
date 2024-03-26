@@ -23,7 +23,7 @@ def getCIstring(Uncert, precision=2):
 def load_epr_file(Object, store_location):
 
         filename, _= QFileDialog.getOpenFileName(
-            Object,"Select a File", Object.current_folder,"Data (*.DTA *.mat)")
+            Object,"Select a File", Object.current_folder,"Data (*.DTA *.mat *.h5)")
         
         if filename:
                 path = Path(filename)

@@ -290,5 +290,50 @@ def detect_ESEEM(dataset,type='deuteron', threshold=1.5):
     else:
         return False
 
+cmap = ['#D95B6F','#42A399']
+
+def plot_1Drelax(*args,fig=None, axs=None,cmap=cmap):
+    """
+    Create a superimposed plot of relaxation data and fits.
+
+    Parameters
+    ----------
+    args : ad.Analysis
+        The 1D relaxation data to be plotted.
+
+    fig : Figure, optional
+        The figure to plot to, by default None
+    axs : Axes, optional
+        The axes to plot to, by default None
+    cmap : list, optional
+        The color map to use, by default ad.cmap
     
-    
+    """
+
+    if fig is None:
+        fig, axs = plt.subplots(1,1, figsize=(5,5))
+    else:
+        axs = fig.subplots(1,1)
+
+    for i,arg in enumerate(args): 
+        if arg.dataset.seq_name == 'T2RelaxationSequence':
+            xscale = 2
+            label='T2'
+        elif arg.dataset.seq_name == 'CarrPurcellSequence':
+            xscale = 4
+            label='CP-2'
+        elif arg.dataset.seq_name == 'DEERSequence':
+            xscale = 4
+            label='CP-2'
+        else:
+            xscale = 4
+            label='CP-2'
+        
+        axs.plot(arg.axis*xscale, arg.data/arg.data.max(), '.', label=label,alpha=0.5,color=cmap[i],mec='none')
+        axs.plot(arg.axis*xscale, arg.func(arg.axis,*arg.fit_result[0]), '-',alpha=1,color=cmap[i], lw=2)
+
+    axs.legend()
+    axs.set_xlabel('Total Sequence Length / $\mu s$')
+    axs.set_ylabel('Signal / $ A.U. $')
+
+    return fig

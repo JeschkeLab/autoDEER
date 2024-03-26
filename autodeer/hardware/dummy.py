@@ -87,7 +87,7 @@ class dummyInterface(Interface):
         x = np.linspace(33,35)
         scale = 75/mode(x).max()
         self.mode = lambda x: lorenz_fcn(x, fc, fc/Q) * scale
-        super().__init__()
+        super().__init__(log=hw_log)
 
     def launch(self, sequence, savename: str, **kwargs):
         hw_log.info(f"Launching {sequence.name} sequence")

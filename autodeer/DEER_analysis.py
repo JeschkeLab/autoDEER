@@ -158,6 +158,9 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
     if t.max() > 500:
         t /= 1e3
+
+    if model is not None:
+        compactness = False
     
 
     if verbosity > 1:
@@ -188,18 +191,24 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     elif exp_type == "3pDEER":
         experimentInfo = dl.ex_3pdeer(tau=tau1,pathways=pathways,pulselength=pulselength)
 
-
+  
     r_max = np.ceil(np.cbrt(t.max()*6**3/2))
     r = np.linspace(1.2,r_max,100)
 
 
 
+
     # identify experiment
+    if 'parametrization' in kwargs:
+        parametrization = kwargs.pop('parametrization')
+    else:
+        parametrization = 'reftimes'
+
     
     if 'Vmodel' in kwargs:
         Vmodel = kwargs['Vmodel']
     else:
-        Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo, Pmodel=model)
+        Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo, Pmodel=model,parametrization=parametrization)
         Vmodel.pathways = pathways
 
     if compactness:
@@ -219,7 +228,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
 
     # Cleanup extra args
-    extra_args = ['tau1','tau2','tau3','exp_type','model','compactness','ROI','verbosity','pulselength','Vmodel']
+    extra_args = ['tau1','tau2','tau3','exp_type','model','compactness','ROI','verbosity','pulselength','Vmodel','parametrization']
     for arg in extra_args:
         if arg in kwargs:
             kwargs.pop(arg)
@@ -276,6 +285,46 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
 
 # =============================================================================
+# Plotting
+# =============================================================================
+    
+def background_func(t, fit):
+    Vmodel = fit.Vmodel
+    pathways = Vmodel.pathways
+    conc = fit.conc
+    prod = 1
+    scale = 1
+    if len(pathways) > 1:
+        for i in pathways:
+            if isinstance(i, list):
+                # linked pathway
+                lam = getattr(fit, f"lam{i[0]}{i[1]}")
+                scale += -1 * lam
+                for j in i:
+                    reftime = getattr(fit, f"reftime{pathways.index(j)+1}")
+                    prod *= dl.bg_hom3d(t-reftime, conc, lam)
+
+            else:
+                reftime = getattr(fit, f"reftime{i}")
+                lam = getattr(fit, f"lam{i}")
+                prod *= dl.bg_hom3d(t-reftime, conc, lam)
+                scale += -1 * lam
+    else:
+        reftime = getattr(fit, f"reftime")
+        lam = getattr(fit, f"mod")
+        prod *= dl.bg_hom3d(t-reftime, conc, lam)
+        scale += -1 * lam
+
+    return fit.P_scale * scale * prod
+
+def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
+
+    dataset = fit_result.dataset
+    runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e6
+
+    factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
+    return factor
+
 
 def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=True):
     """DEERanalysis_plot Generates a figure showing both the time domain and
@@ -371,7 +420,7 @@ def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=T
             label="ROI", hatch="/")
     
     axs['Primary_dist'].set_xlabel(r"Distance / $ nm$")
-    axs['Primary_dist'].set_ylabel(r"$P(r^{-1})$")
+    axs['Primary_dist'].set_ylabel(r"$P(r) / nm^{-1}$")
     axs['Primary_dist'].legend()
 
     if not text:
@@ -405,6 +454,53 @@ def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=T
 
     return fig
 
+def DEERanalysis_plot_pub(results, fig=None, axs=None):
+    """
+    Generates a vertical plot of the DEER analysis results, ready for publication.
+    
+    Parameters
+    ----------
+    results : Deerlab.FitResult
+        The results of the DEER analysis.
+    fig : matplotlib.figure.Figure, optional
+        The figure to plot the results on. If None, a new figure is created.
+    axs : matplotlib.axes.Axes, optional
+        The axes to plot the results on. If None, a new axes is created.
+    """
+
+    mask = results.mask
+    t = results.t
+    r = results.r
+    Vexp = results.Vexp
+    Vfit = results.model
+    Vmodel = results.Vmodel
+    pathways = Vmodel.pathways
+
+    if fig is None:
+        fig, axs = plt.subplots(2,1, figsize=(5,5),subplot_kw={},gridspec_kw={'hspace':0})
+    else:
+        axs = fig.subplots(2,1,subplot_kw={},gridspec_kw={'hspace':0})
+    
+    axs[0].plot(results.t,results.Vexp, '.',alpha=0.5,color='#D95B6F',mec='none')
+    axs[0].plot(results.t,results.model, '-',alpha=1,color='#D95B6F', lw=2)
+    
+    axs[0].plot(results.t,background_func(results.t, results), '--',alpha=1,color='#42A399', lw=2)
+    
+    axs[0].set_xlabel('Time / $\mu s$')
+    axs[0].xaxis.tick_top()
+
+    axs[0].xaxis.set_label_position('top') 
+
+    axs[0].set_ylabel('Signal A.U.')
+    
+    r = results.r
+    axs[1].plot(r,results.P, '-',alpha=1.0,color='#D95B6F')
+    Pci = results.PUncert.ci(95)
+    axs[1].fill_between(
+        r, Pci[:, 0], Pci[:, 1], color='#D95B6F', alpha=0.3, label='95% CI')
+    axs[1].set_xlabel('Distance / $nm$')
+    axs[1].set_ylabel(r"$P(r) / nm^{-1}$")
+    return fig
 
 # =============================================================================
 
@@ -795,7 +891,15 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
         filter_profile = build__lowpass_butter_filter(filter)
 
     if axs is None and fig is None:
-        fig, axs = plt.subplots(1,1,figsize=(5,5))
+        fig, axs = plt.subplots(1,1,figsize=(5,5), layout='constrained')
+    elif axs is None:
+        axs = fig.subplots(1,1,subplot_kq={},gridspec_kw={'hspace':0}
+                           )
+        
+    # Normalise the fieldsweep profile
+    fieldsweep_profile /= np.abs(fieldsweep_profile).max()
+    
+    # Plot the profiles
     axs.plot(f,fieldsweep_profile, label = 'Fieldsweep', c='k')
     axs.fill_between(f,pump_Mz*fieldsweep_profile, label = 'Pump Profile', alpha=0.5,color='#D95B6F')
     axs.fill_between(f,exc_Mz*fieldsweep_profile, label = 'Observer Profile',alpha=0.5,color='#42A399')
@@ -809,6 +913,5 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
 
     axs.legend()
     axs.set_xlabel('Frequency (MHz)')
-    fig.tight_layout()
 
     return fig

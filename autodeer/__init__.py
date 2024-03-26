@@ -10,7 +10,7 @@ from .sequences import *
 from .pulses import *
 from .criteria import *
 from .dataset import *
-from .reporter import Reporter
+from .reporter import Reporter, combo_figure
 
 try:
     import PyQt6
