@@ -470,7 +470,7 @@ def DEERanalysis_plot_pub(results, fig=None, axs=None):
     else:
         axs = fig.subplots(2,1,subplot_kw={},gridspec_kw={'hspace':0})
     
-    axs[0].plot(results.t,results.Vexp, '.',alpha=0.5,color='#D95B6F')
+    axs[0].plot(results.t,results.Vexp, '.',alpha=0.5,color='#D95B6F',edgecolors='none')
     axs[0].plot(results.t,results.model, '-',alpha=1,color='#D95B6F', lw=2)
     
     axs[0].plot(results.t,background_func(results.t, results), '--',alpha=1,color='#42A399', lw=2)
@@ -884,6 +884,11 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     elif axs is None:
         axs = fig.subplots(1,1,subplot_kq={},gridspec_kw={'hspace':0}
                            )
+        
+    # Normalise the fieldsweep profile
+    fieldsweep_profile /= np.abs(fieldsweep_profile).max()
+    
+    # Plot the profiles
     axs.plot(f,fieldsweep_profile, label = 'Fieldsweep', c='k')
     axs.fill_between(f,pump_Mz*fieldsweep_profile, label = 'Pump Profile', alpha=0.5,color='#D95B6F')
     axs.fill_between(f,exc_Mz*fieldsweep_profile, label = 'Observer Profile',alpha=0.5,color='#42A399')

@@ -296,10 +296,17 @@ def plot_1Drelax(*args,fig=None, axs=None,cmap=cmap):
         axs = fig.subplots(1,1)
 
     for i,arg in enumerate(args): 
-        if isinstance(arg,CarrPurcellAnalysis):
+        if arg.dataset.seq_name == 'T2RelaxationSequence':
+            xscale = 2
+            label='T2'
+        elif arg.dataset.seq_name == 'CarrPurcellSequence':
             xscale = 4
+            label='CP-2'
+        elif arg.dataset.seq_name == 'DEERSequence':
+            xscale = 4
+            label='CP-2'
         
-        axs.plot(arg.axis*xscale, arg.data/arg.data.max(), '.', label='T2',alpha=0.5,color=cmap[i])
+        axs.plot(arg.axis*xscale, arg.data/arg.data.max(), '.', label=label,alpha=0.5,color=cmap[i],edgecolors='none')
         axs.plot(arg.axis*xscale, arg.func(arg.axis,*arg.fit_result[0]), '-',alpha=1,color=cmap[i], lw=2)
 
     axs.legend()
