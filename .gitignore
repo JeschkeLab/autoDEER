@@ -160,3 +160,4 @@ Jupyter_Notebooks/
 
 .vscode/
 **/autoapi/autodeer/**/*.rst
+*.log*
