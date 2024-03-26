@@ -470,7 +470,7 @@ def DEERanalysis_plot_pub(results, fig=None, axs=None):
     else:
         axs = fig.subplots(2,1,subplot_kw={},gridspec_kw={'hspace':0})
     
-    axs[0].plot(results.t,results.Vexp, '.',alpha=0.5,color='#D95B6F',edgecolors='none')
+    axs[0].plot(results.t,results.Vexp, '.',alpha=0.5,color='#D95B6F',mec='none')
     axs[0].plot(results.t,results.model, '-',alpha=1,color='#D95B6F', lw=2)
     
     axs[0].plot(results.t,background_func(results.t, results), '--',alpha=1,color='#42A399', lw=2)
