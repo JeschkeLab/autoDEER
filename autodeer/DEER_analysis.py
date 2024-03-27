@@ -320,8 +320,8 @@ def background_func(t, fit):
 def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
 
     dataset = fit_result.dataset
-    runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e6
-
+    runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e-6
+    aim_time *= 3600
     factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
     return factor
 
