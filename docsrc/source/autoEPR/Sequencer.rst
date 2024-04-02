@@ -3,8 +3,8 @@ Creating a Custom Sequence
 
 autoEPR can be used to script and develop EPR pulse sequences in Python. 
 
-Pulse sequences are built up of two main object: :ref:`Sequences <Sequence>`
-and :ref:`Pulses <Pulse>`. In its simplest form, a pulse sequence is just a
+Pulse sequences are built up of two main object: :ref:`Sequences <autodeer.Sequence>`
+and :ref:`Pulses <autodeer.Pulse>`. In its simplest form, a pulse sequence is just a
 train of pulses. Here, we consider a pulse in its general form. I.e. Pulses are
 not just MW pulses but also delays and detection events. 
 
@@ -110,7 +110,7 @@ infomation.
 **Standard Sequences**   
 
 Since a Hahn Echo is such a standard sequence it comes pre-built as
-`HahnEchoSequence`. A full list of standard sequences can be found :ref:`here <standard_sequences>`
+`HahnEchoSequence`. A full list of standard sequences can be found :ref:`here <API doc.Sequences>`
 
 
 Using Shaped and Chirped pulses
@@ -121,7 +121,7 @@ a wider excitation bandwidth at a lower power level, and shaped pulse is used
 to reduce excitation side-lobes. 
 
 Many standard pulses are included, however, custom pulses can also be created.
-A full list of standard pulses can be found :ref:`here <standard_sequences>`
+A full list of standard pulses can be found :ref:`here <API doc.Sequences>`
 
 
 Chirped pulses
@@ -151,7 +151,7 @@ Custom pulses
 ++++++++++++++++++++
 Unlike when making custom sequences it is not recommended that you use an
 an instance of the class, instead it is recommended that create a new class which
-inherits from the class :ref:`Pulse <Pulse>`.
+inherits from the class :ref:`Pulse <API doc.Pulses>`.
 
 All pulses have the attributes `AM` and `FM` which describe their shape and 
 frequency dependencies. The recommended way of creating these is to create a 

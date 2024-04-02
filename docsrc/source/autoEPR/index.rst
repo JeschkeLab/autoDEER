@@ -19,4 +19,3 @@ Features included in autoEPR:
     ./Getting_Started
     ./Sequencer
     ./Interface
-    ./Reference
