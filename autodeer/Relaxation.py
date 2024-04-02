@@ -50,7 +50,7 @@ class CarrPurcellAnalysis():
 
         """
 
-        data = np.abs(self.data)
+        data = self.data
         data /= np.max(data)
 
         if type == "mono":
@@ -66,6 +66,8 @@ class CarrPurcellAnalysis():
         
         self.fit_type = type
         self.fit_result = curve_fit(self.func, self.axis, data, p0=p0, bounds=bounds)
+
+
         return self.fit_result
 
     def plot(self, norm: bool = True, axs=None, fig=None) -> Figure:
@@ -84,7 +86,7 @@ class CarrPurcellAnalysis():
         """
 
         if norm is True:
-            data = np.abs(self.data)
+            data = self.data
             data /= np.max(data)
 
         if axs is None and fig is None:
