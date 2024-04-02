@@ -320,8 +320,8 @@ def background_func(t, fit):
 def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
 
     dataset = fit_result.dataset
-    runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e6
-
+    runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e-6
+    aim_time *= 3600
     factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
     return factor
 
@@ -902,7 +902,7 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     if axs is None and fig is None:
         fig, axs = plt.subplots(1,1,figsize=(5,5), layout='constrained')
     elif axs is None:
-        axs = fig.subplots(1,1,subplot_kq={},gridspec_kw={'hspace':0}
+        axs = fig.subplots(1,1,subplot_kw={},gridspec_kw={'hspace':0}
                            )
         
     # Normalise the fieldsweep profile
