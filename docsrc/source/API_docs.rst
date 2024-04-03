@@ -30,7 +30,7 @@ Analysis Modules
 
 Sequences
 ~~~~~~~~~
-
+.. _Sequences:
 .. autoapisummary::
 
    autodeer.sequences.DEERSequence
@@ -45,6 +45,7 @@ Sequences
 
 Pulses
 ~~~~~~
+.. _Pulses:
 
 .. autoapisummary::
 
@@ -62,6 +63,7 @@ Termination Criteria
 
 .. autoapisummary::
 
+    autodeer.Criteria
     autodeer.TimeCriteria
     autodeer.SNRCriteria
     autodeer.DEERCriteria
@@ -74,8 +76,29 @@ Utilities
     autodeer.EPRAccessor
     autodeer.Reporter
 
+Interfaces
+~~~~~~~~~~
+.. _Interfaces:
+
+.. autoapisummary::
+    autodeer.classes.Interface
+    autodeer.hardware.Bruker_AWG.BrukerAWG
+    autodeer.hardware.Bruker_MPFU.BrukerMPFU
+    autodeer.hardware.XeprAPI_link.XeprAPILink
+    autodeer.hardware.ETH_awg.ETH_awg_interface
+
 Functions
 ----------------
+
+Plotting
+~~~~~~~~
+
+.. autoapisummary::
+
+    autodeer.DEERanalysis_plot
+    autodeer.DEERanalysis_plot_pub
+    autodeer.plot_overlap
+
 
 Optimisation
 ~~~~~~~~~~~~
@@ -83,7 +106,6 @@ Optimisation
 .. autoapisummary::
 
     autodeer.optimise_pulses
-    autodeer.plot_overlap
     autodeer.build_default_pulses
     autodeer.optimise_spectra_position
 I/O
@@ -106,3 +128,4 @@ Utilities
     autodeer.normalise_01
     autodeer.gcd
     autodeer.sop
+    autodeer.hardware.Bruker_tools.write_pulsespel_file

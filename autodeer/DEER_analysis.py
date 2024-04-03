@@ -454,7 +454,7 @@ def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=T
 
     return fig
 
-def DEERanalysis_plot_pub(results, fig=None, axs=None):
+def DEERanalysis_plot_pub(results, ROI=None, fig=None, axs=None):
     """
     Generates a vertical plot of the DEER analysis results, ready for publication.
     
@@ -462,6 +462,9 @@ def DEERanalysis_plot_pub(results, fig=None, axs=None):
     ----------
     results : Deerlab.FitResult
         The results of the DEER analysis.
+    ROI : tuple, optional
+        The minimum and maximum of the Region of Interest (ROI),
+        by default None
     fig : matplotlib.figure.Figure, optional
         The figure to plot the results on. If None, a new figure is created.
     axs : matplotlib.axes.Axes, optional
@@ -494,12 +497,18 @@ def DEERanalysis_plot_pub(results, fig=None, axs=None):
     axs[0].set_ylabel('Signal A.U.')
     
     r = results.r
-    axs[1].plot(r,results.P, '-',alpha=1.0,color='#D95B6F')
+    axs[1].plot(r,results.P, '-',alpha=1.0,color='#D95B6F', label='P(r)')
     Pci = results.PUncert.ci(95)
     axs[1].fill_between(
-        r, Pci[:, 0], Pci[:, 1], color='#D95B6F', alpha=0.3, label='95% CI')
+        r, Pci[:, 0], Pci[:, 1], color='#D95B6F', alpha=0.3, label='P(r) 95% CI')
+    if ROI is not None:
+        axs[1].fill_betweenx(
+            [0, Pci[:, 1].max()], ROI[0], ROI[1], alpha=0.2, color='#42A399',
+            label="ROI", hatch="/")
+
     axs[1].set_xlabel('Distance / $nm$')
     axs[1].set_ylabel(r"$P(r) / nm^{-1}$")
+    axs[1].legend()
     return fig
 
 # =============================================================================
@@ -871,7 +880,7 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     gyro  = Fieldsweep.gyro
     fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)
 
-    f = np.linspace(-0.3,0.3,100)
+    f = np.linspace(-0.4,0.4,100)
 
     fieldsweep_profile = np.flip(fieldsweep_fun(f))
 
@@ -893,23 +902,26 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     if axs is None and fig is None:
         fig, axs = plt.subplots(1,1,figsize=(5,5), layout='constrained')
     elif axs is None:
-        axs = fig.subplots(1,1,subplot_kq={},gridspec_kw={'hspace':0}
+        axs = fig.subplots(1,1,subplot_kw={},gridspec_kw={'hspace':0}
                            )
         
     # Normalise the fieldsweep profile
     fieldsweep_profile /= np.abs(fieldsweep_profile).max()
     
     # Plot the profiles
-    axs.plot(f,fieldsweep_profile, label = 'Fieldsweep', c='k')
-    axs.fill_between(f,pump_Mz*fieldsweep_profile, label = 'Pump Profile', alpha=0.5,color='#D95B6F')
-    axs.fill_between(f,exc_Mz*fieldsweep_profile, label = 'Observer Profile',alpha=0.5,color='#42A399')
+    axs.plot(f*1e3,fieldsweep_profile, label = 'Fieldsweep', c='k')
+    axs.fill_between(f*1e3,pump_Mz*fieldsweep_profile, label = 'Pump Profile', alpha=0.5,color='#D95B6F')
+    axs.fill_between(f*1e3,exc_Mz*fieldsweep_profile, label = 'Observer Profile',alpha=0.5,color='#42A399')
     if filter is not None:
-        axs.plot(f,filter_profile(f),'--', label = 'Filter')
+        axs.plot(f*1e3,filter_profile(f),'--', label = 'Filter')
 
     if respro is not None:
         model_norm = respro.model / np.max(respro.model)
-        axs.plot(respro.model_x - Fieldsweep.LO, model_norm,'--', label='Resonator Profile')
-    axs.set_xlim(f.min(),f.max())
+        axs.plot((respro.model_x - Fieldsweep.LO)*1e3, model_norm,'--', label='Resonator Profile')
+
+    fmin = f[~np.isclose(fieldsweep_profile,0)].min()
+    fmax = f[~np.isclose(fieldsweep_profile,0)].max()
+    axs.set_xlim(fmin*1e3,fmax*1e3)
 
     axs.legend()
     axs.set_xlabel('Frequency (MHz)')

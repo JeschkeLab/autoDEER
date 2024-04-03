@@ -32,6 +32,7 @@ release = '0.4-alpha'
 # ones.
 extensions = [# 'sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
+              'sphinx.ext.intersphinx',
               #'sphinx.ext.autosummary',
               'autoapi.extension',
               'sphinx_toolbox.collapse',
@@ -71,7 +72,12 @@ source_suffix = {
     '.txt': 'markdown',
     '.md': 'markdown',
 }
-
+intersphinx_mapping = {
+    "deerlab": ("https://jeschkelab.github.io/DeerLab/", None),
+    "xarray": ("https://docs.xarray.dev/en/stable/index.html", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+}
+intersphinx_disabled_reftypes = ["*"]
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

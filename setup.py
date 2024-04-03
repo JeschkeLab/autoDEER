@@ -4,7 +4,7 @@ exec(open('autodeer/_version.py').read())
 
 extras={
     "Matlab": ["matlabengine"],
-    "Docs": ["sphinx", "pydata-sphinx-theme", "sphinx-gallery", "sphinx-design"],
+    "Docs": ["sphinx", "furo", "sphinx-gallery", "sphinx-design","myst-parser","sphinx-copybutton","sphinx-toolbox","sphinx-autoapi","sphinxcontrib-bibtex","numpydoc"],
     "GUI": ["PyQt6","threadpoolctl", "pyinstaller"],
     "test": ["pytest", "pytest-cov", "pytest-qt", "pytest-xdist"],
 }
