@@ -2,8 +2,6 @@ API doc
 =================
 
 
-.. py:module:: autodeer
-
 Classes
 ----------------
 
