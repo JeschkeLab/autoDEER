@@ -13,6 +13,7 @@ import re
 import numbers
 import scipy.signal as sig
 from scipy.optimize import minimize,brute
+from autodeer.colors import primary_colors, ReIm_colors
 
 
 log = logging.getLogger('autoDEER.DEER')
@@ -325,7 +326,6 @@ def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
     factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
     return factor
 
-
 def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=True):
     """DEERanalysis_plot Generates a figure showing both the time domain and
     distance domain data along with extra important infomation such as the 
@@ -394,12 +394,12 @@ def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=T
             t[~mask], Vexp[~mask], '.', color='0.8', label='Data', ms=6)
     else:
         axs['Primary_time'].plot(t, Vexp, '.', color='0.7', label='Data', ms=6)
-    axs['Primary_time'].plot(t, Vfit, linewidth=3, color='C1', label='Fit')
+    axs['Primary_time'].plot(t, Vfit, linewidth=3, color=primary_colors[0], label='Fit')
     # axs['Primary_time'].fill_between(t, Vci[:, 0], Vci[:, 1], color='C1',
     #                                  alpha=0.3)
     if background:
         axs['Primary_time'].plot(
-            t, background_func(t, fit), linewidth=3, color='C0',
+            t, background_func(t, fit), linewidth=3, color=primary_colors[1],
             ls=':', label='Unmod. Cont.', alpha=0.5)
 
     axs['Primary_time'].set_xlabel(r"Time / $\mu s$")
@@ -410,13 +410,13 @@ def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=T
     # Distance Plots
     Pfit = fit.P
     Pci = fit.PUncert.ci(95)
-    axs['Primary_dist'].plot(r, Pfit, '-', color='C1', lw=3, label='Fit')
+    axs['Primary_dist'].plot(r, Pfit, '-', color=primary_colors[0], lw=3, label='Fit')
     axs['Primary_dist'].fill_between(
-        r, Pci[:, 0], Pci[:, 1], color='C1', alpha=0.3, label='95% CI')
+        r, Pci[:, 0], Pci[:, 1], color=primary_colors[0], alpha=0.3, label='95% CI')
     
     if ROI is not None:
         axs['Primary_dist'].fill_betweenx(
-            [0, Pci[:, 1].max()], ROI[0], ROI[1], alpha=0.2, color='C2',
+            [0, Pci[:, 1].max()], ROI[0], ROI[1], alpha=0.2, color=primary_colors[1],
             label="ROI", hatch="/")
     
     axs['Primary_dist'].set_xlabel(r"Distance / $ nm$")

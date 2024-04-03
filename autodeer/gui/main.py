@@ -694,32 +694,40 @@ class autoDEERUI(QMainWindow):
         fig = self.relax_canvas.figure
         axs = self.relax_ax
 
-        axs.set_xlabel("Total Sequence Length ($\mu s$)")
-        axs.set_ylabel("Signal (A. U.)")
-        
+        relax1D_results = []
         if 'relax' in self.current_results:
-            CP_results = self.current_results['relax']
-            CP_data = CP_results.data
-            CP_data /= CP_data.max()
-            if hasattr(CP_results, "fit_result"):
-                axs.plot(CP_results.axis*4, CP_data, '.', label='CP', color='C1', ms=6)
-                axs.plot(CP_results.axis*4, CP_results.func(
-                    CP_results.axis, *CP_results.fit_result[0]), label='CP-fit', color='C1', lw=2)
-            else:
-                axs.plot(CP_results.axis*4, CP_data, label='data', color='C1')
-        
+            relax1D_results.append(self.current_results['relax'])
         if 'T2_relax' in self.current_results:
-            T2_results = self.current_results['T2_relax']
-            T2_data = T2_results.data
-            T2_data /= T2_data.max()
-            if hasattr(T2_results, "fit_result"):
-                axs.plot(T2_results.axis*2, T2_data, '.', label='T2', color='C2', ms=6)
-                axs.plot(T2_results.axis*2, T2_results.func(
-                    T2_results.axis, *T2_results.fit_result[0]), label='T2-fit', color='C2', lw=2)
-            else:
-                axs.plot(T2_results.axis*2, T2_data, label='data', color='C2')
+            relax1D_results.append(self.current_results['T2_relax'])
+
+        ad.plot_1Drelax(*relax1D_results,axs=axs,fig=fig,cmap=ad.primary_colors)
+
+        # axs.set_xlabel("Total Sequence Length ($\mu s$)")
+        # axs.set_ylabel("Signal (A. U.)")
+        
+        # if 'relax' in self.current_results:
+        #     CP_results = self.current_results['relax']
+        #     CP_data = CP_results.data
+        #     CP_data /= CP_data.max()
+        #     if hasattr(CP_results, "fit_result"):
+        #         axs.plot(CP_results.axis*4, CP_data, '.', label='CP', color='C1', ms=6)
+        #         axs.plot(CP_results.axis*4, CP_results.func(
+        #             CP_results.axis, *CP_results.fit_result[0]), label='CP-fit', color='C1', lw=2)
+        #     else:
+        #         axs.plot(CP_results.axis*4, CP_data, label='data', color='C1')
+        
+        # if 'T2_relax' in self.current_results:
+        #     T2_results = self.current_results['T2_relax']
+        #     T2_data = T2_results.data
+        #     T2_data /= T2_data.max()
+        #     if hasattr(T2_results, "fit_result"):
+        #         axs.plot(T2_results.axis*2, T2_data, '.', label='T2', color='C2', ms=6)
+        #         axs.plot(T2_results.axis*2, T2_results.func(
+        #             T2_results.axis, *T2_results.fit_result[0]), label='T2-fit', color='C2', lw=2)
+        #     else:
+        #         axs.plot(T2_results.axis*2, T2_data, label='data', color='C2')
             
-        axs.legend()
+        # axs.legend()
         self.relax_canvas.draw()
 
     def refresh_relax(self, fitresult):
@@ -870,11 +878,14 @@ class autoDEERUI(QMainWindow):
             rec_tau = self.current_results['quickdeer'].rec_tau_max
             dt = self.current_results['quickdeer'].rec_dt * 1e3
             dt = ad.round_step(dt,self.waveform_precision)
+            dt= 16
             mod_depth = x.MNR * x.noiselvl
             remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60))
 
             self.correction_factor = ad.calc_correction_factor(self.current_results['quickdeer'],self.aim_MNR,self.aim_time)
             max_tau = self.current_results['relax'].find_optimal(SNR_target=45/(mod_depth*self.correction_factor), target_time=remaining_time, target_step=dt/1e3)
+            main_log.info(f"Max tau {max_tau:.2f} us")
+            max_tau = 10.3
             tau = np.min([rec_tau/2,max_tau])
             self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
             self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)

@@ -8,7 +8,7 @@ from scipy.linalg import eig
 from scipy.sparse import bsr_array
 import deerlab as dl
 from xarray import DataArray
-
+from autodeer.colors import primary_colors, ReIm_colors
 
 def create_Nmodel(mwFreq):
     """Create the field sweep model for a Nitroxide spin system. 
@@ -214,10 +214,10 @@ class FieldSweepAnalysis():
         # Plot the data
         if axis.lower() == 'field':
             if np.iscomplexobj(data):
-                axs.plot(self.axis, np.real(data), label='Re')
-                axs.plot(self.axis, np.imag(data), label='Im')
+                axs.plot(self.axis, np.real(data), label='Re',color=primary_colors[1])
+                axs.plot(self.axis, np.imag(data), label='Im',color=primary_colors[2])
             else:
-                axs.plot(self.axis, data, label='Re')
+                axs.plot(self.axis, data, label='Re',color=primary_colors[1])
             axs.legend()
             axs.set_xlabel('Field G')
             axs.set_ylabel('Normalised Amplitude')
@@ -227,7 +227,11 @@ class FieldSweepAnalysis():
             if not hasattr(self, "fs_x"):
                 raise RuntimeError("Please run fieldsweep.calc_gyro() first")
             
-            axs.plot(self.fs_x, np.abs(data), label='abs')
+            if np.iscomplexobj(data):
+                axs.plot(self.fs_x, np.real(data), label='Re',color=primary_colors[1])
+                axs.plot(self.fs_x, np.imag(data), label='Im',color=primary_colors[2])
+            else:
+                axs.plot(self.axis, data, label='Re',color=primary_colors[1])
             axs.set_xlabel('Frequency GHz')
             axs.set_ylabel('Normalised Amplitude')
 
@@ -237,10 +241,10 @@ class FieldSweepAnalysis():
             if norm is True:
                 data /= self.results.scale
             if axis.lower() == 'field':
-                axs.plot(self.axis, data, label='fit')
+                axs.plot(self.axis, data, label='fit',c=primary_colors[0])
             elif axis.lower() == 'freq':
 
-                axs.plot(self.fs_x, np.flip(data), label='fit')
+                axs.plot(self.fs_x, np.flip(data), label='fit',c=primary_colors[0])
             axs.legend()
 
         return fig
