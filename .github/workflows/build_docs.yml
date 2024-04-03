@@ -29,4 +29,4 @@ jobs:
         python -m pip install ".[Dev]"
     - name: Build with Sphinx
       run: |
-        sphinx-build -E -b html ./docsrc ./docs
+        sphinx-build -E -b -vv --keep-going html ./docsrc ./docs
