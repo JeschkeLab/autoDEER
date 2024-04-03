@@ -60,7 +60,9 @@ autoapi_template_dir = "_templates/autoapi"
 autoapi_keep_files = True
 autoapi_add_toctree_entry = False
 autoapi_python_class_content= "both"
-suppress_warnings = ["autoapi"]
+# suppress_warnings = ["autoapi"]
+autoapi_python_use_implicit_namespaces = True
+autoapi_own_page_level = 'class'
 
 
 # List of patterns, relative to source directory, that match files and
