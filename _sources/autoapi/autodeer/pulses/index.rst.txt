@@ -1,0 +1,762 @@
+:py:mod:`autodeer.pulses`
+=========================
+
+.. py:module:: autodeer.pulses
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.pulses.Pulse
+   autodeer.pulses.Detection
+   autodeer.pulses.Delay
+   autodeer.pulses.RectPulse
+   autodeer.pulses.HSPulse
+   autodeer.pulses.ChirpPulse
+   autodeer.pulses.SincPulse
+   autodeer.pulses.GaussianPulse
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.pulses.build_default_pulses
+
+
+
+.. py:class:: Pulse(*, tp, t=None, scale=None, flipangle=None, pcyc=[0], name=None, **kwargs)
+
+
+   Represents a general experimental pulse.
+
+
+   The class for a general pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The pulse length in ns.
+
+       **scale** : float
+           The arbitary experimental pulse amplitude, 0-1.
+
+       **t** : float, optional
+           The pulse start time in ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: _addPhaseCycle(phases, detections=None)
+
+      
+      Adds a phase cycle to the pulse sequence.
+
+      Args:
+          phases (list): List of phases to add to the phase cycle.
+          detections (list, optional): List of detection signs. Defaults to None. If None then all cycles are summed.
+
+      Returns:
+          None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _buildFMAM(func, ax=None)
+
+      
+      Builds the amplitude modulation (AM) and frequency modulation (FM) of a given function.
+
+      Args:
+          func: A function that takes in an array of values and returns two arrays, representing the AM and FM of the function.
+
+      Returns:
+          Two arrays representing the AM and FM of the function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: build_shape(ax=None)
+
+
+   .. py:method:: build_table()
+
+      
+      Builds a table of variables, axes, and UUIDs for all non-static Parameters in the object.
+
+      Returns:
+          dict: A dictionary containing the following keys: "Variable", "axis", and "uuid".
+          The values for each key are lists of the corresponding values for each non-static Parameter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: is_static()
+
+      
+      Check if all parameters in the pulse object are static.
+
+      Returns:
+          bool: True if all parameters are static, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: isDelayFocused()
+
+      
+      Does the pulse contain a specified time, `t`?
+
+      If so then it is not delay focused.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: isPulseFocused()
+
+      
+      Does the pulse contain a specified time, `t`?
+
+      If so then it is delay focused.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: plot(pad=1000)
+
+      
+      Plots the time domain representation of this pulse.
+
+
+      :Parameters:
+
+          **pad** : int, optional
+              The number of zeros to pad the data with, by default 1000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _calc_fft(pad=10000)
+
+
+   .. py:method:: exciteprofile(freqs=None)
+
+      
+      Excitation profile
+
+      Generates the exciatation profiles for this pulse.
+
+      This function is ported from EasySpin 
+      (https://easyspin.org/easyspin/documentation/sop.html) [1-2],
+      and based upon the method from Gunnar Jeschke, Stefan Pribitzer and
+      Andrin Doll[3].
+
+      References:
+      +++++++++++
+      [1] Stefan Stoll, Arthur Schweiger
+      EasySpin, a comprehensive software package for spectral simulation and analysis in EPR
+      J. Magn. Reson. 178(1), 42-55 (2006)
+
+      [2] Stefan Stoll, R. David Britt
+      General and efficient simulation of pulse EPR spectra
+      Phys. Chem. Chem. Phys. 11, 6614-6625 (2009)
+
+      [3] Jeschke, G., Pribitzer, S. & DollA. 
+      Coherence Transfer by Passage Pulses in Electron Paramagnetic 
+      Resonance Spectroscopy. 
+      J. Phys. Chem. B 119, 13570-13582 (2015)
+
+      :Parameters:
+
+          **freqs: np.ndarray, optional**
+              The frequency axis. Caution: A larger number of points will linearly
+              increase computation time.
+
+      :Returns:
+
+          Mx: np.ndarray
+              The magentisation in the X direction.
+
+          My: np.ndarray
+              The magentisation in the Y direction.
+
+          Mz: np.ndarray
+              The magentisation in the Z direction.
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: plot_fft()
+
+
+   .. py:method:: _pcyc_str()
+
+
+   .. py:method:: __str__()
+
+      
+      Return str(self).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: copy(clear=False, **kwargs)
+
+      
+      Creates a deep-copy of the pulse. I.e. Every parameter object is
+      re-created at another memory space.
+
+      Parameter can be chaged at this stage by adding them as keyword-
+      arguments (kwargs).
+
+
+      :Returns:
+
+          Pulse
+              A deep copy of the pulse
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _to_dict()
+
+
+   .. py:method:: _to_json()
+
+
+   .. py:method:: save(filename)
+
+      
+      Save the Pulse to a JSON file.
+
+
+      :Parameters:
+
+          **filename** : str
+              Path to the JSON file.
+
+      :Returns:
+
+          None
+              ..
+
+
+
+
+      :Raises:
+
+          TypeError
+              If the object cannot be serialized to JSON.
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _from_dict(dct)
+      :classmethod:
+
+
+   .. py:method:: _from_json(JSONstring)
+      :classmethod:
+
+
+   .. py:method:: load(filename)
+      :classmethod:
+
+      
+      Load a Pulse object from a JSON file.
+
+
+      :Parameters:
+
+          **filename** : str
+              Path to the JSON file.
+
+      :Returns:
+
+          **obj** : Pulse
+              The Pulse loaded from the JSON file.
+
+
+
+
+      :Raises:
+
+          FileNotFoundError
+              If the file does not exist.
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: Detection(*, tp, t=None, freq=0, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   Represents a detection pulse.
+
+
+   A general detection pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The **total** time of the detection event. The detection event will
+           be symetrical about the centre time. 
+
+       **t** : float, optional
+           The **centre** time of the detection event
+
+       **freq: float, optional**
+           The detection frequency, not all spectrometer support this 
+           functionality, by default 0 MHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:class:: Delay(*, tp, t=None)
+
+
+   Bases: :py:obj:`Pulse`
+
+   DEPRECATION WARNING: THIS WILL BE REMOVED SOON.
+
+   Represents a inter-pulse delay pulse.
+
+
+   The class for a general pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The pulse length in ns.
+
+       **scale** : float
+           The arbitary experimental pulse amplitude, 0-1.
+
+       **t** : float, optional
+           The pulse start time in ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:class:: RectPulse(tp=16, freq=0, t=None, flipangle=None, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   Represents a rectangular monochromatic pulse.
+
+
+
+
+
+   :Parameters:
+
+       **tp** : flaot, optional
+           Pulse Length in ns, by default 16
+
+       **freq** : float,optional
+           Frequency in MHz, by default 0
+
+       **t** : float, optional
+           Time position in ns, by default None
+
+       **flipangle** : _type_, optional
+           The flip angle in radians, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: func(ax)
+
+
+
+.. py:class:: HSPulse(*, tp=128, order1=1, order2=6, beta=20, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   Represents a hyperboilc secant frequency-swept pulse.
+
+
+   The class for a general pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The pulse length in ns.
+
+       **scale** : float
+           The arbitary experimental pulse amplitude, 0-1.
+
+       **t** : float, optional
+           The pulse start time in ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: func(ax)
+
+
+
+.. py:class:: ChirpPulse(*, tp=128, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   Represents a linear frequency-swept pulse.
+
+
+   The class for a general pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The pulse length in ns.
+
+       **scale** : float
+           The arbitary experimental pulse amplitude, 0-1.
+
+       **t** : float, optional
+           The pulse start time in ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: func(ax)
+
+
+
+.. py:class:: SincPulse(*, tp=128, freq=0, order=6, window=None, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   Represents a general experimental pulse.
+
+
+   Represents a sinc shaped monochromatic pulse.
+
+
+   :Parameters:
+
+       **tp** : int
+           Pulse length in ns, by default 128
+
+       **freq** : int, optional
+           The frequency of the pulse, by default 0
+
+       **order** : int, optional
+           The order of this sinc function, by default 6
+
+       **window** : _type_, optional
+           The window function, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: func(ax)
+
+
+
+.. py:class:: GaussianPulse(*, tp=128, freq=0, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   Represents a Gaussian monochromatic pulse.
+
+
+   Represents a Gaussian monochromatic pulse.
+
+
+   :Parameters:
+
+       **tp** : int
+           Pulse length in ns, by default 128
+
+       **freq** : int, optional
+           The frequency of the pulse, by default 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: func(ax)
+
+
+
+.. py:function:: build_default_pulses(AWG=True, tp=12)
+
+

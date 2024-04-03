@@ -1,0 +1,88 @@
+:py:mod:`autodeer.gui.quickdeer`
+================================
+
+.. py:module:: autodeer.gui.quickdeer
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.quickdeer.DEERplot
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.quickdeer.get_Vexp
+   autodeer.gui.quickdeer.deeranalysis_process
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.quickdeer.package_directory
+   autodeer.gui.quickdeer.app
+
+
+.. py:data:: package_directory
+
+   
+
+.. py:function:: get_Vexp(dataset, tmin=0)
+
+
+.. py:function:: deeranalysis_process(dataset, settings, cores)
+
+
+.. py:class:: DEERplot(parent=None)
+
+
+   Bases: :py:obj:`PyQt6.QtWidgets.QWidget`
+
+   .. py:method:: toolbar()
+
+
+   .. py:method:: setup_inputs()
+
+
+   .. py:method:: update_inputs_from_dataset()
+
+
+   .. py:method:: clearLayout(layout)
+
+
+   .. py:method:: update_analysis_table()
+
+
+   .. py:method:: update_fit_result()
+
+
+   .. py:method:: create_figure()
+
+
+   .. py:method:: update_figure()
+
+
+   .. py:method:: process_deeranalysis(wait_condition=None, update_func=None)
+
+
+   .. py:method:: refresh_deer(fitresult, wait_condition=None, update_func=None)
+
+
+
+.. py:data:: app
+
+   
+

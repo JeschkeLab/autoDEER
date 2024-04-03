@@ -1,0 +1,520 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
+
+    <!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
+        <title>autodeer.hardware.Bruker_AWG - </title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     Version 0.7 alpha out now! 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../index.html"><div class="brand"> </div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../../../_static/autoDEER_EPR_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../../../_static/autoDEER_EPR_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text"> </span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../source/Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Installation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/Install_python.html">Installing Python</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../source/tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Tutorial</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/gui_guide.html">autoDEER GUI</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../source/API_docs.html">API doc</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../source/autoEPR/index.html">autoEPR</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of autoEPR</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/autoEPR/Getting_Started.html">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../source/autoEPR/Sequencer.html">Creating a Custom Sequence</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../../source/autoEPR/Interface.html">Interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Interfaces</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../../source/autoEPR/Bruker_interface.html">Bruker Interface</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../source/releasenotes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../source/contributing.html">Contributing Guide</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="module-autodeer.hardware.Bruker_AWG">
+<span id="autodeer-hardware-bruker-awg"></span><h1><a class="reference internal" href="#module-autodeer.hardware.Bruker_AWG" title="autodeer.hardware.Bruker_AWG"><code class="xref py py-mod docutils literal notranslate"><span class="pre">autodeer.hardware.Bruker_AWG</span></code></a><a class="headerlink" href="#module-autodeer.hardware.Bruker_AWG" title="Link to this heading">#</a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG" title="autodeer.hardware.Bruker_AWG.BrukerAWG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BrukerAWG</span></code></a></p></td>
+<td><p>Represents the interface for connecting to AWG based Bruker ELEXSYS-II</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.get_specjet_data" title="autodeer.hardware.Bruker_AWG.get_specjet_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_specjet_data</span></code></a>(interface)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.test_if_MPFU_compatability" title="autodeer.hardware.Bruker_AWG.test_if_MPFU_compatability"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_if_MPFU_compatability</span></code></a>(seq)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.hardware.Bruker_AWG.</span></span><span class="sig-name descname"><span class="pre">BrukerAWG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../classes/index.html#autodeer.classes.Interface" title="autodeer.classes.Interface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">autodeer.classes.Interface</span></code></a></p>
+<p>Represents the interface for connecting to AWG based Bruker ELEXSYS-II
+Spectrometers.</p>
+<p>An interface for connecting to AWG based Bruker ELEXSYS-II
+Spectrometers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>config_file</strong><span class="classifier">str</span></dt><dd><p>The path to a YAML configuration file.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>bg_thread: None or threading.Thread</strong></dt><dd><p>If a background thread is needed, it is stored here.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_file</strong> (<em>str</em>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.connect" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.setup" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG.acquire_dataset">
+<span class="sig-name descname"><span class="pre">acquire_dataset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG.acquire_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.acquire_dataset" title="Link to this definition">#</a></dt>
+<dd><p>Acquires the dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG._launch_complex_thread">
+<span class="sig-name descname"><span class="pre">_launch_complex_thread</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axID</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tune</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG._launch_complex_thread"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG._launch_complex_thread" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG.launch">
+<span class="sig-name descname"><span class="pre">launch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tune</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MPFU_overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_pulsespel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_bg_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_cur_exp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG.launch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.launch" title="Link to this definition">#</a></dt>
+<dd><p>Launches the experiment and initialises autosaving.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sequence</strong><span class="classifier">Sequence</span></dt><dd><p>The sequence to be launched</p>
+</dd>
+<dt><strong>savename</strong><span class="classifier">str</span></dt><dd><p>The savename for this measurement. A timestamp will be added to the value.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>sequence</strong> (<a class="reference internal" href="../../index.html#id173" title="autodeer.Sequence"><em>Sequence</em></a>) – </p></li>
+<li><p><strong>savename</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG.tune_rectpulse">
+<span class="sig-name descname"><span class="pre">tune_rectpulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reptime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG.tune_rectpulse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.tune_rectpulse" title="Link to this definition">#</a></dt>
+<dd><p>Generates a rectangular pi and pi/2 pulse of the given length at
+the given field position. This value is stored in the pulse cache.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>tp</strong><span class="classifier">float</span></dt><dd><p>Pulse length in ns</p>
+</dd>
+<dt><strong>LO</strong><span class="classifier">float</span></dt><dd><p>Central frequency of this pulse in GHz</p>
+</dd>
+<dt><strong>B</strong><span class="classifier">float</span></dt><dd><p>Magnetic B0 field position in Gauss</p>
+</dd>
+<dt><strong>reptime: float</strong></dt><dd><p>Shot repetion time in us.</p>
+</dd>
+<dt><strong>shots: int</strong></dt><dd><p>The number of shots</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>p90: RectPulse</dt><dd><p>A tuned rectangular pi/2 pulse of length tp</p>
+</dd>
+<dt>p180: RectPulse</dt><dd><p>A tuned rectangular pi pulse of length tp</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG.tune_pulse">
+<span class="sig-name descname"><span class="pre">tune_pulse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pulse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reptime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG.tune_pulse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.tune_pulse" title="Link to this definition">#</a></dt>
+<dd><p>Tunes a single pulse a range of methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>pulse</strong><span class="classifier">Pulse</span></dt><dd><p>The Pulse object in need of tuning.</p>
+</dd>
+<dt><strong>mode</strong><span class="classifier">str</span></dt><dd><p>The method to be used.</p>
+</dd>
+<dt><strong>LO</strong><span class="classifier">float</span></dt><dd><p>The local oscilator frequency in GHz</p>
+</dd>
+<dt><strong>B</strong><span class="classifier">float</span></dt><dd><p>Magnetic B0 field position in Gauss</p>
+</dd>
+<dt><strong>reptime</strong><span class="classifier">us</span></dt><dd><p>Shot repetion time in us.</p>
+</dd>
+<dt><strong>shots: int</strong></dt><dd><p>The number of shots</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Tunned Pulse: Pulse</dt><dd><p>The returned pulse object that is now tunned.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG.tune_nutation">
+<span class="sig-name descname"><span class="pre">tune_nutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_pulse</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG.tune_nutation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.tune_nutation" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG.isrunning">
+<span class="sig-name descname"><span class="pre">isrunning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG.isrunning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.isrunning" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG.terminate">
+<span class="sig-name descname"><span class="pre">terminate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">now</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG.terminate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.terminate" title="Link to this definition">#</a></dt>
+<dd><p>Terminates the experiment immediately.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG.calc_d0">
+<span class="sig-name descname"><span class="pre">calc_d0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG.calc_d0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.calc_d0" title="Link to this definition">#</a></dt>
+<dd><p>This creates an initial guess for d0. A better estimate can only be found after the field sweep.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.BrukerAWG.calc_d0_from_Hahn_Echo">
+<span class="sig-name descname"><span class="pre">calc_d0_from_Hahn_Echo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LO</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#BrukerAWG.calc_d0_from_Hahn_Echo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.calc_d0_from_Hahn_Echo" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.get_specjet_data">
+<span class="sig-prename descclassname"><span class="pre">autodeer.hardware.Bruker_AWG.</span></span><span class="sig-name descname"><span class="pre">get_specjet_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interface</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#get_specjet_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.get_specjet_data" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_AWG.test_if_MPFU_compatability">
+<span class="sig-prename descclassname"><span class="pre">autodeer.hardware.Bruker_AWG.</span></span><span class="sig-name descname"><span class="pre">test_if_MPFU_compatability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_AWG.html#test_if_MPFU_compatability"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_AWG.test_if_MPFU_compatability" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">autodeer.hardware.Bruker_AWG</span></code></a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG"><code class="docutils literal notranslate"><span class="pre">BrukerAWG</span></code></a><ul>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.connect"><code class="docutils literal notranslate"><span class="pre">BrukerAWG.connect()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.setup"><code class="docutils literal notranslate"><span class="pre">BrukerAWG.setup()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.acquire_dataset"><code class="docutils literal notranslate"><span class="pre">BrukerAWG.acquire_dataset()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG._launch_complex_thread"><code class="docutils literal notranslate"><span class="pre">BrukerAWG._launch_complex_thread()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.launch"><code class="docutils literal notranslate"><span class="pre">BrukerAWG.launch()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.tune_rectpulse"><code class="docutils literal notranslate"><span class="pre">BrukerAWG.tune_rectpulse()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.tune_pulse"><code class="docutils literal notranslate"><span class="pre">BrukerAWG.tune_pulse()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.tune_nutation"><code class="docutils literal notranslate"><span class="pre">BrukerAWG.tune_nutation()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.isrunning"><code class="docutils literal notranslate"><span class="pre">BrukerAWG.isrunning()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.terminate"><code class="docutils literal notranslate"><span class="pre">BrukerAWG.terminate()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.calc_d0"><code class="docutils literal notranslate"><span class="pre">BrukerAWG.calc_d0()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.BrukerAWG.calc_d0_from_Hahn_Echo"><code class="docutils literal notranslate"><span class="pre">BrukerAWG.calc_d0_from_Hahn_Echo()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.get_specjet_data"><code class="docutils literal notranslate"><span class="pre">get_specjet_data()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_AWG.test_if_MPFU_compatability"><code class="docutils literal notranslate"><span class="pre">test_if_MPFU_compatability()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../../_static/documentation_options.js?v=2220c937"></script>
+    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    </body>
+</html>

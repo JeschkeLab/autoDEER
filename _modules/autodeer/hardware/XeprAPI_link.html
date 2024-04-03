@@ -1,0 +1,1398 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
+
+    <!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
+        <title>autodeer.hardware.XeprAPI_link - </title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     Version 0.7 alpha out now! 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand"> </div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../../_static/autoDEER_EPR_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../../_static/autoDEER_EPR_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text"> </span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../source/Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Installation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../source/Install_python.html">Installing Python</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../source/tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Tutorial</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../source/gui_guide.html">autoDEER GUI</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/API_docs.html">API doc</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../source/autoEPR/index.html">autoEPR</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of autoEPR</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../source/autoEPR/Getting_Started.html">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../source/autoEPR/Sequencer.html">Creating a Custom Sequence</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../source/autoEPR/Interface.html">Interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Interfaces</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../source/autoEPR/Bruker_interface.html">Bruker Interface</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/releasenotes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/contributing.html">Contributing Guide</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <h1>Source code for autodeer.hardware.XeprAPI_link</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">autodeer.dataset</span> <span class="kn">import</span> <span class="n">create_dataset_from_axes</span><span class="p">,</span> <span class="n">create_dataset_from_sequence</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize_scalar</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="k">try</span><span class="p">:</span>
+<div class="viewcode-block" id="xepr_path">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.xepr_path">[docs]</a>
+    <span class="n">xepr_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">popen</span><span class="p">(</span><span class="s2">&quot;Xepr --apipath&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xepr_path</span><span class="p">)</span>
+    <span class="kn">import</span> <span class="nn">XeprAPI</span>
+
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Xepr &gt;2.9 needs to be installed on the computer&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="hw_log">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.hw_log">[docs]</a>
+<span class="n">hw_log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;interface.Xepr&#39;</span><span class="p">)</span></div>
+
+
+<span class="c1"># ============================================================================</span>
+
+
+<div class="viewcode-block" id="XeprAPILink">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink">[docs]</a>
+<span class="k">class</span> <span class="nc">XeprAPILink</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_dir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">XeprCmds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">config_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spec_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;Spectrometer&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spec_config</span><span class="p">[</span><span class="s2">&quot;Bridge&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spec_config</span><span class="p">[</span><span class="s2">&quot;Manufacturer&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> \
+                    <span class="o">!=</span> <span class="s2">&quot;bruker&quot;</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Only Bruker Spectrometers are supported with this this&quot;</span>\
+                      <span class="s2">&quot;API&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="s2">&quot;Freq Cal&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">freq_cal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="p">[</span><span class="s2">&quot;Freq Cal&quot;</span><span class="p">]</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">AWG</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spec_config</span><span class="p">[</span><span class="s2">&quot;AWG&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">MPFU</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spec_config</span><span class="p">[</span><span class="s2">&quot;MPFU&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Hybrid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">spec_config</span><span class="p">[</span><span class="s2">&quot;Hybrid&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spec_config</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">AWG</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">MPFU</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Hybrid</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="XeprAPILink.connect">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.connect">[docs]</a>
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Connect to the Xepr Spectrometer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">find_Xepr</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">find_cur_exp</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">find_hidden</span><span class="p">()</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink._set_Xepr_global">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink._set_Xepr_global">[docs]</a>
+    <span class="k">def</span> <span class="nf">_set_Xepr_global</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Xepr_inst</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span> <span class="o">=</span> <span class="n">Xepr_inst</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">XeprCmds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink._get_Xepr_global">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink._get_Xepr_global">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_Xepr_global</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Can&#39;t find XEPR instance&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink._xepr_retry">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink._xepr_retry">[docs]</a>
+    <span class="k">def</span> <span class="nf">_xepr_retry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">continue</span>
+        
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Failed to get Xepr parameter.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_param">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xepr_retry</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_hidden_param">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_hidden_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_hidden_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xepr_retry</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="XeprAPILink._set_cur_exp_param">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink._set_cur_exp_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">_set_cur_exp_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span></div>
+
+    
+<div class="viewcode-block" id="XeprAPILink._set_hidden_param">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink._set_hidden_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">_set_hidden_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span></div>
+
+    
+<div class="viewcode-block" id="XeprAPILink.set_param">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xepr_retry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_set_cur_exp_param</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_hidden_param">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_hidden_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_hidden_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_hidden_param</span><span class="p">(</span><span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="c1"># self._xepr_retry(self._set_hidden_param, param_name, value)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hidden_param</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.find_Xepr">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.find_Xepr">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_Xepr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">open_xepr_instances</span> <span class="o">=</span> <span class="n">XeprAPI</span><span class="o">.</span><span class="n">getXeprInstances</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">open_xepr_instances</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;No Open Xepr API Instances, please open one by&quot;</span> <span class="o">+</span>\
+                        <span class="s2">&quot;:</span><span class="se">\n</span><span class="s2"> </span><span class="se">\&quot;</span><span class="s2">processing</span><span class="se">\&quot;</span><span class="s2"> -&gt; </span><span class="se">\&quot;</span><span class="s2">XeprAPI</span><span class="se">\&quot;</span><span class="s2"> -&gt; </span><span class="se">\&quot;</span><span class="s2">Enable &quot;</span> <span class="o">+</span>\
+                        <span class="s2">&quot;Xepr API</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+            <span class="n">hw_log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Xepr_local</span> <span class="o">=</span> <span class="n">XeprAPI</span><span class="o">.</span><span class="n">Xepr</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="n">error_msg</span> <span class="o">=</span> <span class="s1">&#39;Xepr API: Could not connect to any Xepr instance.&#39;</span>
+                <span class="n">hw_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;There is already a connection from Xepr to&quot;</span> <span class="o">+</span>\
+                            <span class="s2">&quot;this python Kernel.</span><span class="se">\n</span><span class="s2"> Please use the correct &quot;</span> <span class="o">+</span>\
+                            <span class="s2">&quot;python object or restart the kernel &quot;</span>
+                <span class="n">hw_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;Can&#39;t connect to Xepr: Please check Xepr is &quot;</span> <span class="o">+</span>\
+                            <span class="s2">&quot;running and open to API&quot;</span>
+                <span class="n">hw_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_Xepr_global</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Xepr_local</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Already Connected to Xepr!&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Already Connected to Xepr!&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink._set_cur_exp_global">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink._set_cur_exp_global">[docs]</a>
+    <span class="k">def</span> <span class="nf">_set_cur_exp_global</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cur_exp_inst</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span> <span class="o">=</span> <span class="n">cur_exp_inst</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink._get_cur_exp_global">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink._get_cur_exp_global">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_cur_exp_global</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;Can&#39;t find current experiment&quot;</span>
+            <span class="n">hw_log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.find_cur_exp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.find_cur_exp">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_cur_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Try and finds the current experiment</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;Please connect API to Xepr&quot;</span>
+            <span class="n">hw_log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprExperiment</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">warn_msg</span> <span class="o">=</span> \
+                <span class="s2">&quot;Can&#39;t find the current experiment. Attempting to load it&quot;</span>
+            <span class="n">hw_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">warn_msg</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">warn_msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span><span class="o">.</span><span class="n">aqExpSelect</span><span class="p">(</span><span class="s2">&quot;Experiment&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprExperiment</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">error_msg</span> <span class="o">=</span> <span class="s2">&quot;Can&#39;t find the current experiment. Please create&quot;</span>\
+                             <span class="o">+</span> <span class="s2">&quot;an experiment with the name &#39;Experiment&#39;&quot;</span>
+                <span class="n">hw_log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+                <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Experiment found&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Experiment found&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_cur_exp_global</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.find_hidden">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.find_hidden">[docs]</a>
+    <span class="k">def</span> <span class="nf">find_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprExperiment</span><span class="p">(</span><span class="s2">&quot;AcqHidden&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.is_exp_running">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.is_exp_running">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_exp_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xepr_retry</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="o">.</span><span class="n">isRunning</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.acquire_dataset">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.acquire_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">acquire_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function acquire the dataset, this work both for a running </span>
+<span class="sd">        experiment or once it has finished.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dataclass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xepr_retry</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprDataset</span><span class="p">())</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">dataclass</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">data_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">dataclass</span><span class="o">.</span><span class="n">O</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;nAvgs&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;recorder.NbScansDone&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;reptime&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.ShotRepTime&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;shots&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.ShotsPLoop&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_field</span><span class="p">(),</span>
+            <span class="s2">&quot;LO&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_counterfreq</span><span class="p">(),</span>
+            <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">sequence</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">default_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
+            <span class="n">dims</span> <span class="o">=</span> <span class="n">default_labels</span><span class="p">[:</span><span class="n">data_dim</span><span class="p">]</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data_dim</span><span class="p">):</span>
+                <span class="n">ax_label</span> <span class="o">=</span> <span class="n">default_labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">axis_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;recorder.Abs</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">Data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">aqGetParUnits</span><span class="p">()</span>
+                <span class="k">if</span> <span class="s2">&quot;&#39;&quot;</span> <span class="ow">in</span> <span class="n">axis_string</span><span class="p">:</span>
+                    <span class="n">axis_string</span> <span class="o">=</span> <span class="n">axis_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">axis_string</span> <span class="o">==</span> <span class="s1">&#39;G&#39;</span><span class="p">:</span>
+                    <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">axis_string</span> <span class="o">==</span> <span class="s1">&#39;ns&#39;</span><span class="p">:</span>
+                    <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;t&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">data_dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># We have a 1D dataset</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">dataclass</span><span class="o">.</span><span class="n">X</span>
+                <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Acquired Dataset&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">create_dataset_from_axes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">data_dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c1"># we have a 2D dataset</span>
+                <span class="n">t1</span> <span class="o">=</span> <span class="n">dataclass</span><span class="o">.</span><span class="n">X</span>
+                <span class="n">t2</span> <span class="o">=</span> <span class="n">dataclass</span><span class="o">.</span><span class="n">Y</span>
+                <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Acquired Dataset&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">create_dataset_from_axes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">[</span><span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">],</span> <span class="n">params</span><span class="p">,</span><span class="n">labels</span><span class="p">)</span>
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dset</span> <span class="o">=</span> <span class="n">create_dataset_from_sequence</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sequence</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+                <span class="n">dset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">par</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">dset</span></div>
+
+
+
+<div class="viewcode-block" id="XeprAPILink.acquire_scan">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.acquire_scan">[docs]</a>
+    <span class="k">def</span> <span class="nf">acquire_scan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sequence</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This script detects the end of the scan and acquires the data set. </span>
+<span class="sd">        This requires that the experiment is still running, or recently </span>
+<span class="sd">        finished. Once it has been saved this will no longer work.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_exp_running</span><span class="p">():</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">pause_exp</span><span class="p">()</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_exp_running</span><span class="p">():</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_dataset</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">rerun_exp</span><span class="p">()</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">dataset</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_dataset</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.acquire_scan_at">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.acquire_scan_at">[docs]</a>
+    <span class="k">def</span> <span class="nf">acquire_scan_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scan_num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span><span class="n">sequence</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This script acquires the scan after a specific number of scans</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;XSpecRes&quot;</span><span class="p">))</span>
+        <span class="n">time_per_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ShotRepTime&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-6</span> \
+            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ShotsPLoop&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;NbScansDone&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="n">scan_num</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">time_per_point</span> <span class="o">*</span> <span class="n">x_length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_scan</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.acquire_scan_2d">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.acquire_scan_2d">[docs]</a>
+    <span class="k">def</span> <span class="nf">acquire_scan_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sequence</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function acquires the dataset after a full 2D scan.</span>
+<span class="sd">        This is done by identifying the number of scan steps per sweep and </span>
+<span class="sd">        acquiring the data on that scan.</span>
+<span class="sd">        This requires that the experiment has not been saved. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_exp_running</span><span class="p">():</span>
+            <span class="n">total_num_scan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;NbScansToDo&quot;</span><span class="p">)</span>
+            <span class="n">total_num_sweeps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;SweepsPExp&quot;</span><span class="p">)</span>
+            <span class="n">scans_per_sweep</span> <span class="o">=</span> <span class="n">total_num_scan</span><span class="o">/</span><span class="n">total_num_sweeps</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">scans_per_sweep</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;There is a non integer number of scans per&quot;</span>
+                                   <span class="s2">&quot; sweep&quot;</span><span class="p">)</span>
+
+            <span class="n">current_scan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;NbScansDone&quot;</span><span class="p">)</span>
+            <span class="n">current_sweep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">current_scan</span><span class="o">/</span><span class="n">scans_per_sweep</span><span class="p">)</span>
+            <span class="n">next_scan_target</span> <span class="o">=</span> <span class="p">(</span><span class="n">current_sweep</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">scans_per_sweep</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_scan_at</span><span class="p">(</span><span class="n">next_scan_target</span><span class="p">,</span><span class="n">sequence</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_scan</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_PulseSpel_var">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_PulseSpel_var">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_PulseSpel_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This can be used to change any pulse spell variable whilst the </span>
+<span class="sd">        experiment is running. These changes take effect at the beginning of </span>
+<span class="sd">        the next scan</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_exp_running</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">RuntimeWarning</span><span class="p">(</span><span class="s1">&#39;Variable can not be set when experiment is running&#39;</span><span class="p">)</span>
+            <span class="n">hw_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable </span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2"> not set as experiment is running.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[pd]\d+&quot;</span><span class="p">,</span> <span class="n">variable</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="p">[</span><span class="s2">&quot;Pulse dt&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Pulse/delay parameter must be of same resolution as&quot;</span> \
+                    <span class="o">+</span> <span class="s2">&quot;patternjet/AWG. Resolution is&quot;</span> \
+                    <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="p">[</span><span class="s1">&#39;Pulse dt&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> ns&quot;</span>
+
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Set pulse spell var </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span><span class="si">}</span><span class="s1"> to </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s2">&quot;ftEpr.PlsSPELSetVar&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_ReplaceMode">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_ReplaceMode">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_ReplaceMode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ftEpr.ReplaceMode&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;On&quot;</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_ReplaceMode">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_ReplaceMode">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_ReplaceMode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">init_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ReplaceMode</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">state</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;On&#39;</span>
+            <span class="n">hw_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Replace mode turned on&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DANGER: Replace Mode turned ON!&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;Off&#39;</span>
+            <span class="k">if</span> <span class="n">init_state</span><span class="p">:</span>
+                <span class="n">hw_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Replace mode turned off&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s2">&quot;ftEpr.ReplaceMode&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ReplaceMode</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_PhaseCycle">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_PhaseCycle">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_PhaseCycle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;PCycleOn&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_PhaseCycle">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_PhaseCycle">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_PhaseCycle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">init_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_PhaseCycle</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="o">!=</span> <span class="n">init_state</span><span class="p">:</span>
+            <span class="n">hw_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;On-Board Phase Cycling set to </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s2">&quot;PCycleOn&quot;</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>  
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_PhaseCycle</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_PulseSpel_exp_filename">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_PulseSpel_exp_filename">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_PulseSpel_exp_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.PlsSPELPrgPaF&quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_PulseSpel_exp_filepath">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_PulseSpel_exp_filepath">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_PulseSpel_exp_filepath</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_PulseSpel_exp</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.PlsSPELPrgPaF&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_PulseSpel_exp_filepath">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_PulseSpel_exp_filepath">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_PulseSpel_exp_filepath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fullpath</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_PulseSpel_exp</span><span class="p">()</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Set PulseSpel experiment file to </span><span class="si">{</span><span class="n">fullpath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span><span class="o">.</span><span class="n">aqPgLoad</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_PulseSpel_def_filename">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_PulseSpel_def_filename">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_PulseSpel_def_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.PlsSPELGlbPaF&quot;</span><span class="p">))</span> </div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_PulseSpel_def_filepath">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_PulseSpel_def_filepath">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_PulseSpel_def_filepath</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.PlsSPELGlbPaF&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_PulseSpel_def_filepath">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_PulseSpel_def_filepath">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_PulseSpel_def_filepath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fullpath</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_PulseSpel_def</span><span class="p">()</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Set PulseSpel definition file to </span><span class="si">{</span><span class="n">fullpath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span><span class="o">.</span><span class="n">aqPgDefLoad</span><span class="p">(</span><span class="n">fullpath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_PulseSpel_phase_cycling">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_PulseSpel_phase_cycling">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_PulseSpel_phase_cycling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.PlsSPELLISTSlct&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_PulseSpel_phase_cycling">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_PulseSpel_phase_cycling">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_PulseSpel_phase_cycling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Set PulseSpel phase cycle to </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.PlsSPELLISTSlct&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_PulseSpel_experiment">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_PulseSpel_experiment">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_PulseSpel_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.PlsSPELEXPSlct&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_PulseSpel_experiment">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_PulseSpel_experiment">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_PulseSpel_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Set PulseSpel experiment to </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.PlsSPELEXPSlct&quot;</span><span class="p">,</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.save_PulseSpel_exp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.save_PulseSpel_exp">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_PulseSpel_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Save as a temp file</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;/tmp/autoDeer/&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_dir</span> <span class="o">=</span> <span class="s1">&#39;/tmp/autoDeer/&#39;</span>
+                <span class="k">except</span> <span class="ne">FileExistsError</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_dir</span> <span class="o">=</span> <span class="s1">&#39;/tmp/autoDeer/&#39;</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;temp directory already exists&quot;</span><span class="p">)</span>
+            <span class="n">timestr</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">-%H%M%S&quot;</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_dir</span> <span class="o">+</span> <span class="s2">&quot;pulsespel_&quot;</span> <span class="o">+</span> <span class="n">timestr</span> <span class="o">+</span> <span class="s2">&quot;.exp&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Saved Pulse Spel experiment to: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span><span class="o">.</span><span class="n">aqPgSaveAs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.save_PulseSpel_def">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.save_PulseSpel_def">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_PulseSpel_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Save as a temp file</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">&#39;/tmp/autoDeer/&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_dir</span> <span class="o">=</span> <span class="s1">&#39;/tmp/autoDeer/&#39;</span>
+                <span class="k">except</span> <span class="ne">FileExistsError</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_dir</span> <span class="o">=</span> <span class="s1">&#39;/tmp/autoDeer/&#39;</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;temp directory already exists&quot;</span><span class="p">)</span>
+            <span class="n">timestr</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">-%H%M%S&quot;</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_dir</span> <span class="o">+</span> <span class="s2">&quot;pulsespel_&quot;</span> <span class="o">+</span> <span class="n">timestr</span> <span class="o">+</span> <span class="s2">&quot;.def&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Saved Pulse Spel definition to: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span><span class="o">.</span><span class="n">aqPgDefSaveAs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_Acquisition_mode">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_Acquisition_mode">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_Acquisition_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.FTAcqModeSlct&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_Acquisition_mode">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_Acquisition_mode">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_Acquisition_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;mode=0: Run from tables, mode=1: Run from Pulse Spel,</span>
+<span class="sd">        mode=2:Read transient, mode=3:Start Transient&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.FTAcqModeSlct&quot;</span><span class="p">,</span><span class="s1">&#39;Run from Tables&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.FTAcqModeSlct&quot;</span><span class="p">,</span><span class="s1">&#39;Run from PulseSPEL&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.FTAcqModeSlct&quot;</span><span class="p">,</span><span class="s1">&#39;Read Transient&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s2">&quot;ftEPR.FTAcqModeSlct&quot;</span><span class="p">,</span><span class="s1">&#39;Start Transient&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Acquisition Mode not changed. Input error.&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Acquistiton mode set to: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.compile_PulseSpel_prg">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.compile_PulseSpel_prg">[docs]</a>
+    <span class="k">def</span> <span class="nf">compile_PulseSpel_prg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span><span class="o">.</span><span class="n">aqPgShowPrg</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span><span class="o">.</span><span class="n">aqPgCompile</span><span class="p">()</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;PulseSpel Exp file compiled&quot;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.compile_PulseSpel_def">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.compile_PulseSpel_def">[docs]</a>
+    <span class="k">def</span> <span class="nf">compile_PulseSpel_def</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span><span class="o">.</span><span class="n">aqPgShowDef</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span><span class="o">.</span><span class="n">aqPgCompile</span><span class="p">()</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;PulseSpel Exp file compiled&quot;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.run_exp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.run_exp">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs the current experiment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="o">.</span><span class="n">aqExpRun</span><span class="p">()</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Experiment started&#39;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># Required</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.pause_exp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.pause_exp">[docs]</a>
+    <span class="k">def</span> <span class="nf">pause_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pauses the current experiment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="o">.</span><span class="n">aqExpPause</span><span class="p">()</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Experiment Paused&#39;</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.rerun_exp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.rerun_exp">[docs]</a>
+    <span class="k">def</span> <span class="nf">rerun_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Re-runs the current experiment. Only for use after a pause commands</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="o">.</span><span class="n">aqExpRun</span><span class="p">()</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Experiment rerun&#39;</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.stop_exp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.stop_exp">[docs]</a>
+    <span class="k">def</span> <span class="nf">stop_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stops the current experiment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="o">.</span><span class="n">aqExpStop</span><span class="p">()</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Experiment stopped&#39;</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.abort_exp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.abort_exp">[docs]</a>
+    <span class="k">def</span> <span class="nf">abort_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Aborts the current experiment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="o">.</span><span class="n">aqExpAbort</span><span class="p">()</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Experiment aborted&#39;</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.xepr_save">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.xepr_save">[docs]</a>
+    <span class="k">def</span> <span class="nf">xepr_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : str</span>
+<span class="sd">            _description_</span>
+<span class="sd">        title : str, optional</span>
+<span class="sd">            _description_, by default None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xepr_file_limit</span> <span class="o">=</span> <span class="mi">70</span>
+        <span class="n">directory</span><span class="p">,</span> <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">title</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">basename</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">basename</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">xepr_file_limit</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;File name is too long. The file_name will be truncated, but&quot;</span>
+                  <span class="s2">&quot; the full name will be saved as the title&quot;</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">basename</span><span class="p">[:</span><span class="mi">70</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span><span class="o">.</span><span class="n">vpSave</span><span class="p">(</span><span class="s2">&quot;Current Primary&quot;</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Saved data to: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xepr</span><span class="o">.</span><span class="n">XeprCmds</span><span class="o">.</span><span class="n">aqExpSelect</span><span class="p">(</span><span class="s2">&quot;Experiment&quot;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_field">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_field">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_field</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the magnetic field.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Field position in Gauss</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;CenterField&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_field">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_field">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">hold</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the magentic field.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        val : int</span>
+<span class="sd">            Field position in Gauss</span>
+<span class="sd">        hold : bool, optional</span>
+<span class="sd">            Wait until Xepr belives the field is stable, by default True</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Field position in Gauss</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;CenterField&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Always wait 2s after a field change</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Field position set to </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> G&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hold</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;FieldWait&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_field</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_counterfreq">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_counterfreq">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_counterfreq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the frequency counter value.</span>
+
+<span class="sd">        Note: There is no equivalent set command </span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The counter frequency in GHz</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;FrequencyMon&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_sweep_width">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_sweep_width">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_sweep_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the field sweep width</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        val : int</span>
+<span class="sd">            Field sweep width in Gauss</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Field sweep width in Gauss</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;SweepWidth&#39;</span><span class="p">,</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Field sweep width set to </span><span class="si">{val:.6g}</span><span class="s1"> G&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sweep_width</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="XeprAPILink.get_sweep_width">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_sweep_width">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_sweep_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the field sweep width</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Field sweep width in Gauss.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;SweepWidth&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_freq">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_freq">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">pol</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">precision</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the current bridge frequency. The stepper motor value is </span>
+<span class="sd">        calculated through a conversion. </span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        val : float</span>
+<span class="sd">            The frequency in GHz</span>
+<span class="sd">        pol : list, optional</span>
+<span class="sd">            Conversion polynomal coefficents for freq-&gt;Step, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Frequency in GHz</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;Min Freq&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="p">[</span><span class="s2">&quot;Min Freq&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Set Frequency is too low!&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;Max Freq&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="p">[</span><span class="s2">&quot;Max Freq&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Set Frequency is too high!&quot;</span><span class="p">)</span>
+                
+        <span class="k">if</span> <span class="s2">&quot;Digital Source&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="p">[</span><span class="s2">&quot;Digital Source&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_hidden_param</span><span class="p">(</span><span class="s1">&#39;FineFreq&#39;</span><span class="p">,</span><span class="n">val</span><span class="p">)</span>
+                <span class="n">hw_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Bridge Frequency set to </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1">Fset&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;freq_cal&quot;</span><span class="p">):</span>
+                    <span class="n">pol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_cal</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">pol</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">67652.70</span><span class="p">,</span> <span class="mf">2050.203</span><span class="p">]</span>
+
+            <span class="n">pol_func</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polynomial</span><span class="o">.</span><span class="n">polynomial</span><span class="o">.</span><span class="n">Polynomial</span><span class="p">(</span><span class="n">pol</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">pol_func</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">precision</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_hidden_param</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">,</span><span class="n">pos</span><span class="p">)</span>
+                <span class="n">bounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">pos</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="n">pos</span><span class="o">+</span><span class="mi">50</span><span class="p">]</span>
+
+                <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_hidden_param</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_counterfreq</span><span class="p">()</span>
+
+                <span class="n">output</span> <span class="o">=</span> <span class="n">minimize_scalar</span><span class="p">(</span>
+                    <span class="n">objective</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;bounded&#39;</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
+                    <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;xatol&#39;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">})</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_hidden_param</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">,</span><span class="n">pos</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_hidden_param</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">,</span><span class="n">pos</span><span class="p">)</span>
+    
+            <span class="n">hw_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Bridge Frequency set to </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1"> at position </span><span class="si">{</span><span class="n">pos</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hidden_param</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_freq">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_freq">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pol</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the current bridge frequency. The frequency is calculated</span>
+<span class="sd">        through a conversion. </span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pol : list, optional</span>
+<span class="sd">            Conversion polynomal coefficents for freq-&gt;Step, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Frequency in GHz</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;Digital Source&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="p">[</span><span class="s2">&quot;Digital Source&quot;</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hidden_param</span><span class="p">(</span><span class="s1">&#39;FineFreq&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;freq_cal&quot;</span><span class="p">):</span>
+                    <span class="n">pol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq_cal</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">pol</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">67652.70</span><span class="p">,</span> <span class="mf">2050.203</span><span class="p">]</span>
+            <span class="n">inv_func</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polynomial</span><span class="o">.</span><span class="n">polynomial</span><span class="o">.</span><span class="n">Polynomial</span><span class="p">(</span>
+                <span class="p">[</span><span class="o">-</span><span class="n">pol</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">pol</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">pol</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
+
+            <span class="k">return</span> <span class="n">inv_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">[</span><span class="s1">&#39;Frequency&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_spec_config">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_spec_config">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_spec_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;get_spec_config Gets the name of the current spectrometer</span>
+<span class="sd">        configuration file.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Returns the name of the current spectrometer configuration file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hidden_param</span><span class="p">(</span><span class="s1">&#39;PlsPrgCalDbName&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_attenuator">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_attenuator">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_attenuator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;Main&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;PowerAtten&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;+&lt;x&gt;&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;BrXAmp&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;-&lt;x&gt;&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;BrMinXAmp&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;+&lt;y&gt;&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;BrYAmp&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;-&lt;y&gt;&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;BrMinYAmp&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;ELDOR&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;ELDORAtt&#39;</span>
+
+        <span class="k">if</span> <span class="n">atten_channel</span> <span class="o">==</span> <span class="s1">&#39;ELDORAtt&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="n">atten_channel</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hidden_param</span><span class="p">(</span><span class="n">atten_channel</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_attenuator">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_attenuator">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_attenuator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;Main&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;PowerAtten&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;+&lt;x&gt;&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;BrXAmp&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;-&lt;x&gt;&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;BrMinXAmp&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;+&lt;y&gt;&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;BrYAmp&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;-&lt;y&gt;&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;BrMinYAmp&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;ELDOR&#39;</span><span class="p">:</span>
+            <span class="n">atten_channel</span> <span class="o">=</span> <span class="s1">&#39;ELDORAtt&#39;</span>
+        
+        <span class="k">if</span> <span class="n">atten_channel</span> <span class="o">==</span> <span class="s1">&#39;ELDORAtt&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="n">atten_channel</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_hidden_param</span><span class="p">(</span><span class="n">atten_channel</span><span class="p">,</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2"> Attenuator set to </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attenuator</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_phase">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_phase">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;Main&#39;</span><span class="p">:</span>
+            <span class="n">phase_channel</span> <span class="o">=</span> <span class="s1">&#39;PowerAtten&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;+&lt;x&gt;&#39;</span><span class="p">:</span>
+            <span class="n">phase_channel</span> <span class="o">=</span> <span class="s1">&#39;BrXPhase&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;-&lt;x&gt;&#39;</span><span class="p">:</span>
+            <span class="n">phase_channel</span> <span class="o">=</span> <span class="s1">&#39;BrMinXPhase&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;+&lt;y&gt;&#39;</span><span class="p">:</span>
+            <span class="n">phase_channel</span> <span class="o">=</span> <span class="s1">&#39;BrYPhase&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;-&lt;y&gt;&#39;</span><span class="p">:</span>
+            <span class="n">phase_channel</span> <span class="o">=</span> <span class="s1">&#39;BrMinYPhase&#39;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hidden_param</span><span class="p">(</span><span class="n">phase_channel</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_phase">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_phase">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;Main&#39;</span><span class="p">:</span>
+            <span class="n">phase_channel</span> <span class="o">=</span> <span class="s1">&#39;SignalPhase&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;+&lt;x&gt;&#39;</span><span class="p">:</span>
+            <span class="n">phase_channel</span> <span class="o">=</span> <span class="s1">&#39;BrXPhase&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;-&lt;x&gt;&#39;</span><span class="p">:</span>
+            <span class="n">phase_channel</span> <span class="o">=</span> <span class="s1">&#39;BrMinXPhase&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;+&lt;y&gt;&#39;</span><span class="p">:</span>
+            <span class="n">phase_channel</span> <span class="o">=</span> <span class="s1">&#39;BrYPhase&#39;</span>
+        <span class="k">elif</span> <span class="n">channel</span> <span class="o">==</span> <span class="s1">&#39;-&lt;y&gt;&#39;</span><span class="p">:</span>
+            <span class="n">phase_channel</span> <span class="o">=</span> <span class="s1">&#39;BrMinYPhase&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_hidden_param</span><span class="p">(</span><span class="n">phase_channel</span><span class="p">,</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2"> phase control set to </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attenuator</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_ELDOR_freq">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_ELDOR_freq">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_ELDOR_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the freuency of the ELDOR chnannel.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: ELDOR frequency in GHz</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;FrequencyA&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_ELDOR_freq">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_ELDOR_freq">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_ELDOR_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the freuency of the ELDOR chnannel.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (float): ELDOR frequency in GHz</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: ELDOR frequency in GHz</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;Min Freq&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="p">[</span><span class="s2">&quot;Min Freq&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Set ELDOR Frequency is too low!&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;Max Freq&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_config</span><span class="p">[</span><span class="s2">&quot;Max Freq&quot;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Set ELDOR Frequency is too high!&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;FrequencyA&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ELDOR frequency set to </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ELDOR_freq</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_video_gain">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_video_gain">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_video_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the video gain in dB</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Video gain in dB</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;VideoGain&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_video_gain">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_video_gain">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_video_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the video gain in dB</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : int</span>
+<span class="sd">            Video gain to be set in dB.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The adjusted video gain</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;VideoGain&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Video gain set to </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_video_gain</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_config_file">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_config_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_config_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the name of the spectrometer configuration file</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            The name of the spectrometer configuration file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hidden_param</span><span class="p">(</span><span class="s1">&#39;PlsPrgCalDbName&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_config_file">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_config_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_config_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the name of the spectrometer configuration file. If the current</span>
+<span class="sd">        configuration file is already correct, nothing changes.</span>
+<span class="sd">       </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        config_file : str</span>
+<span class="sd">            The new configuration file name.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            The name of the spectrometer configuration file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_file</span><span class="p">()</span> <span class="o">!=</span> <span class="n">config_file</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_hidden_param</span><span class="p">(</span><span class="s1">&#39;PlsPrgCalDbName&#39;</span><span class="p">,</span><span class="n">config_file</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">[</span><span class="s1">&#39;PlsPrgCalDbLoad&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">[</span><span class="s1">&#39;ApplyCfg&#39;</span><span class="p">]</span>
+            <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Changed config file&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Not changed config file&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config_file</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_MW_amp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_MW_amp">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_MW_amp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the current setting of the microwave amplifier</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            current setting of the microwave amplifier</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">[</span><span class="s1">&#39;MWGain&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;On&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">[</span><span class="s1">&#39;MWGain&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;Off&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">[</span><span class="s1">&#39;MWGain&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_MW_amp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_MW_amp">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_MW_amp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the current setting of the microwave amplifier</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : bool</span>
+<span class="sd">            New setting of the microwave amplifier</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            Setting of the microwave amplifier</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_hidden_param</span><span class="p">(</span><span class="s1">&#39;MWGain&#39;</span><span class="p">,</span><span class="s1">&#39;On&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_hidden_param</span><span class="p">(</span><span class="s1">&#39;MWGain&#39;</span><span class="p">,</span><span class="s1">&#39;Off&#39;</span><span class="p">)</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Microwave amplifier set to </span><span class="si">{value}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_MW_amp</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.get_video_bandwidth">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.get_video_bandwidth">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_video_bandwidth</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the detection video bandwidth.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Video bandwidth in MHz</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_video_bandwidth</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="XeprAPILink.set_video_bandwidth">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/XeprAPI_link/index.html#autodeer.hardware.XeprAPI_link.XeprAPILink.set_video_bandwidth">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_video_bandwidth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the detection video bandwidth.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : float</span>
+<span class="sd">            Video bandwidth in MHz, options = [200,20].</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Video bandwidth in MHz</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">round</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Video Bandwidth can only be 200MHz or 20MHz&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">[</span><span class="s1">&#39;VideoBW&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_video_bandwidth</span><span class="p">()</span></div>
+</div>
+
+<span class="c1"># =============================================================================</span>
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=2220c937"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    </body>
+</html>

@@ -28,7 +28,7 @@ correct interface.
 
 This imports the whole autoEPR which can be accessed with 
 `autoEPR.[class/function]`. Meanwhile we have loaded the 
-:ref:`BrukerAWG <BrukerAWG>` interface which can simply be accesed with
+:meth:`BrukerAWG <autodeer.hardware.Bruker_AWG.BrukerAWG>` interface which can simply be accesed with
 `interface`. This is done to keep scripts as general between interfaces.
 
 
@@ -41,7 +41,7 @@ Domain Specific Languages (DSL) such as PulseSpel.
 
 Whilst you can always write your own, many common sequences come as default in
 autoEPR. For a full list of standard sequences sees the 
-:doc:`API Reference <Reference>`. Here we will look at a simple Hahn-Echo 
+:ref:`sequences <Sequences>`. Here we will look at a simple Hahn-Echo 
 experiment. 
 
 .. code-block:: python
@@ -107,8 +107,8 @@ Acquiring data from the spectrometer is trivally simple.
 
     dataset = interface.acquire_dataset()
 
-This returns a :ref:`dataset<dataset>` object that contains not only the `data`,
-`axes` and `sequence` but also any extra paramaters from the spectrometer.
+This returns a `dataset <https://docs.xarray.dev/en/stable/getting-started-guide/quick-overview.html>`_ object that contains not only the `data`,
+`axes` and but also extra paramaters from the sequence.
 
 
 4. Stopping the sequence
@@ -162,7 +162,6 @@ pulse sequence into one script.
 
 For more infomation check here:
 
-- :doc:`Sequences and Pulses<Sequencer>`
 - :doc:`Interfaces<Interface>`
-- :doc:`Standard Sequences, Pulses, Interfaces and Analysis<Reference>`
+- :doc:`API_docs </source/API_docs>`
  

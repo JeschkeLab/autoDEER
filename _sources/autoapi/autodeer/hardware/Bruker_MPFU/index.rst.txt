@@ -1,0 +1,370 @@
+:py:mod:`autodeer.hardware.Bruker_MPFU`
+=======================================
+
+.. py:module:: autodeer.hardware.Bruker_MPFU
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.Bruker_MPFU.BrukerMPFU
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.Bruker_MPFU.step_parameters
+   autodeer.hardware.Bruker_MPFU._MPFU_channels
+   autodeer.hardware.Bruker_MPFU.get_specjet_data
+   autodeer.hardware.Bruker_MPFU.tune_power
+   autodeer.hardware.Bruker_MPFU.tune_phase
+   autodeer.hardware.Bruker_MPFU.MPFUtune
+   autodeer.hardware.Bruker_MPFU.ELDORtune
+   autodeer.hardware.Bruker_MPFU.test_if_MPFU_compatability
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.Bruker_MPFU.hw_log
+
+
+.. py:data:: hw_log
+
+   
+
+.. py:class:: BrukerMPFU(config_file)
+
+
+   Bases: :py:obj:`autodeer.classes.Interface`
+
+   Represents the interface for connecting to MPFU based Bruker ELEXSYS-II 
+   Spectrometers.
+
+
+   An interface for connecting to MPFU based Bruker ELEXSYS-II 
+   Spectrometers.
+
+
+   :Parameters:
+
+       **config_file** : str
+           The path to a YAML configuration file.
+
+
+
+
+
+
+
+
+
+
+
+
+   :Attributes:
+
+       **bg_thread: None or threading.Thread**
+           If a background thread is needed, it is stored here.
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: connect(d0=None)
+
+
+   .. py:method:: setup(d0=None)
+
+
+   .. py:method:: acquire_dataset()
+
+      
+      Acquires the dataset.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _launch_complex_thread(sequence, axID=1, tune=True)
+
+
+   .. py:method:: launch(sequence, savename, start=True, tune=True, MPFU_overwrite=None, update_pulsespel=True, reset_bg_data=True, reset_cur_exp=True, **kwargs)
+
+      
+      Launches the experiment and initialises autosaving.
+
+
+      :Parameters:
+
+          **sequence** : Sequence
+              The sequence to be launched
+
+          **savename** : str
+              The savename for this measurement. A timestamp will be added to the value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune_rectpulse(*, tp, **kwargs)
+
+      
+      Mocks the tune_rectpulse command and returns a pair of RectPulses
+      with the given tp and 2*tp respectively. No scale is set.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune_pulse(pulse, *args, **kwargs)
+
+      
+      Mocks the tune_pulse command and returns the pulse unchanged.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune(sequence, B0, LO)
+
+
+   .. py:method:: isrunning()
+
+
+   .. py:method:: terminate(now=False)
+
+      
+      Terminates the experiment immediately. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: calc_d0()
+
+      
+      This creates an initial guess for d0. A better estimate can only be found after the field sweep. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: calc_d0_from_Hahn_Echo(B=None, LO=None)
+
+
+
+.. py:function:: step_parameters(interface, reduced_seq, dim, variables)
+
+
+.. py:function:: _MPFU_channels(sequence)
+
+   
+   Idenitifies how many unique MPFU channels are needed for a sequence and
+   applies the correct Channel infomation to each pulse.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: get_specjet_data(interface)
+
+
+.. py:function:: tune_power(interface, channel, tol=0.1, maxiter=30, bounds=[0, 100], hardware_wait=3, echo='abs', save=True)
+
+   
+   Tunes the attenuator of a given channel to a given target using the
+   standard scipy optimisation scripts. 
+
+
+   :Parameters:
+
+       **channel** : str
+           The chosen MPFU channel. Options: ['+<x>', '-<x>', '+<y>', '-<y>']
+
+       **tol** : float, optional
+           The tolerance in attenuator parameter, by default 0.1
+
+       **maxiter** : int, optional
+           The maximum number of iterations in the optimisation, by default 30
+
+   :Returns:
+
+       float
+           The optimal value of the attenuator parameter
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: tune_phase(interface, channel, target, tol=0.1, maxiter=30, bounds=[0, 100], hardware_wait=3)
+
+   
+   Tunes the phase of a given channel to a given target using the
+   standard scipy optimisation scripts. 
+
+
+   :Parameters:
+
+       **channel** : str
+           The chosen MPFU channel. Options: ['+<x>', '-<x>', '+<y>', '-<y>']
+
+       **target** : str
+           The target echo position, this can either be maximising (+) or
+           minimising (-) either the real (R) or imaginary (I) of the echo. 
+           Options: ['R+', 'R-', 'I+', 'I-']
+
+       **tol** : float, optional
+           The tolerance in phase parameter, by default 0.1
+
+       **maxiter** : int, optional
+           The maximum number of iterations in the optimisation, by default 30
+
+   :Returns:
+
+       float
+           The optimal value of the phase parameter
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: MPFUtune(interface, sequence, channels, echo='Hahn', tol = 0.1, bounds=[0, 100], tau_value=550)
+
+
+.. py:function:: ELDORtune(interface, sequence, freq, tau_value=550, test_tp=16, plot=False, save=True)
+
+
+.. py:function:: test_if_MPFU_compatability(seq)
+
+

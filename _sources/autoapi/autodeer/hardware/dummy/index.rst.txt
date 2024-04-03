@@ -1,0 +1,199 @@
+:py:mod:`autodeer.hardware.dummy`
+=================================
+
+.. py:module:: autodeer.hardware.dummy
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.dummy.dummyInterface
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.dummy.val_in_us
+   autodeer.hardware.dummy.val_in_ns
+   autodeer.hardware.dummy.add_noise
+   autodeer.hardware.dummy.add_phaseshift
+   autodeer.hardware.dummy._simulate_field_sweep
+   autodeer.hardware.dummy._simulate_deer
+   autodeer.hardware.dummy._simulate_CP
+   autodeer.hardware.dummy._simulate_T2
+   autodeer.hardware.dummy._similate_respro
+   autodeer.hardware.dummy._simulate_reptimescan
+   autodeer.hardware.dummy._gen_ESEEM
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.dummy.rng
+   autodeer.hardware.dummy.hw_log
+
+
+.. py:data:: rng
+
+   
+
+.. py:data:: hw_log
+
+   
+
+.. py:function:: val_in_us(Param)
+
+
+.. py:function:: val_in_ns(Param)
+
+
+.. py:function:: add_noise(data, noise_level)
+
+
+.. py:function:: add_phaseshift(data, phase)
+
+
+.. py:class:: dummyInterface(config_file)
+
+
+   Bases: :py:obj:`autodeer.classes.Interface`
+
+   
+   Represents the interface connection from autoEPR to the spectrometer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+   .. py:method:: launch(sequence, savename, **kwargs)
+
+      
+      Launches the experiment and initialises autosaving.
+
+
+      :Parameters:
+
+          **sequence** : Sequence
+              The sequence to be launched
+
+          **savename** : str
+              The savename for this measurement. A timestamp will be added to the value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: acquire_dataset(**kwargs)
+
+      
+      Acquires the dataset.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune_rectpulse(*, tp, LO, B, reptime, **kwargs)
+
+
+   .. py:method:: tune_pulse(pulse, mode, LO, B, reptime, shots=400)
+
+
+   .. py:method:: isrunning()
+
+
+   .. py:method:: terminate()
+
+      
+      Terminates the experiment immediately. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:function:: _simulate_field_sweep(sequence)
+
+
+.. py:function:: _simulate_deer(sequence, exp_type=None)
+
+
+.. py:function:: _simulate_CP(sequence)
+
+
+.. py:function:: _simulate_T2(sequence, ESEEM_depth)
+
+
+.. py:function:: _similate_respro(sequence, mode)
+
+
+.. py:function:: _simulate_reptimescan(sequence)
+
+
+.. py:function:: _gen_ESEEM(t, freq, depth)
+
+

@@ -1,0 +1,24 @@
+:py:mod:`autodeer.hardware`
+===========================
+
+.. py:module:: autodeer.hardware
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   Bruker_AWG/index.rst
+   Bruker_MPFU/index.rst
+   Bruker_tools/index.rst
+   ETH_awg/index.rst
+   ETH_awg_load/index.rst
+   XeprAPI_link/index.rst
+   dummy/index.rst
+   dummy_xepr/index.rst
+   xepr_experiments/index.rst
+
+

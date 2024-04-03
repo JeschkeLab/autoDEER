@@ -1,0 +1,318 @@
+:py:mod:`autodeer.Relaxation`
+=============================
+
+.. py:module:: autodeer.Relaxation
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.Relaxation.CarrPurcellAnalysis
+   autodeer.Relaxation.ReptimeAnalysis
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.Relaxation.detect_ESEEM
+   autodeer.Relaxation.plot_1Drelax
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.Relaxation.cmap
+
+
+.. py:class:: CarrPurcellAnalysis(dataset, sequence = None)
+
+
+   
+
+   Analysis and calculation of Carr Purcell decay. 
+
+
+   :Parameters:
+
+       **dataset**
+           _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: fit(type = 'mono')
+
+      
+      Fit the experimental CP decay
+
+
+      :Parameters:
+
+          **type** : str, optional
+              Either a mono or double exponential decay model, by default "mono"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: plot(norm = True, axs=None, fig=None)
+
+      
+      Plot the carr purcell decay with fit, if avaliable.
+
+
+      :Parameters:
+
+          **norm** : bool, optional
+              Normalise the fit to a maximum of 1, by default True
+
+      :Returns:
+
+          Figure
+              The figure.
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: check_decay(level=0.05)
+
+      
+      Checks that the data has decayed to 5% in the time lenght of the dataset.
+
+
+      :Parameters:
+
+          **level** : float, optional
+              The level to check the decay, by default 0.05
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: find_optimal(SNR_target, target_time, target_step, averages=None)
+
+      
+      Calculate the optimal inter pulse delay for a given total measurment
+      time. 
+
+
+      :Parameters:
+
+          **SNR_target: float,**
+              The Signal to Noise ratio target.
+
+          **target_time** : float
+              The target time in hours
+
+          **target_shrt** : float
+              The shot repettition time of target in seconds
+
+          **target_step: float**
+              The target step size in ns.
+
+          **averages** : int, optional
+              The total number of shots taken, by default None. If None, the
+              number of shots will be calculated from the dataset.
+
+      :Returns:
+
+          float
+              The calculated optimal time in us
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: ReptimeAnalysis(dataset, sequence = None)
+
+
+   
+
+   Analysis and calculation of Reptime based saturation recovery. 
+
+
+   :Parameters:
+
+       **dataset**
+           The dataset to be analyzed.
+
+       **sequence** : Sequence, optional
+           The sequence object describing the experiment. (not currently used)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: fit(**kwargs)
+
+
+   .. py:method:: plot(axs=None, fig=None)
+
+
+   .. py:method:: calc_optimal_reptime(recovery=0.9)
+
+
+
+.. py:function:: detect_ESEEM(dataset, type='deuteron', threshold=1.5)
+
+   
+   Detect if the dataset is an ESEEM experiment.
+
+
+   :Parameters:
+
+       **dataset** : xr.DataArray
+           The dataset to be analyzed.
+
+       **type** : str, optional
+           The type of ESEEM experiment, either deuteron or proton, by default 'deuteron'
+
+       **threshold** : float, optional
+           The SNR threshold for detection, by default 1.5
+
+   :Returns:
+
+       bool
+           True if ESEEM is detected, False if not.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:data:: cmap
+   :value: ['#D95B6F', '#42A399']
+
+   
+
+.. py:function:: plot_1Drelax(*args, fig=None, axs=None, cmap=cmap)
+
+   
+   Create a superimposed plot of relaxation data and fits.
+
+
+   :Parameters:
+
+       **args** : ad.Analysis
+           The 1D relaxation data to be plotted.
+
+       **fig** : Figure, optional
+           The figure to plot to, by default None
+
+       **axs** : Axes, optional
+           The axes to plot to, by default None
+
+       **cmap** : list, optional
+           The color map to use, by default ad.cmap
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

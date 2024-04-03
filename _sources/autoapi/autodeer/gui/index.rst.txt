@@ -1,0 +1,356 @@
+:py:mod:`autodeer.gui`
+======================
+
+.. py:module:: autodeer.gui
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   __main__/index.rst
+   autoDEER_worker/index.rst
+   log/index.rst
+   main/index.rst
+   quickdeer/index.rst
+   test_main/index.rst
+   tools/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.autoDEERUI
+   autodeer.gui.WorkerSignals
+   autodeer.gui.Worker
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.getCIstring
+   autodeer.gui.load_epr_file
+   autodeer.gui.get_sequence_rows
+   autodeer.gui.fill_table
+   autodeer.gui.read_table
+   autodeer.gui.list_str_to_type
+   autodeer.gui.str_to_list_type
+   autodeer.gui.pyqt_table_from_dict
+   autodeer.gui.param_in_us
+   autodeer.gui.param_in_MHz
+   autodeer.gui.test_SNR
+
+
+
+.. py:class:: autoDEERUI
+
+
+   Bases: :py:obj:`autodeer.gui.tools.QMainWindow`
+
+   .. py:method:: set_spectrometer_connected_light(state)
+
+
+   .. py:method:: load_folder()
+
+
+   .. py:method:: load_epr_file(store_location)
+
+
+   .. py:method:: load_spectrometer_config(filename=None)
+
+
+   .. py:method:: select_resonator()
+
+
+   .. py:method:: change_LO()
+
+
+   .. py:method:: connect_spectrometer()
+
+
+   .. py:method:: raise_warning(message)
+
+
+   .. py:method:: save_data(dataset, filename)
+
+
+   .. py:method:: fsweep_toolbar()
+
+
+   .. py:method:: respro_toolbar()
+
+
+   .. py:method:: relax_toolbar()
+
+
+   .. py:method:: update_fieldsweep(dataset=None)
+
+
+   .. py:method:: create_fieldsweep_figure()
+
+
+   .. py:method:: refresh_fieldsweep_after_fit(fitresult)
+
+
+   .. py:method:: update_respro(dataset=None)
+
+
+   .. py:method:: create_respro_figure()
+
+
+   .. py:method:: refresh_respro(*args)
+
+
+   .. py:method:: optimise_pulses_button()
+
+
+   .. py:method:: optimise_pulses(pulses=None)
+
+
+   .. py:method:: update_optimise_pulses_figure()
+
+
+   .. py:method:: update_relax(dataset=None)
+
+
+   .. py:method:: create_relax_figure()
+
+
+   .. py:method:: refresh_relax_figure()
+
+
+   .. py:method:: refresh_relax(fitresult)
+
+
+   .. py:method:: update_T2(dataset=None)
+
+
+   .. py:method:: check_T2(fitresult)
+
+
+   .. py:method:: check_CP(fitresult)
+
+
+   .. py:method:: refresh_T2(fitresult)
+
+
+   .. py:method:: advanced_mode_inputs()
+
+
+   .. py:method:: update_quickdeer(dataset=None)
+
+
+   .. py:method:: update_longdeer(dataset=None)
+
+
+   .. py:method:: update_reptime(dataset=None)
+
+
+   .. py:method:: timeout()
+
+      
+      Creates a pop up box as the experiment has timed out
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: RunFullyAutoDEER()
+
+
+   .. py:method:: RunAdvanedAutoDEER()
+
+
+   .. py:method:: create_report()
+
+
+
+.. py:function:: getCIstring(Uncert, precision=2)
+
+
+.. py:function:: load_epr_file(Object, store_location)
+
+
+.. py:function:: get_sequence_rows(Sequence, names)
+
+
+.. py:function:: fill_table(table, headers, rows, rowcount=None)
+
+
+.. py:function:: read_table(table)
+
+
+.. py:function:: list_str_to_type(list, type=int)
+
+
+.. py:function:: str_to_list_type(string, type=int)
+
+
+.. py:function:: pyqt_table_from_dict(table, dict)
+
+
+.. py:function:: param_in_us(param)
+
+
+.. py:function:: param_in_MHz(param)
+
+
+.. py:function:: test_SNR(Application, data)
+
+   
+   Raises an error box if the SNR of the signal is less than 1.
+
+
+   :Parameters:
+
+       **data** : _type_
+           _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:class:: WorkerSignals
+
+
+   Bases: :py:obj:`PyQt6.QtCore.QObject`
+
+   
+   Defines the signals available from a running worker thread.
+
+   Supported signals are:
+
+   finished
+       No data
+
+   error
+       tuple (exctype, value, traceback.format_exc() )
+
+   result
+       object data returned from processing, anything
+
+   progress
+       int indicating % progress
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+   .. py:attribute:: finished
+
+      
+
+   .. py:attribute:: error
+
+      
+
+   .. py:attribute:: result
+
+      
+
+
+.. py:class:: Worker(fn, *args, **kwargs)
+
+
+   Bases: :py:obj:`PyQt6.QtCore.QRunnable`
+
+   
+   Worker thread
+
+   Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+   :param callback: The function callback to run on this worker thread. Supplied args and
+                    kwargs will be passed through to the runner.
+   :type callback: function
+   :param args: Arguments to pass to the callback function
+   :param kwargs: Keywords to pass to the callback function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+   .. py:method:: run()
+
+      
+      Initialise the runner function with passed args, kwargs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+

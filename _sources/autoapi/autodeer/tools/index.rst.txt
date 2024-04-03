@@ -1,0 +1,84 @@
+:py:mod:`autodeer.tools`
+========================
+
+.. py:module:: autodeer.tools
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.tools.eprload
+   autodeer.tools.progress_bar
+   autodeer.tools.progress_bar_frac
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.tools.log
+
+
+.. py:data:: log
+
+   
+
+.. py:function:: eprload(path, experiment = None, type = None, **kwargs)
+
+   
+   A general versions of eprload
+
+
+   :Parameters:
+
+       **path** : str
+           The file path of the data that should be loaded.
+
+       **experiment** : str, optional
+           _description_, by default None
+
+       **type** : str, optional
+           _description_, by default None
+
+   :Returns:
+
+       xarray.Dataarray
+           _description_
+
+
+
+
+   :Raises:
+
+       ValueError
+           _description_
+
+       RuntimeError
+           _description_
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: progress_bar(progress, post='')
+
+
+.. py:function:: progress_bar_frac(num, den)
+
+

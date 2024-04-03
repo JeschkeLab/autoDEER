@@ -1,0 +1,836 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
+
+    <!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
+        <title>autodeer.TwoD_Experiment - </title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     Version 0.7 alpha out now! 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand"> </div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../_static/autoDEER_EPR_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../_static/autoDEER_EPR_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text"> </span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../source/Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Installation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../source/Install_python.html">Installing Python</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../source/tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Tutorial</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../source/gui_guide.html">autoDEER GUI</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/API_docs.html">API doc</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../source/autoEPR/index.html">autoEPR</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of autoEPR</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../source/autoEPR/Getting_Started.html">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../source/autoEPR/Sequencer.html">Creating a Custom Sequence</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../source/autoEPR/Interface.html">Interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Interfaces</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../source/autoEPR/Bruker_interface.html">Bruker Interface</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/releasenotes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/contributing.html">Contributing Guide</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <h1>Source code for autodeer.TwoD_Experiment</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file contains the class for running 2D Decoherence experiments</span>
+<span class="c1"># all code assoicated with processing these experiments are included in</span>
+<span class="c1"># this file.</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.cm</span> <span class="k">as</span> <span class="nn">cm</span>
+<span class="kn">import</span> <span class="nn">matplotlib.colors</span> <span class="k">as</span> <span class="nn">colors</span>
+<span class="kn">from</span> <span class="nn">deerlab</span> <span class="kn">import</span> <span class="n">deerload</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis">[docs]</a>
+<span class="k">class</span> <span class="nc">TwoDExperimentAnalysis</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is a class for loading and processing 2D Decoherence experiments</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snr_target</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1">#normal units not db</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_target</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1">#hrs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trace_length</span> <span class="o">=</span> <span class="mi">512</span> <span class="c1">#this is wrong, and is likely to be a function of the optimal time. </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise_frac</span> <span class="o">=</span> <span class="mf">0.75</span>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.load">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.load">[docs]</a>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">file</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Using deerlab the file is loaded. If the file is a bruker .DSC file then extra paremeters are loaded. </span>
+<span class="sd">        If it is a .csv or .txt file then any required metadata will need to be inputted by the user</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file : str</span>
+<span class="sd">            This is the full file path for the datafile</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="n">file_name</span><span class="p">,</span><span class="n">file_ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">file_ext</span> <span class="o">==</span> <span class="s1">&#39;.DSC&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">deerload</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scans</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DSL&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;recorder&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NbScansDone&#39;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shots</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DSL&#39;</span><span class="p">)[</span><span class="s1">&#39;ftEpr&#39;</span><span class="p">][</span><span class="s1">&#39;ShotsPLoop&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shrt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DSL&#39;</span><span class="p">)[</span><span class="s1">&#39;ftEpr&#39;</span><span class="p">][</span><span class="s1">&#39;ShotRepTime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># in us</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">=</span> <span class="n">deerload</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="n">full_output</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+            
+<div class="viewcode-block" id="TwoDExperimentAnalysis.import_data">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.import_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">import_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">time</span><span class="p">,</span><span class="n">data</span><span class="p">,</span><span class="n">scans</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span><span class="n">shots</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span><span class="n">shrt</span><span class="p">:</span><span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The loads all the import infomation directly from python variables and arrays</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time : _type_</span>
+<span class="sd">            [timex,timey]</span>
+<span class="sd">        data : _type_</span>
+<span class="sd">            _description_</span>
+<span class="sd">        scans : int</span>
+<span class="sd">            Number of scans done</span>
+<span class="sd">        shots : int</span>
+<span class="sd">            Number of shots per point</span>
+<span class="sd">        shrt : int</span>
+<span class="sd">            The shot repetition time in us</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan</span> <span class="o">=</span> <span class="n">scans</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shots</span> <span class="o">=</span> <span class="n">shots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shrt</span> <span class="o">=</span> <span class="n">shrt</span></div>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.import_dataset">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.import_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">import_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dataset</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scan</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">scans</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shots</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shot_p_point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shrt</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shrt</span></div>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.create_bahrenberg_plots">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.create_bahrenberg_plots">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_bahrenberg_plots</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a matplotlib figure object for the standard bahrenberg figure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>
+        <span class="n">signal_real</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">lut</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">cmap2</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Greys&#39;</span><span class="p">,</span> <span class="n">lut</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+        <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="n">signal_real</span> <span class="o">=</span> <span class="n">signal_real</span> <span class="o">-</span> <span class="n">signal_real</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">signal_real</span> <span class="o">=</span> <span class="n">signal_real</span><span class="o">/</span> <span class="n">signal_real</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">min</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+
+        <span class="n">tau2_max_locs</span> <span class="o">=</span> <span class="n">signal_real</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">tau1_max_locs</span> <span class="o">=</span> <span class="n">signal_real</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">signal_real</span><span class="p">,</span><span class="n">extent</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span><span class="n">levels</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap2</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">signal_real</span><span class="p">,</span><span class="n">shading</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="nb">min</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">])],[</span><span class="nb">min</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">])],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">tau2_max_locs</span><span class="p">],</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">tau2_max_locs</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\tau_1 / (us)$&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\tau_2 / (us)$&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+
+
+        <span class="c1"># Second Tau2 Normalised Plot</span>
+        <span class="n">signal_real_tau2_norm</span> <span class="o">=</span> <span class="n">signal_real</span> <span class="o">/</span> <span class="n">signal_real</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span><span class="kc">None</span><span class="p">]</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">signal_real_tau2_norm</span><span class="p">,</span><span class="n">shading</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">signal_real_tau2_norm</span><span class="p">,</span><span class="n">levels</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap2</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="nb">min</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">])],[</span><span class="nb">min</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">])],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">tau2_max_locs</span><span class="p">],</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\tau_1 / (us)$&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\tau_2 / (us)$&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+
+
+        <span class="n">cb_ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">([</span><span class="mf">0.92</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">])</span>
+
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span><span class="n">cax</span><span class="o">=</span><span class="n">cb_ax</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fig</span></div>
+
+    
+<div class="viewcode-block" id="TwoDExperimentAnalysis._stability_check">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis._stability_check">[docs]</a>
+    <span class="k">def</span> <span class="nf">_stability_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Private method that caclulates if a value in the 2D decoherence experiment is above the snr_threshold. </span>
+<span class="sd">        The complete method is a wee bit more nuanced, so check the documentation for more detail&quot;&quot;&quot;</span>
+        <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_snrpshot</span>
+        
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;snr_threhold&#39;</span><span class="p">):</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snr_threshold</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">snr_threhold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_snr_threshold</span><span class="p">()</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snr_threshold</span>
+        
+
+        <span class="n">signal_bool</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span><span class="kc">False</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span> <span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                
+                <span class="k">if</span> <span class="n">signal</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+                    <span class="n">signal_bool</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">signal_near</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">signal_near</span> <span class="o">=</span> <span class="n">signal_near</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+                    <span class="n">local_thresh</span> <span class="o">=</span> <span class="mi">6</span>
+                    
+                <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">signal_near</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">signal_near</span> <span class="o">=</span> <span class="n">signal_near</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+                    <span class="n">local_thresh</span> <span class="o">=</span> <span class="mi">3</span>
+                <span class="k">elif</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">signal_near</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">signal_near</span> <span class="o">=</span> <span class="n">signal_near</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+                    <span class="n">local_thresh</span> <span class="o">=</span> <span class="mi">3</span>
+                <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">signal_near</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">signal_near</span> <span class="o">=</span> <span class="n">signal_near</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+                    <span class="n">local_thresh</span> <span class="o">=</span> <span class="mi">1</span> 
+                <span class="k">if</span> <span class="n">signal_near</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">local_thresh</span><span class="p">:</span>
+                        <span class="n">signal_bool</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                    
+        <span class="k">return</span> <span class="n">signal_bool</span></div>
+
+    
+<div class="viewcode-block" id="TwoDExperimentAnalysis.calculate_optimal">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.calculate_optimal">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_optimal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function calculates and finds the optimal timing pairs for both 4 pulse and 5 pulse DEER.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;data_snrpshot&#39;</span><span class="p">):</span>
+            <span class="n">norm_signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_snrpshot</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">snr_normalize</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Could not auto SNR normlaize the data, please do so manual with the snr_normalize method&quot;</span><span class="p">)</span>
+        
+        <span class="n">v_snr_bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stability_check</span><span class="p">()</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>
+        
+        <span class="c1"># Calculate optimal for 4-pulse</span>
+        <span class="n">tau2_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">v_snr_bool</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">v_snr_bool</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">tau1_index</span> <span class="o">=</span> <span class="n">norm_signal</span><span class="p">[:,</span><span class="n">tau2_index</span><span class="p">]</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">index_4p</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau1_index</span><span class="p">,</span><span class="n">tau2_index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_4p</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">tau1_index</span><span class="p">],</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">tau2_index</span><span class="p">])</span>
+
+        <span class="c1"># Calculate optimal for 5-pulse</span>
+        <span class="n">tau1_mesh</span><span class="p">,</span><span class="n">tau_2_mesh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">tau1ptau2_grid</span> <span class="o">=</span> <span class="n">tau1_mesh</span> <span class="o">+</span> <span class="n">tau_2_mesh</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">place</span><span class="p">(</span><span class="n">tau1ptau2_grid</span><span class="p">,</span><span class="o">~</span><span class="n">v_snr_bool</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">max_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">tau1ptau2_grid</span> <span class="o">==</span> <span class="n">tau1ptau2_grid</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">max_pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span><span class="mi">1</span><span class="p">:</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">index_5p</span> <span class="o">=</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">max_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mpT</span><span class="o">=</span><span class="n">max_pos</span><span class="o">.</span><span class="n">T</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">index_5p</span> <span class="o">=</span> <span class="n">mpT</span><span class="p">[:,</span><span class="n">norm_signal</span><span class="p">[</span><span class="n">mpT</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">mpT</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">argmax</span><span class="p">()]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_5p</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">index_5p</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">index_5p</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.calculate_snr_threshold">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.calculate_snr_threshold">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_snr_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Quick script to calculate the SNR threshold from imported values&quot;&quot;&quot;</span>
+        <span class="n">num_of_acq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_target</span><span class="o">*</span><span class="mi">3600</span> <span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shrt</span> <span class="o">*</span> <span class="mf">1e-6</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">snr_threshold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snr_target</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_of_acq</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trace_length</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">snr_threshold</span> </div>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.set_snr_threshold">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.set_snr_threshold">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_snr_threshold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the SNR_threshold&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snr_threshold</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.set_snr_target">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.set_snr_target">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_snr_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snr_target</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.set_time_target">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.set_time_target">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_time_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_target</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.estimated_snr">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.estimated_snr">[docs]</a>
+    <span class="k">def</span> <span class="nf">estimated_snr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">exp</span><span class="p">):</span>
+        <span class="n">num_of_acq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_target</span><span class="o">*</span><span class="mi">3600</span> <span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shrt</span> <span class="o">*</span> <span class="mf">1e-6</span><span class="p">)</span> 
+        <span class="k">if</span> <span class="n">exp</span> <span class="o">==</span> <span class="s1">&#39;4-pulse&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_snrpshot</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index_4p</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_of_acq</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trace_length</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">exp</span> <span class="o">==</span> <span class="s1">&#39;5-pulse&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_snrpshot</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">index_5p</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_of_acq</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trace_length</span><span class="p">))</span></div>
+
+    
+<div class="viewcode-block" id="TwoDExperimentAnalysis.snr_normalize">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.snr_normalize">[docs]</a>
+    <span class="k">def</span> <span class="nf">snr_normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates the normalized signal. If the total number of shots cannot be calculated through the Bruker metadata</span>
+<span class="sd">        file then an inputted value is required. If a value is given then this is given preference over any Bruker values.</span>
+<span class="sd">        This script assumes a 16 step phase cycle was applied for the 2D decoherence experiment.</span>
+<span class="sd">        Paramaters:</span>
+<span class="sd">        shots(Int)=&#39;auto&#39;&#39;: Number of shots per point, if None then total_shots = 1. If shots = None, then it doesn&#39;t update</span>
+<span class="sd">        the main variable</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">shots</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">total_shots</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">shots</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+            <span class="n">total_shots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scans</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">shots</span> <span class="o">*</span> <span class="mi">16</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">total_shots</span> <span class="o">=</span> <span class="n">shots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_noise_level</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">shots</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_snrpshot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">total_shots</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise</span></div>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.calculate_noise_level">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.calculate_noise_level">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_noise_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This finds the noise level from std of top right hand corner of the 2D experiment. i.e very long delays. If the</span>
+<span class="sd">        std deviation is not stable enough then a warning will be thrown&quot;&quot;&quot;</span>
+
+        <span class="c1">#TODO: Add warning and noise level checking</span>
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">width</span><span class="p">,</span><span class="n">height</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">start_frac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise_frac</span> <span class="c1"># This needs to be generated and checked for each data set to make sure it is valid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">signal</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">width</span><span class="o">*</span><span class="n">start_frac</span><span class="p">)):,</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">height</span><span class="o">*</span><span class="n">start_frac</span><span class="p">)):])</span></div>
+
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.create_twoD_plot">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.create_twoD_plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_twoD_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">contour</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">optimal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is the general method for generating 2D plots of these 2D Decoherence plots. There are many optional input parmeters which will dictate how they plot. </span>
+<span class="sd">        Some of these possible outputs may require more infomation then is automatically filled from Deerload. If this is a case it will return an exception.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        norm(string or None): The normalization of the fit. Options: None,&#39;Tau2&#39;,&#39;SNR&#39;,&#39;SNRpShot&#39;</span>
+<span class="sd">        contour(string or None): How the contours are plotted. Options: &#39;Auto&#39;, &#39;SNRpShot&#39;,&#39;None&#39;</span>
+<span class="sd">        optimal(bool): Should the optimal 4pulse and 5pulse pairs be plotted.</span>
+
+<span class="sd">        Keywords:</span>
+<span class="sd">        cmap: To set a particular colormap</span>
+<span class="sd">        axis: To return a subplot</span>
+<span class="sd">        title: A plot title</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;snr_threshold&#39;</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calculate_snr_threshold</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">contour</span> <span class="o">==</span> <span class="s1">&#39;SNRpShot&#39;</span><span class="p">:</span>
+            <span class="n">contour_scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snr_threshold</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">snr_threshold</span><span class="o">*</span><span class="mi">64</span><span class="p">),</span><span class="mi">7</span><span class="p">,</span><span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">contour_norm</span> <span class="o">=</span> <span class="kc">None</span>  
+        <span class="k">elif</span> <span class="n">contour</span> <span class="o">==</span> <span class="s1">&#39;Auto&#39;</span><span class="p">:</span>
+            <span class="n">contour_scale</span> <span class="o">=</span> <span class="mi">15</span>
+            <span class="n">contour_norm</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">PowerNorm</span><span class="p">(</span><span class="n">gamma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+
+        
+        <span class="k">if</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;Tau2&#39;</span><span class="p">:</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span><span class="kc">None</span><span class="p">]</span>
+            <span class="n">cbar_label</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">contour_scale</span> <span class="o">=</span> <span class="mi">15</span>
+            <span class="n">contour_norm</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">grid_norm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;SNR&#39;</span><span class="p">:</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snr_normalize</span><span class="p">(</span><span class="n">shots</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">grid_norm</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">PowerNorm</span><span class="p">(</span><span class="n">gamma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">cbar_label</span> <span class="o">=</span> <span class="s1">&#39;SNR&#39;</span>
+            
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span><span class="s1">&#39;SNRpShot&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;data_snrpshot&#39;</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">snr_normalize</span><span class="p">()</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_snrpshot</span>
+            <span class="n">cbar_label</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;SNR /$n^{-1/2}$&#39;</span>
+            <span class="n">grid_norm</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">PowerNorm</span><span class="p">(</span><span class="n">gamma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1">#No Normalization</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">grid_norm</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">cbar_label</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="k">if</span> <span class="n">optimal</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;index_4p&#39;</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calculate_optimal</span><span class="p">()</span>
+        
+        <span class="c1"># Start to generate the figure</span>
+        <span class="k">if</span> <span class="s1">&#39;cmap&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">cmap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;cmap&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cmap</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span><span class="p">,</span> <span class="n">lut</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">cmap2</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;gist_gray&#39;</span><span class="p">,</span> <span class="n">lut</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1">#Cmap for the contours</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+        
+        <span class="k">if</span> <span class="s1">&#39;figure&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;figure&#39;</span><span class="p">]</span>
+            <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+            <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">contour</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span><span class="n">extent</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span><span class="n">levels</span><span class="o">=</span><span class="n">contour_scale</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap2</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span><span class="n">zorder</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="n">contour_norm</span><span class="p">)</span>
+        <span class="n">im</span>  <span class="o">=</span> <span class="n">axs</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">signal</span><span class="p">,</span><span class="n">shading</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span><span class="n">zorder</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">grid_norm</span><span class="p">)</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">])],[</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">])],</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span><span class="n">zorder</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\tau_1 / (us)$&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\tau_2 / (us)$&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">optimal</span><span class="p">:</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_4p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">time_4p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;4-pulse&#39;</span><span class="p">,</span><span class="n">zorder</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_5p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">time_5p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;lime&#39;</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;5-pulse&#39;</span><span class="p">,</span><span class="n">zorder</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mf">0.02</span><span class="p">,</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span><span class="sa">fr</span><span class="s1">&#39;$\tau_1 = $</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_4p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s1">$\mu s$ &amp; $\tau_2 = $</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_4p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s1">$\mu s$&#39;</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span><span class="n">transform</span><span class="o">=</span><span class="n">axs</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.58</span><span class="p">,</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span><span class="sa">fr</span><span class="s1">&#39;$\tau_1 = $</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_5p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s1">$\mu s$ &amp; $\tau_2 = $</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_5p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s1">$\mu s$&#39;</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;lime&#39;</span><span class="p">,</span><span class="n">transform</span><span class="o">=</span><span class="n">axs</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+
+        
+        <span class="k">if</span> <span class="s1">&#39;title&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+        
+    
+
+        <span class="n">cbar</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span><span class="n">cbar_label</span> <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.create_slice_plot">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.create_slice_plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_slice_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">axis</span><span class="p">,</span><span class="n">target</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function returns a plot of a slice of the 2D decoherence experiment</span>
+
+<span class="sd">        parameters:</span>
+<span class="sd">        axis(0 or 1): The direction of the the slice (0 = constant tau2; 1 = constant tau1)</span>
+<span class="sd">        target(float): in us the target time for the slice, due to varying spacing this will find the closest time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="k">if</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;Tau2&#39;</span><span class="p">:</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span><span class="kc">None</span><span class="p">]</span>
+            <span class="n">norm_label</span> <span class="o">=</span> <span class="kc">None</span>  
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;SNR&#39;</span><span class="p">:</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snr_normalize</span><span class="p">(</span><span class="n">shots</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">norm_label</span> <span class="o">=</span> <span class="s1">&#39;SNR&#39;</span>
+    
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span><span class="s1">&#39;SNRpShot&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;data_snrpshot&#39;</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">snr_normalize</span><span class="p">()</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_snrpshot</span>
+            <span class="n">norm_label</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;SNR /$n^{-1/2}$&#39;</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1">#No Normalization</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">norm_label</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+        <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">slice_pos</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span><span class="o">-</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="n">axis</span><span class="p">][</span><span class="n">slice_pos</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># This means that we are varying tau1 and have a constant tau2</span>
+            <span class="n">slice_data</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[:,</span><span class="n">slice_pos</span><span class="p">]</span>
+            <span class="n">slice_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="ow">not</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">axis</span><span class="p">)))]</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\tau_1 / (us)$&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">axis</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="c1"># This means that we are varying tau2 and have a constant tau 1</span>
+            <span class="n">slice_data</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="n">slice_pos</span><span class="p">,:]</span>
+            <span class="n">slice_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="ow">not</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">axis</span><span class="p">)))]</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\tau_2 / (us)$&#39;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Axis must be either 0 or 1&#39;</span><span class="p">)</span>
+
+        <span class="n">axs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">slice_time</span><span class="p">,</span><span class="n">slice_data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;title&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">fig</span> <span class="p">,</span> <span class="n">time</span></div>
+
+    
+<div class="viewcode-block" id="TwoDExperimentAnalysis.optimal_slice_plot">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.optimal_slice_plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">optimal_slice_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;optimal_slice_plot Creates a plot of along the optimal decay time for 4 &amp; 5 pulse DEER.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        norm : str, optional</span>
+<span class="sd">            The normalisation of the data. Options include = [&#39;Tau2&#39;,&#39;SNR&#39;,&#39;SNRpShot&#39;,&#39;None&#39;], by default None</span>
+<span class="sd">        &quot;&quot;&quot;</span>  
+        <span class="k">if</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;Tau2&#39;</span><span class="p">:</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span><span class="kc">None</span><span class="p">]</span>
+            <span class="n">norm_label</span> <span class="o">=</span> <span class="kc">None</span>  
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;SNR&#39;</span><span class="p">:</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snr_normalize</span><span class="p">(</span><span class="n">shots</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">norm_label</span> <span class="o">=</span> <span class="s1">&#39;SNR&#39;</span>
+    
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span><span class="s1">&#39;SNRpShot&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;data_snrpshot&#39;</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">snr_normalize</span><span class="p">()</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_snrpshot</span>
+            <span class="n">norm_label</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;SNR /$n^{-1/2}$&#39;</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span><span class="s1">&#39;Max&#39;</span><span class="p">:</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span>  <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">norm_label</span> <span class="o">=</span> <span class="s1">&#39;Signal / A.U.&#39;</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1">#No Normalization</span>
+            <span class="n">signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">norm_label</span> <span class="o">=</span> <span class="s1">&#39;Signal / A.U.&#39;</span>
+
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mf">3.5</span><span class="p">),</span><span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+        <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># maximise signal along Tau2 for 4p DEER</span>
+        <span class="n">optimal_4p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">optimal_4p</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+
+        <span class="n">axs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">signal</span><span class="p">[:,</span><span class="n">optimal_4p</span><span class="p">]),</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;4pDEER&quot;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">signal</span><span class="p">),</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;5pDEER&quot;</span><span class="p">)</span>
+
+        <span class="n">axs</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Dipolar Evolution Time / $\mu s $&quot;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">norm_label</span><span class="p">)</span>
+
+        <span class="n">evo2dist</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="mi">6</span> <span class="o">*</span> <span class="p">(</span><span class="n">t</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">dist2evo</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span><span class="o">/</span><span class="mi">6</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span>
+        <span class="n">secax</span> <span class="o">=</span> <span class="n">axs</span><span class="o">.</span><span class="n">secondary_xaxis</span><span class="p">(</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">functions</span><span class="o">=</span><span class="p">(</span><span class="n">evo2dist</span><span class="p">,</span> <span class="n">dist2evo</span><span class="p">))</span>
+        <span class="n">secax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Distance / $nm$&#39;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;darkorange&#39;</span><span class="p">)</span>
+        <span class="n">secax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">colors</span><span class="o">=</span><span class="s1">&#39;darkorange&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s1">&#39;darkorange&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+
+        <span class="k">return</span> <span class="n">fig</span></div>
+
+
+    
+    
+<div class="viewcode-block" id="TwoDExperimentAnalysis.invert_signal">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.invert_signal">[docs]</a>
+    <span class="k">def</span> <span class="nf">invert_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function completely inverts the signal. I.e. -x -&gt; x and -y -&gt; y.</span>
+
+<span class="sd">        This is usefull if the measured sameple is pi out of phase, or the phase was aligned for a Hahn echo not a refocused echo</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Please load data&#39;</span><span class="p">)</span></div>
+
+
+            
+<div class="viewcode-block" id="TwoDExperimentAnalysis._data_transpose">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis._data_transpose">[docs]</a>
+    <span class="k">def</span> <span class="nf">_data_transpose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is an internal method that flips the data along the diagnal.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">T</span></div>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.value_at_pos">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.value_at_pos">[docs]</a>
+    <span class="k">def</span> <span class="nf">value_at_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pos</span><span class="p">:</span><span class="nb">tuple</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function that finds the value in this 2D experiment at specified coordinates</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        pos(tuple): (tau1 pos, tau2 pos)</span>
+<span class="sd">        norm=Nome: Can be used to select the normalisation. Options are: None, &#39;SNRpShot&#39;,&#39;SNR&#39;  </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">norm</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;SNRpShot&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_snrpshot</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s1">&#39;SNR&#39;</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">snr_normalize</span><span class="p">(</span><span class="n">shots</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">data</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Normalization option value error&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TwoDExperimentAnalysis.value_at_time">
+<a class="viewcode-back" href="../../autoapi/autodeer/TwoD_Experiment/index.html#autodeer.TwoD_Experiment.TwoDExperimentAnalysis.value_at_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">value_at_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pos</span><span class="p">:</span><span class="nb">tuple</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function that finds the closest value in this 2D experiment for specified delay times</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        pos(tuple): (tau1 time, tau2 time)</span>
+<span class="sd">        norm=Nome: Can be used to select the normalisation. Options are: None, &#39;SNRpShot&#39;,&#39;SNR&#39;  </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># First we need to find the closest posible values</span>
+        <span class="n">tau1_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">tau1_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">tau1_pos</span><span class="p">]</span>
+        <span class="n">tau2_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">tau2_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">tau2_pos</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Closest times: </span><span class="se">\u03C4</span><span class="s1">1 =</span><span class="si">{</span><span class="n">tau1_time</span><span class="si">}</span><span class="s1"> &amp; </span><span class="se">\u03C4</span><span class="s1">2 =</span><span class="si">{</span><span class="n">tau2_time</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value_at_pos</span><span class="p">((</span><span class="n">tau1_pos</span><span class="p">,</span><span class="n">tau2_pos</span><span class="p">),</span><span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../_static/documentation_options.js?v=2220c937"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    </body>
+</html>

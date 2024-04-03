@@ -1,0 +1,231 @@
+:py:mod:`autodeer.reporter`
+===========================
+
+.. py:module:: autodeer.reporter
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.reporter.SvgFlowable
+   autodeer.reporter.Reporter
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.reporter.create_report
+   autodeer.reporter.combo_figure
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.reporter.styles
+   autodeer.reporter.package_dir
+
+
+.. py:data:: styles
+
+   
+
+.. py:data:: package_dir
+
+   
+
+.. py:class:: SvgFlowable(svg)
+
+
+   Bases: :py:obj:`reportlab.platypus.Flowable`
+
+   Convert byte streasm containing SVG into a Reportlab Flowable.
+
+
+   Convert SVG to RML drawing on initializtion.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: wrap(*_args)
+
+      
+      Return diagram size.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: draw()
+
+      
+      Render the chart.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: Reporter(filepath, pagesize='A4')
+
+
+   .. py:method:: header(canvas, doc)
+
+
+   .. py:method:: footer(canvas, doc)
+
+
+   .. py:method:: _build()
+
+
+   .. py:method:: add_title(key, title)
+
+
+   .. py:method:: add_new_section(key, title)
+
+
+   .. py:method:: add_text(key, text, title=None)
+
+
+   .. py:method:: add_code_block(key, code, title=None)
+
+
+   .. py:method:: add_figure(key, figure, title=None)
+
+
+   .. py:method:: add_space(key, height=5)
+
+
+   .. py:method:: add_page_break(key)
+
+
+   .. py:method:: add_table(key, lists)
+
+      
+      Generates a table as a reportlab flowable from a list of lists
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:function:: create_report(save_path, Results, SpectrometerInfo = None, UserInputs = None, Pulses=None)
+
+
+.. py:function:: combo_figure(EDFS, respro, pulses, relaxation, init_deer, long_deer, title=None)
+
+   
+   Creates a 2x2 summary figure. 
+       - The top left plot is the EDFS and resonator profile, overlapped with the optimised pulses. 
+       - The top right plot is the relaxation data and fits.
+       - The bottom left plot is the initial DEER data and fits.
+       - The bottom right plot is the final DEER data and fits.
+
+
+   :Parameters:
+
+       **EDFS: ad.FieldSweepAnalysis**
+           The Echo-Detected Field Sweep analysis.
+
+       **respro: ad.ResonatorProfileAnalysis**
+           The resonator profile analysis
+
+       **pulses: dict**
+           A dictionary containing the optimised pulses.
+
+       **relaxation: list**
+           A list containing the relaxation data and fits.
+
+       **init_deer: deerlab.FitResult**
+           The initial DEER data and fits.
+
+       **long_deer: deerlab.FitResult**
+           The final DEER data and fits.
+
+       **title: str, optional**
+           The title of the figure, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

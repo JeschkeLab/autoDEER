@@ -1,6 +1,0 @@
-﻿autodeer.calc\_optimal\_deer\_frqs
-==================================
-
-.. currentmodule:: autodeer
-
-.. autofunction:: calc_optimal_deer_frqs

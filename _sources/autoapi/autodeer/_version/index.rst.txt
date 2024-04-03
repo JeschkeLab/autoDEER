@@ -1,0 +1,15 @@
+:py:mod:`autodeer._version`
+===========================
+
+.. py:module:: autodeer._version
+
+
+
+Module Contents
+---------------
+
+.. py:data:: __version__
+   :value: '0.5_dev'
+
+   
+

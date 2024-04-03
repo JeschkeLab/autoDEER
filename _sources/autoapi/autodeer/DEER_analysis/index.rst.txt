@@ -1,0 +1,522 @@
+:py:mod:`autodeer.DEER_analysis`
+================================
+
+.. py:module:: autodeer.DEER_analysis
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.DEER_analysis.calc_identifiability
+   autodeer.DEER_analysis.find_longest_pulse
+   autodeer.DEER_analysis.DEERanalysis
+   autodeer.DEER_analysis.background_func
+   autodeer.DEER_analysis.calc_correction_factor
+   autodeer.DEER_analysis.DEERanalysis_plot
+   autodeer.DEER_analysis.DEERanalysis_plot_pub
+   autodeer.DEER_analysis.IdentifyROI
+   autodeer.DEER_analysis.remove_echo
+   autodeer.DEER_analysis.shift_pulse_freq
+   autodeer.DEER_analysis.normalise_01
+   autodeer.DEER_analysis.resample_and_shift_vector
+   autodeer.DEER_analysis.build__lowpass_butter_filter
+   autodeer.DEER_analysis.functional
+   autodeer.DEER_analysis.optimise_pulses
+   autodeer.DEER_analysis.plot_overlap
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.DEER_analysis.log
+   autodeer.DEER_analysis.MODULE_DIR
+
+
+.. py:data:: log
+
+   
+
+.. py:data:: MODULE_DIR
+
+   
+
+.. py:function:: calc_identifiability(profile)
+
+
+.. py:function:: find_longest_pulse(sequence)
+
+   
+   Finds the longest pulse duration in a given sequence.
+
+   Args:
+   sequence (Sequence): The sequence to analyze.
+
+   Returns:
+   float: The duration of the longest pulse in microseconds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, **kwargs)
+
+
+.. py:function:: background_func(t, fit)
+
+
+.. py:function:: calc_correction_factor(fit_result, aim_MNR=25, aim_time=2)
+
+
+.. py:function:: DEERanalysis_plot(fit, background, ROI=None, axs=None, fig=None, text=True)
+
+   
+   DEERanalysis_plot Generates a figure showing both the time domain and
+   distance domain data along with extra important infomation such as the 
+   Modulation to Noise Ratio (MNR), Region of Interest (ROI) and the 
+   recommended dipolar evolution time for future experiments based upon the 
+   ROI.
+
+
+   :Parameters:
+
+       **fit** : Deerlab.FitResult
+           _description_
+
+       **background** : bool
+           Should the background fit be plotted.
+
+       **ROI** : tuple, optional
+           The minimum and maximum of the Region of Interest (ROI),
+           by default None
+
+   :Returns:
+
+       Figure
+           A Matplotlib Figure object of the figure. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: DEERanalysis_plot_pub(results, ROI=None, fig=None, axs=None)
+
+   
+   Generates a vertical plot of the DEER analysis results, ready for publication.
+
+
+   :Parameters:
+
+       **results** : Deerlab.FitResult
+           The results of the DEER analysis.
+
+       **ROI** : tuple, optional
+           The minimum and maximum of the Region of Interest (ROI),
+           by default None
+
+       **fig** : matplotlib.figure.Figure, optional
+           The figure to plot the results on. If None, a new figure is created.
+
+       **axs** : matplotlib.axes.Axes, optional
+           The axes to plot the results on. If None, a new axes is created.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: IdentifyROI(P, r, criterion = 0.99, method = 'gauss')
+
+   
+   IdentifyROI Identifies the region of interest. Two methods are sypported
+
+   Methods
+   +++++++
+
+   1. Gaussian fitting ("gauss"):
+
+   2. Intergration ("int"):
+
+   :Parameters:
+
+       **P** : np.ndarray
+           The distance distribution.
+
+       **r** : np.ndarray
+           The distance axis
+
+       **criterion** : float, optional
+           The fraction of the distance distribution that must be in the ROI, by 
+           default 0.99
+
+       **method: str, optional**
+           The method used to calculate region of interest.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: remove_echo(Vre, Vim, loc, criteria = 4, extent = 3)
+
+   
+   This function removes crossing echoes. 
+   Parameters
+   ----------
+   Vre : np.ndarray
+       The real part of the phase corrected signal.
+   Vim : np.ndarray
+       The imaginary part of the phase corrected signal.
+   loc : int
+       The approximate location of the crossing echo, +- 30 data points
+   criteria : float, optional
+       The delation criteria, in multiples of the std deviation, by default 4
+   extent : int, optional
+       How many data points either side to remove, by default 3.
+
+
+
+   :Returns:
+
+       np.ndarray
+           The mask of points to be ignored.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: shift_pulse_freq(pulse, shift)
+
+   
+   Shifts the frequency of a pulse by a given amount.
+
+   Args:
+       pulse: The pulse whose frequency should be shifted.
+       shift: The amount by which to shift the frequency.
+
+   Returns:
+       The pulse with the shifted frequency.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: normalise_01(A)
+
+   
+   Normalizes the input vector A to be between 0 and 1.
+
+   Parameters:
+   A (numpy.ndarray): Input vector to be normalized.
+
+   Returns:
+   numpy.ndarray: Normalized vector between 0 and 1.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: resample_and_shift_vector(A, f, shift)
+
+   
+   Resample the vector A along axis f and shift it by shift and return on original axis f.
+
+   Parameters:
+   A (numpy.ndarray): The input vector to be resampled and shifted.
+   f (numpy.ndarray): The axis along which to resample the vector.
+   shift (float): The amount by which to shift the resampled vector.
+
+   Returns:
+   numpy.ndarray: The resampled and shifted vector.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: build__lowpass_butter_filter(cutoff)
+
+   
+   Build a lowpass butterworth filter with a cutoff frequency of cutoff
+
+   Args:
+       cutoff (float): cutoff frequency in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: functional(f_axis, fieldsweep, A, B, filter=None, A_shift=0, B_shift=0)
+
+   
+   Functional for optimising the pulse positions
+
+
+   :Parameters:
+
+       **f_axis** : np.ndarray
+           The frequency axis of the field sweep in GHz
+
+       **fieldsweep** : ad.FieldSweepAnalysis
+           The FieldSweep analysis object
+
+       **A** : np.ndarray
+           The pump pulse profile
+
+       **B** : np.ndarray
+           The effective excitation pulse profile
+
+       **filter** : np.ndarray, optional
+           The filter profile if applicable, by default None
+
+       **A_shift** : int, optional
+           The shift in pump pulse in GHz, by default 0
+
+       **B_shift** : int, optional
+           The shift in effective exciatation pulse in GHz, by default 0
+
+   :Returns:
+
+       _type_
+           _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute', nDEER=False, num_ref_pulses=2, full_output=False)
+
+   
+   Optimise the pulse positions to maximise the pump-exc overlap.
+
+
+   :Parameters:
+
+       **Fieldsweep** : ad.FieldSweepAnalysis
+           The FieldSweep analysis object
+
+       **pump_pulse** : ad.Pulse
+           The pump pulse object
+
+       **exc_pulse** : ad.Pulse
+           The excitation pulse object
+
+       **ref_pulse** : ad.Pulse, optional
+           The refocusing pulse object\, by default None
+
+       **filter** : str or number or list, optional
+           The filter profile if applicable, by default None. If it is a number a filter is generated with this cutoff frequency.
+           If the string 'Matched' is used a matched filter is used. If a list is used the optimisation is performed for each filter and the best is returned.
+
+       **verbosity** : int, optional
+           The verbosity, by default 0
+
+       **method** : str, optional
+           What search optimisation is used, by default 'grid'
+
+       **nDEER** : bool, optional
+           Is the sequence an nDEER sequrence, by default False. If True then the refocusing pulse is not optimised.
+
+       **num_ref_pulses** : int, optional
+           The total number of refocusing pulses, by default 2
+
+   :Returns:
+
+       _type_
+           _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, respro=None, num_ref_pulses=2, axs=None, fig=None)
+
+   
+   Plots the pump and excitation profiles as well as the fieldsweep and filter profile.
+
+
+   :Parameters:
+
+       **Fieldsweep** : ad.FieldSweepAnalysis
+           The FieldSweep analysis object
+
+       **pump_pulse** : ad.Pulse
+           The pump pulse object
+
+       **exc_pulse** : ad.Pulse
+           The excitation pulse object
+
+       **ref_pulse** : ad.Pulse, optional
+           The refocusing pulse object, by default None
+
+       **filter** : str or number, optional
+           The filter profile if applicable, by default None. If it is a number a filter is generated with this cutoff frequency.
+           If the string 'Matched' is used a matched filter is used.
+
+       **respro** : ad.ResonatorProfileAnalysis, optional
+           The resonator profile for fitting, by default None. The resonator profile must include the fit.
+
+       **num_ref_pulses** : int, optional
+           The total number of refocusing pulses, by default 2
+
+       **axs** : matplotlib.axes, optional
+           The axes to plot on, by default None
+
+       **fig** : matplotlib.figure, optional
+           The figure to plot on, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

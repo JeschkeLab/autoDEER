@@ -1,0 +1,315 @@
+:py:mod:`autodeer.gui.main`
+===========================
+
+.. py:module:: autodeer.gui.main
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.main.WorkerSignals
+   autodeer.gui.main.Worker
+   autodeer.gui.main.autoDEERUI
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.main.fieldsweep_fit
+   autodeer.gui.main.respro_process
+   autodeer.gui.main.relax_process
+   autodeer.gui.main.T2_process
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.main.package_directory
+   autodeer.gui.main.SampleConcComboBox_opts
+   autodeer.gui.main.app
+
+
+.. py:data:: package_directory
+
+   
+
+.. py:data:: SampleConcComboBox_opts
+
+   
+
+.. py:class:: WorkerSignals
+
+
+   Bases: :py:obj:`autodeer.gui.tools.QtCore.QObject`
+
+   
+   Defines the signals available from a running worker thread.
+
+   Supported signals are:
+
+   finished
+       No data
+
+   error
+       tuple (exctype, value, traceback.format_exc() )
+
+   result
+       object data returned from processing, anything
+
+   progress
+       int indicating % progress
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+   .. py:attribute:: finished
+
+      
+
+   .. py:attribute:: error
+
+      
+
+   .. py:attribute:: result
+
+      
+
+   .. py:attribute:: progress
+
+      
+
+
+.. py:class:: Worker(fn, *args, **kwargs)
+
+
+   Bases: :py:obj:`autodeer.gui.tools.QtCore.QRunnable`
+
+   
+   Worker thread
+
+   Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+   :param callback: The function callback to run on this worker thread. Supplied args and
+                    kwargs will be passed through to the runner.
+   :type callback: function
+   :param args: Arguments to pass to the callback function
+   :param kwargs: Keywords to pass to the callback function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+   .. py:method:: run()
+
+      
+      Initialise the runner function with passed args, kwargs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:function:: fieldsweep_fit(fsweep_analysis)
+
+
+.. py:function:: respro_process(dataset, fieldsweep=None, cores=1)
+
+
+.. py:function:: relax_process(dataset)
+
+
+.. py:function:: T2_process(dataset)
+
+
+.. py:class:: autoDEERUI
+
+
+   Bases: :py:obj:`autodeer.gui.tools.QMainWindow`
+
+   .. py:method:: set_spectrometer_connected_light(state)
+
+
+   .. py:method:: load_folder()
+
+
+   .. py:method:: load_epr_file(store_location)
+
+
+   .. py:method:: load_spectrometer_config(filename=None)
+
+
+   .. py:method:: select_resonator()
+
+
+   .. py:method:: change_LO()
+
+
+   .. py:method:: connect_spectrometer()
+
+
+   .. py:method:: raise_warning(message)
+
+
+   .. py:method:: save_data(dataset, filename)
+
+
+   .. py:method:: fsweep_toolbar()
+
+
+   .. py:method:: respro_toolbar()
+
+
+   .. py:method:: relax_toolbar()
+
+
+   .. py:method:: update_fieldsweep(dataset=None)
+
+
+   .. py:method:: create_fieldsweep_figure()
+
+
+   .. py:method:: refresh_fieldsweep_after_fit(fitresult)
+
+
+   .. py:method:: update_respro(dataset=None)
+
+
+   .. py:method:: create_respro_figure()
+
+
+   .. py:method:: refresh_respro(*args)
+
+
+   .. py:method:: optimise_pulses_button()
+
+
+   .. py:method:: optimise_pulses(pulses=None)
+
+
+   .. py:method:: update_optimise_pulses_figure()
+
+
+   .. py:method:: update_relax(dataset=None)
+
+
+   .. py:method:: create_relax_figure()
+
+
+   .. py:method:: refresh_relax_figure()
+
+
+   .. py:method:: refresh_relax(fitresult)
+
+
+   .. py:method:: update_T2(dataset=None)
+
+
+   .. py:method:: check_T2(fitresult)
+
+
+   .. py:method:: check_CP(fitresult)
+
+
+   .. py:method:: refresh_T2(fitresult)
+
+
+   .. py:method:: advanced_mode_inputs()
+
+
+   .. py:method:: update_quickdeer(dataset=None)
+
+
+   .. py:method:: update_longdeer(dataset=None)
+
+
+   .. py:method:: update_reptime(dataset=None)
+
+
+   .. py:method:: timeout()
+
+      
+      Creates a pop up box as the experiment has timed out
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: RunFullyAutoDEER()
+
+
+   .. py:method:: RunAdvanedAutoDEER()
+
+
+   .. py:method:: create_report()
+
+
+
+.. py:data:: app
+
+   
+

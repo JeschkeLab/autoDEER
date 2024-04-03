@@ -1,0 +1,72 @@
+:py:mod:`autodeer.dataset`
+==========================
+
+.. py:module:: autodeer.dataset
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.dataset.EPRAccessor
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.dataset.get_all_axes
+   autodeer.dataset.get_all_fixed_param
+   autodeer.dataset.create_dataset_from_sequence
+   autodeer.dataset.create_dataset_from_axes
+   autodeer.dataset.create_dataset_from_bruker
+
+
+
+.. py:function:: get_all_axes(sequence)
+
+
+.. py:function:: get_all_fixed_param(sequence)
+
+
+.. py:function:: create_dataset_from_sequence(data, sequence, extra_params={})
+
+
+.. py:function:: create_dataset_from_axes(data, axes, params = None, axes_labels=None)
+
+
+.. py:function:: create_dataset_from_bruker(filepath)
+
+
+.. py:class:: EPRAccessor(xarray_obj)
+
+
+   .. py:property:: save
+
+
+   .. py:property:: correctphase
+
+
+   .. py:property:: normalise
+
+
+   .. py:property:: correctphasefull
+
+
+   .. py:property:: SNR
+
+
+   .. py:property:: fft
+
+
+   .. py:property:: sequence
+
+
+

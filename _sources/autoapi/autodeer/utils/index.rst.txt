@@ -1,0 +1,217 @@
+:py:mod:`autodeer.utils`
+========================
+
+.. py:module:: autodeer.utils
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.utils.build_table
+   autodeer.utils.sop
+   autodeer.utils.transpose_dict_of_list
+   autodeer.utils.transpose_list_of_dicts
+   autodeer.utils.save_file
+   autodeer.utils.autoEPRDecoder
+   autodeer.utils.gcd
+   autodeer.utils.val_in_us
+   autodeer.utils.val_in_ns
+   autodeer.utils.round_step
+
+
+
+.. py:function:: build_table(source, params, params_widths)
+
+
+.. py:function:: sop(spins, comps)
+
+   
+   Spin Operator Matricies.
+
+   This function is ported from EasySpin (https://easyspin.org/easyspin/documentation/sop.html) 
+
+   References:
+   +++++++++++
+   [1] Stefan Stoll, Arthur Schweiger
+   EasySpin, a comprehensive software package for spectral simulation and analysis in EPR
+   J. Magn. Reson. 178(1), 42-55 (2006)
+
+   [2] Stefan Stoll, R. David Britt
+   General and efficient simulation of pulse EPR spectra
+   Phys. Chem. Chem. Phys. 11, 6614-6625 (2009)
+
+   :Parameters:
+
+       **spins** : list
+           A list of each spin and its spin qunatum number
+
+       **comps** : str
+           The type of spin operator matrix to create. Options are: x,y,z,+,-,e
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: transpose_dict_of_list(d)
+
+   
+   Turns a dictionary of lists into a list of dictionaries.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: transpose_list_of_dicts(d)
+
+   
+   Turns a list of dictionaries into a dictionary of lists.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: save_file(path, str)
+
+
+.. py:function:: autoEPRDecoder(dct)
+
+
+.. py:function:: gcd(values)
+
+   
+   Generates the greatest common dividor on a  list of floats
+
+
+   :Parameters:
+
+       **values** : list
+           _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: val_in_us(Param, axis=True)
+
+   
+   Returns the value or axis of a parameter in microseconds
+
+
+   :Parameters:
+
+       **Param** : autodeer.Parameter
+           The parameter to be converted
+
+   :Returns:
+
+       float or numpy.ndarray
+           ..
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: val_in_ns(Param)
+
+   
+   Returns the value or axis of a parameter in nanoseconds
+
+
+   :Parameters:
+
+       **Param** : autodeer.Parameter
+           The parameter to be converted
+
+   :Returns:
+
+       float or numpy.ndarray
+           ..
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: round_step(value, step)
+
+

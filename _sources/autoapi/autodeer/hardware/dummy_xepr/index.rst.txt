@@ -1,0 +1,408 @@
+:py:mod:`autodeer.hardware.dummy_xepr`
+======================================
+
+.. py:module:: autodeer.hardware.dummy_xepr
+
+.. autoapi-nested-parse::
+
+   This is a set of scripts that pretend to be an xepr spectromter, this allows for the further development of 
+   this code without having to be sat in front of an actual spectrometer:
+
+   Manufactuer: Hugo Karas (me)
+   Model: DUMMY
+   Features: The most relibable Bruker EPR spectromter in the world (possibly?)
+
+   ..
+       !! processed by numpydoc !!
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.dummy_xepr.dummy_api
+   autodeer.hardware.dummy_xepr.dummy_cur_exp
+   autodeer.hardware.dummy_xepr.dummy_param
+   autodeer.hardware.dummy_xepr.dummy_xepr
+   autodeer.hardware.dummy_xepr.dummy_hidden
+   autodeer.hardware.dummy_xepr.dummy_dataset
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.dummy_xepr.hw_log
+   autodeer.hardware.dummy_xepr.hardware_meta
+
+
+.. py:data:: hw_log
+
+   
+
+.. py:data:: hardware_meta
+
+   
+
+.. py:class:: dummy_api
+
+
+   Bases: :py:obj:`autodeer.hardware.XeprAPI_link.XeprAPILink`
+
+   .. py:method:: find_Xepr()
+
+
+   .. py:method:: is_exp_running()
+
+
+   .. py:method:: acquire_scan()
+
+      
+      This script detects the end of the scan and acquires the data set. 
+      This requires that the experiment is still running, or recently 
+      finished. Once it has been saved this will no longer work.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: acquire_scan_at(scan_num)
+
+      
+      This script acquires the scan after a specific number of scans
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: acquire_scan_2d()
+
+      
+      This function acquires the dataset after a full 2D scan.
+      This is done by identifying the number of scan steps per sweep and 
+      acquiring the data on that scan.
+      This requires that the experiment has not been saved. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: compile_PulseSpel_def()
+
+
+   .. py:method:: compile_PulseSpel_prg()
+
+
+   .. py:method:: set_PulseSpel_var(variable, value)
+
+      
+      This can be used to change any pulse spell variable whilst the 
+      experiment is running. These changes take effect at the beginning of 
+      the next scan
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: run_exp()
+
+      
+      Runs the current experiment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: stop_exp()
+
+      
+      Stops the current experiment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: abort_exp()
+
+      
+      Aborts the current experiment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: dummy_cur_exp
+
+
+   .. py:method:: __getitem__(name)
+
+      
+      This method returns a given parameter class for the name provided
+
+      :param name: The name of parameter needed
+      :type name: string
+      :return: Instance of dummy_param class corresponding to the searched name
+      :rtype: dummy_param class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: getParam(name)
+
+      
+      Extracts a paremeter from the current exeperiment
+
+      :param name: The name of the parameter to be extracted
+      :type name: string
+      :return: An instance of the parameter class for the given paramter name
+      :rtype: parameter Class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: aqExpRun()
+
+
+
+.. py:class:: dummy_param(min, max, type=int, par=None)
+
+
+   .. py:property:: value
+
+
+
+.. py:class:: dummy_xepr
+
+
+   .. py:class:: XeprCmds
+
+
+      .. py:method:: aqPgShowPrg()
+
+
+      .. py:method:: aqPgCompile()
+
+
+      .. py:method:: aqExpSelect()
+
+
+      .. py:method:: aqPgLoad()
+
+
+      .. py:method:: aqPgDefLoad()
+
+
+      .. py:method:: aqPgDefSaveAs()
+
+
+      .. py:method:: aqPgSaveAs()
+
+
+      .. py:method:: vpSave(title, path)
+
+
+
+   .. py:method:: XeprExperiment(hidden=None)
+
+
+   .. py:method:: XeprDataset()
+
+
+
+.. py:class:: dummy_hidden
+
+
+   .. py:method:: __getitem__(name)
+
+      
+      This method returns a given parameter class for the name provided
+
+      :param name: The name of parameter needed
+      :type name: string
+      :return: Instance of dummy_param class corresponding to the searched name
+      :rtype: dummy_param class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: getParam(name)
+
+      
+      Extracts a paremeter from the current exeperiment
+
+      :param name: The name of the parameter to be extracted
+      :type name: string
+      :return: An instance of the parameter class for the given paramter name
+      :rtype: parameter Class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: dummy_dataset(t, V)
+
+
+

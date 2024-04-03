@@ -1,0 +1,394 @@
+:py:mod:`autodeer.hardware.Bruker_tools`
+========================================
+
+.. py:module:: autodeer.hardware.Bruker_tools
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.Bruker_tools.PSPhaseCycle
+   autodeer.hardware.Bruker_tools.PSparvar
+   autodeer.hardware.Bruker_tools.PulseSpel
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.Bruker_tools.convert_progtable
+   autodeer.hardware.Bruker_tools.calc_rel_positions
+   autodeer.hardware.Bruker_tools.run_general
+   autodeer.hardware.Bruker_tools.change_dimensions
+   autodeer.hardware.Bruker_tools._addAWGPulse
+   autodeer.hardware.Bruker_tools.get_arange
+   autodeer.hardware.Bruker_tools.build_unique_progtable
+   autodeer.hardware.Bruker_tools.check_variable
+   autodeer.hardware.Bruker_tools.write_pulsespel_file
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.Bruker_tools.MODULE_DIR
+   autodeer.hardware.Bruker_tools.header
+   autodeer.hardware.Bruker_tools.possible_delays
+   autodeer.hardware.Bruker_tools.possible_vars
+   autodeer.hardware.Bruker_tools.possible_pulses
+
+
+.. py:data:: MODULE_DIR
+
+   
+
+.. py:data:: header
+
+   
+
+.. py:class:: PSPhaseCycle(sequence, MPFU=None, OnlyDet=False)
+
+
+   .. py:method:: _MPFU(sequence, MPFU)
+
+
+   .. py:method:: _main(sequence)
+
+
+   .. py:method:: _detect(sequence)
+
+
+   .. py:method:: __str__()
+
+      
+      Return str(self).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: PSparvar(sequence, id)
+
+
+   .. py:method:: checkPulseSpel()
+
+      
+      Checks if parvar can be run in PulseSpel.\
+      Criteria:
+          1) Only pulse/delay lengths changing
+          2) Constant integer step changes
+
+
+
+      :Returns:
+
+          bool
+              _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:data:: possible_delays
+   :value: ['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd10', 'd11', 'd12', 'd13', 'd14', 'd15',...
+
+   
+
+.. py:data:: possible_vars
+   :value: ['a', 'b', 'c', 'e']
+
+   
+
+.. py:data:: possible_pulses
+   :value: ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10']
+
+   
+
+.. py:function:: convert_progtable(progtable)
+
+   
+   This function reformats the progtable to be compatible with the Bruker_tools. 
+   This is done by converting the axis of each moving pulse to be relative to the previous moving pulse.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: calc_rel_positions(sequence)
+
+   
+   Calcuates the starting relative positions of all pulses in a sequence.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:class:: PulseSpel(sequence, d0, MPFU=None, AWG=False)
+
+
+   .. py:method:: _new_delay(key)
+
+
+   .. py:method:: _new_var(key)
+
+
+   .. py:method:: _new_pulse(key)
+
+
+   .. py:method:: save(filepath)
+
+
+   .. py:method:: _addDef(str)
+
+
+   .. py:method:: _addExp(str)
+
+
+   .. py:method:: _ExpDefs()
+
+
+   .. py:method:: _addScanLoop()
+
+
+   .. py:method:: _addPhaseCycle()
+
+
+   .. py:method:: _addAWGPulse(sequence, pulse_num, id)
+
+
+   .. py:method:: _check_sequence(sequence)
+
+
+   .. py:method:: _cmpl_Exp()
+
+
+   .. py:method:: _cmpl_def()
+
+
+   .. py:method:: __str__()
+
+      
+      Return str(self).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:function:: run_general(api, ps_file, exp, settings, variables, run = True)
+
+   
+   A function to run a general Pulse Spel experiment through autoDeer.
+
+
+   :Parameters:
+
+       **api** : _type_
+           The current Bruker Xepr class
+
+       **ps_file** : tuple
+           A tuple containing the file path to both the ".exp" and ".def" files.
+
+       **exp** : tuple
+           A tuple giving the name of the experiment and phase cycle.
+
+       **settings** : dict
+           A dictionary containing possible acquisition settings. Options include 
+           ['ReplaceMode','PhaseCycle','Acquisition_mode']
+
+       **variables** : dict
+           A dictionary containg pulse spel variables to choose from can, these 
+           can also be dimension of experiment.
+
+       **run** : bool, optional
+           Should the experiment run or just compile, by default True
+
+
+
+
+
+   :Raises:
+
+       ValueError
+           If an input is of the wrong type.
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: change_dimensions(path, dim, new_length)
+
+   
+   A function to rewrite a pulseSpel experiment file with a new dimension
+
+
+   :Parameters:
+
+       **path** : str
+           The full file path.
+
+       **dim** : int
+           The experiment number that needs to be changed
+
+       **new_length** : int
+           The new length can be a list of two if 2D.
+
+
+
+
+
+   :Raises:
+
+       ValueError
+           If there more than 2 dimesnions are supplied. Xepr can not handle 3+D 
+           experiments.
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: _addAWGPulse(sequence, pulse_num, id, pcyc_str, amp_var=None)
+
+
+.. py:function:: get_arange(array)
+
+
+.. py:function:: build_unique_progtable(seq)
+
+
+.. py:function:: check_variable(var, uprog)
+
+
+.. py:function:: write_pulsespel_file(sequence, d0, AWG=False, MPFU=False)
+
+   
+   Write the pulsespel file for a given sequence. 
+
+
+   :Parameters:
+
+       **sequence** : Sequence
+           The sequence class to be converted.
+
+       **AWG** : bool, optional
+           Is this a pulse spel file for an AWG spectrometer, by default False
+
+       **MPFU** : list, optional
+           A list of MPFU channels, by default False
+
+   :Returns:
+
+       str
+           The string for the definition file
+
+       str
+           The string for the experiment file
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

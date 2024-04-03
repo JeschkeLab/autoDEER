@@ -1,0 +1,333 @@
+:py:mod:`autodeer.FieldSweep`
+=============================
+
+.. py:module:: autodeer.FieldSweep
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.FieldSweep.FieldSweepAnalysis
+   autodeer.FieldSweep.SpinSystem
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.FieldSweep.create_Nmodel
+   autodeer.FieldSweep.erot
+   autodeer.FieldSweep.eyekron
+   autodeer.FieldSweep.kroneye
+   autodeer.FieldSweep.ham
+   autodeer.FieldSweep.ham_ez
+   autodeer.FieldSweep.ham_nz
+   autodeer.FieldSweep.resfields
+   autodeer.FieldSweep.build_spectrum
+
+
+
+.. py:function:: create_Nmodel(mwFreq)
+
+   
+   Create the field sweep model for a Nitroxide spin system. 
+
+
+   :Parameters:
+
+       **mwFreq** : float
+           The microwave frequency in MHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:class:: FieldSweepAnalysis(dataset)
+
+
+   
+
+   Analysis and calculation of FieldSweep Experiment. 
+
+
+   :Parameters:
+
+       **dataset** : xarray.Dataarray
+           _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: find_max()
+
+      
+      Calculates the maximum field
+
+
+
+      :Returns:
+
+          float
+              Max field
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: calc_gyro(LO = None)
+
+      
+      Calculates the gyromagnetic ratio for a given frequency
+
+
+      :Parameters:
+
+          **det_frq** : float
+              The detection frequency for the field sweep.
+
+      :Returns:
+
+          float
+              The gyromagnetic ratio in G/GHz.
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: calc_noise_level(SNR_target=30)
+
+
+   .. py:method:: fit(spintype='N', **kwargs)
+
+
+   .. py:method:: plot(norm = True, axis = 'field', axs=None, fig=None)
+
+      
+      Generate a field sweep plot
+
+
+      :Parameters:
+
+          **norm** : bool, optional
+              Nomarlisation of the plot to a maximum of 1, by default True
+
+          **axis** : str, optional
+              plot field sweep on either the "field" axis or "freq" axis
+
+      :Returns:
+
+          Matplotlib.Figure
+              matplotlib figure
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: SpinSystem(espins, nspin, g, A)
+
+
+
+.. py:function:: erot(*args)
+
+   
+   Passive rotation matrix.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: eyekron(M)
+
+   
+   Calculates the Kronecker product of the identity matrix with a matrix M.
+
+   Parameters:
+   M (np.ndarray): The matrix to be multiplied with the identity matrix.
+
+   Returns:
+   np.ndarray: The Kronecker product of the identity matrix with M.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: kroneye(M)
+
+   
+   Computes the Kronecker product of a matrix with the identity matrix of the same size.
+
+   Args:
+       M (numpy.ndarray): The matrix to compute the Kronecker product with.
+
+   Returns:
+       numpy.ndarray: The Kronecker product of M with the identity matrix of the same size.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: ham(SpinSystem, elspins=None, nucspins=None)
+
+
+.. py:function:: ham_ez(SpinSystem, B=None, espins=None)
+
+
+.. py:function:: ham_nz(SpinSystem, B=None, nspins=None)
+
+
+.. py:function:: resfields(system, Orientations, mwFreq, computeIntensities=True, RejectionRatio=1e-08, Range=(0, 100000000.0), Threshold=0, computeFreq2Field=True)
+
+
+.. py:function:: build_spectrum(system, mwFreq, Range, knots=19, npoints=1000, Guass_broadening=0.25)
+
+   
+   Build a field sweep spectrum
+
+
+   :Parameters:
+
+       **system** : SpinSystem
+           The spin system it must include: I & S spins, g, A, gn
+
+       **mwFreq** : float
+           The microwave frequency in MHz
+
+       **Range** : float
+           The field range in mT
+
+       **knots** : int, optional
+           The number of knots of orientation averaging, by default 19
+
+       **npoints** : int, optional
+           The number of points in the spectrum, by default 1000
+
+   :Returns:
+
+       xAxis: np.ndarray
+           The xAxis in mT
+
+       y: np.ndarray
+           The spectrum intensities normalised to 1  
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

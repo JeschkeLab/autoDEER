@@ -1,0 +1,50 @@
+:py:mod:`autodeer.gui.log`
+==========================
+
+.. py:module:: autodeer.gui.log
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.log.LogDialog
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.log.package_directory
+
+
+.. py:data:: package_directory
+
+   
+
+.. py:class:: LogDialog(parent = ...)
+
+
+   Bases: :py:obj:`PyQt6.QtWidgets.QDialog`
+
+   .. py:method:: add_new_entry(entry)
+
+
+   .. py:method:: update_log_text()
+
+
+   .. py:method:: clear_log()
+
+
+   .. py:method:: save_log_to_file()
+
+
+

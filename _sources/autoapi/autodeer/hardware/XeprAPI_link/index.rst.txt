@@ -1,0 +1,1018 @@
+:py:mod:`autodeer.hardware.XeprAPI_link`
+========================================
+
+.. py:module:: autodeer.hardware.XeprAPI_link
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.XeprAPI_link.XeprAPILink
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.XeprAPI_link.xepr_path
+   autodeer.hardware.XeprAPI_link.hw_log
+
+
+.. py:data:: xepr_path
+
+   
+
+.. py:data:: hw_log
+
+   
+
+.. py:class:: XeprAPILink(config_file = None)
+
+
+   .. py:method:: connect()
+
+      
+      Connect to the Xepr Spectrometer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _set_Xepr_global(Xepr_inst)
+
+
+   .. py:method:: _get_Xepr_global()
+
+
+   .. py:method:: _xepr_retry(func, *args, **kwargs)
+
+
+   .. py:method:: get_param(param_name)
+
+
+   .. py:method:: get_hidden_param(param_name)
+
+
+   .. py:method:: _set_cur_exp_param(param_name, value)
+
+
+   .. py:method:: _set_hidden_param(param_name, value)
+
+
+   .. py:method:: set_param(param_name, value)
+
+
+   .. py:method:: set_hidden_param(param_name, value)
+
+
+   .. py:method:: find_Xepr()
+
+
+   .. py:method:: _set_cur_exp_global(cur_exp_inst)
+
+
+   .. py:method:: _get_cur_exp_global()
+
+
+   .. py:method:: find_cur_exp()
+
+      
+      Try and finds the current experiment
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: find_hidden()
+
+
+   .. py:method:: is_exp_running()
+
+
+   .. py:method:: acquire_dataset(sequence=None)
+
+      
+      This function acquire the dataset, this work both for a running 
+      experiment or once it has finished.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: acquire_scan(sequence=None)
+
+      
+      This script detects the end of the scan and acquires the data set. 
+      This requires that the experiment is still running, or recently 
+      finished. Once it has been saved this will no longer work.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: acquire_scan_at(scan_num, sequence=None)
+
+      
+      This script acquires the scan after a specific number of scans
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: acquire_scan_2d(sequence=None)
+
+      
+      This function acquires the dataset after a full 2D scan.
+      This is done by identifying the number of scan steps per sweep and 
+      acquiring the data on that scan.
+      This requires that the experiment has not been saved. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: set_PulseSpel_var(variable, value)
+
+      
+      This can be used to change any pulse spell variable whilst the 
+      experiment is running. These changes take effect at the beginning of 
+      the next scan
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: get_ReplaceMode()
+
+
+   .. py:method:: set_ReplaceMode(state=False)
+
+
+   .. py:method:: get_PhaseCycle()
+
+
+   .. py:method:: set_PhaseCycle(state=True)
+
+
+   .. py:method:: get_PulseSpel_exp_filename()
+
+
+   .. py:method:: get_PulseSpel_exp_filepath()
+
+
+   .. py:method:: set_PulseSpel_exp_filepath(fullpath)
+
+
+   .. py:method:: get_PulseSpel_def_filename()
+
+
+   .. py:method:: get_PulseSpel_def_filepath()
+
+
+   .. py:method:: set_PulseSpel_def_filepath(fullpath)
+
+
+   .. py:method:: get_PulseSpel_phase_cycling()
+
+
+   .. py:method:: set_PulseSpel_phase_cycling(name)
+
+
+   .. py:method:: get_PulseSpel_experiment()
+
+
+   .. py:method:: set_PulseSpel_experiment(name)
+
+
+   .. py:method:: save_PulseSpel_exp(name = None)
+
+
+   .. py:method:: save_PulseSpel_def(name=None)
+
+
+   .. py:method:: get_Acquisition_mode()
+
+
+   .. py:method:: set_Acquisition_mode(mode)
+
+      
+      mode=0: Run from tables, mode=1: Run from Pulse Spel,
+      mode=2:Read transient, mode=3:Start Transient
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: compile_PulseSpel_prg()
+
+
+   .. py:method:: compile_PulseSpel_def()
+
+
+   .. py:method:: run_exp()
+
+      
+      Runs the current experiment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: pause_exp()
+
+      
+      Pauses the current experiment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: rerun_exp()
+
+      
+      Re-runs the current experiment. Only for use after a pause commands
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: stop_exp()
+
+      
+      Stops the current experiment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: abort_exp()
+
+      
+      Aborts the current experiment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: xepr_save(path, title = None)
+
+      
+      _summary_
+
+
+      :Parameters:
+
+          **path** : str
+              _description_
+
+          **title** : str, optional
+              _description_, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: get_field()
+
+      
+      Gets the magnetic field.
+
+
+
+      :Returns:
+
+          int
+              Field position in Gauss
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: set_field(val, hold = True)
+
+      
+      Sets the magentic field.
+
+
+      :Parameters:
+
+          **val** : int
+              Field position in Gauss
+
+          **hold** : bool, optional
+              Wait until Xepr belives the field is stable, by default True
+
+      :Returns:
+
+          int
+              Field position in Gauss
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: get_counterfreq()
+
+      
+      Gets the frequency counter value.
+
+      Note: There is no equivalent set command 
+
+
+      :Returns:
+
+          float
+              The counter frequency in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: set_sweep_width(val)
+
+      
+      Sets the field sweep width
+
+
+      :Parameters:
+
+          **val** : int
+              Field sweep width in Gauss
+
+      :Returns:
+
+          int
+              Field sweep width in Gauss
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: get_sweep_width()
+
+      
+      Gets the field sweep width
+
+
+
+      :Returns:
+
+          int
+              Field sweep width in Gauss.
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: set_freq(val, pol = None, precision = False)
+
+      
+      Sets the current bridge frequency. The stepper motor value is 
+      calculated through a conversion. 
+
+
+      :Parameters:
+
+          **val** : float
+              The frequency in GHz
+
+          **pol** : list, optional
+              Conversion polynomal coefficents for freq->Step, by default None
+
+      :Returns:
+
+          float
+              Frequency in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: get_freq(pol = None)
+
+      
+      Gets the current bridge frequency. The frequency is calculated
+      through a conversion. 
+
+
+      :Parameters:
+
+          **pol** : list, optional
+              Conversion polynomal coefficents for freq->Step, by default None
+
+      :Returns:
+
+          float
+              Frequency in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: get_spec_config()
+
+      
+      get_spec_config Gets the name of the current spectrometer
+      configuration file.
+
+
+
+      :Returns:
+
+          str
+              Returns the name of the current spectrometer configuration file
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: get_attenuator(channel)
+
+
+   .. py:method:: set_attenuator(channel, value)
+
+
+   .. py:method:: get_phase(channel)
+
+
+   .. py:method:: set_phase(channel, value)
+
+
+   .. py:method:: get_ELDOR_freq()
+
+      
+      Gets the freuency of the ELDOR chnannel.
+
+      Returns:
+          float: ELDOR frequency in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: set_ELDOR_freq(value)
+
+      
+      Sets the freuency of the ELDOR chnannel.
+
+      Args:
+          value (float): ELDOR frequency in GHz
+
+      Returns:
+          float: ELDOR frequency in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: get_video_gain()
+
+      
+      Get the video gain in dB
+
+
+
+      :Returns:
+
+          int
+              Video gain in dB
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: set_video_gain(value)
+
+      
+      Set the video gain in dB
+
+
+      :Parameters:
+
+          **value** : int
+              Video gain to be set in dB.
+
+      :Returns:
+
+          int
+              The adjusted video gain
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: get_config_file()
+
+      
+      Get the name of the spectrometer configuration file
+
+
+
+      :Returns:
+
+          str
+              The name of the spectrometer configuration file
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: set_config_file(config_file)
+
+      
+      Sets the name of the spectrometer configuration file. If the current
+      configuration file is already correct, nothing changes.
+
+
+      :Parameters:
+
+          **config_file** : str
+              The new configuration file name.
+
+      :Returns:
+
+          str
+              The name of the spectrometer configuration file
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: get_MW_amp()
+
+      
+      Gets the current setting of the microwave amplifier
+
+
+
+      :Returns:
+
+          bool
+              current setting of the microwave amplifier
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: set_MW_amp(value)
+
+      
+      Sets the current setting of the microwave amplifier
+
+
+      :Parameters:
+
+          **value** : bool
+              New setting of the microwave amplifier
+
+      :Returns:
+
+          bool
+              Setting of the microwave amplifier
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: get_video_bandwidth()
+
+      
+      Gets the detection video bandwidth.
+
+
+
+      :Returns:
+
+          float
+              Video bandwidth in MHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: set_video_bandwidth(value)
+
+      
+      Sets the detection video bandwidth.
+
+
+      :Parameters:
+
+          **value** : float
+              Video bandwidth in MHz, options = [200,20].
+
+      :Returns:
+
+          float
+              Video bandwidth in MHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+

@@ -1,0 +1,206 @@
+:py:mod:`autodeer.criteria`
+===========================
+
+.. py:module:: autodeer.criteria
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.criteria.Criteria
+   autodeer.criteria.TimeCriteria
+   autodeer.criteria.SNRCriteria
+   autodeer.criteria.DEERCriteria
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.criteria.log
+
+
+.. py:data:: log
+
+   
+
+.. py:class:: Criteria(name, test, description = '', end_signal=None)
+
+
+   
+   A class for defining criteria for terminating experiments. This should
+   only be subclassed and not used directly.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+   .. py:method:: __add__(__o)
+
+
+
+.. py:class:: TimeCriteria(name, end_time, description = '', **kwargs)
+
+
+   Bases: :py:obj:`Criteria`
+
+   A class for defining criteria for terminating experiments. This should
+   only be subclassed and not used directly.
+
+
+   Criteria testing for a specific finishing time. The finishing time 
+   is given as absolute time in the locale of the computer, it is *not* 
+   how the long the measurment continues for. 
+
+
+   :Parameters:
+
+       **name** : str
+           _description_
+
+       **end_time** : float
+           Finishing time in seconds since epoch
+
+       **description** : str, optional
+           _description_, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:class:: SNRCriteria(SNR_target, description = '', verbosity=0, **kwargs)
+
+
+   Bases: :py:obj:`Criteria`
+
+   A class for defining criteria for terminating experiments. This should
+   only be subclassed and not used directly.
+
+
+   Criteria testing for signal to noise ratio. This checks the SNR of 
+   the normalised absolute data using the deerlab SNR noise estimation
+   which is based on the work by Stoher et. al. [1]
+
+
+   :Parameters:
+
+       **name** : str
+           _description_
+
+       **SNR_target** : int
+           The mimimum SNR value.
+
+       **description** : str, optional
+           _description_, by default None
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: References
+
+   [1] F. Stoehr, R. White, M. Smith, I. Kamp, R. Thompson, D. Durand,
+   W. Freudling, D. Fraquelli, J. Haase, R. Hook, T. Kimball, M. Kummel,
+   K. Levay, M. Lombardi, A. Micol, T. Rogers DERSNR: A Simple & General
+   Spectroscopic Signal-to-Noise Measurement Algorithm Astronomical Data
+   Analysis Software and Systems XVII, ASP Conference Series, Vol. 30,
+   2008, p5.4
+
+   .. only:: latex
+
+      
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:class:: DEERCriteria(mode='Speed', model=None, verbosity=0, update_func=None, **kwargs)
+
+
+   Bases: :py:obj:`Criteria`
+
+   A class for defining criteria for terminating experiments. This should
+   only be subclassed and not used directly.
+
+
+   Criteria for running DEER experiments.
+
+
+   :Parameters:
+
+       **tau1** : _type_
+           _description_
+
+       **tau2** : _type_
+           _description_
+
+       **tau3** : _type_, optional
+           _description_, by default None
+
+       **mode** : str, optional
+           _description_, by default "Speed"
+
+   :Returns:
+
+       _type_
+           _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+

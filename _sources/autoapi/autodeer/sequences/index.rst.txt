@@ -1,0 +1,1046 @@
+:py:mod:`autodeer.sequences`
+============================
+
+.. py:module:: autodeer.sequences
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.sequences.Sequence
+   autodeer.sequences.DEERSequence
+   autodeer.sequences.HahnEchoSequence
+   autodeer.sequences.T2RelaxationSequence
+   autodeer.sequences.FieldSweepSequence
+   autodeer.sequences.ReptimeScan
+   autodeer.sequences.CarrPurcellSequence
+   autodeer.sequences.RefocusedEcho2DSequence
+   autodeer.sequences.ResonatorProfileSequence
+   autodeer.sequences.TWTProfileSequence
+
+
+
+
+.. py:class:: Sequence(*, name, B, LO, reptime, averages, shots, **kwargs)
+
+
+   Represents an experimental pulse sequence.
+
+
+   Represents an experimental pulse sequence.
+
+
+   :Parameters:
+
+       **name** : str
+           The name of this pulse sequence
+
+       **B** : float
+           The magnetic field for this sequence in Gauss.
+
+       **LO** : float
+           The central frequency of this sequence. I.e. The frequnecy at which
+           a zero offset pulse is at. 
+
+       **reptime** : float
+           The shot repetition time in us.
+
+       **averages** : int
+           The number of scans to be accumulated.
+
+       **shots** : itn
+           The number of shots per point.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:property:: seqtable_steps
+
+
+   .. py:method:: plot()
+
+
+   .. py:method:: plot_pulse_exc(FieldSweep=None, ResonatorProfile=None)
+
+
+   .. py:method:: addPulse(pulse)
+
+      
+      Adds a pulse to the next position in the sequence.
+
+
+      :Parameters:
+
+          **pulse** : Pulse
+              The object describing the pulse.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _estimate_time()
+
+      
+      Calculates the estimated experiment time in seconds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _buildPhaseCycle()
+
+
+   .. py:method:: evolution(params, reduce=[])
+
+
+   .. py:method:: shift_detfreq_to_zero()
+
+
+   .. py:method:: isPulseFocused()
+
+      
+      Is the sequence expressed to contain only pulses and no delays?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: isDelayFocused()
+
+      
+      Is the sequence expressed to contain both pulses and delays?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: convert(*, reduce=True)
+
+      
+      Converts the current sequence to either pulse focused or delay
+      focused depending on the current state
+
+
+      :Parameters:
+
+          **reduce** : bool, optional
+              Reduce to the smallest number of objects, by default True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _convert_to_delay()
+
+
+   .. py:method:: _convert_to_pulses()
+
+
+   .. py:method:: _checkRect()
+
+      
+      Checks if all the pulses in the sequence are rectangular.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: __str__()
+
+      
+      Return str(self).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: copy()
+
+
+   .. py:method:: _to_dict()
+
+
+   .. py:method:: _to_json()
+
+
+   .. py:method:: save(filename)
+
+      
+      Save the sequence to a JSON file.
+
+
+      :Parameters:
+
+          **filename** : str
+              Path to the JSON file.
+
+      :Returns:
+
+          None
+              ..
+
+
+
+
+      :Raises:
+
+          TypeError
+              If the object cannot be serialized to JSON.
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _from_dict(dct)
+      :classmethod:
+
+
+   .. py:method:: _from_json(JSONstring)
+      :classmethod:
+
+
+   .. py:method:: load(filename)
+      :classmethod:
+
+      
+      Load an object from a JSON file.
+
+
+      :Parameters:
+
+          **filename** : str
+              Path to the JSON file.
+
+      :Returns:
+
+          **obj** : Sequence
+              The Sequence loaded from the JSON file.
+
+
+
+
+      :Raises:
+
+          FileNotFoundError
+              If the file does not exist.
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: DEERSequence(*, tau1, tau2, tau3=None, tau4=None, dt, B, LO, reptime, averages, shots, ESEEM_avg=None, **kwargs)
+
+
+   Bases: :py:obj:`Sequence`
+
+   Represents a DEER/PELDOR sequence. 
+
+
+   Build a DEER sequence using rectangular pulses
+
+
+   :Parameters:
+
+       **tau1** : int or float
+           The first interpulse delay in us
+
+       **tau2** : int or float
+           The second interpulse delay in us
+
+       **dt** : int or float
+           The time step for DEER measurment in ns
+
+       **B** : int or float
+           The B0 field, in Guass
+
+       **LO** : int or float
+           The LO frequency in GHz
+
+       **reptime** : _type_
+           The shot repetition time in us
+
+       **averages** : int
+           The number of scans.
+
+       **shots** : int
+           The number of shots per point
+
+       **tau3** : int or float, optional
+           The delay between the first static pump pulse in 5-pulse DEER and 
+           the 1st refocusing pulse in us, by default None. If the value is 
+           None then a 4-pulse sequence is created, otherwise a 5-pulse. 
+
+       **ESEEM_avg: str**
+           Selecting the ESEEM averaging required. ESEEM averaging works by 
+           introducing small stepping in the first tau delay and averaging 
+           across them all. Options:
+           * `proton` - 8 small steps of 8ns
+           * `deuteron` - 8 small steps of 16ns
+           * None - default
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: add_ESEEM_avg(type=None)
+
+
+   .. py:method:: three_pulse(tp=16)
+
+      
+      Build a four pulse DEER sequence.
+
+
+      :Parameters:
+
+          **tp** : float
+              Length of default RectPulse in ns, by default 16ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: four_pulse(tp=16, relaxation=False)
+
+      
+      Build a four pulse DEER sequence.
+
+
+      :Parameters:
+
+          **tp** : float
+              Length of default RectPulse in ns, by default 16ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: five_pulse(tp=16, relaxation=False, re_step=50, re_dim=100)
+
+      
+      Build a five pulse DEER sequence.
+
+
+      :Parameters:
+
+          **tp** : float
+              Length of default RectPulse in ns, by default 16ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: seven_pulse(tp=16, relaxation=False)
+
+      
+      Build a seven pulse DEER sequence.
+
+
+      :Parameters:
+
+          **tp** : float
+              Length of default RectPulse in ns, by default 16ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: nDEER_CP(n, tp=16, relaxation=False, pcyc='Normal')
+
+      
+      Generate an nDEER sequence.
+
+      The sum of tau1 and tau2 is used as total trace length. 
+
+      :Parameters:
+
+          **n** : int
+              The number of refocusing pulses
+
+          **tp** : int, optional
+              _description_, by default 16
+
+          **relaxation** : bool, optional
+              _description_, by default False
+
+          **pcyc: str, optional**
+              Normal: Phases cycles pump and observer pulses, no DC cycle
+              NormalDC: Phases cycles pump and observer pulses, DC cycle
+              Obs: Phases cycles observer pulses, no DC cycle
+              ObsDC: Phases cycles and observer pulses, DC cycle
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: select_pcyc(option)
+
+      
+      Choose which DEER phase you would like.
+
+      .. |xp| replace:: x\ :sub:`p`
+
+      .. table::
+          :width: 150
+          :widths: 10 10 10 5 30 30 5
+
+          +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+          | Phase cycle               | Short Code  | Sequence       | Steps  | Pulse Phase Cycle         | Remaining Echoes            | Ref.       |
+          +===========================+=============+================+========+===========================+=============================+============+
+          | (x)x|xp|x                 | DC          | ALL            | 2      | [+(+x)-(-x)]              | PE12rp, SE(PE12)p3, PE12rpr3|            |
+          +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+          | (x)[|xp|]x                | 8step_3p    | 3 pulse        | 8      | [+(+x)-(-x)]              |                             |            |
+          +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+          | x[x][|xp|]x               | 16step_4p   | 4 pulse        | 16     | [+(+x)-(+y)+(-x)-(-y)]    |                             | [1]        |
+          +---------------------------+-------------+----------------+--------+                           +-----------------------------+------------+
+          | x|xp|[x][|xp|]x           | 16step_5p   | 5 pulse        | 16     | [+(+x)+(+y)+(-x)+(-y)]    | PEp02r3,b PE1p0r2r3b        | [1]        |
+          +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+          | x[x]|xp|(x)(|xp|)(|xp|)x  | 32step_7p   | 7 pulse        | 32     |                           |                             | [1]        |
+          +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+
+      :Parameters:
+
+          **option** : str
+              The short code of the phase cycle. See table above.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: simulate()
+
+
+
+.. py:class:: HahnEchoSequence(*, B, LO, reptime, averages, shots, **kwargs)
+
+
+   Bases: :py:obj:`Sequence`
+
+   Represents a Hahn-Echo sequence. 
+
+
+   Build a Hahn-Echo sequence using either rectangular pulses or
+   specified pulses. By default no progression is added to this sequence.
+
+
+   :Parameters:
+
+       **B** : int or float
+           The B0 field, in Guass
+
+       **LO** : int or float
+           The LO frequency in GHz
+
+       **reptime** : _type_
+           The shot repetition time in us
+
+       **averages** : int
+           The number of scans.
+
+       **shots** : int
+           The number of shots per point
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:class:: T2RelaxationSequence(*, B, LO, reptime, averages, shots, step=40, dim=200, **kwargs)
+
+
+   Bases: :py:obj:`HahnEchoSequence`
+
+   Represents a T2 relaxation sequence. A Hahn Echo where the interpulse delay increases
+
+
+   Build a Hahn-Echo sequence using either rectangular pulses or
+   specified pulses. By default no progression is added to this sequence.
+
+
+   :Parameters:
+
+       **B** : int or float
+           The B0 field, in Guass
+
+       **LO** : int or float
+           The LO frequency in GHz
+
+       **reptime** : _type_
+           The shot repetition time in us
+
+       **averages** : int
+           The number of scans.
+
+       **shots** : int
+           The number of shots per point
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:class:: FieldSweepSequence(*, B, LO, Bwidth, reptime, averages, shots, **kwargs)
+
+
+   Bases: :py:obj:`HahnEchoSequence`
+
+   Represents a Field Sweep (EDFS) sequence. 
+
+
+   Build a Field Sweep (EDFS) sequence using either rectangular pulses or
+   specified pulses.
+
+
+   :Parameters:
+
+       **B** : int or float
+           The B0 field, in Guass
+
+       **Bwidth: int or float**
+           The width of the field sweep, in Gauss
+
+       **LO** : int or float
+           The LO frequency in GHz
+
+       **reptime** : _type_
+           The shot repetition time in us
+
+       **averages** : int
+           The number of scans.
+
+       **shots** : int
+           The number of shots per point
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:class:: ReptimeScan(*, B, LO, reptime, reptime_max, averages, shots, **kwargs)
+
+
+   Bases: :py:obj:`HahnEchoSequence`
+
+   Represents a reptime scan of a Hahn Echo Sequence. 
+
+
+   A Hahn echo sequence is perfomed with the shot repetition time increasing.1
+
+
+   :Parameters:
+
+       **B** : int or float
+           The B0 field, in Guass
+
+       **LO** : int or float
+           The LO frequency in GHz
+
+       **reptime: float**
+           The default reptime, this is used for tuning pulses etc...
+
+       **reptime_max** : np.ndarray
+           The maximum shot repetition time in us    
+
+       **averages** : int
+           The number of scans.
+
+       **shots** : int
+           The number of shots per point
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+
+.. py:class:: CarrPurcellSequence(*, B, LO, reptime, averages, shots, tau, n, dim=100, **kwargs)
+
+
+   Bases: :py:obj:`Sequence`
+
+   Represents a Carr-Purcell sequence. 
+
+
+   Build a Carr-Purcell dynamical decoupling sequence using either 
+   rectangular pulses or specified pulses.
+
+
+   :Parameters:
+
+       **B** : int or float
+           The B0 field, in Guass
+
+       **LO** : int or float
+           The LO frequency in GHz
+
+       **reptime** : _type_
+           The shot repetition time in us
+
+       **averages** : int
+           The number of scans.
+
+       **shots** : int
+           The number of shots per point
+
+       **tau** : int
+           The maximum total sequence length in us
+
+       **n** : int
+           The number refocusing pulses
+
+       **dim** : int
+           The number of points in the X axis
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: _build_sequence()
+
+
+
+.. py:class:: RefocusedEcho2DSequence(*, B, LO, reptime, averages, shots, tau, dim=100, step=50, **kwargs)
+
+
+   Bases: :py:obj:`Sequence`
+
+   Represents a 2D Refocused-echo Sequence. 
+
+
+   Build a 2D Refocused-echo sequence using either 
+   rectangular pulses or specified pulses.
+
+
+   :Parameters:
+
+       **B** : int or float
+           The B0 field, in Guass
+
+       **LO** : int or float
+           The LO frequency in GHz
+
+       **reptime** : _type_
+           The shot repetition time in us
+
+       **averages** : int
+           The number of scans.
+
+       **shots** : int
+           The number of shots per point
+
+       **tau** : int
+           The starting value in ns
+
+       **dim: int**
+           The number of points in both the X and Y axis
+
+       **step: float**
+           The step in ns for both the X and Y axis
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: _build_sequence()
+
+
+
+.. py:class:: ResonatorProfileSequence(*, B, LO, reptime, averages, shots, fwidth=0.3, **kwargs)
+
+
+   Bases: :py:obj:`Sequence`
+
+   Builds nutation based Resonator Profile sequence. 
+
+
+   Build a resonator profile nutation sequence using either 
+   rectangular pulses or specified pulses.
+
+
+   :Parameters:
+
+       **B** : int or float
+           The B0 field, in Guass
+
+       **Bwidth: int or float**
+           The width of the field sweep, in Gauss
+
+       **LO** : int or float
+           The LO frequency in GHz
+
+       **reptime** : _type_
+           The shot repetition time in us
+
+       **averages** : int
+           The number of scans.
+
+       **shots** : int
+           The number of shots per point
+
+       **fwidth: float**
+           The frequency width of the resonator profile in GHz, 
+           by default 0.3GHz
+
+       **tau1: float**
+           The delay between the nutating pulse and the Hahn Echo, 
+           by default 2000 ns
+
+       **tau2: float**
+           The interpulse delay in the Hahn Echo, 
+           by default 500 ns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: _build_sequence()
+
+
+
+.. py:class:: TWTProfileSequence(*, B, LO, reptime, averages=1, shots=100, **kwargs)
+
+
+   Bases: :py:obj:`Sequence`
+
+   Builds TWT based Resonator Profile sequence. 
+
+
+   Represents an experimental pulse sequence.
+
+
+   :Parameters:
+
+       **name** : str
+           The name of this pulse sequence
+
+       **B** : float
+           The magnetic field for this sequence in Gauss.
+
+       **LO** : float
+           The central frequency of this sequence. I.e. The frequnecy at which
+           a zero offset pulse is at. 
+
+       **reptime** : float
+           The shot repetition time in us.
+
+       **averages** : int
+           The number of scans to be accumulated.
+
+       **shots** : itn
+           The number of shots per point.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: _build_sequence()
+
+
+

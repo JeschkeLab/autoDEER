@@ -1,0 +1,517 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
+
+    <!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
+        <title>autodeer.reporter - </title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     Version 0.7 alpha out now! 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand"> </div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../../_static/autoDEER_EPR_light.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../../_static/autoDEER_EPR_dark.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text"> </span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../source/Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Installation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../source/Install_python.html">Installing Python</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../source/tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Tutorial</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../source/gui_guide.html">autoDEER GUI</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/API_docs.html">API doc</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../source/autoEPR/index.html">autoEPR</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of autoEPR</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../source/autoEPR/Getting_Started.html">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../source/autoEPR/Sequencer.html">Creating a Custom Sequence</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../source/autoEPR/Interface.html">Interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Interfaces</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../source/autoEPR/Bruker_interface.html">Bruker Interface</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/releasenotes.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/contributing.html">Contributing Guide</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="module-autodeer.reporter">
+<span id="autodeer-reporter"></span><h1><a class="reference internal" href="#module-autodeer.reporter" title="autodeer.reporter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">autodeer.reporter</span></code></a><a class="headerlink" href="#module-autodeer.reporter" title="Link to this heading">#</a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.reporter.SvgFlowable" title="autodeer.reporter.SvgFlowable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SvgFlowable</span></code></a></p></td>
+<td><p>Convert byte streasm containing SVG into a Reportlab Flowable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.reporter.Reporter" title="autodeer.reporter.Reporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reporter</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.reporter.create_report" title="autodeer.reporter.create_report"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_report</span></code></a>(save_path, Results[, SpectrometerInfo, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.reporter.combo_figure" title="autodeer.reporter.combo_figure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">combo_figure</span></code></a>(EDFS, respro, pulses, relaxation, ...[, ...])</p></td>
+<td><p>Creates a 2x2 summary figure.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.reporter.styles" title="autodeer.reporter.styles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">styles</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.reporter.package_dir" title="autodeer.reporter.package_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">package_dir</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="autodeer.reporter.styles">
+<span class="sig-prename descclassname"><span class="pre">autodeer.reporter.</span></span><span class="sig-name descname"><span class="pre">styles</span></span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#styles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.styles" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="autodeer.reporter.package_dir">
+<span class="sig-prename descclassname"><span class="pre">autodeer.reporter.</span></span><span class="sig-name descname"><span class="pre">package_dir</span></span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#package_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.package_dir" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="autodeer.reporter.SvgFlowable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.reporter.</span></span><span class="sig-name descname"><span class="pre">SvgFlowable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">svg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#SvgFlowable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.SvgFlowable" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">reportlab.platypus.Flowable</span></code></p>
+<p>Convert byte streasm containing SVG into a Reportlab Flowable.</p>
+<p>Convert SVG to RML drawing on initializtion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>svg</strong> (<em>io.BytesIO</em>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.SvgFlowable.wrap">
+<span class="sig-name descname"><span class="pre">wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">_args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#SvgFlowable.wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.SvgFlowable.wrap" title="Link to this definition">#</a></dt>
+<dd><p>Return diagram size.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.SvgFlowable.draw">
+<span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#SvgFlowable.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.SvgFlowable.draw" title="Link to this definition">#</a></dt>
+<dd><p>Render the chart.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.reporter.</span></span><span class="sig-name descname"><span class="pre">Reporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pagesize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'A4'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter" title="Link to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter.header">
+<span class="sig-name descname"><span class="pre">header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">canvas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter.header"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter.header" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter.footer">
+<span class="sig-name descname"><span class="pre">footer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">canvas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter.footer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter.footer" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter._build">
+<span class="sig-name descname"><span class="pre">_build</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter._build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter._build" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter.add_title">
+<span class="sig-name descname"><span class="pre">add_title</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter.add_title"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter.add_title" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter.add_new_section">
+<span class="sig-name descname"><span class="pre">add_new_section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter.add_new_section"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter.add_new_section" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter.add_text">
+<span class="sig-name descname"><span class="pre">add_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter.add_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter.add_text" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter.add_code_block">
+<span class="sig-name descname"><span class="pre">add_code_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter.add_code_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter.add_code_block" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter.add_figure">
+<span class="sig-name descname"><span class="pre">add_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter.add_figure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter.add_figure" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter.add_space">
+<span class="sig-name descname"><span class="pre">add_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter.add_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter.add_space" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter.add_page_break">
+<span class="sig-name descname"><span class="pre">add_page_break</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter.add_page_break"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter.add_page_break" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.reporter.Reporter.add_table">
+<span class="sig-name descname"><span class="pre">add_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lists</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#Reporter.add_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.Reporter.add_table" title="Link to this definition">#</a></dt>
+<dd><p>Generates a table as a reportlab flowable from a list of lists</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="autodeer.reporter.create_report">
+<span class="sig-prename descclassname"><span class="pre">autodeer.reporter.</span></span><span class="sig-name descname"><span class="pre">create_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SpectrometerInfo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UserInputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pulses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#create_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.create_report" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Results</strong> (<em>dict</em>) – </p></li>
+<li><p><strong>SpectrometerInfo</strong> (<em>dict</em>) – </p></li>
+<li><p><strong>UserInputs</strong> (<em>dict</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="autodeer.reporter.combo_figure">
+<span class="sig-prename descclassname"><span class="pre">autodeer.reporter.</span></span><span class="sig-name descname"><span class="pre">combo_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">EDFS</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">respro</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pulses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relaxation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_deer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_deer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/reporter.html#combo_figure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.reporter.combo_figure" title="Link to this definition">#</a></dt>
+<dd><dl class="simple">
+<dt>Creates a 2x2 summary figure.</dt><dd><ul class="simple">
+<li><p>The top left plot is the EDFS and resonator profile, overlapped with the optimised pulses.</p></li>
+<li><p>The top right plot is the relaxation data and fits.</p></li>
+<li><p>The bottom left plot is the initial DEER data and fits.</p></li>
+<li><p>The bottom right plot is the final DEER data and fits.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>EDFS: ad.FieldSweepAnalysis</strong></dt><dd><p>The Echo-Detected Field Sweep analysis.</p>
+</dd>
+<dt><strong>respro: ad.ResonatorProfileAnalysis</strong></dt><dd><p>The resonator profile analysis</p>
+</dd>
+<dt><strong>pulses: dict</strong></dt><dd><p>A dictionary containing the optimised pulses.</p>
+</dd>
+<dt><strong>relaxation: list</strong></dt><dd><p>A list containing the relaxation data and fits.</p>
+</dd>
+<dt><strong>init_deer: deerlab.FitResult</strong></dt><dd><p>The initial DEER data and fits.</p>
+</dd>
+<dt><strong>long_deer: deerlab.FitResult</strong></dt><dd><p>The final DEER data and fits.</p>
+</dd>
+<dt><strong>title: str, optional</strong></dt><dd><p>The title of the figure, by default None</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>pulses</strong> (<em>dict</em>) – </p></li>
+<li><p><strong>relaxation</strong> (<em>list</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">autodeer.reporter</span></code></a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#attributes">Attributes</a><ul>
+<li><a class="reference internal" href="#autodeer.reporter.styles"><code class="docutils literal notranslate"><span class="pre">styles</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.package_dir"><code class="docutils literal notranslate"><span class="pre">package_dir</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.SvgFlowable"><code class="docutils literal notranslate"><span class="pre">SvgFlowable</span></code></a><ul>
+<li><a class="reference internal" href="#autodeer.reporter.SvgFlowable.wrap"><code class="docutils literal notranslate"><span class="pre">SvgFlowable.wrap()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.SvgFlowable.draw"><code class="docutils literal notranslate"><span class="pre">SvgFlowable.draw()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter"><code class="docutils literal notranslate"><span class="pre">Reporter</span></code></a><ul>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter.header"><code class="docutils literal notranslate"><span class="pre">Reporter.header()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter.footer"><code class="docutils literal notranslate"><span class="pre">Reporter.footer()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter._build"><code class="docutils literal notranslate"><span class="pre">Reporter._build()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter.add_title"><code class="docutils literal notranslate"><span class="pre">Reporter.add_title()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter.add_new_section"><code class="docutils literal notranslate"><span class="pre">Reporter.add_new_section()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter.add_text"><code class="docutils literal notranslate"><span class="pre">Reporter.add_text()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter.add_code_block"><code class="docutils literal notranslate"><span class="pre">Reporter.add_code_block()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter.add_figure"><code class="docutils literal notranslate"><span class="pre">Reporter.add_figure()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter.add_space"><code class="docutils literal notranslate"><span class="pre">Reporter.add_space()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter.add_page_break"><code class="docutils literal notranslate"><span class="pre">Reporter.add_page_break()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.Reporter.add_table"><code class="docutils literal notranslate"><span class="pre">Reporter.add_table()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#autodeer.reporter.create_report"><code class="docutils literal notranslate"><span class="pre">create_report()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.reporter.combo_figure"><code class="docutils literal notranslate"><span class="pre">combo_figure()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=2220c937"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    </body>
+</html>

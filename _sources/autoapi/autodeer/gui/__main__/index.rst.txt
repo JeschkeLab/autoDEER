@@ -1,0 +1,18 @@
+:py:mod:`autodeer.gui.__main__`
+===============================
+
+.. py:module:: autodeer.gui.__main__
+
+
+
+Module Contents
+---------------
+
+.. py:data:: app
+
+   
+
+.. py:data:: window
+
+   
+

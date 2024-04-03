@@ -1,0 +1,418 @@
+:py:mod:`autodeer.hardware.xepr_experiments`
+============================================
+
+.. py:module:: autodeer.hardware.xepr_experiments
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.xepr_experiments.DEER
+   autodeer.hardware.xepr_experiments.MPFUtune
+   autodeer.hardware.xepr_experiments.ELDORtune
+   autodeer.hardware.xepr_experiments.PulseProfile
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.xepr_experiments.get_nutations
+   autodeer.hardware.xepr_experiments.CP_run
+   autodeer.hardware.xepr_experiments.DEER5p_run
+   autodeer.hardware.xepr_experiments.CalibrateFreq
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.hardware.xepr_experiments.MODULE_DIR
+
+
+.. py:data:: MODULE_DIR
+
+   
+
+.. py:function:: get_nutations(api, nu, field, step, ELDOR = True, nx = 128)
+
+
+.. py:function:: CP_run(api, d0, num_pulses=3, ps_length=16, sweeps=4, dt=100, num_points=256, srt=6000000.0)
+
+
+.. py:function:: DEER5p_run(api, ps_length, d0, tau2, sweeps=4, deadtime=80, dt=16, num_points=0, srt=6000000.0)
+
+
+.. py:class:: DEER(api, d0, det_frq, pump_frq, srt=6000000.0)
+
+
+   .. py:method:: run_5p(tau1, tau2, dt = 16, deadtime = 80, num_points = 0, scans = 200)
+
+
+   .. py:method:: run_4p(tau1, tau2, dt = 16, deadtime = 80, num_points = 0, scans = 200)
+
+
+   .. py:method:: run_CP(tau, dt = 50, num_points = 200, scans = 1)
+
+
+
+.. py:class:: MPFUtune(api, echo='Hahn', ps_length=16, d0=680, srt=6000000.0)
+
+
+   Tuning MPFU channels for optimal attenuation and phase
+
+
+
+
+
+   :Parameters:
+
+       **api** : _type_
+           The spectrometr API object
+
+       **echo** : str, optional
+           The echo type. Options = ['Hahn","Refocused"], by default "Hahn"
+
+       **ps_length** : int, optional
+           The length of the pi/2 pulse, by default 16
+
+       **d0** : int, optional
+           The approximate position of d0, this should be lower than ideal,
+            by default 680
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: _setup_echo(echo, tau1=400, tau2=400)
+
+
+   .. py:method:: tune_phase(channel, target, tol=0.1, maxiter=30)
+
+      
+      Tunes the phase of a given channel to a given target using the
+      standard scipy optimisation scripts. 
+
+
+      :Parameters:
+
+          **channel** : str
+              The chosen MPFU channel. Options: ['+<x>', '-<x>', '+<y>', '-<y>']
+
+          **target** : str
+              The target echo position, this can either be maximising (+) or
+              minimising (-) either the real (R) or imaginary (I) of the echo. 
+              Options: ['R+', 'R-', 'I+', 'I-']
+
+          **tol** : float, optional
+              The tolerance in phase parameter, by default 0.1
+
+          **maxiter** : int, optional
+              The maximum number of iterations in the optimisation, by default 30
+
+      :Returns:
+
+          float
+              The optimal value of the phase parameter
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune_power(channel, tol=0.1, maxiter=30, bounds = [0, 100])
+
+      
+      Tunes the attenuator of a given channel to a given target using the
+      standard scipy optimisation scripts. 
+
+
+      :Parameters:
+
+          **channel** : str
+              The chosen MPFU channel. Options: ['+<x>', '-<x>', '+<y>', '-<y>']
+
+          **tol** : float, optional
+              The tolerance in attenuator parameter, by default 0.1
+
+          **maxiter** : int, optional
+              The maximum number of iterations in the optimisation, by default 30
+
+      :Returns:
+
+          float
+              The optimal value of the attenuator parameter
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune(channels, tol = 0.1, bounds=[0, 100])
+
+      
+      Tunes both the power and attenuation for a collection of channels.
+
+
+      :Parameters:
+
+          **channels** : dict
+              A dictionary of MPFU channels to be tunned and the associated phase
+              target.\
+              Channel options = ['+<x>', '-<x>', '+<y>', '-<y>']\
+              Phase target options = ['R+', 'R-', 'I+', 'I-']\
+              E.g. {'+<x>': 'R+','-<x>': 'R-'}
+
+          **tol** : float, optional
+              The tolerance for all optimisations, by default 0.1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: calc_d0()
+
+
+
+.. py:class:: ELDORtune(api, d0=700, ps_length=16, srt=6000000.0)
+
+
+   
+
+   Tuning incoherent ELDOR channel for optimal power using nutation 
+   experiments
+
+
+   :Parameters:
+
+       **api** : XeprAPILink
+           The spectrometer API object
+
+       **d0** : int, optional
+           The approximate position of d0, this should be lower than ideal,
+            by default 700
+
+       **ps_length** : int, optional
+           The length of the pi/2 pulse, by default 16
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: _setup_exp(tau1=400, tau2=400)
+
+
+   .. py:method:: _get_exp()
+
+
+   .. py:method:: find_min(dataset)
+
+
+   .. py:method:: tune(target)
+
+
+
+.. py:class:: PulseProfile(api, d0=700, ps_length=16, srt=4000000.0)
+
+
+   
+
+   Tuning incoherent ELDOR channel for optimal power using nutation 
+   experiments
+
+
+   :Parameters:
+
+       **api** : XeprAPILink
+           The spectrometr API object
+
+       **d0** : int, optional
+           The approximate position of d0, this should be lower than ideal,
+            by default 700
+
+       **ps_length** : int, optional
+           The length of the pi/2 pulse, by default 16
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: _setup_exp(tau=400)
+
+      
+      Setup the pulse profile experiment. 
+
+
+      :Parameters:
+
+          **tau** : int, optional
+              The seperation between :math:'\pi/2' and :math:'pi' in the Hahn 
+              echo, by default 400
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _freq_sweep(nu, step, gyro)
+
+      
+      Run the frequency sweep for a pulse profile. 
+
+
+      :Parameters:
+
+          **nu** : list
+              A list detailing the starting and ending frequency,
+              [nu_init, nu_final]
+
+          **step** : float
+              The frequency step, given in GHz
+
+          **gyro** : float
+              The gyromagnetic ratio in G/GHz. 
+
+      :Returns:
+
+          _type_
+              _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:function:: CalibrateFreq(api, num_points = 50, deg = 5)
+
+   
+   Generate the polynomial parameters for converting from frequency 
+   (in GHz) to Xepr gunn diode stepper value. 0-4095.
+
+
+   :Parameters:
+
+       **api** : XeprAPILink
+           The API for the spectrometer
+
+       **num_points** : int, optional
+           The number of points to be measured, by default 50
+
+       **deg** : int, optional
+           The degree of polynomial fit, by default 5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

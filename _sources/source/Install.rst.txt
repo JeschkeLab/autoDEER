@@ -1,7 +1,8 @@
 Installation
 ===================
 
-Currently, the only way to install autoDEER is from source.
+Currently, the only way to install autoDEER is from source. At a later date,
+we aim to be able to provide an excutable and to host on PyPI.
 
 Installing from source
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
