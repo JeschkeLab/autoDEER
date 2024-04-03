@@ -1,8 +1,8 @@
 import matlab.engine
-from autodeer.dataset import Dataset
 from autodeer.classes import  Interface, Parameter
 from autodeer.pulses import Pulse, RectPulse, ChirpPulse, HSPulse, Delay, Detection
-from autodeer.sequences import Sequence, HahnEchoSequence
+from autodeer.sequences import Sequence, HahnEchoSequence, FieldSweepSequence
+from autodeer.hardware.ETH_awg_load import uwb_load
 import numpy as np
 import os
 import re
@@ -11,14 +11,26 @@ from deerlab import correctphase
 import numpy as np
 import scipy.signal as sig
 from scipy.io import loadmat
+from scipy.io.matlab import MatReadError
 from autodeer.utils import transpose_list_of_dicts
+from autodeer.hardware.ETH_awg_load import uwb_eval_match
+from autodeer.utils import save_file, transpose_list_of_dicts, transpose_dict_of_list
+from autodeer import create_dataset_from_sequence
+import datetime
+from autodeer.hardware.Bruker_tools import build_unique_progtable
+import copy
+import threading
+import warnings
+import logging
+import collections
 
 
+log = logging.getLogger("interface")
 class ETH_awg_interface(Interface):
     """
     Represents the interface for connecting to Andrin Doll style spectrometers.
     """
-    def __init__(self, awg_freq=1.5, dig_rate=2, test_mode=False) -> None:
+    def __init__(self, awg_freq=1.5, dig_rate=2) -> None:
         """An interface for connecting to a Andrin Doll style spectrometer,
         commonly in use at ETH Zürich.
 
@@ -37,14 +49,27 @@ class ETH_awg_interface(Interface):
         dig_rate : float
             The speed of the digitser in GSa/s
         """
-        if not test_mode:
-            self.connect()
+        super().__init__()
             
         self.awg_freq = awg_freq
         self.dig_rate = dig_rate
         self.pulses = {}
         self.cur_exp = None
+        self.bg_data = None
+        self.bg_thread = None
+        
         pass
+
+    @property
+    def savefolder(self):
+        return self._savefolder
+    
+    @savefolder.setter
+    def savefolder(self, folder):
+        self._savefolder = folder
+        if hasattr(self, 'engine'):
+            self.engine.cd(folder)
+
 
     def connect(self, session=None):
         """Connect to a running matlab session. If more than one session has 
@@ -74,8 +99,17 @@ class ETH_awg_interface(Interface):
         
         self.engine = matlab.engine.connect_matlab(session)
         self.workspace = self.engine.workspace
+        self.engine.cd(self._savefolder)
 
-    def acquire_dataset(self, options={}, verbosity=0) -> Dataset:
+    def acquire_dataset(self,verbosity=0):
+        if self.bg_data is None:
+            data = self.acquire_dataset_from_matlab(verbosity=verbosity)
+        else:
+            data = create_dataset_from_sequence(self.bg_data, self.cur_exp)
+
+        return super().acquire_dataset(data)
+    
+    def acquire_dataset_from_matlab(self, verbosity=0,**kwargs):
         """ Acquire and return the current or most recent dataset.
 
         Returns
@@ -103,18 +137,32 @@ class ETH_awg_interface(Interface):
         path = folder_path + "\\" \
             + f"{date:08d}_{start_time:04d}_{filename}.mat"
         
-        self.engine.dig_interface('savenow')
         
-        for i in range(0, 10):
+        
+        for i in range(0, 50):
             try:
+                self.engine.dig_interface('savenow')
                 Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
-                data = uwb_load(Matfile, options=options, verbosity=verbosity)
-                data.LO = Parameter("LO", data.params['LO']+self.awg_freq, unit="GHz", description="Total local oscilator frequency")
-                data.sequence = self.cur_exp
+                # data = uwb_load(Matfile, options=options, verbosity=verbosity,sequence=self.cur_exp)
+                if 'cur_exp' in kwargs:
+                    exp = kwargs['cur_exp']
+                else:
+                    exp = self.cur_exp
+                if isinstance(exp, FieldSweepSequence):
+                    data = uwb_eval_match(Matfile, exp,verbosity=verbosity,filter_type='cheby2',filter_width=0.01)
+                else:
+                    data = uwb_eval_match(Matfile, exp,verbosity=verbosity)
             except OSError:
+                time.sleep(10)
+            except IndexError:
+                time.sleep(10)
+            except ValueError:
+                time.sleep(10)
+            except MatReadError:
                 time.sleep(10)
             else:
                 return data
+        raise RuntimeError("Data was unable to be retrieved")
         
     def launch(self, sequence , savename: str, IFgain: int = 0):
         """Launch a sequence on the spectrometer.
@@ -128,18 +176,100 @@ class ETH_awg_interface(Interface):
         IFgain : int
             The IF gain, either [0,1,2], default 0.
         """
+
+        def detect_incompatible(seq):
+            # Check if two pulse parameters are shifted by diffent axes
+            duplicates = [item for item, count in collections.Counter(seq.progTable['EventID']).items() if count > 1]
+
+            for duplicate in duplicates:
+                indices = [i for i, x in enumerate(seq.progTable['EventID']) if x == duplicate]
+                print(indices)
+                axIDs = [seq.progTable['axID'][i] for i in indices]
+                axIDs.sort()
+                vars = [seq.progTable['Variable'][i] for i in indices]
+                vars.sort()
+                unique_vars = list(set(vars))
+                unique_vars.sort()
+                axIDs.sort()
+                unique_axIDs = list(set(axIDs))
+                unique_axIDs.sort()
+                if len(axIDs) == 1:
+                    print(False)
+                elif vars == unique_vars:
+                    print(False)
+                elif axIDs == unique_axIDs:
+                    print(True)
+                else:
+                    raise ValueError('Pulse time is not unique for the same eventID')
+
+
+        self.bg_thread=None
+        self.bg_data = None
+        timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
+        self.savename = timestamp + savename + '.h5'
+        if sequence.seqtable_steps > 2**18:
+            log.warning('Sequence too long. Breaking the problem down...')
+            self.launch_long(sequence,savename,IFgain)
+        elif detect_incompatible(sequence):
+            log.warning('Incompatible axes detected. Breaking the problem down...')
+            self.launch_long(sequence,savename,IFgain)
+        try:
+            self.launch_normal(sequence,savename,IFgain)
+        except matlab.engine.MatlabExecutionError:
+            log.warning('Sequence too long. Breaking the problem down...')
+            self.launch_long(sequence,savename,IFgain)
+
+    def launch_normal(self, sequence , savename: str, IFgain: int = 0,reset_cur_exp=True):
         struct = self._build_exp_struct(sequence)
         struct['savename'] = savename
         struct['IFgain'] = IFgain
-        self.cur_exp = sequence
+        if reset_cur_exp:
+            self.cur_exp = sequence
         self.workspace['exp'] = struct
         self.engine.eval('launch(exp)', nargout=0)
 
+
+    def launch_long(self, sequence , savename: str, IFgain: int = 0, axID=-1):
+        """Launch a sequence on the spectrometer that is too long for a single file.
+        This is to get around the issues with the sequence table by running a background loop
+        that takes control. 
+
+        **current issues**:
+        - uses some bruker tools functions
+        - only works for a single averages
+        - creates many extra files
+
+        Parameters
+        ----------
+        sequence : Sequence
+            The pulse sequence to launched.
+        savename : str
+            The save name for the file.
+        IFgain : int
+            The IF gain, either [0,1,2], default 0.
+        """
+        dim = []
+        for p in sequence.evo_params:
+            if (p.uuid not in sequence.reduce_uuid):
+                for item in p.dim:
+                    dim.append(item)
+        self.cur_exp = sequence
+        self.stop_flag = threading.Event()
+        self.bg_thread = threading.Thread(target=bg_thread,args=[self,sequence,savename,IFgain,axID,self.stop_flag])
+        self.bg_data = np.zeros(dim,dtype=np.complex128)
+
+        self.bg_thread.start()
+        log.debug('Background thread starting')
+
     def isrunning(self) -> bool:
-        state = bool(self.engine.dig_interface('savenow'))
+        if self.bg_thread is None:
+            state = bool(self.engine.dig_interface('savenow'))
+            return state
+        else:
+            state= self.bg_thread.is_alive()
         return state
     
-    def tune_rectpulse(self,*,tp, LO, B, reptime):
+    def tune_rectpulse(self,*,tp, LO, B, reptime, shots=400):
         """Generates a rectangular pi and pi/2 pulse of the given length at 
         the given field position. This value is stored in the pulse cache. 
 
@@ -153,6 +283,8 @@ class ETH_awg_interface(Interface):
             Magnetic B0 field position in Gauss
         reptime: float
             Shot repetion time in us.
+        shots: int
+            The number of shots
 
         Returns
         -------
@@ -163,7 +295,7 @@ class ETH_awg_interface(Interface):
         """
 
         amp_tune =HahnEchoSequence(
-            B=B, LO=LO, reptime=reptime, averages=1, shots=400
+            B=B, LO=LO, reptime=reptime, averages=1, shots=shots
         )
 
         scale = Parameter("scale",0,dim=45,step=0.02)
@@ -186,19 +318,25 @@ class ETH_awg_interface(Interface):
         while self.isrunning():
             time.sleep(10)
         dataset = self.acquire_dataset()
-        scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
+        dataset.epr.correctphase
+
+        data = np.abs(dataset.data)
+        scale = np.around(dataset.pulse0_scale[data.argmax()].data,2)
         if scale > 0.9:
             raise RuntimeError("Not enough power avaliable.")
         
-        self.pulses[f"p90_{tp}"] = amp_tune.pulses[0].copy(
+        if scale == 0:
+            warnings.warn("Pulse tuned with a scale of zero!")
+        p90 = amp_tune.pulses[0].copy(
             scale=scale, LO=amp_tune.LO)
-        self.pulses[f"p180_{tp*2}"] = amp_tune.pulses[1].copy(
+        
+        p180 = amp_tune.pulses[1].copy(
             scale=scale, LO=amp_tune.LO)
 
-        return self.pulses[f"p90_{tp}"], self.pulses[f"p180_{tp*2}"]
+        return p90, p180
 
     
-    def tune_pulse(self, pulse, mode, LO, B , reptime):
+    def tune_pulse(self, pulse, mode, LO, B , reptime, shots=400):
         """Tunes a single pulse a range of methods.
 
         Parameters
@@ -213,6 +351,8 @@ class ETH_awg_interface(Interface):
             Magnetic B0 field position in Gauss
         reptime : us
             Shot repetion time in us.
+        shots: int
+            The number of shots
 
         Returns
         -------
@@ -237,46 +377,46 @@ class ETH_awg_interface(Interface):
 
         # Find rect pulses
 
-        all_rect_pulses = list(self.pulses.keys())
-        pulse_matches = []
-        for pulse_name in all_rect_pulses:
-            # if not re.match(r"^p180_",pulse_name):
-            #     continue
-            pulse_frq = self.pulses[pulse_name].LO.value + self.pulses[pulse_name].freq.value
-            if not np.abs(pulse_frq - c_frq) < 0.01: #Within 10MHz
-                continue
-            pulse_matches.append(pulse_name)
+        # all_rect_pulses = list(self.pulses.keys())
+        # pulse_matches = []
+        # for pulse_name in all_rect_pulses:
+        #     # if not re.match(r"^p180_",pulse_name):
+        #     #     continue
+        #     pulse_frq = self.pulses[pulse_name].LO.value + self.pulses[pulse_name].freq.value
+        #     if not np.abs(pulse_frq - c_frq) < 0.01: #Within 10MHz
+        #         continue
+        #     pulse_matches.append(pulse_name)
         
-        # Find best pi pulse
-        pi_length_best = 1e6
-        for pulse_name in pulse_matches:
-            if re.match(r"^p180_",pulse_name):
-                ps_length = int(re.search(r"p180_(\d+)",pulse_name).groups()[0])
-                if ps_length < pi_length_best:
-                    pi_length_best = ps_length
+        # # Find best pi pulse
+        # pi_length_best = 1e6
+        # for pulse_name in pulse_matches:
+        #     if re.match(r"^p180_",pulse_name):
+        #         ps_length = int(re.search(r"p180_(\d+)",pulse_name).groups()[0])
+        #         if ps_length < pi_length_best:
+        #             pi_length_best = ps_length
         
-        if pi_length_best == 1e6:
-            _, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=LO, reptime=reptime)
-        else:
-            pi_pulse = self.pulses[f"p180_{pi_length_best}"]
+        # if pi_length_best == 1e6:
+        #     _, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
+        # else:
+        #     pi_pulse = self.pulses[f"p180_{pi_length_best}"]
 
-        pi2_length_best = 1e6
-        for pulse_name in pulse_matches:
-            if re.match(r"^p90_",pulse_name):
-                ps_length = int(re.search(r"p90_(\d+)",pulse_name).groups()[0])
-                if ps_length < pi2_length_best:
-                    pi2_length_best = ps_length
+        # pi2_length_best = 1e6
+        # for pulse_name in pulse_matches:
+        #     if re.match(r"^p90_",pulse_name):
+        #         ps_length = int(re.search(r"p90_(\d+)",pulse_name).groups()[0])
+        #         if ps_length < pi2_length_best:
+        #             pi2_length_best = ps_length
         
-        if pi2_length_best == 1e6:
-            pi2_pulse, _ = self.tune_rectpulse(tp=12, B=B, LO=LO,reptime=reptime)
-        else:
-            pi2_pulse = self.pulses[f"p90_{pi2_length_best}"]
+        # if pi2_length_best == 1e6:
+        #     pi2_pulse, _ = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
+        # else:
+        #     pi2_pulse = self.pulses[f"p90_{pi2_length_best}"]
 
-
+        pi2_pulse, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
         if mode == "amp_hahn":
             amp_tune =HahnEchoSequence(
                 B=B, LO=LO, 
-                reptime=reptime, averages=1, shots=400,
+                reptime=reptime, averages=1, shots=shots,
                 pi2_pulse = pulse, pi_pulse=pi_pulse
             )
 
@@ -290,15 +430,15 @@ class ETH_awg_interface(Interface):
             while self.isrunning():
                 time.sleep(10)
             dataset = self.acquire_dataset()
-            new_amp = np.around(dataset.axes[0][dataset.data.argmax()],2)
+            new_amp = np.around(dataset.pulse0_scale[dataset.data.argmax()].data,2)
             pulse.scale = Parameter('scale',new_amp,unit=None,description='The amplitude of the pulse 0-1')
             return pulse
 
         elif mode == "amp_nut":
 
             nut_tune = Sequence(
-                name="nut_tune", B=B, LO=LO, reptime=reptime,
-                averages=1,shots=400
+                name="nut_tune", B=(B/LO*c_frq), LO=LO, reptime=reptime,
+                averages=1,shots=shots
             )
             nut_tune.addPulse(pulse.copy(
                 t=0, pcyc={"phases":[0],"dets":[1]}, scale=0))
@@ -327,15 +467,18 @@ class ETH_awg_interface(Interface):
             while self.isrunning():
                 time.sleep(10)
             dataset = self.acquire_dataset()
-            data = correctphase(dataset.data)
+            dataset.epr.correctphase
+            data = dataset.data
+            axis = dataset.pulse0_scale
+            # data = correctphase(dataset.data)
             if data[0] < 0:
                 data *= -1
 
             if np.isclose(pulse.flipangle.value, np.pi):
-                new_amp = np.around(dataset.axes[0][data.argmin()],2)
+                new_amp = np.around(axis[data.argmin()].data,2)
             elif np.isclose(pulse.flipangle.value, np.pi/2):
                 sign_changes = np.diff(np.sign(np.real(data)))
-                new_amp = np.around(dataset.axes[0][np.nonzero(sign_changes)[0][0]],2)
+                new_amp = np.around(axis[np.nonzero(sign_changes)[0][0]].data,2)
             else:
                 raise RuntimeError("Target pulse can only have a flip angle of either: ",
                                 "pi or pi/2.")
@@ -374,7 +517,7 @@ class ETH_awg_interface(Interface):
             while self.isrunning():
                 time.sleep(10)
             dataset = self.acquire_dataset()
-            scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
+            scale = np.around(dataset.pulse0_scale[dataset.data.argmax()].data,2)
             if scale > 0.9:
                 raise RuntimeError("Not enough power avaliable.")
             
@@ -428,7 +571,7 @@ class ETH_awg_interface(Interface):
                 while self.isrunning():
                     time.sleep(10)
                 dataset = self.acquire_dataset()
-                scale = np.around(dataset.axes[0][dataset.data.argmax()],2)
+                scale = np.around(dataset.pulse0_scale[dataset.data.argmax()].data,2)
                 pulse.scale.value = scale
 
             return sequence
@@ -467,7 +610,8 @@ class ETH_awg_interface(Interface):
         event["t"] = float(pulse.t.value)
 
         if type(pulse) is Detection:
-            event["det_len"] = float(pulse.tp.value * self.dig_rate)
+            # event["det_len"] = float(pulse.tp.value * self.dig_rate)
+            event["det_len"] = float(1024)
             event["det_frq"] = float(pulse.freq.value) + self.awg_freq
             event["name"] = "det"
             return event
@@ -582,6 +726,12 @@ class ETH_awg_interface(Interface):
             axis_T = transpose_list_of_dicts(attr.axis)
             i = axis_T['uuid'].index(uuid)
             vec = attr.value + attr.axis[i]['axis']
+
+            if attr.unit == 'us':
+                vec *=1e3
+            elif attr.unit == 'ms':
+                vec *=1e6
+            
             return vec.astype(float)
 
         prog_table = sequence.progTable
@@ -654,520 +804,66 @@ class ETH_awg_interface(Interface):
     def terminate(self):
         """ Stops the current experiment
         """
-        self.engine.dig_interface('terminate', nargout=0)
+        if self.bg_thread is None:
+            self.engine.dig_interface('terminate', nargout=0)
+        else:
+            self.engine.dig_interface('terminate', nargout=0)
+            self.stop_flag.set()
+            self.bg_thread = None
+            self.bg_data = None
         pass
 
 
-def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0):
-    """uwb_load This function is based upon the uwb_eval matlab function 
-    developed by Andrin Doll. This is mostly a Python version of this software,
-     for loading data generated by Doll style spectrometers.
 
-    Parameters
-    ----------
-    matfile : np.ndarray
-        _description_
-    options : dict, optional
-        _description_, by default None
-    """
+def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
 
-    # Extract Data
-    estr = matfile[matfile['expname']]
-    conf = matfile['conf'] 
+    # Add averaging loop here
+    dim = []
+    for p in seq.evo_params:
+        if (p.uuid not in seq.reduce_uuid):
+            for item in p.dim:
+                dim.append(item)
+
+
+    new_seq = seq.copy()
+    new_seq.averages.value=1
+    new_params = copy.copy(seq.evo_params)
+    droped_param = new_params.pop(axID)
+    fixed_param = seq.evo_params[axID]
+
+    # is removed axis a reduced axis
+    if fixed_param.uuid in seq.reduce_uuid:
+        reduced = True
+    new_reduce_param = []
+    for p in new_params:
+        if p.uuid == fixed_param.uuid:
+            continue
+        elif p.uuid in seq.reduce_uuid:
+            new_reduce_param.append(p)
+
     
-    def extract_data(matfile):
-        if "dta" in matfile.keys():
-            nAvgs = matfile["nAvgs"]
-            dta = [matfile["dta"]]
-        elif "dta_001" in matfile.keys():
-            dta = []
-            for ii in range(1, estr["avgs"]+1):
-                actname = 'dta_%03u' % ii 
-                if actname in matfile.keys():
-                    dta.append(matfile[actname])
-                    # Only keep it if the average is complete, unless it is 
-                    # the first
-                    if sum(dta[ii-1][:, -1]) == 0 and ii > 1:
-                        dta = dta[:-1]
-                    elif sum(dta[ii-1][:, -1]) == 0 and ii == 1:
-                        nAvgs = 0
-                    else:
-                        nAvgs = ii
-        return [dta, nAvgs]
-    
-    dta, nAvgs = extract_data(matfile)
-
-    # Eliminate Phase cycles
-
-    if "postsigns" not in estr.keys():
-        print("TODO: check uwb_eval")
-        raise RuntimeError("This is not implemented yet")
-
-    if np.isscalar(estr["postsigns"]["signs"]):
-        estr["postsigns"]["signs"] = [estr["postsigns"]["signs"]]
-
-    if type(estr["parvars"]) is dict:
-        estr["parvars"] = [estr["parvars"]]
-
-    cycled = np.array(list(map(np.size, estr["postsigns"]["signs"]))) > 1
-
-    #  decide on wheteher the phase cycle should be eliminated or not
-    if any(cycled == 0):
-        elim_pcyc = 1  # if there is any non-phasecycling parvar
-    else:
-        elim_pcyc = 0  # if all parvars cycle phases, do not reduce them 
-    
-    if "elim_pcyc" in options.keys():
-        elim_pcyc = options["elim_pcyc"]
-    
-    # Get the cycles out
-    if elim_pcyc:
-        for ii in range(0, len(cycled)):
-            if cycled[ii]:
-                if ii > 1:
-                    n_skip = np.prod(estr["postsigns"]["dims"][0:ii-1])
-                else:
-                    n_skip = 1
-                plus_idx = np.where(estr["postsigns"]["signs"][ii] == 1)
-                minus_idx = np.where(estr["postsigns"]["signs"][ii] == -1)
-                plus_mask = np.arange(0, n_skip) + (plus_idx - 1) * n_skip
-                minus_mask = np.arange(0, n_skip) + (minus_idx - 1) * n_skip
-                n_rep = np.size(dta[1], 2) / \
-                    (n_skip * estr["postsigns"]["dims"][ii])
-
-                for kk in range(0, len(dta)):
-                    #  re-allocate
-                    tmp = dta[kk]
-                    dta[kk] = np.zeros(np.size(tmp, 0), n_rep*n_skip)
-                    # subtract out
-                    for jj in range(0, n_rep):
-                        curr_offset = (jj) * n_skip
-                        full_offset = (jj) * n_skip * \
-                            estr["postsigns"]["dims"][ii]
-                        dta[kk][:, np.arange(0, n_skip)+curr_offset] = \
-                            tmp[:, plus_mask+full_offset] - \
-                            tmp[:, minus_mask+full_offset]
-
-    #  Find all the axes
-    dta_x = []
-    ii_dtax = 0
-    relevant_parvars = []
-
-    for ii in range(0, len(cycled)):
-        estr["postsigns"]["ids"] = \
-            np.array(estr["postsigns"]["ids"]).reshape(-1)
-        if not (elim_pcyc and cycled[ii]):
-            if type(estr["parvars"]) is list:
-                dta_x.append(estr["parvars"][estr["postsigns"]["ids"][ii]-1]
-                            ["axis"].astype(np.float32))
-            else:
-                dta_x.append(estr["parvars"]["axis"].astype(np.float32))
-            relevant_parvars.append(estr["postsigns"]["ids"][ii]-1)
-            ii_dtax += 1
-    
-    exp_dim = ii_dtax
-    if ii_dtax == 0:
-        raise RuntimeError("Your dataset does not have any swept dimensions." 
-                           "Uwb_eval does not work for experiments without"
-                           "any parvars")
-    elif ii_dtax > 2:
-        raise RuntimeError("Uwb_eval cannot handle more than two dimensions")
-    
-    det_frq = estr["events"][estr["det_event"]-1]["det_frq"]
-    det_frq_dim = 0
-    fsmp = conf["std"]["dig_rate"]
-
-    # Check for any frequency changes as well as any fixed downconversion 
-    # frequencies
-
-    if "det_frq" in options.keys():
-        det_frq = options["det_frq"]
-    else:
-
-        det_frq_dim = 0
-        for ii in range(0, len(relevant_parvars)):
-            act_par = estr["parvars"][relevant_parvars[ii]]
-            frq_change = np.zeros((len(act_par["variables"]), 1))
-            for jj in range(0, len(act_par["variables"])):
-                if not any('nu_' in word for word
-                           in estr["parvars"][0]["variables"]):
-                    frq_change[jj] = 1
-
-        if any(frq_change):  # was there a frequency change
-            # is the frequency change relevant
-            if "det_frq_id" in estr["events"][estr["det_event"]-1]:
-                frq_pulse = estr["events"][estr["det_event"]-1]["det_frq_id"]
-                nu_init_change = 0
-                nu_final_change = 0
-                for jj in range(0, np.size(act_par["variables"])):
-                    if ('events{' + str(frq_pulse+1) + "}.pulsedef.nu_i") in \
-                            act_par["variables"][jj]:
-                        nu_init_change = jj
-                    if ('events{' + str(frq_pulse+1) + "}.pulsedef.nu_f") in \
-                            act_par["variables"][jj]:
-                        nu_final_change = jj
-
-                if any([nu_init_change, nu_final_change]):
-                    # There is a frequency change on the frequency encoding 
-                    # pulse
-
-                    # dimension that will determine the detection frequency
-                    det_frq_dim = ii  
-
-                    if "nu_final" != estr["events"][frq_pulse]['pulsedef']:
-                        # rectangular pulse
-                        
-                        if nu_init_change == 0:
-                            print(
-                                "uwb_eval has no idea how to guess your "
-                                "detection frequency. You were setting a "
-                                "rectangular pulse in event" + str(frq_pulse) 
-                                + ", but are now increasing its end frequency"
-                                ". You may obtain unexpected results.")
-
-                        # get the frequencies either from 
-                        # the vectorial definition
-                        if "vec" in act_par.keys():
-                            det_frq = act_par["vec"][:, nu_init_change]
-                        else:
-                            # or from the parametric definition
-                            nu_init = estr["events"][frq_pulse]["pulsedef"][
-                                "nu_init"]
-                            if np.isnan(act_par["strt"][nu_init_change]):
-                                det_frq = np.arange(0, act_par["dim"]) * \
-                                    act_par["inc"][nu_init_change] + nu_init
-                            else:
-                                det_frq = np.arange(0, act_par["dim"]) * \
-                                    act_par["inc"][nu_init_change] + \
-                                    act_par["strt"][nu_init_change]
-                    
-                    else:
-                        #  chirp pulse, both nu_init and nu_final need to be 
-                        # considered
-
-                        nu_init = estr["events"][frq_pulse]["pulsedef"][
-                            "nu_init"]
-                        nu_final = estr["events"][frq_pulse]["pulsedef"][
-                            "nu_final"]
-
-                        # get the frequencies either from the 
-                        # vectorial definition
-                        if "vec" in act_par.keys():
-                            if nu_init_change != 0:
-                                nu_init = act_par["vec"][:, nu_init_change]
-                            if nu_final_change != 0:
-                                nu_final = act_par["vec"][:, nu_final_change]
-                        else:
-                            # or from the parametric definition
-                            if nu_init_change != 0:
-                                if np.isnan(act_par["strt"][nu_init_change]):
-                                    nu_init = np.arange(0, act_par["dim"]) * \
-                                        act_par["inc"][nu_init_change] + \
-                                        nu_init
-                                else:
-                                    nu_init = np.arange(0, act_par["dim"]) * \
-                                        act_par["inc"][nu_init_change] + \
-                                        act_par["strt"][nu_init_change]
-                            if nu_final_change != 0:
-                                if np.isnan(act_par["strt"][nu_init_change]):
-                                    nu_final = np.arange(0, act_par["dim"]) * \
-                                        act_par["inc"][nu_final_change] + \
-                                        nu_final
-                                else:
-                                    nu_final = np.arange(0, act_par["dim"]) * \
-                                        act_par["inc"][nu_final_change] + \
-                                        act_par["strt"][nu_final]
-                        
-                        det_frq = (nu_init + nu_final) / 2
-            else:
-                # we can only land here, if there was no det_frq_id given, but
-                # det_frq was explicitly provided in the experiment. This could
-                # be intentional, but could even so be a mistake of the user.
-                print("uwb_eval has no idea how to guess your detection"
-                      "frequency. You were changing some pulse frequencies, "
-                      "but did not provide det_frq_id for your detection event"
-                      ". I will use det_frq, as you provided it in the "
-                      "experiment.")
-
-    #  ****Check digitizer level
-
-    parvar_pts = np.zeros(np.size(estr["parvars"]))
-    for ii in range(0, len(estr["parvars"])):
-        if "vec" in estr["parvars"][ii]:
-            parvar_pts[ii] = np.size(estr["parvars"][ii]["vec"], 0)
-        else:
-            parvar_pts[ii] = estr["parvars"][ii]["dim"]
-    
-    # the number of data points entering one echo transient (due to reduction
-    # during acquisition or reduction of phasecycles just above)
-    n_traces = np.prod(parvar_pts) / np.prod(list(map(len, dta_x)))
-
-    if "dig_max" in conf.keys():
-        trace_maxlev = n_traces * estr["shots"] * conf["dig_max"]
-    else:
-        trace_maxlev = n_traces * estr["shots"] * 2**11
-    
-    #  ***** Extract all the echoes
-    echopos = estr["events"][estr["det_event"]-1]["det_len"]/2 - estr[
-        "events"][estr["det_event"]-1]["det_pos"] * fsmp
-    dist = min([echopos, estr["events"][estr["det_event"]-1]["det_len"] - 
-                echopos])
-    ran_echomax = np.arange(echopos - dist, echopos + dist, dtype=np.int64)
-
-    # get the downconversion to LO
-    t_ax_full = np.arange(0, len(ran_echomax)) / fsmp
-    if not np.isscalar(det_frq):
-        tf = np.matmul(t_ax_full[:, None], det_frq[None, :])
-        LO = np.exp(-2 * np.pi * 1j * tf)
-    else:
-        LO = np.exp(-2 * np.pi * 1j * t_ax_full * det_frq)
-
-    flipback = 0
-
-    # 1D or 2D
-    if exp_dim == 2:
-        dta_ev = np.zeros((len(dta_x[0]), len(dta_x[1])), dtype=np.complex128)
-        dta_avg = np.zeros(
-            (len(ran_echomax), len(dta_x[0]), len(dta_x[1])),
-            dtype=np.complex128)
-        perm_order = [0, 1, 2]
-        if det_frq_dim == 1:
-            perm_order = [0, 2, 1]
-            flipback = 1
-            dta_ev = np.transpose(dta_ev)
-            dta_avg = np.transpose(dta_avg, perm_order)
-    elif exp_dim == 1:
-        dta_ev = np.zeros((np.size(dta_x[0])), dtype=np.complex128)
-        dta_avg = np.zeros((len(ran_echomax), np.size(dta_x[0])),
-                           dtype=np.complex128)
-
-
-    dta_scans = np.zeros((len(dta),) + dta_ev.shape, dtype=np.complex128)
-    
-    for ii in range(0, len(dta)):
-        dta_c = dta[ii][ran_echomax, :]
-        dta_c = np.conj(np.apply_along_axis(sig.hilbert, 0, dta_c))
-
-        # reshape the 2D data
-        if exp_dim == 2:
-            dta_resort = np.reshape(dta_c, (len(ran_echomax), len(dta_x[0]), 
-                                    len(dta_x[1])), order='F')
-            dta_resort = np.transpose(dta_resort, perm_order)
-        else:
-            dta_resort = dta_c
-
-        # downconvert
-        dta_dc = (dta_resort.T * LO.T).T
-
-        # refine the echo position for further evaluation, 
-        # based on the first average
-        if ii == 0:
-
-            # put a symetric window to mask the expected echo position
-            window = sig.windows.chebwin(np.size(dta_dc, 0), 100)
-            dta_win = np.transpose(np.transpose(dta_dc) * window)
+    nAvg=seq.averages.value
+    for iavg in range(nAvg):    
+        single_scan_data = np.zeros(dim, dtype=np.complex128)
+        
+        for i in range(fixed_param.dim[0]):
+            if stop_flag.is_set():
+                    break
+            droped_param.value = fixed_param.get_axis()[i]
+            new_seq.evolution(new_params,new_reduce_param)
             
-            # absolute part of integral, since phase is not yet determined
-            absofsum = np.squeeze(np.abs(np.sum(dta_win, 0)))
+            interface.launch_normal(new_seq, savename=f"{savename}_avg{iavg}of{nAvg}_{i}of{fixed_param.dim[0]}",IFgain=IFgain,reset_cur_exp=False)
 
-            # get the strongest echo of that series
-            ref_echo = np.argmax(absofsum.flatten('F'))
+            while bool(interface.engine.dig_interface('savenow')):
+                if stop_flag.is_set():
+                    break
+                time.sleep(1)
 
-            # use this echo to inform about the digitizer scale
-
-            max_amp = np.amax(dta[ii][ran_echomax, ref_echo], 0)
-            dig_level = max_amp / trace_maxlev
-
-            if "IFgain_levels" in conf["std"]:
-                # Check about eventual improvemnets by changing IF levels
-                possible_levels = dig_level * conf["std"]["IFgain_levels"] / \
-                    conf["std"]["IFgain_levels"][estr["IFgain"]]
-
-                possible_levels[possible_levels > 0.75] = 0
-                best_lev = np.amax(possible_levels)
-                best_idx = np.argmax(possible_levels)
-                if (best_idx != estr["IFgain"]) & (verbosity > 0):
-                    print(
-                        f"You are currently using {dig_level} of the maximum"
-                        f"possible level of the digitizer at an IFgain setting"
-                        f"of {estr['IFgain']} \n It may be advantageous to use"
-                        f"an IFgain setting of {best_idx} , where the maximum "
-                        f"level will be on the order of {best_lev}.")
-
-            # for 2D data, only a certain slice may be requested
-
-            if "ref_echo_2D_idx" in options.keys():
-                if "ref_echo_2D_dim" not in options.keys():
-                    options["ref_echo_2D_dim"] = 1
-                
-                if flipback:
-                    if options["ref_echo_2D_dim"] == 1:
-                        options["ref_echo_2D_dim"] = 2
-                    else:
-                        options["ref_echo_2D_dim"] = 1
-                
-                if options["ref_echo_2D_idx"] == "end":
-                    options["ref_echo_2D_idx"] = np.size(
-                        absofsum, options["ref_echo_2D_dim"]-1)
-
-                if options["ref_echo_2D_dim"] == 1:
-                    ii_ref = options["ref_echo_2D_idx"] - 1
-                    jj_ref = np.argmax(absofsum[ii_ref, :])
-                else:
-                    jj_ref = options["ref_echo_2D_idx"] - 1
-                    ii_ref = np.argmax(absofsum[jj_ref, :])
-                # convert the ii_ref,jj_ref to a linear index, as this is how
-                # the convolution is done a few lines below
-
-                ref_echo = np.ravel_multi_index(
-                    [ii_ref, jj_ref], absofsum.shape)
-
-            if "ref_echo" in options.keys():
-                if "end" == options["ref_echo"]:
-                    ref_echo = len(absofsum[:])
-                else:
-                    ref_echo = options["ref_echo"]
-            
-            # look for zerotime by crosscorrelation with 
-            # echo-like window (chebwin..),
-            # use conv istead of xcorr, because of the 
-            # life-easy-making 'same' option
-            # TODO turn this into a matched filter
-            # this is where one could use a matched echo shape 
-
-            convshape = sig.windows.chebwin(min([100, len(ran_echomax)]), 100) 
-
-            if exp_dim == 2:
-                ref_echo_unravel = np.unravel_index(ref_echo, absofsum.shape)
-                e_idx = np.argmax(sig.convolve(
-                    np.abs(dta_dc[:, ref_echo_unravel[0],
-                    ref_echo_unravel[1]]), convshape, mode="same"))
-
+            if reduced:
+                single_scan_data = interface.acquire_dataset_from_matlab(cur_exp=new_seq).data
             else:
-                e_idx = np.argmax(sig.convolve(
-                    np.abs(dta_dc[:, ref_echo]), convshape, mode="same"))
-
-            # now get the final echo window, which is centered around the
-            # maximum position just found
-
-            dist = min([e_idx, np.size(dta_dc, 0)-e_idx])
-            evlen = 2 * dist
-
-            if "evlen" in options.keys():
-                evlen = options["evlen"]
-            if "find_echo" in options.keys():
-                e_idx = np.floor(np.size(dta_dc, 0)/2)
-            
-            # here the final range...
-            ran_echo = np.arange(e_idx-evlen/2, e_idx+evlen/2, dtype=np.int16)
-            # ... and a check wether this is applicable
-
-            if not (ran_echo[0] >= 0 and ran_echo[-1] <= np.size(dta_dc, 0)):
-                raise RuntimeError(
-                    f"Echo position at {e_idx} with evaluation length of "
-                    f"{evlen} is not valid, since the dataset has only "
-                    f"{np.size(dta_dc,0)} points.")
-
-            # here the final time axis of the dataset
-            t_ax = np.arange(-evlen/2, evlen/2) / fsmp
-
-            # get also indices of reference echo in case of 2D data
-            if absofsum.ndim == 2:
-                [ii_ref, jj_ref] = np.unravel_index(
-                    ref_echo, absofsum.shape, order='F')
+                single_scan_data[:,i] = interface.acquire_dataset_from_matlab(cur_exp=new_seq).data
         
-        # window the echo
-        if exp_dim == 2:
-            dta_win = np.multiply(dta_dc[ran_echo, :, :].T, 
-                                  sig.windows.chebwin(evlen, 100)).T
-        else:
-            dta_win = np.multiply(dta_dc[ran_echo, :].T, 
-                                  sig.windows.chebwin(evlen, 100)).T
-
-        # get all the phases and use reference echo for normalization
-        dta_ang = np.angle(np.sum(dta_win, 0))
-
-        # for frequency changes, we phase each frequency
-
-        if det_frq_dim != 0:
-            if exp_dim == 2:
-                corr_phase = dta_ang[..., jj_ref]
-            else:
-                corr_phase = dta_ang
-        else:
-            corr_phase = dta_ang[ref_echo]
-        
-        # check if a fixed phase was provided
-        if "corr_phase" in options.keys():
-            corr_phase = options["corr_phase"]
-        
-        # check if any datapoint needs to be phased individually
-        if "phase_all" in options.keys() and options["phase_all"] == 1:
-            corr_phase = dta_ang
-        
-        bfunc = lambda x: x * np.exp(-1j * corr_phase)
-        # dta_pha = np.multiply(dta_win, np.exp(-1j * corr_phase))
-        
-        dta_pha = np.apply_along_axis(bfunc, 1, dta_win)
-        
-        dta_this_scan = np.squeeze(np.sum(dta_pha, 0)) / \
-            sum(sig.windows.chebwin(evlen, 100))
-        dta_ev = dta_ev + dta_this_scan
-
-        dta_scans[ii, :] = dta_this_scan  # This will not work for 2D
-        
-        if exp_dim == 2:
-            dta_avg[0:evlen, :, :] = dta_avg[0:evlen, :, :] + \
-                np.apply_along_axis(bfunc, 1, dta_win)
-#                np.multiply(dta_dc[ran_echo, :, :], np.exp(-1j * corr_phase))
-        else:
-            dta_avg[0:evlen, :] = dta_avg[0:evlen, :] + \
-                np.multiply(dta_dc[ran_echo, :], np.exp(-1j * corr_phase))
-
-    dta_avg = dta_avg[0:evlen, ...]
-    # keyboard
-    # flip back 2D Data
-    if flipback:
-        dta_avg = np.transpose(dta_avg, perm_order)
-        dta_ev = np.transpose(dta_ev)
-
-    output = Dataset(
-        axes=dta_x,
-        data=dta_ev,
-        params=estr)
-    
-    output.scans = dta_scans
-    output.add_variable(Parameter(name='nAvgs', value=nAvgs))
-
-    # output = AWGdata(t_ax, dta_avg)
-    # output.nAvgs = nAvgs
-    # output.dta_x = dta_x
-    # output.dta_ev = dta_ev
-    # output.dta_scans = dta_scans
-    # output.exp = estr
-    # output.det_frq = det_frq
-    # output.echopos = echopos
-    # output.corr_phase = corr_phase
-    # output.dig_level = dig_level
-    # output.raw_dta = dta
-    
-    return output
-
-
-# class AWGdata:
-
-#     def __init__(self, t_ax, dta_avg) -> None:
-#         self.t_ax = t_ax
-#         self.dta_avg = dta_avg 
-
-#     def transient_plot2D(self):
-#         fig, ax = plt.subplots(1, 1)
-#         ax.pcolormesh(np.real(self.dta_avg).T)
-#         fig.show()
-    
-#     def plot(self):
-#         fig, ax = plt.subplots(1, 1)
-#         ax.plot(self.dta_x[0], np.real(self.dta_ev), label='Re')
-#         ax.plot(self.dta_x[0], np.imag(self.dta_ev), label='Im')
-#         ax.legend()
-#         fig.show()
+        if stop_flag.is_set():
+            break
+        interface.bg_data += single_scan_data

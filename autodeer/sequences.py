@@ -42,6 +42,9 @@ class Sequence:
 
         self.pulses = []
         self.num_pulses = len(self.pulses)
+        self.axes_uuid = []
+        self.reduce_uuid = []
+
 
 
         if isinstance(B, Parameter):
@@ -55,9 +58,12 @@ class Sequence:
             "LO", LO, "GHz",
             "The local oscillator frequency.")
         
-        self.reptime = Parameter(
-            "reptime", reptime, "us",
-            "The shot repetition time")
+        if isinstance(reptime, Parameter):
+            self.reptime = reptime.copy()
+        else:
+            self.reptime = Parameter(
+                "reptime", reptime, "us",
+                "The shot repetition time")
         
         self.averages = Parameter(
             "averages", averages, "None",
@@ -201,14 +207,9 @@ class Sequence:
         Calculates the estimated experiment time in seconds.
         """
         self._buildPhaseCycle()
-        acqs = self.averages.value * self.shots.value
-        if hasattr(self, 'pcyc_dets'):
-            acqs *= self.pcyc_dets.shape[0]
-        if hasattr(self, 'progTable'):
-            _, pos = np.unique(self.progTable['axID'], return_index=True)
-            for i in pos:
-                acqs *= self.progTable['axis'][i].shape[0]
-        
+        acqs = self.averages.value * self.shots.value * self.pcyc_dets.shape[0]
+        if hasattr(self,'evo_params'):
+            acqs *= np.prod([np.prod(param.dim) for param in self.evo_params])        
         time = acqs * self.reptime.value * 1e-6
 
         self.time = Parameter(name="time", value=f"{(time // 3600):.0f}:{(time % 3600) // 60:.0f}:{(time % 60):.0f}", unit="HH:MM:SS",
@@ -256,8 +257,9 @@ class Sequence:
         return self.pcyc_vars, self.pcyc_cycles, self.pcyc_dets
 
     def evolution(self, params, reduce=[]):
-        axes_uuid = [param.uuid for param in params]
-        reduce_uuid = [param.uuid for param in reduce]
+        self.evo_params = params
+        self.axes_uuid = [param.uuid for param in params]
+        self.reduce_uuid = [param.uuid for param in reduce]
 
 
         # Build the ProgTable
@@ -267,13 +269,13 @@ class Sequence:
         for n, pulse in enumerate(self.pulses):
             table = pulse.build_table()
             for i in range(len(table["uuid"])):
-                if table["uuid"][i] in axes_uuid:
-                    progTable["axID"].append(axes_uuid.index(table["uuid"][i]))
+                if table["uuid"][i] in self.axes_uuid:
+                    progTable["axID"].append(self.axes_uuid.index(table["uuid"][i]))
                     progTable["uuid"].append(table["uuid"][i]) 
                     progTable["EventID"].append(n)
                     progTable["Variable"].append(table["Variable"][i])
                     progTable["axis"].append(table["axis"][i])
-                    if table["uuid"][i] in reduce_uuid:
+                    if table["uuid"][i] in self.reduce_uuid:
                         progTable["reduce"].append(True)
                     else:
                         progTable["reduce"].append(False)
@@ -283,134 +285,42 @@ class Sequence:
             if type(var) is Parameter:
                 if not var.is_static() and not var.virtual:
                     for i in range(len(var.axis)):
-                        if var.axis[i]["uuid"] in axes_uuid:
-                            progTable["axID"].append(axes_uuid.index(var.axis[i]["uuid"]))
+                        if var.axis[i]["uuid"] in self.axes_uuid:
+                            progTable["axID"].append(self.axes_uuid.index(var.axis[i]["uuid"]))
                             progTable["EventID"].append(None)
                             progTable["Variable"].append(var_name) 
                             progTable["axis" ].append(var.axis[i]["axis"])
                             progTable["uuid"].append(var.axis[i]["uuid"]) 
-                            if var.axis[i]["uuid"] in reduce_uuid:
+                            if var.axis[i]["uuid"] in self.reduce_uuid:
                                 progTable["reduce"].append(True)
                             else:
                                 progTable["reduce"].append(False)
         self.progTable = progTable
-        return self.progTable
-        
-    def _buildProgTable(self):
-        #           parvarid, pulse #, variable, axis
-        # progTable = [[], [], [], []]
-        progTable = {"EventID": [], "Variable": [], "axis": [],
-                     "axID": []}
-
-        for n, pulse in enumerate(self.pulses):
-            # Loop over all pulses
-            # for var_name in vars(pulse):
-            #     var = getattr(pulse, var_name)
-            #     # Loop over all pulse parameters
-            #     if type(var) is Parameter:
-            #         if var.progressive is True:
-            #             for i in range(0, len(var.prog)):
-            #                 progTable["axID"].append(var.prog[i][0]) 
-            #                 progTable["EventID"].append(n)
-            #                 progTable["Variable"].append(var_name) 
-            #                 progTable["axis"].append(var.prog[i][1]) 
-
-            table = pulse.build_table()
-            n_table = len(table["uuid"])
-            progTable["axID"] += table["uuid"]
-            progTable["EventID"] += [n] * n_table
-            progTable["Variable"] += table["Variable"] 
-            progTable["axis"] += table["axis"]  
-
-        # Sequence/ Experiment Parameters
-        for var_name in vars(self):
-            var = getattr(self, var_name)
-            if type(var) is Parameter:
-                if not var.is_static() and not var.virtual:
-                    for i in range(0, len(var.prog)):
-                        # progTable["axID"].append(var.prog[i][0]) 
-                        # progTable["EventID"].append(None)
-                        # progTable["Variable"].append(var_name) 
-                        # progTable["axis"].append(var.prog[i][1]) 
-                        progTable["axID"] += var.ax_id
-                        progTable["EventID"].append(None)
-                        progTable["Variable"].append(var_name) 
-                        progTable["axis" ]+= var.axis
-        self.progTable = progTable
-        return self.progTable
-        
-    def addPulseProg(self, pulse_id, variable, axis_id, axis) -> None:
-        """Adds a single progessive pulse element to the sequence.
-
-        It is strongly recomeneded that the axis is generated using `np.arange`
-        over `np.linspace`. Most spectrometers do not like inputs with a high
-        number of decimal places. `np.arange` allows control of the step size
-        reducing any risk of conflict with the interface.
-
-        Parameters
-        ----------
-        pulse_id : int
-            The iD of the moving pulse element. If it is a sequence parameter, 
-            such as `B` field, then `None` should be given.
-        variable : str
-            The name of the parameter.
-        axis_id : int
-            The iD of the axis. 
-        axis : np.ndarray
-            An array containing how the pulse element changes.
-        """
-        if pulse_id is None:
-            # Assume it is an experiment/sequence parameter
-            var = getattr(self, variable)
-            var.add_progression(axis_id, axis)
-        else:
-            var = getattr(self.pulses[pulse_id], variable)
-            var.add_progression(axis_id, axis)
-        
-        self._buildProgTable()
         self._estimate_time()
-
-        pass
+        return self.progTable
     
-    def addPulsesProg(
-            self, pulses, variables, axis_id, axis, multipliers=None) -> None:
-        """Adds a multiple progessive pulse element to the sequence. This is
-        very useful when multiple elements are changing at the same time with
-        a constant relationship.
+    @property
+    def seqtable_steps(self):
+        if len(self.evo_params) > 0:
+            return self.pcyc_dets.shape[0] * (len(self.pcyc_vars)+1) * np.prod([np.prod(param.dim) for param in self.evo_params])
 
-        It is strongly recomeneded that the axis is generated using `np.arange`
-        over `np.linspace`. Most spectrometers do not like inputs with a high
-        number of decimal places. `np.arange` allows control of the step size
-        reducing any risk of conflict with the interface.
-
-
-        Parameters
-        ----------
-        pulses : list[int]
-            A list of pulse iDs that are changing
-        variables : list[str]
-            A list of variables that are changing
-        axis_id : int
-            The iD of the axis 
-        axis : np.ndaaray
-            An array containing how the pulse element changes
-        multipliers : list or np.ndaaray, optional
-            How the different variable are proportional to each other, by
-            default None. If `None` is specified then it is assumed that there
-            is a 1:1 relationship. The axs gives the values for the first
-            element.
-        """
+    def shift_detfreq_to_zero(self):
+        det_pulse = None
+        for pulse in self.pulses:
+            if isinstance(pulse,Detection):
+                det_pulse = pulse
         
-        if multipliers is None:
-            multipliers = np.ones(len(pulses))
-
-        for i, pulse in enumerate(pulses):
-            self.addPulseProg(pulse, variables[i], axis_id,
-                              axis * multipliers[i])     
-
-        self._buildProgTable()
-        pass 
-
+        det_freq = det_pulse.freq.value
+        self.LO.value -= det_freq
+        for pulse in self.pulses:
+            if hasattr(pulse,'freq'):
+                pulse.freq.value -= det_freq
+            if hasattr(pulse,'init_freq'):
+                pulse.init_freq.value -= det_freq
+            if hasattr(pulse,'final_freq'):
+                pulse.final_freq.value -= det_freq
+        return self
+    
     def isPulseFocused(self):
         """
         Is the sequence expressed to contain only pulses and no delays?
@@ -551,12 +461,16 @@ class Sequence:
         for param_key in vars(self):
             param = getattr(self, param_key)
             if type(param) is Parameter:
+                if param.unit is None:
+                    unit = ""
+                else:
+                    unit = param.unit
                 if type(param.value) is str:
                     seq_param_string += "{:<10} {:<12} {:<10} {:<30} \n".format(
-                        param.name, param.value, param.unit, param.description)
+                        param.name, param.value, unit, param.description)
                 else:
                     seq_param_string += "{:<10} {:<12.5g} {:<10} {:<30} \n".format(
-                        param.name, param.value, param.unit, param.description)
+                        param.name, param.value, unit, param.description)
         
         # Pulses
         pulses_string = "\nEvents (Pulses, Delays, etc...): \n"
@@ -824,7 +738,8 @@ class DEERSequence(Sequence):
             with an offset frequency of 0MHz. 
 
         """
-        name = "DEER sequence"
+        name = "DEERSequence"
+        self.tau1us = tau1
         self.tau1 = Parameter(name="tau1", value=tau1 * 1e3, unit="ns", description="The first interpulse delays")
         self.tau2 = Parameter(name="tau2", value=tau2 * 1e3, unit="ns", description="The second interpulse delays")
         if tau3 is not None:
@@ -834,7 +749,9 @@ class DEERSequence(Sequence):
 
         self.dt = dt
         self.deadtime = 200
-        self.ESEEM_avg = ESEEM_avg
+        self.ESEEM = False
+        self.add_ESEEM_avg(ESEEM_avg)
+
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
@@ -847,6 +764,22 @@ class DEERSequence(Sequence):
             self.pump_pulse = kwargs["pump_pulse"]
         if "det_event" in kwargs:
             self.det_event = kwargs["det_event"]
+        
+    def add_ESEEM_avg(self, type=None):
+        if type is None:
+            self.tau1 = Parameter(name="tau1", value=self.tau1us * 1e3, unit="ns", description="The first interpulse delays",virtual=True)
+            self.ESEEM=False
+        elif (type.lower() == 'proton') or (type.lower() == 'p') or (type.lower() == 'h'):
+            self.tau1 = Parameter(
+                name="tau1", value=self.tau1us * 1e3, unit="ns", step=8, dim=8,
+                description="The first interpulse delays with proton ESEEM averaging",virtual=True)
+            self.ESEEM=True
+        elif (type.lower() == 'deuteron') or (type.lower() == 'd'):
+            self.tau1 = Parameter(
+                name="tau1", value=self.tau1us * 1e3, unit="ns", step=16, dim=8,
+                description="The first interpulse delays with deuteron ESEEM averaging",virtual=True)
+            self.ESEEM=True
+
 
     def three_pulse(self, tp=16):
         """
@@ -971,20 +904,10 @@ class DEERSequence(Sequence):
 
         if relaxation:
             self.evolution([self.tau2])
-
+        elif self.ESEEM:
+            self.evolution([self.t,self.tau1],[self.tau1])
         else:
             self.evolution([self.t])
-        # if self.ESEEM_avg is not None:
-        #     if self.ESEEM_avg.lower() == "proton":
-        #         ESEEM_axis = np.arange(0,8) * 8
-        #     elif self.ESEEM_avg.lower() == "deuteron":
-        #         ESEEM_axis = np.arange(0,8) * 16
-        #     self.addPulsesProg(
-        #         [1, 3, 4],
-        #         ["t"],
-        #         1,
-        #         [r1+ ESEEM_axis, r2 + 2*ESEEM_axis, d + 2*ESEEM_axis])
-        # pass
 
 
     def five_pulse(self, tp=16, relaxation=False, re_step=50, re_dim=100):
@@ -1201,7 +1124,7 @@ class DEERSequence(Sequence):
         #     axis=axis+self.pulses[2].t.value)
         pass
     
-    def nDEER_CP(self, n:int, tp=16, relaxation=False):
+    def nDEER_CP(self, n:int, tp=16, relaxation=False, pcyc='Normal'):
         """Generate an nDEER sequence.
 
         The sum of tau1 and tau2 is used as total trace length. 
@@ -1215,14 +1138,13 @@ class DEERSequence(Sequence):
             _description_, by default 16
         relaxation : bool, optional
             _description_, by default False
-
-        Raises
-        ------
-        ValueError
-            _description_
+        pcyc: str, optional
+            Normal: Phases cycles pump and observer pulses, no DC cycle
+            NormalDC: Phases cycles pump and observer pulses, DC cycle
+            Obs: Phases cycles observer pulses, no DC cycle
+            ObsDC: Phases cycles and observer pulses, DC cycle
         """
 
-        step = 2*(self.tau1.value+self.tau2.value)/(2*n)
         self.name = "nDEER-CP"
         self.n = Parameter(
             name="n", value=n,
@@ -1231,25 +1153,23 @@ class DEERSequence(Sequence):
 
         self.step = Parameter(
             name="step", value=2*(self.tau1.value+self.tau2.value)/(2*n),
-            unit=None, description="The gap of the first refoucsing pulse",
+            unit="ns", description="The gap of the first refoucsing pulse",
             virtual=True)
 
         if relaxation:
 
             self.step = Parameter(
-                name="step", value=2*(self.tau1.value+self.tau2.value)/(2*n),
+                name="step", value=300,
                 dim=100, step=200,
-                unit=None, description="The gap of the first refoucsing pulse",
+                unit="ns", description="The gap of the first refoucsing pulse",
                 virtual=True)            
             self.t = Parameter(
                 name="t", value=0, unit="ns", description="The time axis",
                 virtual=True)
 
         else:
-            if self.deadtime > self.tau3.value:
-                raise ValueError("Deadtime must be greater than tau3, otherwise pulses crash")
             
-            dim = np.floor((2*(n-1)*self.step.value)/self.dt)
+            dim = np.floor((n*self.step.value)/self.dt)
 
             self.t = Parameter(
                 name="t", value= - self.deadtime, step=self.dt,
@@ -1264,26 +1184,26 @@ class DEERSequence(Sequence):
             ))
         
         if hasattr(self,"ref_pulse"): # Ref 1 pulse
-            self.addPulse(self.ref_pulse.copy(t=step))
+            self.addPulse(self.ref_pulse.copy(t=self.step))
         else:
             self.addPulse(RectPulse( 
-                t=step, tp=tp, freq=0, flipangle=np.pi
+                t=self.step, tp=tp, freq=0, flipangle=np.pi
             ))
 
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=2*self.step + self.t))
+            self.addPulse(self.pump_pulse.copy(t=n*self.step + self.t))
         else:
             self.addPulse(RectPulse(
-                t=2*self.step + self.t, tp=tp, freq=0, flipangle=np.pi
+                t=n*self.step + self.t, tp=tp, freq=0, flipangle=np.pi
             ))
         
         for i in np.arange(1,n):
 
             if hasattr(self,"ref_pulse"): # Ref i pulse
-                self.addPulse(self.ref_pulse.copy(t=(2*i+1)*step))
+                self.addPulse(self.ref_pulse.copy(t=(2*i+1)*self.step))
             else:
                 self.addPulse(RectPulse( 
-                    t=(2*i+1)*step, tp=tp, freq=0, flipangle=np.pi
+                    t=(2*i+1)*self.step, tp=tp, freq=0, flipangle=np.pi
                 ))
 
         if hasattr(self, "det_event"):
@@ -1295,11 +1215,27 @@ class DEERSequence(Sequence):
             self.evolution([self.step])
         else:
             self.evolution([self.t])
-        # self.addPulsesProg(
-        #     [2],
-        #     ["t"],
-        #     0,
-        #     axis)
+      
+        if pcyc == 'NormalDC' or pcyc=='ObsDC':
+            self.pulses[0]._addPhaseCycle(
+                [0, np.pi], [1, -1])
+        
+        if pcyc == 'NormalDC' or pcyc == 'Normal':
+            self.pulses[2]._addPhaseCycle(
+                [0, np.pi/2, np.pi, -np.pi/2], [1, 1, 1, 1])
+        
+        if pcyc is not None:
+            if n-1 == 1:
+                self.pulses[1]._addPhaseCycle(
+                    [0, np.pi], [1,1])
+            elif n > 2:
+                self.pulses[1]._addPhaseCycle(
+                    [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])
+                self.pulses[n]._addPhaseCycle(
+                    [0, np.pi], [1,1])
+                for i in range(3,n):
+                    self.pulses[i]._addPhaseCycle(
+                    [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])
 
         pass
     def select_pcyc(self, option: str):
@@ -1415,7 +1351,7 @@ class HahnEchoSequence(Sequence):
 
         """
         
-        name = "Hahn Echo"
+        name = "HahnEchoSequence"
         
         if "pi_pulse" in kwargs:
             self.pi_pulse = kwargs["pi_pulse"]
@@ -1429,8 +1365,14 @@ class HahnEchoSequence(Sequence):
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
 
-        tau = 500
-        tp = 12
+        if "tau" in kwargs:
+            tau = kwargs["tau"]
+        else:
+            tau = 500
+        if "tp" in kwargs:
+            tp = kwargs["tp"]
+        else:
+            tp = 12
 
         if hasattr(self, "pi2_pulse"):
             self.addPulse(self.pi2_pulse.copy(
@@ -1442,10 +1384,10 @@ class HahnEchoSequence(Sequence):
             ))
 
         if hasattr(self, "pi_pulse"):
-            self.addPulse(self.pi_pulse.copy(
+            pi_pulse = self.addPulse(self.pi_pulse.copy(
                 t=tau, pcyc={"phases":[0], "dets": [1]}))
         else:
-            self.addPulse(RectPulse( # Pump 1 pulse
+            pi_pulse = self.addPulse(RectPulse( # Pump 1 pulse
                 t=tau, tp=tp, freq=0, flipangle=np.pi
             ))
 
@@ -1453,6 +1395,21 @@ class HahnEchoSequence(Sequence):
             self.addPulse(self.det_event.copy(t=2*tau))
         else:
             self.addPulse(Detection(t=2*tau, tp=self.det_window.value))
+
+# =============================================================================
+
+class T2RelaxationSequence(HahnEchoSequence):
+    """
+    Represents a T2 relaxation sequence. A Hahn Echo where the interpulse delay increases
+    """
+
+    def __init__(self, *, B, LO, reptime, averages, shots, step=40, dim=200, **kwargs) -> None:
+
+        self.tau = Parameter(name="tau", value=500,step=step,dim=dim, unit="ns", description="The interpulse delay",virtual=True)
+        super().__init__(B=B, LO=LO, reptime=reptime, averages=averages, shots=shots,tau=self.tau, **kwargs)
+
+        self.name = "T2RelaxationSequence"
+        self.evolution([self.tau])
 
 # =============================================================================
 
@@ -1491,15 +1448,64 @@ class FieldSweepSequence(HahnEchoSequence):
         super().__init__(
             B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
-        self.name = "Field Sweep"
+        self.name = "FieldSweepSequence"
 
 
         self.B = Parameter(
-            "B", value=B-Bwidth/2, step=1,dim=Bwidth, unit="Gauss", description="Field sweep width"
+            "B", value=B, start = -Bwidth/2, step=1, dim=Bwidth, unit="Gauss", description="Field sweep width"
         )
         
         self.evolution([self.B])
         
+# =============================================================================
+
+class ReptimeScan(HahnEchoSequence):
+    """
+    Represents a reptime scan of a Hahn Echo Sequence. 
+    """
+    def __init__(self, *, B, LO, reptime, reptime_max, averages, shots, **kwargs) -> None:
+        """A Hahn echo sequence is perfomed with the shot repetition time increasing.1
+
+        Parameters
+        ----------
+        B : int or float
+            The B0 field, in Guass
+        LO : int or float
+            The LO frequency in GHz
+        reptime: float
+            The default reptime, this is used for tuning pulses etc...
+        reptime_max : np.ndarray
+            The maximum shot repetition time in us    
+        averages : int
+            The number of scans.
+        shots : int
+            The number of shots per point
+        
+        Optional Parameters
+        -------------------
+        pi2_pulse : Pulse
+            An autoEPR Pulse object describing the excitation pi/2 pulse. If
+            not specified a RectPulse will be created instead. 
+        pi_pulse : Pulse
+            An autoEPR Pulse object describing the refocusing pi pulses. If
+            not specified a RectPulse will be created instead. 
+        """
+        min_reptime = 20
+        dim = 100
+        step  = (reptime_max-min_reptime)/dim
+        step = np.around(step,decimals=-1)
+        step = np.around(step,decimals=-1)
+        reptime = Parameter(
+            "reptime", reptime, start = min_reptime-reptime, step=step, dim=100, unit="us",
+            description = "The shot repetition time")
+        
+        super().__init__(
+            B=B, LO=LO, reptime=reptime, averages=averages,
+            shots=shots, **kwargs)
+        self.name = "ReptimeScan"
+
+        self.evolution([self.reptime])
+
 # =============================================================================
 
 class CarrPurcellSequence(Sequence):
@@ -1507,7 +1513,7 @@ class CarrPurcellSequence(Sequence):
     Represents a Carr-Purcell sequence. 
     """
     def __init__(self, *, B, LO, reptime, averages, shots,
-            tau, n, **kwargs) -> None:
+            tau, n, dim=100,**kwargs) -> None:
         """Build a Carr-Purcell dynamical decoupling sequence using either 
         rectangular pulses or specified pulses.
 
@@ -1527,6 +1533,8 @@ class CarrPurcellSequence(Sequence):
             The maximum total sequence length in us
         n : int
             The number refocusing pulses
+        dim : int
+            The number of points in the X axis
 
         Optional Parameters
         -------------------
@@ -1538,14 +1546,16 @@ class CarrPurcellSequence(Sequence):
             not specified a RectPulse will be created instead. 
         """
 
-        name = "Carr-Purcell"
+        name = "CarrPurcellSequence"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
         self.tau = Parameter(name="tau", value=tau*1e3, unit="ns",
-            description="Total sequence length")
+            description="Total sequence length", virtual=True)
         self.n = Parameter(name="n", value=n,
-            description="The number of pi pulses", unit="None")
+            description="The number of pi pulses", unit="None", virtual=True)
+        self.dim = Parameter(name="dim", value=dim, unit="None",
+            description="The number of points in the X axis", virtual=True)
 
         if "pi_pulse" in kwargs:
             self.pi_pulse = kwargs["pi_pulse"]
@@ -1560,9 +1570,12 @@ class CarrPurcellSequence(Sequence):
 
         n = self.n.value
         deadtime = 300
-        dt = 20
-        dim = np.floor((self.tau.value/(2*self.n.value) -deadtime)/dt)
-        step = Parameter("step",deadtime,unit="ns",step=dt, dim=dim)
+        # dt = 20
+        # dim = np.floor((self.tau.value/(2*self.n.value) -deadtime)/dt)
+        dim = self.dim.value
+        tau_interval = self.tau.value/(2*n)
+        dt = (tau_interval-deadtime)/dim
+        self.step = Parameter("step",deadtime,unit="ns",step=dt, dim=dim)
         # # multipliers = [1]
         # # multipliers += [1+2*i for i in range(1,n)]
         # # multipliers += [2*n]
@@ -1590,24 +1603,114 @@ class CarrPurcellSequence(Sequence):
                 dets = [1,-1,1,-1]
             if hasattr(self, "pi_pulse"):
                 self.addPulse(self.pi_pulse.copy(
-                    t=step*(2*i + 1), pcyc={"phases":phases, "dets": dets}))
+                    t=self.step*(2*i + 1), pcyc={"phases":phases, "dets": dets}))
             else:
                 self.addPulse(RectPulse(  # pi
-                    t=step*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
+                    t=self.step*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
                     pcyc={"phases":phases, "dets": dets}
                 ))
         if hasattr(self, "det_event"):
-            self.addPulse(self.det_event.copy(t=step*(2*n)))
+            self.addPulse(self.det_event.copy(t=self.step*(2*n)))
         else:
-            self.addPulse(Detection(t=step*(2*n), tp=512))
+            self.addPulse(Detection(t=self.step*(2*n), tp=512))
         
-        self.evolution([step])
-        # self.addPulsesProg(
-        #     list(range(1,n+2)),
-        #     ["t"]*(n+1),
-        #     0,
-        #     axis,
-        #     multipliers=multipliers)
+        self.evolution([self.step])
+
+# =============================================================================
+
+class RefocusedEcho2DSequence(Sequence):
+
+    """
+    Represents a 2D Refocused-echo Sequence. 
+    """
+    def __init__(self, *, B, LO, reptime, averages, shots,
+            tau, dim=100, step=50, **kwargs) -> None:
+        """Build a 2D Refocused-echo sequence using either 
+        rectangular pulses or specified pulses.
+
+        Parameters
+        ----------
+        B : int or float
+            The B0 field, in Guass
+        LO : int or float
+            The LO frequency in GHz
+        reptime : _type_
+            The shot repetition time in us
+        averages : int
+            The number of scans.
+        shots : int
+            The number of shots per point
+        tau : int
+            The starting value in ns
+        dim: int
+            The number of points in both the X and Y axis
+        step: float
+            The step in ns for both the X and Y axis
+
+        Optional Parameters
+        -------------------
+        pi2_pulse : Pulse
+            An autoEPR Pulse object describing the excitation pi/2 pulse. If
+            not specified a RectPulse will be created instead. 
+        pi_pulse : Pulse
+            An autoEPR Pulse object describing the refocusing pi pulses. If
+            not specified a RectPulse will be created instead. 
+        """
+
+        name = "Carr-Purcell"
+        super().__init__(
+            name=name, B=B, LO=LO, reptime=reptime, averages=averages,
+            shots=shots, **kwargs)
+        self.tau1 = Parameter(name="tau1", value=tau, dim=dim, step=step, unit="ns",
+            description="1st interpulse delay")
+        self.tau2 = Parameter(name="tau2", value=tau, dim=dim, step=step, unit="ns",
+            description="2nd interpulse delay")
+
+        if "pi_pulse" in kwargs:
+            self.pi_pulse = kwargs["pi_pulse"]
+        if "pi2_pulse" in kwargs:
+            self.pi2_pulse = kwargs["pi2_pulse"]
+        if "det_event" in kwargs:
+            self.det_event = kwargs["det_event"]
+
+        self._build_sequence()
+
+    def _build_sequence(self):
+    
+        if hasattr(self, "pi2_pulse"):
+            self.addPulse(self.pi2_pulse.copy(
+                t=0, pcyc={"phases":[0, np.pi], "dets": [1, -1]}))
+        else:
+            self.addPulse(RectPulse(  # pi/2
+                t=0, tp=16, freq=0, flipangle=np.pi/2,
+                pcyc={"phases":[0, np.pi], "dets": [1, -1]}
+            ))
+
+        if hasattr(self, "pi_pulse"):
+            self.addPulse(self.pi_pulse.copy(
+                t=self.tau1, pcyc={"phases":[0, np.pi/2, np.pi, -np.pi/2], "dets": [1,-1,1,-1]}))
+        else:
+            self.addPulse(RectPulse(
+                t=self.tau1, tp=32, freq=0, flipangle=np.pi,
+                pcyc={"phases":[0, np.pi/2, np.pi, -np.pi/2], "dets": [1,-1,1,-1]}
+            ))
+
+        if hasattr(self, "pi_pulse"):
+            self.addPulse(self.pi_pulse.copy(
+                t=2*self.tau1 + self.tau2, pcyc={"phases":[0, np.pi], "dets": [1,1]}))
+        else:
+            self.addPulse(RectPulse(
+                t=2*self.tau1 + self.tau2, tp=32, freq=0, flipangle=np.pi,
+                pcyc={"phases":[0, np.pi], "dets": [1,1]}
+            ))
+        
+        if hasattr(self, "det_event"):
+            self.addPulse(self.det_event.copy(t=2*(self.tau1 + self.tau2)))
+        else:
+            self.addPulse(Detection(t=2*(self.tau1 + self.tau2), tp=512))
+
+        self.evolution([self.tau1, self.tau2])
+
 
 # =============================================================================
 
@@ -1654,7 +1757,7 @@ class ResonatorProfileSequence(Sequence):
             not specified a RectPulse will be created instead. 
         """
 
-        name = "Resonator-Profile"
+        name = "ResonatorProfileSequence"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
@@ -1677,9 +1780,9 @@ class ResonatorProfileSequence(Sequence):
         fstep = 0.02
         dim = np.floor(fwidth*2/0.02)
         center_LO = self.LO.value
-        self.LO = Parameter("LO", center_LO-fwidth, step=0.02, dim=dim, unit="GHz", description="LO frequency")
+        self.LO = Parameter("LO", center_LO, start=-fwidth, step=fstep, dim=dim, unit="GHz", description="LO frequency")
         self.B = Parameter(
-            "B",((self.LO.value)/self.gyro), step=fstep/self.gyro, dim=dim,
+            "B",((self.LO.value)/self.gyro), start=-fwidth/self.gyro, step=fstep/self.gyro, dim=dim,
             unit="Guass",link=self.LO,description="B0 Field" )
         
         self.addPulse(RectPulse(  # Hard pulse
@@ -1735,7 +1838,7 @@ class TWTProfileSequence(Sequence):
     
     def __init__(self,*,B,LO,reptime,averages=1,shots=100,**kwargs) -> None:
 
-        name = "TWT-Profile"
+        name = "TWTProfileSequence"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)

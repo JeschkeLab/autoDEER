@@ -2,16 +2,17 @@ import os
 import deerlab as dl
 import numpy as np
 import logging
-from autodeer.dataset import Dataset
-from autodeer.hardware.ETH_awg_load import uwb_load
+from autodeer.dataset import create_dataset_from_bruker
+from autodeer.hardware.ETH_awg_load import uwb_load, uwb_eval_match
 from scipy.io import loadmat
+import xarray as xr
 
-log = logging.getLogger('core.Tools')
+log = logging.getLogger('autoDEER.Tools')
 
 
 def eprload(
         path: str, experiment: str = None, type: str = None,
-        **kwargs) -> Dataset:
+        **kwargs):
     """ A general versions of eprload
 
     Parameters
@@ -25,7 +26,7 @@ def eprload(
 
     Returns
     -------
-    Dataset
+    xarray.Dataarray
         _description_
 
     Raises
@@ -63,20 +64,7 @@ def eprload(
                 "'.hdf5','.csv','.txt','.mat'")
     
     if type == 'BRUKER':
-        
-        if 'full_output' in kwargs:
-            full_output = kwargs['full_output']
-        else:
-            full_output = False
-
-        if full_output is False:    
-            t, V = dl.deerload(path, plot=False, full_output=full_output)
-            return Dataset(t, V)
-
-        else:
-            t, V, Params = dl.deerload(
-                path, plot=False, full_output=full_output)
-            return Dataset(t, V, Params)
+        return create_dataset_from_bruker(path)
 
     elif type == 'TXT':
         if 'full_output' in kwargs:
@@ -92,18 +80,21 @@ def eprload(
         Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
         # Params = Matfile[Matfile["expname"]]
         if "options" in kwargs:
-            uwb_output = uwb_load(Matfile, kwargs["options"])
+            opts=kwargs["options"]
         else:
-            uwb_output = uwb_load(Matfile)
+            opts={}
+        # if 'ref_echo_2D_idx' not in opts:
+        #     opts['ref_echo_2D_idx'] = 'end'
+        # uwb_output = uwb_load(Matfile,opts)
+        uwb_output = uwb_eval_match(Matfile,**kwargs)
         # axes = uwb_output.dta_x
         # data = uwb_output.dta_ev
 
-        # data = Dataset(axes, data, Params)
-        # data.add_variable(Parameter(name='nAvgs', value=uwb_output.nAvgs))
-        # if hasattr(uwb_output,"dta_scans"):
-        #     data.scans = uwb_output.dta_scans
-        # return data 
-        return uwb_output        
+        return uwb_output
+    
+    elif type == 'HDF5':
+        return xr.load_dataarray(path,engine='h5netcdf',invalid_netcdf=True)
+
 
 def progress_bar(progress, post=""):
 

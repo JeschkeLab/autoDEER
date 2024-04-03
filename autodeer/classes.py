@@ -6,12 +6,14 @@ import os
 from autodeer import __version__
 import copy
 import time
+import datetime
 import numbers
 import uuid
 import json
 import base64
 from autodeer.utils import autoEPRDecoder
-
+from pathlib import Path
+import logging
 
 # =============================================================================
 
@@ -20,17 +22,28 @@ class Interface:
     """Represents the interface connection from autoEPR to the spectrometer.
     """
 
-    def __init__(self) -> None:
+    def __init__(self,log=None) -> None:
+        self.pulses = {}
+        self._savefolder = str(Path.home())
+        self.savename = ""
+        if log is None:
+            self.log = logging.getLogger('interface')
+        else:
+            self.log = log
         pass
 
     def connect(self) -> None:
         pass
 
-    def acquire_dataset(self):
+    def acquire_dataset(self, data):
         """
         Acquires the dataset.
         """
-        pass
+
+        # data.sequence = self.cur_exp
+        data.attrs['time'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return data
+    
 
     def launch(self, sequence, savename: str):
         """Launches the experiment and initialises autosaving.
@@ -40,8 +53,10 @@ class Interface:
         sequence : Sequence
             The sequence to be launched
         savename : str
-            The savename/path for this measurement.
+            The savename for this measurement. A timestamp will be added to the value.
         """
+        timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
+        self.savename=timestamp + savename + '.h5'
         pass
 
     def isrunning(self) -> bool:
@@ -53,7 +68,7 @@ class Interface:
         """
         pass
 
-    def terminate_at(self, criterion, test_interval=10, keep_running=True, verbosity=0):
+    def terminate_at(self, criterion, test_interval=2, keep_running=True, verbosity=0,autosave=True):
         """Terminates the experiment upon a specific condition being
         satisified. 
 
@@ -63,6 +78,13 @@ class Interface:
             The criteria to be tested.
         test_interval : int, optional
             How often should the criteria be tested in minutes, by default 10.
+        keep_running : bool, optional
+            If True, an error will not be raised if the experiment finishes before the criteria is met, by default True.
+        verbosity : int, optional
+            The verbosity level, by default 0. 
+        autosave : bool, optional
+            If True, the data will be autosaved, by default True.
+
         """
 
 
@@ -73,10 +95,24 @@ class Interface:
 
 
         while not condition:
+
+            if not self.isrunning():
+                if keep_running:
+                    self.terminate()
+                    return None
+                else:
+                    msg = "Experiments has finished before criteria met."
+                    raise RuntimeError(msg)
+
             start_time = time.time()
             data = self.acquire_dataset()
+            if autosave:
+                self.log.debug(f"Autosaving to {os.path.join(self._savefolder,self.savename)}")
+                data.to_netcdf(os.path.join(self._savefolder,self.savename),engine='h5netcdf',invalid_netcdf=True)
+
             try:
-                nAvgs = data.nAvgs.value
+                # nAvgs = data.num_scans.value
+                nAvgs = data.attrs['nAvgs']
             except AttributeError:
                 print("WARNING: Dataset missing number of averages(nAvgs)!")
                 nAvgs = 1
@@ -93,18 +129,14 @@ class Interface:
             condition = criterion.test(data, verbosity)
 
             if not condition:
-                if not self.isrunning():
-                    if keep_running:
-                        return None
-                    else:
-                        msg = "Experiments has finished before criteria met."
-                        raise RuntimeError(msg)
                 end_time = time.time()
                 if (end_time - start_time) < test_interval_seconds:
                     if verbosity > 0:
                         print("Sleeping")
                     time.sleep(test_interval_seconds - (end_time - start_time))
 
+        if callable(criterion.end_signal):
+            criterion.end_signal()
         self.terminate()
         pass
 
@@ -115,7 +147,7 @@ class Parameter:
     Represents a sequence or pulse parameter.
     """
 
-    def __init__(self, name, value, unit=None, description=None, virtual=False,
+    def __init__(self, name, value, unit="", description="", virtual=False,
                   **kwargs) -> None:
         """A general parameter.
 
@@ -164,9 +196,9 @@ class Parameter:
         ```
         Creating a dynamic parameter
         ```
-        ```
-        Making a dynamic parameter
-        ```
+        Par1 = Parameter(
+            name="Par1", value=10, unit="us", description="The first parameter",
+            axis=np.arange(0,10,1), axis_id=0)
         ```
 
         Adding a parameter and a number:
@@ -206,7 +238,10 @@ class Parameter:
                 start = kwargs["start"]
             else:
                 start = 0
-            axis = np.arange(start=0, stop= dim*step+start,step=step)
+            if step == 0:
+                axis = np.zeros(dim)
+            else:
+                axis = np.arange(start=start, stop= dim*step+start,step=step)
             self.add_axis(axis=axis,axis_id=axis_id)
         
 
@@ -218,6 +253,25 @@ class Parameter:
         #     self.axis.append(np.array(axis))
         #     self.ax_id.append(axis_id)
         self.axis.append({"axis":axis, "uuid":self.uuid})
+
+    def get_axis(self):
+        init_value = self.value
+        axes = []
+        for axis in self.axis:
+            axes.append(axis['axis'] + init_value)
+        if len(axes) == 1:
+            return axes[0]
+        else:
+            return axes
+    
+    @property
+    def dim(self):
+        if self.axis is []:
+            return ()
+        dims = []
+        for ax in self.axis:
+            dims.append(ax['axis'].shape[0])
+        return tuple(dims)
 
     def remove_dynamic(self):
         self.axis = []

@@ -159,3 +159,5 @@ Jupyter_Notebooks/
 *.xlsx
 
 .vscode/
+**/autoapi/autodeer/**/*.rst
+*.log*

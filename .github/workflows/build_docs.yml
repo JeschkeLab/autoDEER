@@ -12,10 +12,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-    - name: Set up Python 3.10
+    - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: "3.11"
     - uses: actions/cache@v2
       with:
         path: |
@@ -26,14 +26,7 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install furo
-        python -m pip install sphinx-gallery
-        python -m pip install sphinx-design
-        python -m pip install --upgrade myst-parser
-        python -m pip install sphinx_toolbox
-        python3 -m pip install sphinx-copybutton
-        python -m pip install numpydoc
-        python -m pip install .
+        python -m pip install ".[Dev]"
     - name: Build with Sphinx
       run: |
-        sphinx-build -E -b html ./docsrc ./docs
+        sphinx-build -E -b html --keep-going ./docsrc ./docs

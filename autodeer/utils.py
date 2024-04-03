@@ -134,7 +134,11 @@ def transpose_dict_of_list(d):
 def transpose_list_of_dicts(d):
     """Turns a list of dictionaries into a dictionary of lists.
     """
-    return {key: [i[key] for i in d] for key in d[0]}
+
+    if len(d) == 0:
+        return {}
+    else:
+        return {key: [i[key] for i in d] for key in d[0]}
 
 def save_file(path, str):
     with open(path, "w") as file:
@@ -148,3 +152,88 @@ def autoEPRDecoder(dct):
         data = base64.b64decode(dct['__ndarray__'][2:-1])
         return np.frombuffer(data, dct['dtype']).reshape(dct['shape'])
     return dct
+
+
+def gcd(values:list):
+    """Generates the greatest common dividor on a  list of floats
+
+    Parameters
+    ----------
+    values : list
+        _description_
+    """
+    values = values.copy()
+    if len(values) == 1:
+        return values[0]
+    
+    if len(values) == 2:
+        a = values[0]
+        b = values[1]
+        while b:
+            a, b = b, a % b
+        return a
+    
+    if len(values) > 2:
+        a = values[0]
+        b = values[1]
+        while b:
+            a, b = b, a % b
+        values[0] = a
+        values.pop(1)
+        return gcd(values)
+    
+
+def val_in_us(Param, axis=True):
+    """Returns the value or axis of a parameter in microseconds
+
+    Parameters
+    ----------
+    Param : autodeer.Parameter
+        The parameter to be converted
+
+    Returns
+    -------
+    float or numpy.ndarray
+    """
+    if (len(Param.axis) == 0) or not axis:
+        if Param.unit == "us":
+            return Param.value
+        elif Param.unit == "ns":
+            return Param.value / 1e3
+    elif len(Param.axis) == 1 and axis:
+        if Param.unit == "us":
+            return Param.value + Param.axis[0]['axis']
+        elif Param.unit == "ns":
+            return (Param.value + Param.axis[0]['axis']) / 1e3 
+    else:
+        raise ValueError("Parameter must have 0 or 1 axes")
+
+def val_in_ns(Param):
+    """Returns the value or axis of a parameter in nanoseconds
+
+    Parameters
+    ----------
+    Param : autodeer.Parameter
+        The parameter to be converted
+
+    Returns
+    -------
+    float or numpy.ndarray
+    """
+     
+    if len(Param.axis) == 0:
+        if Param.unit == "us":
+            return Param.value * 1e3
+        elif Param.unit == "ns":
+            return Param.value 
+    elif len(Param.axis) == 1:
+        if Param.unit == "us":
+            return (Param.tau1.value + Param.axis[0]['axis']) * 1e3
+        elif Param.unit == "ns":
+            return (Param.value + Param.axis[0]['axis']) 
+    else:
+        raise ValueError("Parameter must have 0 or 1 axes")
+
+def round_step(value, step):
+
+    return step * np.floor(np.round(value/step))

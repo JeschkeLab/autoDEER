@@ -1,16 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from autodeer.dataset import Dataset
 from autodeer.utils import sop
 from autodeer.classes import Parameter
 from scipy import signal
 from scipy.linalg import eig
 from scipy.sparse import bsr_array
 import deerlab as dl
-
+from xarray import DataArray
+from autodeer.colors import primary_colors, ReIm_colors
 
 def create_Nmodel(mwFreq):
+    """Create the field sweep model for a Nitroxide spin system. 
+
+    Parameters
+    ----------
+    mwFreq : float
+        The microwave frequency in MHz
+    """
 
 
     def model_func(B, Boffset, gy,gz,axy,az,GB):
@@ -75,19 +82,31 @@ def create_Nmodel(mwFreq):
         
 class FieldSweepAnalysis():
 
-    def __init__(self, dataset: Dataset) -> None:
+    def __init__(self, dataset:DataArray) -> None:
         """Analysis and calculation of FieldSweep Experiment. 
 
         Parameters
         ----------
-        dataset : Dataset
+        dataset : xarray.Dataarray
             _description_
         """
-        self.axis = dataset.axes[0]
-        self.data = dataset.data
-        self.dataset = dataset
-        if hasattr(self.dataset,"LO"):
-            self.LO = self.dataset.LO
+        # self.axis = dataset.axes[0]
+        # self.data = dataset.data
+        # self.dataset = dataset
+        # if hasattr(self.dataset,"LO"):
+        #     self.LO = self.dataset.LO
+
+        if 'B' in dataset.coords:
+            self.axis = dataset['B']
+        else:
+            self.axis = dataset['X']
+        
+        self.data = dataset
+        self.data.epr.correctphasefull
+
+        if 'LO' in dataset.attrs:
+            self.LO = dataset.attrs['LO']
+        
         pass
 
     def find_max(self) -> float:
@@ -98,8 +117,10 @@ class FieldSweepAnalysis():
         float
             Max field
         """
-        max_id = np.argmax(np.abs(self.data))
-        self.max_field = self.axis[max_id]
+        if 'B' in self.data.coords:
+            self.max_field = self.data['B'].data[np.abs(self.data).argmax()]
+        else:
+            self.max_field = self.data['X'].data[np.abs(self.data).argmax()]
 
         return self.max_field
 
@@ -122,7 +143,8 @@ class FieldSweepAnalysis():
 
         if LO is None:
             if hasattr(self,"LO"):
-                LO = self.LO.value
+                # LO = self.LO.value
+                LO = self.LO
             else:
                 raise ValueError("A LO frequency must eithe be in the dataset or specified as an argument")
             
@@ -132,6 +154,15 @@ class FieldSweepAnalysis():
         self.fs_x = LO + hf_x
         self.fs_x = LO - self.gyro*self.axis
         return self.gyro
+    
+    def calc_noise_level(self,SNR_target=30):
+        SNR = self.data.epr.correctphase.epr.SNR
+        SNRp1k = SNR / (self.data.nPcyc * self.data.nAvgs * self.data.shots *1e-3)**0.5
+        level = np.round((SNR_target/SNRp1k)**2 / (self.data.nPcyc * 2 * 50* 1e-3))
+        if level < 0.2:
+            level = 0.2
+        return level 
+        
     
     def fit(self, spintype='N', **kwargs):
 
@@ -144,11 +175,16 @@ class FieldSweepAnalysis():
         else:
             mymodel  = create_Nmodel(self.LO*1e3)
         B = np.linspace(self.axis.min(), self.axis.max(), self.data.shape[0])*0.1
-        result = dl.fit(mymodel,self.data.real,B,verbose=2,reg=False,  **kwargs)
+        if np.iscomplexobj(self.data):
+            Vexp = dl.correctphase(self.data.to_numpy())
+        else:
+            Vexp = self.data.to_numpy()
+        result = dl.fit(mymodel,Vexp,B,verbose=2,reg=False,  **kwargs)
         self.results = result
+        self.model = mymodel
         return result
 
-    def plot(self, norm: bool = True, axis: str = "time") -> Figure:
+    def plot(self, norm: bool = True, axis: str = "field", axs=None, fig=None) -> Figure:
         """Generate a field sweep plot
 
         Parameters
@@ -156,7 +192,7 @@ class FieldSweepAnalysis():
         norm : bool, optional
             Nomarlisation of the plot to a maximum of 1, by default True
         axis : str, optional
-            plot field sweep on either the "time" axis or "freq" axis
+            plot field sweep on either the "field" axis or "freq" axis
 
         Returns
         -------
@@ -164,30 +200,52 @@ class FieldSweepAnalysis():
             matplotlib figure
         """
 
+
         if norm is True:
             data = self.data
             data /= np.max(np.abs(data))
+        else:
+            data = self.data
+        
 
-        if axis.lower() == 'time':
-            fig, ax = plt.subplots()
-            ax.plot(self.axis, np.abs(data), label='abs')
-            ax.plot(self.axis, np.real(data), label='real')
-            ax.plot(self.axis, np.imag(data), label='imag')
-            ax.legend()
-            ax.set_xlabel('Field G')
-            ax.set_ylabel('Normalised Amplitude')
-            if hasattr(self, "max_field"):
-                min_value = np.min(np.hstack([np.real(data), np.imag(data)]))
-                max_value = np.min(np.hstack([np.real(data), np.imag(data)]))
-                ax.vlines(
-                    self.max_field, min_value, max_value, label="Maximum")
+        if axs is None and fig is None:
+            fig, axs = plt.subplots(1, 1, figsize=(8, 6))              
+
+        # Plot the data
+        if axis.lower() == 'field':
+            if np.iscomplexobj(data):
+                axs.plot(self.axis, np.real(data), label='Re',color=primary_colors[1])
+                axs.plot(self.axis, np.imag(data), label='Im',color=primary_colors[2])
+            else:
+                axs.plot(self.axis, data, label='Re',color=primary_colors[1])
+            axs.legend()
+            axs.set_xlabel('Field G')
+            axs.set_ylabel('Normalised Amplitude')
+                
         elif axis.lower() == 'freq':
+
             if not hasattr(self, "fs_x"):
                 raise RuntimeError("Please run fieldsweep.calc_gyro() first")
-            fig, ax = plt.subplots()
-            ax.plot(self.fs_x, np.abs(data), label='abs')
-            ax.set_xlabel('Frequency GHz')
-            ax.set_ylabel('Normalised Amplitude')
+            
+            if np.iscomplexobj(data):
+                axs.plot(self.fs_x, np.real(data), label='Re',color=primary_colors[1])
+                axs.plot(self.fs_x, np.imag(data), label='Im',color=primary_colors[2])
+            else:
+                axs.plot(self.axis, data, label='Re',color=primary_colors[1])
+            axs.set_xlabel('Frequency GHz')
+            axs.set_ylabel('Normalised Amplitude')
+
+        # Plot the fit
+        if hasattr(self,"results"):
+            data = self.results.evaluate(self.model,self.axis*0.1)
+            if norm is True:
+                data /= self.results.scale
+            if axis.lower() == 'field':
+                axs.plot(self.axis, data, label='fit',c=primary_colors[0])
+            elif axis.lower() == 'freq':
+
+                axs.plot(self.fs_x, np.flip(data), label='fit',c=primary_colors[0])
+            axs.legend()
 
         return fig
 
@@ -209,17 +267,17 @@ class SpinSystem:
         self.gnscale = 1
         
 def erot(*args):
+    """Passive rotation matrix.
+    """
     if len(args) == 0:
-        print("erot(varargin)")
-        return
+        raise ValueError("No input arguments given!")
+        
 
     option = ""
     if len(args) == 1 or len(args) == 2:
         angles = np.asarray(args[0])
         if angles.size != 3:
-            raise ValueError("Three angles (either separately or in a 3-element array) expected.\n"
-                             "You gave an {}x{} array with {} elements.".format(angles.shape[0], angles.shape[1],
-                                                                                   angles.size))
+            raise ValueError("Three angles (either separately or in a 3-element array) expected.")
         gamma = angles[2]
         beta = angles[1]
         alpha = angles[0]
@@ -239,18 +297,15 @@ def erot(*args):
 
     if option == "":
         return_rows = False
+        return_cols = False
     elif option == "rows":
         return_rows = True
+        return_cols = False
     elif option == "cols":
         return_rows = False
+        return_cols = True
     else:
         raise ValueError("Last argument must be a string, either 'rows' or 'cols'.")
-
-    if (len(args) == 3 or len(args) == 4) and len(args) != 3:
-        raise ValueError("3 outputs required if you specify 'rows' or 'cols'.")
-
-    if (len(args) == 3 or len(args) == 4) and len(args) != 3:
-        raise ValueError("Please specify whether erot() should return the 3 columns or the 3 rows of the matrix.")
 
     # Check angles
     if np.isnan(alpha) or np.isnan(beta) or np.isnan(gamma):
@@ -269,21 +324,39 @@ def erot(*args):
                   [-sg*cb*ca - cg*sa, -sg*cb*sa + cg*ca, sg*sb],
                   [sb*ca, sb*sa, cb]])
 
-    if len(args) == 3:
-        if return_rows:
-            return R[0, :], R[1, :], R[2, :]
-        else:
-            return R[:, 0], R[:, 1], R[:, 2]
+    
+    
+    if return_rows:
+        return R[0, :], R[1, :], R[2, :]
+    elif return_cols:
+        return R[:, 0], R[:, 1], R[:, 2]
     else:
         return R
 
 
+def eyekron(M:np.ndarray):
+    """
+    Calculates the Kronecker product of the identity matrix with a matrix M.
 
-def eyekron(M):
+    Parameters:
+    M (np.ndarray): The matrix to be multiplied with the identity matrix.
+
+    Returns:
+    np.ndarray: The Kronecker product of the identity matrix with M.
+    """
     size = np.shape(M)[0]
     return np.kron(np.identity(size),M)
 
 def kroneye(M):
+    """
+    Computes the Kronecker product of a matrix with the identity matrix of the same size.
+
+    Args:
+        M (numpy.ndarray): The matrix to compute the Kronecker product with.
+
+    Returns:
+        numpy.ndarray: The Kronecker product of M with the identity matrix of the same size.
+    """
     size = np.shape(M)[0]
     return np.kron(M,np.identity(size))
 
@@ -413,88 +486,6 @@ def ham_nz(SpinSystem, B=None, nspins=None):
     else:
         return -(muxM*B[0] + muyM*B[1] + muzM*B[2])
 
-def sphgrid(nOctants,maxPhi,GridSize,closedPhi):
-
-    dtheta = (np.pi/2)/(GridSize - 1)
-
-    if nOctants > 0:
-
-        if nOctants == 8:
-            nOct = 4
-        else:
-            nOct = nOctants
-
-        nOrientations = int(GridSize + nOct * GridSize * (GridSize - 1)/2)
-
-        phi = np.zeros(nOrientations)
-        theta = np.zeros(nOrientations)
-        Weights = np.zeros(nOrientations)
-
-        sindth2 = np.sin(dtheta/2)
-        w1 = 0.5
-
-        if not closedPhi:
-            w1 = w1 + 1/2
-
-        phi[0] = 0.
-        theta[0] = 0.
-        Weights[0] = maxPhi * (1 -np.cos(dtheta/2))
-
-        # Non Equatorial Points
-        Start = 1
-        for iSlice in np.arange(2, GridSize):
-            nPhi = nOct * (iSlice - 1) + 1
-            dphi = maxPhi / (nPhi - 1)
-            idx = Start + np.arange(0,stop = nPhi)
-            Weights[idx] = 2 * np.sin((iSlice - 1) * dtheta) * sindth2 * dphi * np.concatenate([[w1], np.ones(nPhi - 2), [0.5]])
-            phi[idx] = np.linspace(0,maxPhi,nPhi)
-            theta[idx] = (iSlice - 1) * dtheta
-            Start = Start + nPhi
-
-
-
-        # Equatorial Points
-        nPhi = nOct * (GridSize - 1) + 1;
-        dPhi = maxPhi / (nPhi - 1);
-        idx = Start + np.arange(0,stop = nPhi)
-        phi[idx] = np.linspace(0,maxPhi,nPhi)
-        theta[idx] = np.pi / 2
-        Weights[idx] = sindth2 * dPhi * np.concatenate([[w1], np.ones(nPhi - 2), [0.5]])
-
-        # Border Removal
-
-        if not closedPhi:
-            rmv = np.cumsum(nOct * (np.arange(1,stop = GridSize - 1)) + 1) + 1
-            phi =np.delete(phi,rmv)
-            theta = np.delete(theta,rmv)
-            Weights = np.delete(Weights,rmv)
-
-        if nOctants == 8: # C1 Symmetry
-            idx = np.size(theta) - np.arange(nPhi+1,stop = -1,step = 1) 
-            phi = np.concatenate([phi, phi[idx]])
-            theta = np.concatenate([theta , np.pi - theta[idx]])
-            Weights[idx] = Weights[idx] / 2
-            Weights = np.concatenate([Weights , Weights[idx]])
-
-        Weights = 2 * (2 * np.pi / maxPhi) * Weights # Sum = 4* pi
-
-    elif nOctants == 0: # Dinfh symmetry (quarter of meridian in xz plane)
-        phi = np.zeros(1,GridSize)
-        theta = np.linspace(0,phi/2,GridSize)
-        Weights = -2 * (2 * np.pi) * np.diff(np.cos([0, np.arange(dtheta/2,stop = dtheta,step = np.pi/2), np.pi/2]))
-
-    elif nOctants == -1: # O3 Symmetry
-
-        phi = 0;
-        theta = 0;
-        Weights =0;
-
-    else:
-        raise ValueError("Unsupported value ",nOctants," for nOctants")
-
-
-    return phi,theta,Weights
-
 
 def resfields(system, Orientations, mwFreq, computeIntensities = True,
               RejectionRatio = 1e-8, Range = (0,1e8),Threshold = 0, computeFreq2Field = True):
@@ -608,7 +599,7 @@ def build_spectrum(system, mwFreq, Range, knots=19,npoints = 1000, Guass_broaden
         The spectrum intensities normalised to 1  
     """
 
-    phi,theta,Weights = sphgrid(1,np.pi/2,knots,True)
+    phi,theta,Weights = dl.sophegrid(1,np.pi/2,knots)
     Orientations = np.vstack([phi,theta, np.zeros(phi.shape)]).T
     nOrientations = Orientations.shape[0]
     EigenFields, Intensities = resfields(system,Orientations,mwFreq)

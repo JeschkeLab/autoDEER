@@ -1,5 +1,6 @@
 from autodeer.classes import Parameter
 from autodeer.utils import build_table, sop, autoEPRDecoder
+from memoization import cached
 import numpy as np
 from scipy.integrate import cumulative_trapezoid
 import numbers
@@ -10,7 +11,6 @@ import matplotlib.pyplot as plt
 import scipy.fft as fft
 from autodeer import __version__
 import copy
-
 
 
 class Pulse:
@@ -54,6 +54,7 @@ class Pulse:
 
 
         self.name = name
+        self.Progression = False
 
         if flipangle is not None:
             self.flipangle = Parameter(
@@ -68,12 +69,31 @@ class Pulse:
         pass
 
     def _addPhaseCycle(self, phases, detections=None):
-        if detections is None:
-            detections = np.ones(len(phases))
-        self.pcyc = {"Phases": list(phases), "DetSigns": list(detections)}
-        pass
+            """
+            Adds a phase cycle to the pulse sequence.
 
-    def _buildFMAM(self, func):
+            Args:
+                phases (list): List of phases to add to the phase cycle.
+                detections (list, optional): List of detection signs. Defaults to None. If None then all cycles are summed.
+
+            Returns:
+                None
+            """
+            if detections is None:
+                detections = np.ones(len(phases))
+            self.pcyc = {"Phases": list(phases), "DetSigns": list(detections)}
+            pass
+
+    def _buildFMAM(self, func, ax=None):
+        """
+        Builds the amplitude modulation (AM) and frequency modulation (FM) of a given function.
+
+        Args:
+            func: A function that takes in an array of values and returns two arrays, representing the AM and FM of the function.
+
+        Returns:
+            Two arrays representing the AM and FM of the function.
+        """
         self.ax = np.linspace(-self.tp.value/2, self.tp.value/2, 1001)
         dt = self.ax[1]-self.ax[0]
         self.AM, self.FM = func(self.ax)
@@ -83,28 +103,55 @@ class Pulse:
         self.AM
         return self.AM, self.FM
     
+    def build_shape(self,ax=None):
+        if ax is None:
+            ax = self.ax
+        dt = ax[1]-ax[0]
+        pulse_points = int(np.around(self.tp.value/dt))
+        total_points = ax.shape[0]
+        remaining_points = total_points-pulse_points
+        pulse_axis = np.zeros(pulse_points)
+        AM, FM = self.func(pulse_axis)
+        AM = np.pad(AM,(int(np.floor(remaining_points/2)),int(np.ceil(remaining_points/2))),'constant',constant_values=0)
+        FM = np.pad(FM,(int(np.floor(remaining_points/2)),int(np.ceil(remaining_points/2))),'constant',constant_values=0)
+        FM_arg = 2*np.pi*cumulative_trapezoid(FM, initial=0) * dt
+        shape = AM * (np.cos(FM_arg) +1j* np.sin(FM_arg))
+ 
+        return shape
 
     def build_table(self):
-        progTable = {"Variable": [], "axis": [],
-                "uuid": []}
-        for arg in vars(self):
-            attr = getattr(self,arg)
-            if type(attr) is Parameter and not attr.is_static():
-                for i, axes in enumerate(attr.axis):
-                    progTable["Variable"].append(arg)
-                    progTable["axis"].append(axes["axis"])
-                    progTable["uuid"].append(axes["uuid"])
+            """
+            Builds a table of variables, axes, and UUIDs for all non-static Parameters in the object.
 
-        return progTable
+            Returns:
+                dict: A dictionary containing the following keys: "Variable", "axis", and "uuid".
+                The values for each key are lists of the corresponding values for each non-static Parameter.
+            """
+            progTable = {"Variable": [], "axis": [],
+                    "uuid": []}
+            for arg in vars(self):
+                attr = getattr(self,arg)
+                if type(attr) is Parameter and not attr.is_static():
+                    for i, axes in enumerate(attr.axis):
+                        progTable["Variable"].append(arg)
+                        progTable["axis"].append(axes["axis"])
+                        progTable["uuid"].append(axes["uuid"])
+
+            return progTable
 
     
     def is_static(self):
+            """
+            Check if all parameters in the pulse object are static.
 
-        for arg in vars(self):
-            attr = getattr(self,arg)
-            if type(attr) is Parameter and not attr.is_static():
-                return False
-        return True
+            Returns:
+                bool: True if all parameters are static, False otherwise.
+            """
+            for arg in vars(self):
+                attr = getattr(self,arg)
+                if type(attr) is Parameter and not attr.is_static():
+                    return False
+            return True
 
     def isDelayFocused(self):
         """
@@ -164,6 +211,7 @@ class Pulse:
 
         return axis_fft, pulse_fft
 
+    @cached(thread_safe=False)
     def exciteprofile(self, freqs=None):
         """Excitation profile
 
@@ -210,6 +258,8 @@ class Pulse:
         eye = np.identity(2)
         # offsets = np.arange(-2*BW,2*BW,0.002)
 
+        self._buildFMAM(self.func)
+
         if freqs is None:
             fxs, fs = self._calc_fft()
             fs = np.abs(fs)
@@ -250,7 +300,7 @@ class Pulse:
             Mag[1, iOffset] = -2 * (Sy @ Density.T).sum().real
             Mag[2, iOffset] = -2 * (Sz @ Density.T).sum().real
         
-        return Mag[0,:], Mag[1,:], Mag[2,:] 
+        return Mag[0,:], Mag[1,:], Mag[2,:]
 
 
     def plot_fft(self):
@@ -404,7 +454,12 @@ class Pulse:
             if (hasattr(new_pulse,arg)) and (getattr(new_pulse,arg) is not None):
                 attr = getattr(new_pulse,arg)
                 if type(attr) is Parameter:
-                    attr.value = kwargs[arg]     
+                    if isinstance(kwargs[arg], numbers.Number):
+                        attr.value = kwargs[arg]     
+                    elif isinstance(kwargs[arg], Parameter):
+                        attr.value = kwargs[arg].value
+                        attr.axis = kwargs[arg].axis
+
                 elif arg == "pcyc":
                     new_pcyc = kwargs[arg]
                     if attr is None:
@@ -601,7 +656,6 @@ class Delay(Pulse):
         else:
             self.t = None
         self.tp = Parameter("Length", tp, "ns", "Length of the pulse")
-        self.Progression = False
         self.pcyc = None
         self.scale = None
 
@@ -615,10 +669,22 @@ class RectPulse(Pulse):
 
     def __init__(
             self, tp=16, freq=0, t=None, flipangle=None, **kwargs) -> None:
+        """
+
+        Parameters
+        ----------
+        tp : flaot, optional
+            Pulse Length in ns, by default 16
+        freq : float,optional
+            Frequency in MHz, by default 0
+        t : float, optional
+            Time position in ns, by default None
+        flipangle : _type_, optional
+            The flip angle in radians, by default None
+        """
         Pulse.__init__(
-            self, tp=tp, t=t, flipangle=flipangle, **kwargs)
+            self, tp=tp, t=t, flipangle=flipangle,name='RectPulse', **kwargs)
         self.freq = Parameter("freq", freq, "GHz", "Frequency of the Pulse")
-        self.Progression = False
         self._buildFMAM(self.func)
         pass
 
@@ -636,11 +702,11 @@ class HSPulse(Pulse):
     Represents a hyperboilc secant frequency-swept pulse.
     """
     def __init__(self, *, tp=128, order1=1, order2=6, beta=20, **kwargs) -> None:
-        Pulse.__init__(self, tp=tp, **kwargs)
+        Pulse.__init__(self, tp=tp,name='HSPulse', **kwargs)
         self.order1 = Parameter(
             "order1", order1, None, "Order 1 of the HS Pulse")
         self.order2 = Parameter(
-            "order1", order2, None, "Order 2 of the HS Pulse")
+            "order2", order2, None, "Order 2 of the HS Pulse")
         self.beta = Parameter("beta", beta, None, "Beta of the HS Pulse")
 
         # Frequency Infomation
@@ -707,9 +773,6 @@ class HSPulse(Pulse):
 
         return AM, FM
 
-
-
-
 # =============================================================================
 
 class ChirpPulse(Pulse):
@@ -718,7 +781,7 @@ class ChirpPulse(Pulse):
     """
 
     def __init__(self, *, tp=128, **kwargs) -> None:
-        Pulse.__init__(self, tp=tp, **kwargs)
+        Pulse.__init__(self, tp=tp,name='ChirpPulse', **kwargs)
 
         # Frequency Infomation
         if "BW" in kwargs:
@@ -768,16 +831,28 @@ class ChirpPulse(Pulse):
 
         return AM, FM
         
-
 # =============================================================================
 
 class SincPulse(Pulse):
-    """
-    Represents a sinc shaped monochromatic pulse.
-    """
+
 
     def __init__(self, *, tp=128, freq=0, order=6, window=None, **kwargs) -> None:
-        Pulse.__init__(self, tp=tp, **kwargs)
+        """    Represents a sinc shaped monochromatic pulse.
+
+
+        Parameters
+        ----------
+        tp : int
+            Pulse length in ns, by default 128
+        freq : int, optional
+            The frequency of the pulse, by default 0
+        order : int, optional
+            The order of this sinc function, by default 6
+        window : _type_, optional
+            The window function, by default None
+        """
+
+        Pulse.__init__(self, tp=tp,name='SincPulse', **kwargs)
         self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
 
         self.order = Parameter("Order", order, None, "The sinc pulse order")
@@ -794,4 +869,63 @@ class SincPulse(Pulse):
         AM = np.sinc(self.order.value * ax)
 
         return AM, FM
+    
+class GaussianPulse(Pulse):
+    """
+    Represents a Gaussian monochromatic pulse.
+    """
+
+    def __init__(self, *, tp=128, freq=0, **kwargs) -> None:
+        """    Represents a Gaussian monochromatic pulse.
+
+
+        Parameters
+        ----------
+        tp : int
+            Pulse length in ns, by default 128
+        freq : int, optional
+            The frequency of the pulse, by default 0
+        """
+
+        Pulse.__init__(self, tp=tp,name='GaussianPulse', **kwargs)
+        self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
+
+        self._buildFMAM(self.func)
+        pass
+
+
+    def func(self, ax):
+        nx = ax.shape[0]
+        FM = np.zeros(nx) + self.freq.value
+        AM = np.exp(-ax**2/(((self.tp.value/2)**2)/(-1*np.log(0.001))))
+
+        return AM, FM
+    
+# =============================================================================
+
+def build_default_pulses(AWG=True,tp=12):
+
+    exc_pulse = RectPulse(  
+                    tp=tp, freq=0, flipangle=np.pi/2, scale=0
+                )
+    
+    ref_pulse = RectPulse(  
+                    tp=tp, freq=0, flipangle=np.pi, scale=0
+                        )
+    
+    if AWG:
+        pump_pulse = HSPulse(  
+                    tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0,
+                        order1=6, order2=1, beta=10
+                    )
+        det_event = Detection(tp=512, freq=0)
+    else:
+        pump_pulse = RectPulse(
+                    tp=tp, freq=-0.07, flipangle=np.pi, scale=0)
         
+        # det_event = Detection(tp=exc_pulse.tp * 2, freq=0)
+        det_event = Detection(tp=128, freq=0)
+        
+    pulses = {'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse, 'pump_pulse':pump_pulse, 'det_event':det_event}
+
+    return pulses

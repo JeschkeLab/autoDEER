@@ -22,14 +22,15 @@ Features of autoDEER include:
     :caption: Get started
 
     ./deer_intro.rst
+    ./config_file.rst
     
 .. toctree::
     :hidden:
     :maxdepth: 0
     :caption: Running an Experiment
 
-    ./semi_autoDEER.rst
-    ./fully_autoDEER.rst
+    ./GUI_interface.rst
+    ./Jupyter_interface.rst
     ./DEER_variants.rst
 
 .. toctree::

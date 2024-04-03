@@ -5,367 +5,32 @@ from scipy.signal import hilbert
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-import pickle
 import deerlab as dl
-
-
-class resonatorProfile:
-
-    def __init__(
-            self, nuts: np.ndarray, freqs: np.ndarray, dt: float) -> None:
-        """Analysis and calculation of resonator profiles.
-
-        Parameters
-        ----------
-        nuts : np.ndarray
-            An array containing the nutation data
-        freqs: np.ndarray
-            The respective frequencies of each nutation.
-        dt : float
-            The time step for the nutations.
-        """
-        if nuts.ndim != 2:
-            raise ValueError(
-                "nuts must be a 2D array where collumn 1 is the frequency")
-        self.nutations = nuts
-        self.frequencies = freqs
-        self.n_files = np.shape(nuts)[0]
-        self.nx = np.shape(nuts)[1] - 1
-        self.dt = dt
-        pass
-
-    def calc_res_prof(
-            self, throwlist: list = None,
-            freq_lim: tuple = None) -> np.ndarray:
-        """Uses a fourier transform method to calculate a resonator profile.
-
-        Parameters
-        ----------
-        throwlist : list, optional
-            Specific frequencies to be ignored, by default None
-        freq_lim : tuple, optional
-            Minimum and Maximum frequncies to used, by default None
-
-        Returns
-        -------
-        np.ndarray
-            The resonator profile. The first column are bridge frequncies, and
-            the second are the coresponding nutation frequncies.
-        """
-
-        nu1_cutoff = 5*1e-3
-
-        fax = fft.fftfreq(self.nx*2*10, d=self.dt)
-        fax = fft.fftshift(fax)
-
-        fnut = fft.fft(self.nutations, self.nx*2*10, axis=1)
-        fnut = fft.fftshift(fnut, axes=1)
-
-        nuoff = np.argwhere(fax > nu1_cutoff)
-        nu1_id = np.argmax(np.abs(fnut[:, nuoff]), axis=1)
-        # nu1 = abs(fax[nu1_id + nuoff[0]])
-
-        data = np.transpose([abs(self.frequencies), 
-                            abs(fax[nu1_id + nuoff[0]]).reshape(self.n_files)]) 
-
-        throw_mask = np.zeros(0, dtype=np.int16)
-        if freq_lim is not None:
-            throw_mask = np.squeeze(np.argwhere(data[:, 0] < freq_lim[0]))
-            throw_mask = np.append(
-                throw_mask, np.squeeze(np.argwhere(data[:, 0] > freq_lim[1])))
-
-        if throwlist is not None:
-            for freq in throwlist:
-                throw_mask = np.append(
-                    throw_mask,
-                    np.squeeze(np.argwhere(abs(data[:, 0] - freq) < 0.001)))
-
-        data = np.delete(data, throw_mask, axis=0)
-
-        self.res_prof = data
-    
-        return self.res_prof
-
-    # def import_from_bruker(self, folder_path, reg_exp="nut_[0-9]+.DSC"):
-        
-    #     files = os.listdir(folder_path)
-    #     r = re.compile(reg_exp)
-    #     dsc_files = list(filter(r.match, files))
-    #     n_files = len(dsc_files)
-        
-    #     # Load one file to get the time axis and length
-    #     t, V = deerload(folder_path + files[0], False, False)
-    #     t_axis = t
-    #     nx = len(V)
-
-    #     nut_data = np.zeros((n_files, nx+1), dtype=np.complex64)
-        
-    #     for i, files in enumerate(dsc_files):
-    #         t, V, params = deerload(folder_path + files, False, True)
-    #         if not np.array_equal(t, t_axis):
-    #             raise Exception("all files must have the same time axis")
-    #         spec_freq = re.findall(
-    #             "[0-9]+.[0-9]*",
-    #             params['DSL']['freqCounter']['FrequencyMon'])[0]
-    #         nut_data[i, 0] = spec_freq
-    #         nut_data[i, 1:] = V
-
-    #     # sort nut_data
-    #     nut_data_sorted = nut_data[nut_data[:, 0].argsort(), :]
-
-    #     return t_axis, nut_data_sorted
-
-    def calculate_shape(self, params=None):
-        """Generates a single lorentzian fit for the resonator profile
-
-        Parameters
-        ----------
-        params : list, optional
-            Initial guess for the qfactor and central frequency, 
-            by default None
-        """
-        if params is None:
-            params = self.params
-        
-        A = params[0]
-        self.q = params[1]
-        self.fc = params[2]
-
-        nu_x = self.res_prof[:, 0]
-        nu_y = self.res_prof[:, 1] * 1e3  # Convert from GHz to MHz
-
-        nu_y = nu_y/A
-
-        # Build domains of filters
-        srate = 36 * 3 * 4
-        # This comes from Q/W = Bandwidth. So we want our frequency range to 
-        # be 10 * Bandwidth.
-        # w = 2 *pi * 1.25(IF freq)
-        npts = int(2 ** (np.ceil(np.log2(10 * 50 / (2 * np.pi * 1.25) * srate)
-                                 ) + 1))
-        frq = np.linspace(-1/2, 1/2, npts, endpoint=False) * srate
-        habs = np.zeros(frq.shape)
-
-        # Interpolate the resonator profile onto the new frequency axis
-        # Where to interpolate
-        int_idx = np.squeeze(np.argwhere((nu_x[0] < frq) & (frq < nu_x[-1])))  
-        habs[int_idx] = pchip_interpolate(nu_x, nu_y, frq[int_idx])
-        habs_o = habs
-        habs = habs/np.max(habs)
-        self.nu_max = habs_o[frq > 33].max()
-
-        # Lorentzian model
-        z = self.q * (frq**2 - self.fc ** 2)/(frq*self.fc)
-        model = (1-z * 1j) / (1 + z ** 2)  # Lorentzian = 1-zj/(1+z^2)
-        model[np.isnan(model)] = 0 
-        l_abs = np.abs(model)  # Model fit
-        l_abs /= np.nanmax(l_abs)  # Normalization
-        zrs = np.squeeze(np.argwhere(l_abs == 0))
-        l_abs[zrs] = l_abs[zrs+1]
-
-        # Higher frequencies, above zero
-        l_h = l_abs[len(l_abs)//2+1:-1]  
-        # Make symetrical about zero
-        l_abs_ds = np.concatenate([np.flip(l_h), l_h])  
-        # Get phase from the hilbert transform
-        l_pha = np.imag(hilbert(-np.log(l_abs_ds)))  
-
-        # Adding the exp resonantor profile into a lorentzian function
-        fdec = 0.1/np.log(2)
-        n_dec = int(np.ceil(fdec/(frq[1]-frq[0])))
-        n_cyc = 10
-
-        # left side
-        habs[0:int_idx[0]] = l_abs[0:int_idx[0]]  # put into lorentzian
-
-        # smooth with exp function
-        s_range = np.arange(int_idx[0]-n_cyc * n_dec, int_idx[0]+1)
-        habs[s_range] = l_abs[s_range] + \
-            np.flip((habs[int_idx[0]] - l_abs[int_idx[0]]) *
-                    np.exp(-1 * np.arange(0, n_cyc+1/n_dec, 1/n_dec)))
-
-        # #smooth the edges with a window
-        # w_pts = 10
-        # win = windows.gaussian(w_pts,2.5) / 
-        #                        np.sum(windows.gaussian(w_pts,2.5))
-        # w_range = np.arange(int_idx[0]-2*w_pts,int_idx[0] + 2*w_pts)
-        # sm = np.convolve(habs[w_range],win,mode='valid')
-        # ins_range = np.arange(w_range[0] + np.ceil(w_pts/2),w_range[0] - 
-        #                   np.floor(w_pts/2))
-
-        # Repeat for the right hand side
-        habs[int_idx[-1]:-1] = l_abs[int_idx[-1]:-1]
-
-        # Smooth with exp function
-        s_range = np.arange(int_idx[-1], int_idx[-1]+n_cyc*n_dec+1)
-        habs[s_range] = l_abs[s_range] + \
-            (habs[int_idx[-1]-1] - l_abs[int_idx[-1]-1]) * \
-            np.exp(-1 * np.arange(0, n_cyc+1/n_dec, 1/n_dec))
-
-        h_pha = np.imag(hilbert(-np.log(habs)))
-
-        self.habs = habs
-        self.labs = l_abs
-        self.l_pha = l_pha
-        self.h_pha = h_pha
-        self.frq = frq
-
-    def phase_plots(self, nu_lims: tuple = None) -> plt.figure:
-        """Plot the phase change across the resonator profile
-
-        Parameters
-        ----------
-        nu_lims : tuple, optional
-            frequency limits of the plot, by default None
-        Returns
-        -------
-        plt.figure
-            matplotlib figure
-        """
-         
-        frq_axis = self.frq
-
-        if nu_lims is not None:
-            fmin = nu_lims[0]
-            fmax = nu_lims[1]
-        else:
-            fmin = 0
-            fmax = 40 
-        
-        fig, ax = plt.subplots()
-        ax.plot(frq_axis, self.habs, label="Interpolated fit")
-        ax.plot(frq_axis, self.labs, label="Lorentzian Model")
-        ax.set_xlabel('Frequency GHz')
-        ax.set_ylabel('Normalised Nutation Freq.')
-        ax.legend()
-        ax.set_title('Resontor Profile')
-        ax.set_xlim((fmin, fmax))
-
-        return fig
-
-    def res_prof_plot(
-            self, fieldsweep=None, nu_lims: tuple = None) -> plt.figure:
-        """ Plot the resonator profile
-
-        Parameters
-        ----------
-        fieldsweep : _type_, optional
-            Overlay the fieldsweep on the resonator profile, by default None
-        nu_lims : tuple, optional
-            Frequency limits on plot, by default None
-
-        Returns
-        -------
-        plt.figure
-            matplotlib figure of resonator profile
-        """
-
-        frq_axis = self.frq
-        if nu_lims is not None:
-            fmin = nu_lims[0]
-            fmax = nu_lims[1]
-        else:
-            fmin = 0
-            fmax = 40 
-
-        if fieldsweep is not None:
-            if not hasattr(fieldsweep, "fs_x"):
-                fieldsweep.calc_gyro()
-            data = fieldsweep.data
-            data /= np.max(np.abs(data))
-        
-        fig, ax = plt.subplots()
-        ax.plot(frq_axis, self.habs, label="Interpolated fit")
-        ax.plot(frq_axis, self.labs, label="Lorentzian Model")
-        if fieldsweep is not None:
-            ax.plot(fieldsweep.fs_x, np.abs(data), label="Appox. Field-Sweep")
-        ax.set_xlabel('Frequency GHz')
-        ax.set_ylabel('Normalised Nutation Freq.')
-        ax.legend()
-        ax.set_title('Resonator Profile')
-        ax.set_xlim((fmin, fmax))
-
-        return fig
-    
-    def autofit(self, nu_lims: tuple = [33, 35]):
-        """Automatically calculate resonator quality factor and center
-        frequency.
-
-        Parameters
-        ----------
-        nu_lims : tuple, optional
-            Frequency bounds on fit, by default [33, 35]
-        """
-        def lorentz(f, a, q, fc):
-            z = q * (f**2 - fc ** 2)/(f*fc)
-            model = a*(1-z*1j) / (1 + z**2)  # Lorentzian = 1-zj/(1+z^2)
-            return np.abs(model)
-
-        fmin = nu_lims[0]
-        fmax = nu_lims[1]
-
-        nu_x = self.res_prof[:, 0]
-        nu_y = self.res_prof[:, 1] * 1e3
-        nu_y_norm = nu_y/nu_y.max() 
-
-        res, pcov = curve_fit(
-            lorentz, nu_x, nu_y_norm, [1, 100, (fmin+fmax)/2],
-            bounds=([0.7, 0, fmin], [1.3, 1000, fmax]))
-        std = np.sqrt(np.diag(pcov))
-
-        self.params = res
-        self.q = self.params[1]
-        self.fc = self.params[2]
-        self.params_std = std
-
-    def calc_IF_prof(
-            self, IF: float, bridgeFreq: float, nu_lims=[33, 35], type='fit'):
-        # Where to interpolate
-        int_idx = np.squeeze(np.argwhere(
-            (nu_lims[0] < self.frq) & (self.frq < nu_lims[-1])))  
-        self.IF = self.frq[int_idx] - bridgeFreq + IF
-        if type == 'fit':
-            self.IF_rp = self.labs[int_idx]
-        elif type == 'raw':
-            self.IF_rp = self.habs[int_idx]
-
-    def _pickle_save(self, file="res_prof"):
-
-        with open(file, 'w') as file:
-            pickle.dump(self, file)
-
-    # def _pickle_load(self, file="res_prof"):
-
-    #     with open(file, 'r') as file:
-    #         self = pickle.load(file)
-
-
-# =============================================================================
+from matplotlib.ticker import AutoMinorLocator,AutoLocator
 
 class ResonatorProfileAnalysis:
 
     def __init__(
-            self, nuts: np.ndarray, freqs: np.ndarray, dt: float) -> None:
+            self, dataset,f_lims=(32,36)) -> None:
         """Analysis and calculation of resonator profiles.
 
         Parameters
         ----------
-        nuts : np.ndarray
-            An array containing the nutation data
-        freqs: np.ndarray
-            The respective frequencies of each nutation.
-        dt : float
-            The time step for the nutations.
+        dataset : xr.xarray
+            The dataset containing the nutations. It must have both a 'LO' axis
+            and a 'pulse0_tp' axis.
+        f_lims : tuple, optional
+            The frequency limits of the resonator profile, by default (33,35)
         """
-        if nuts.ndim != 2:
-            raise ValueError(
-                "nuts must be a 2D array where collumn 1 is the frequency")
-        self.nutations = nuts
-        self.freqs = freqs
-        self.n_files = np.shape(nuts)[0]
-        self.nx = np.shape(nuts)[1] - 1
-        self.dt = dt
-        self.fs = 1/dt
+
+        self.dataset = dataset.epr.correctphase
+
+        self.freqs = self.dataset.LO
+        self.n_files = self.freqs.shape[0]
+        self.t = self.dataset.pulse0_tp
+        self.f_lims = f_lims
+
+        self._process_fit()
         pass
 
     def process_nutations(
@@ -416,58 +81,286 @@ class ResonatorProfileAnalysis:
         self.prof_frqs = np.real(self.freqs[nx_id])
 
         return self.prof_data, self.prof_frqs
+    
+    def _process_fit(self,R_limit=0.5):
+        self.n_LO = self.freqs.shape[0]
 
-    def fit(self):
-        def lorenz_fcn(x, centre, sigma):
-            y = (0.5*sigma)/((x-centre)**2 + (0.5*sigma)**2)
-            return y
-        self.prof_frqs = np.squeeze(self.prof_frqs)
-        self.prof_data = np.squeeze(self.prof_data)
+        self.profile = np.zeros(self.n_LO)
+        self.profile_ci = np.zeros(self.n_LO)
 
-        lorenz = dl.Model(lorenz_fcn, constants='x')
-        lorenz.centre.par0 = 34
-        lorenz.centre.set(lb=33, ub=35)
-        lorenz.sigma.set(lb=0, ub=2)
-        lorenz.sigma.par0 = 0.1
+        fun = lambda x, f, tau,a,k: a*np.cos(2*np.pi*f*x)*np.exp(-x/tau)+ k
+        bounds = ([5e-3,10,0,-1],[0.3,2000,2,1])
+        p0 = [50e-3,150,1,0]
 
-        gauss_model = dl.dd_gauss
-        gauss_model.mean.set(par0=34.05, lb=33, ub=35)
-        gauss_model.std.set(par0=0.3, lb=0.01, ub=10)
-        result_gauss = dl.fit(gauss_model, self.prof_data, self.prof_frqs)
-        lorenz.centre.par0 = result_gauss.mean
-        result = dl.fit(lorenz, self.prof_data, self.prof_frqs)
+        R2 = lambda y, yhat: 1 - np.sum((y - yhat)**2) / np.sum((y - np.mean(y))**2)
 
-        self.fc = result.centre
-        self.sigma = result.sigma
-        self.q = self.fc / result.sigma
+        for i in range(self.n_LO):
+            nutation = self.dataset[:,i]
+            nutation = nutation/np.max(nutation)
+            x = self.t
+            try:
+                results = curve_fit(fun, x, nutation, bounds=bounds,xtol=1e-4,ftol=1e-4,p0=p0)
+                if R2(nutation,fun(x,*results[0])) > R_limit:
+                    self.profile[i] = results[0][0]
 
-        self.profile_x = np.linspace(33, 35, 200)
-        self.profile = lorenz_fcn(self.profile_x, self.fc, self.sigma)
-        self.fit_func = lambda x: lorenz_fcn(x, self.fc, self.sigma)
+                    self.profile_ci[i] = np.sqrt(np.diag(results[1]))[0]*1.96
+                else:
+                    self.profile[i] = np.nan
+                    self.profile_ci[i] = np.nan
+            except RuntimeError:
+                self.profile[i] = np.nan
+                self.profile_ci[i] = np.nan
+            
+        # Remove nan
+        self.freqs = self.freqs[~np.isnan(self.profile)]
+        self.profile = self.profile[~np.isnan(self.profile)]
+        self.profile_ci = self.profile_ci[~np.isnan(self.profile_ci)]
         
-        norm_prof = self.profile
-        norm_prof /= norm_prof.max()
-        self.pha = np.imag(hilbert(-np.log(self.profile)))
-        pass
 
-    def plot(self, fieldsweep=None):
+
+
+    def fit(self,f_diff_threshold=2,cores=1,multi_mode=False,fc_guess=34.05):
+        """Fit the resonator profile with a sum of lorentzians.
+
+        Parameters
+        ----------
+        f_diff_threshold : float, optional
+            The difference between two peaks at which they will be merged into one, by default 0.03
+
+        """
+
+        frq_limits = {'lb': self.f_lims[0]-1, 'ub': self.f_lims[1]+1}
+        def fit_gauss1():
+            gauss_model = dl.dd_gauss
+            gauss_model.mean.set(par0=fc_guess, **frq_limits)
+            gauss_model.std.set(par0=0.2, lb=0.01, ub=10)
+
+            result_gauss1 = dl.fit(gauss_model, self.profile, self.freqs,reg=False)
+            return result_gauss1
+
+        def fit_gauss2():
+            gauss_model = dl.dd_gauss2
+            gauss_model.mean1.set(par0=34.05, **frq_limits)
+            gauss_model.std1.set(par0=0.2, lb=0.01, ub=10)
+            gauss_model.mean2.set(par0=34.05, **frq_limits)
+            gauss_model.std2.set(par0=0.3, lb=0.01, ub=10)
+
+            result_gauss2 = dl.fit(gauss_model, self.profile, self.freqs,reg=False)
+            return result_gauss2
+            
+        def fit_gauss3():
+            gauss_model = dl.dd_gauss3
+            gauss_model.mean1.set(par0=34.05, **frq_limits)
+            gauss_model.std1.set(par0=0.2, lb=0.01, ub=10)
+            gauss_model.mean2.set(par0=34.05, **frq_limits)
+            gauss_model.std2.set(par0=0.3, lb=0.01, ub=10)
+            gauss_model.mean3.set(par0=34.05, **frq_limits)
+            gauss_model.std3.set(par0=0.3, lb=0.01, ub=10)
+
+            result_gauss3 = dl.fit(gauss_model, self.profile, self.freqs,reg=False)
+            return result_gauss3
+
+        def lorenz_fcn(x, fc, q):
+            y = (0.5*fc)/(q*(x-fc)**2 + q*(0.5*(fc/q))**2)
+            return y
+
+        def fit_lorenz1(uni_means,uni_stds,fit_kwargs):
+            lorenz = dl.Model(lorenz_fcn, constants='x')
+            lorenz.fc.par0 = uni_means[0]
+            lorenz.fc.set(**frq_limits)
+            lorenz.q.set(lb=0, ub=np.inf)
+            lorenz.q.par0 = uni_means[0]/uni_stds[0]
+            lorenz.fc.set(par0=uni_means[0],lb=uni_means[0]-0.1,ub=uni_means[0]+0.1)
+            result_lorenz1 = dl.fit(lorenz, self.profile, self.freqs,reg=False, **fit_kwargs)
+            return result_lorenz1, lorenz_fcn, lorenz
+
+        def fit_lorenz2(uni_means,uni_stds,uni_amps,fit_kwargs):
+            def lorenz2_fcn(x, fc1, q1, fc2, q2, amp1, amp2):
+                return lorenz_fcn(x, fc1, q1)*amp1 + lorenz_fcn(x, fc2, q2)*amp2
+
+            lorenz2 = dl.Model(lorenz2_fcn,constants='x')
+            lorenz2.fc1.par0 = uni_means[0]
+            lorenz2.fc1.set(**frq_limits)
+            lorenz2.q1.set(lb=0, ub=np.inf)
+            lorenz2.q1.par0 = uni_means[0]/uni_stds[0]
+            lorenz2.fc2.par0 = uni_means[1]
+            lorenz2.fc2.set(**frq_limits)
+            lorenz2.q2.set(lb=0, ub=np.inf)
+            lorenz2.q2.par0 = uni_means[1]/uni_stds[1]
+            lorenz2.amp1.set(lb=0, ub=np.inf, par0=uni_amps[0])
+            lorenz2.amp2.set(lb=0, ub=np.inf, par0=uni_amps[1])
+            result_lorenz2 = dl.fit(lorenz2, self.profile, self.freqs,reg=False, **fit_kwargs)
+            return result_lorenz2, lorenz2_fcn, lorenz2
+
+        def fit_lorenz3(uni_means,uni_stds,uni_amps,fit_kwargs):
+            def lorenz3_fcn(x, fc1, q1, fc2, q2, fc3, q3, amp1, amp2, amp3):
+                return lorenz_fcn(x, fc1, q1)*amp1 + lorenz_fcn(x, fc2, q2)*amp2 + lorenz_fcn(x, fc3, q3)*amp3
+            lorenz3 = dl.Model(lorenz3_fcn,constants='x')
+            lorenz3.fc1.par0 = uni_means[0]
+            lorenz3.fc1.set(**frq_limits)
+            lorenz3.q1.set(lb=0, ub=np.inf)
+            lorenz3.q1.par0 = uni_means[0]/uni_stds[0]
+            lorenz3.fc2.par0 = uni_means[1]
+            lorenz3.fc2.set(**frq_limits)
+            lorenz3.q2.set(lb=0, ub=np.inf)
+            lorenz3.q2.par0 = uni_means[1]/uni_stds[1]
+            lorenz3.fc3.par0 =  uni_means[2]
+            lorenz3.fc3.set(**frq_limits)
+            lorenz3.q3.set(lb=0, ub=np.inf)
+            lorenz3.q3.par0 = uni_means[2]/uni_stds[2]
+            lorenz3.amp1.set(lb=0, ub=np.inf, par0= uni_amps[0])
+            lorenz3.amp2.set(lb=0, ub=np.inf, par0=uni_amps[1])
+            lorenz3.amp3.set(lb=0, ub=np.inf, par0=uni_amps[2])
+
+            result_lorenz3 = dl.fit(lorenz3, self.profile, self.freqs,reg=False, **fit_kwargs)
+            return result_lorenz3, lorenz3_fcn, lorenz3
+
+        if multi_mode:
+            gs = [fit_gauss1(),fit_gauss2(),fit_gauss3()]
+            n_modes = np.argmin([g.stats['chi2red'] for g in gs]) + 1
+            print(f"chi: {[g.stats['chi2red'] for g in gs]}")
+            print(f"aic: {[g.stats['aicc'] for g in gs]}")
+            n_modes=1
+            best_fit = gs[n_modes-1]
+            best_fit = gs[n_modes-1]
+            # Find mean values which have an amplitude above 0.1 and are at least 0.1 apart
+            # This is to avoid double counting
+            if n_modes > 1:
+                amps = np.array([getattr(best_fit,'amp'+str(i+1)) for i in range(n_modes)])
+                means =  np.array([getattr(best_fit,'mean'+str(i+1)) for i in range(n_modes)])
+                stds = np.array([getattr(best_fit,'std'+str(i+1)) for i in range(n_modes)])
+            else:
+                amps = np.array([1])
+                means =  np.array([best_fit.mean])
+                stds = np.array([best_fit.std])
+
+            def find_unique(means,amps,stds, threshold=0.05):
+                f1,f2 = np.meshgrid(means,means)
+                gap = f1-f2
+                gap[np.tril_indices(gap.shape[0],-1)] =np.nan
+                connected = gap<threshold
+                calc_conn = lambda con: np.argsort(np.sum(con,axis=1))[::-1]
+                sum_con = lambda con: np.sum(con)
+                idx = calc_conn(connected)
+                connections = sum_con(connected)
+                new_means = []
+                new_amps = []
+                new_stds = []
+                while connections > 0:
+                    i=idx[0]
+                    new_means.append(np.mean(means[connected[i,:]]))
+                    new_amps.append(np.sum(amps[connected[i,:]]))
+                    new_stds.append(np.mean(stds[connected[i,:]]))
+                    connected[connected[i,:],:] = False
+                    connected[:,connected[i,:]] = False
+                    idx = calc_conn(connected)
+                    connections = sum_con(connected)
+
+                return np.array(new_means),np.array(new_amps),np.array(new_stds)
+
+
+            # uni_means, uni_means_idx, uni_means_inverse = np.unique(np.around(means,decimals=f_diff_threshold),return_index=True,return_inverse=True)
+            # uni_amps = np.array([np.sum(amps[uni_means_inverse == i]) for i in np.unique(uni_means_inverse)])
+            # uni_stds = np.array([np.mean(stds[uni_means_inverse == i]) for i in np.unique(uni_means_inverse)])
+            uni_means,uni_amps,uni_stds = find_unique(means,amps,stds,0.1)
+
+            amp_threshold = 0.01
+            uni_means = uni_means[uni_amps > amp_threshold]
+            uni_stds = uni_stds[uni_amps > amp_threshold]
+            uni_amps = uni_amps[uni_amps > amp_threshold]
+
+            # Remove modes which are outside the frequency range +- 0.5GHz
+            uni_means = uni_means[(uni_means > self.f_lims[0]-0.5) & (uni_means < self.f_lims[1]+0.5)]
+            uni_stds = uni_stds[(uni_means > self.f_lims[0]-0.5) & (uni_means < self.f_lims[1]+0.5)]
+            uni_amps = uni_amps[(uni_means > self.f_lims[0]-0.5) & (uni_means < self.f_lims[1]+0.5)]
+
+            n_modes = uni_means.shape[0]
+
+            print("Number of modes detected: ", n_modes)
+
+        else:
+            gs = fit_gauss1()
+            uni_means = [gs.mean]
+            uni_stds = [gs.std]
+            n_modes = 1
+
+
+        self.model_x = np.linspace(self.f_lims[0], self.f_lims[1], 200)
+
+        fit_kwargs = {'bootstrap': 30, 'bootcores':cores}
+        # fit_kwargs={}
+        if n_modes == 1:
+            lorenz_fit,fun,mod = fit_lorenz1(uni_means,uni_stds,fit_kwargs)
+            self.model_func = lambda x: lorenz_fit.scale * lorenz_fcn(x, lorenz_fit.fc, lorenz_fit.q)
+            self.fc = lorenz_fit.fc
+            self.q = lorenz_fit.q
+            
+        elif n_modes == 2:
+            lorenz_fit,fun,mod = fit_lorenz2(uni_means,uni_stds,uni_amps,fit_kwargs)
+            self.model_func = lambda x: lorenz_fit.scale * fun(x, lorenz_fit.fc1, lorenz_fit.q1, lorenz_fit.fc2, lorenz_fit.q2, lorenz_fit.amp1, lorenz_fit.amp2)
+            self.fc = np.array([lorenz_fit.fc1,lorenz_fit.fc2])
+            self.q = np.array([lorenz_fit.q1,lorenz_fit.q2])
+
+        elif n_modes == 3:
+            lorenz_fit,fun,mod = fit_lorenz3(uni_means,uni_stds,uni_amps,fit_kwargs)
+            self.model_func = lambda x: lorenz_fit.scale * fun(x, lorenz_fit.fc1, lorenz_fit.q1, lorenz_fit.fc2, lorenz_fit.q2, lorenz_fit.fc3, lorenz_fit.q3, lorenz_fit.amp1, lorenz_fit.amp2, lorenz_fit.amp3)
+            self.fc = np.array([lorenz_fit.fc1,lorenz_fit.fc2,lorenz_fit.fc3])
+            self.q = np.array([lorenz_fit.q1,lorenz_fit.q2,lorenz_fit.q3])
+        else: 
+            raise RuntimeError('Between 1 and 3 mode must be deteceted')
+
+        self.model = self.model_func(self.model_x)
+        self.lorenz_model = mod
+        self.n_modes = n_modes
+        self.pha = np.imag(hilbert(-np.log(self.model)))
+        self.results = lorenz_fit
+
+        return lorenz_fit
+
+    def plot(self, fieldsweep=None, axs= None, fig=None):
         """plot. 
 
         Parameters
         ----------
         fieldsweep : FieldSweepAnalysis, optional
             Overlays the FieldSweep if provided, by default None
+        axs : matplotlib.Axes, optional
+            Axes to plot on, by default None
+        fig : matplotlib.Figure, optional
+            Figure to plot on, by default None
 
         Returns
         -------
         Matplotlib.Figure
             matplotlib figure object
         """
-        fig, ax = plt.subplots(constrained_layout=True)
-        prof_data = self.prof_data * 1e3 # GHz -MHz
-        ax.plot(self.prof_frqs, prof_data)
-        ax.set_xlabel("Frequency / GHz")
-        ax.set_ylabel("Nutation Frequency / MHz")
+        if axs is None and fig is None:
+            fig, axs = plt.subplots(2,1,constrained_layout=True,height_ratios=[0.8,0.2])
+
+        if isinstance(axs, list) or isinstance(axs, np.ndarray):
+            axs1 = axs[0]
+            axs2 = axs[1]
+        else:
+            axs1 = axs
+            axs2 = None
+        prof_data = self.profile * 1e3 # GHz -MHz
+        
+        axs1.errorbar(self.freqs, prof_data, yerr=self.profile_ci*1e3, fmt='o', label='Data')
+
+        if hasattr(self, 'model'):
+            axs1.plot(self.model_x, self.model*1e3, label='Model')
+            # CI= self.results.propagate(self.lorenz_model,self.model_x).ci(50)
+            # axs1.fill_between(self.model_x, (CI[:,0])*1e3, (CI[:,1])*1e3, alpha=0.5)
+            
+            if axs2 is not None:
+                axs2.plot(self.model_x, self.pha, label='Phase')
+                axs2.set_xlabel("Frequency / GHz")
+                axs2.set_ylabel("Phase / rad")
+        
+
+
+        axs1.set_xlabel("Frequency / GHz")
+        axs1.set_ylabel("Nutation Frequency / MHz")
 
         def Hz2length(x):
             return 1 / ((x/1000)*2)
@@ -475,14 +368,15 @@ class ResonatorProfileAnalysis:
         def length2Hz(x):
             return 1 / ((x*1000)*2) 
 
-        secax = ax.secondary_yaxis('right', functions=(Hz2length, length2Hz))
+        secax = axs1.secondary_yaxis('right', functions=(Hz2length, length2Hz))
         secax.set_ylabel(r'$\pi/2$ pulse length / ns')
+        # secax.yaxis.set_locator(AutoLocator)
 
         if fieldsweep:
             fsweep_data = np.abs(fieldsweep.data)
             fsweep_data /= fsweep_data.max()
             fsweep_data = fsweep_data * prof_data.max()
-            ax.plot(fieldsweep.fs_x + fieldsweep.LO, fsweep_data)
+            axs1.plot(fieldsweep.fs_x + fieldsweep.LO, fsweep_data)
 
         return fig
 
@@ -498,6 +392,22 @@ def floor(number, decimals=0):
     return np.floor(number / 10**order)*10**order
 
 def calc_overlap(x, func1, func2):
+    """Calcuates the overlap between two functions.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        The x axis of the functions
+    func1 : function
+        The first function
+    func2 : function
+        The second function
+
+    Returns
+    -------
+    float
+        The overlap between the two functions.
+    """
     y1 = func1(x)
     y2 = func2(x)
     area_1 = np.trapz(y1, x)
@@ -529,8 +439,8 @@ def BSpline_extra(tck_s):
 
 def optimise_spectra_position(resonator_profile, fieldsweep, verbosity=0):
 
-    band_width = resonator_profile.fc / resonator_profile.q
-
+    # band_width = resonator_profile.fc / resonator_profile.q
+    band_width=0.5
     if band_width > 0.4:
         n_points = 500
     else:
@@ -543,12 +453,12 @@ def optimise_spectra_position(resonator_profile, fieldsweep, verbosity=0):
     x = np.linspace(lower_field_lim,upper_field_lim,n_points)
     # smooth_condition = (dl.der_snr(fieldsweep.data)**2)*fieldsweep.data.shape[-1]
     smooth_condition = 0.1
-    x = np.flip(fieldsweep.fs_x + fieldsweep.LO)
-    y = np.flip(fieldsweep.data)
-    tck_s = splrep(x, y, s=smooth_condition)
-    xc = signal.correlate(resonator_profile.fit_func(x),BSpline_extra(tck_s)(x), mode='same')
+    edfs_x = np.flip(fieldsweep.fs_x + fieldsweep.LO)
+    edfs_y = np.flip(fieldsweep.data)
+    tck_s = splrep(edfs_x, edfs_y, s=smooth_condition)
+    xc = signal.correlate(resonator_profile.model_func(x),BSpline_extra(tck_s)(x), mode='same')
     x_shift = np.linspace(-1*shift_range,shift_range,n_points)
-    new_LO = x_shift[xc.argmax()]
+    new_LO = x_shift[np.abs(xc).argmax()]
 
     return new_LO
 

@@ -5,101 +5,51 @@ from autodeer.sequences import *
 import numpy as np
 import pytest
 
-def test_PulseSpel_MissingScale():
-    B = 12200
-    LO = 34.0
-    reptime = 3e3
-    averages = 1
-    shots = 100
-    test_sequence = HahnEchoSequence(B=B, LO=LO, reptime=reptime, 
-        averages=averages, shots=shots
-    )
-    test_sequence.addPulsesProg(
-        [1,2],
-        ["t","t"],
-        0,
-        np.arange(200,5000,100)
-    )
-    test_sequence.convert()
-    with pytest.raises(RuntimeError):   
-        pulse_spel = PulseSpel(test_sequence, AWG=True)
-
-def test_PulseSpel_HahnEcho():
-    B = 12200
-    LO = 34.0
-    reptime = 3e3
-    averages = 1
-    shots = 100
-    test_sequence = HahnEchoSequence(B=B, LO=LO, reptime=reptime, 
-        averages=averages, shots=shots
-    )
-    test_sequence.addPulsesProg(
-        [1,2],
-        ["t","t"],
-        0,
-        np.arange(200,5000,100)
-    )
-    test_sequence.pulses[0].scale.value = 0.1
-    test_sequence.pulses[1].scale.value = 0.1
-    test_sequence.convert()
-    pulse_spel = PulseSpel(test_sequence, AWG=True)
-    _MPFU_channels(test_sequence)
-    pulse_spel = PulseSpel(test_sequence, MPFU=["+<x>","-<x>","+<y>","-<y>"], AWG=False)
-
-def test_PulseSpel_DEER():
-    tau1 = 400
-    tau2 = 2000
-    dt = 16
-    B = 12200
-    LO = 34.0
-    reptime = 3e3
-    averages = 1
-    shots = 100
-    tp = 12
-    test_sequence = DEERSequence(
-        tau1=tau1, tau2=tau2, dt=dt, B=B, LO=LO, reptime=reptime, 
-        averages=averages, shots=shots)
-
-    test_sequence.four_pulse(tp)
-    test_sequence.pulses[0].scale.value = 0.1
-    test_sequence.pulses[1].scale.value = 0.1
-    test_sequence.pulses[2].scale.value = 0.1
-    test_sequence.pulses[3].scale.value = 0.1
-
-    test_sequence.convert()
-    pulse_spel = PulseSpel(test_sequence, AWG=True)
-    _MPFU_channels(test_sequence)
-    pulse_spel = PulseSpel(test_sequence, MPFU=["+<x>","-<x>","+<y>","-<y>"], AWG=False)
-
-@pytest.fixture()
-def build_deer_sequence():
-    deer = Sequence(name="4p DEER", B=12220, LO=34.0,reptime=3e3, averages=1, shots=100)
-
-    tau1 = Parameter(name="tau1", value=400, unit="ns", step=16, dim=8, description="The first interpulse delays")
-    tau2 = Parameter(name="tau2", value=2500, unit="ns", description="The second interpulse delays")
-    t = Parameter(name="t", value=-160, step=24, dim=120, unit="ns", description="The time axis")
-
-    exc_pulse = RectPulse(freq=0, tp=12, flipangle=np.pi/2)
-    ref_pulse = RectPulse(freq=0, tp=12, flipangle=np.pi)
-    pump_pulse = RectPulse(freq=-0.1, tp=12, flipangle=np.pi)
-
-    deer.addPulse(exc_pulse.copy(t=0, pcyc={"phases":[0, np.pi], "dets":[1,-1]}))
-    deer.addPulse(ref_pulse.copy(t=tau1))
-    deer.addPulse(pump_pulse.copy(t=2*tau1+t))
-    deer.addPulse(ref_pulse.copy(t=2*tau1+tau2))
-    deer.addPulse(Detection(t=2*(tau1+tau2), tp=512))
-
-    deer.evolution([t,tau1], reduce=[tau1])
-    return deer
 
 
-def test_write_pulsespel_file_deer_MPFU(build_deer_sequence):
-    seq = build_deer_sequence
+
+@pytest.mark.parametrize("seq", ['deer','fieldsweep','respro', 'reptime'])
+def test_write_pulsespel_file_MPFU(seq):
+    if seq == 'deer':
+        seq = DEERSequence(tau1=3.0, tau2=3.0, tau3=0.2, dt=12, B=12200, LO=34, reptime=3e3, averages=100, shots=100)
+        seq.five_pulse()
+        seq.select_pcyc("DC")
+    elif seq == 'fieldsweep':
+        seq = FieldSweepSequence(
+            B=12200,Bwidth=500, LO=34.0, reptime=3e3, averages=1, shots=10)
+    elif seq == 'respro':
+        seq = ResonatorProfileSequence(
+            B=12200, LO=34.0, reptime=3e3, averages=1, shots=10)
+    elif seq == 'reptime':
+        seq = ReptimeScan(B=12200, LO=34.0,reptime=3e3, reptime_max=3e4, averages=1, shots=10)
+    
+    channels = _MPFU_channels(seq)
     MPFU = ["+<x>","-<x>","+<y>","-<y>"]
     def_file, exp_file = write_pulsespel_file(seq,AWG=False,MPFU=MPFU)
-    
+    if seq == 'deer' or seq == 'respro':
+        assert 'sweep' in exp_file
+    elif seq == 'fieldsweep':
+        assert 'bsweep' in exp_file
+    elif seq == 'reptime':
+        assert 'sweep' not in exp_file
 
+    print(exp_file)
 
+def test_build_unique_progtable():
+    seq = ResonatorProfileSequence(
+            B=12200, LO=34.0, reptime=3e3, averages=1, shots=10)
+    uprogtable = build_unique_progtable(seq)
+    print(uprogtable)
+    n_dim = len(uprogtable)
+    assert n_dim == 2
+    # Check variable order is correct
+    assert uprogtable[0]['variables'][0]['variable'] == (0,'tp')
+    assert uprogtable[1]['variables'][0]['variable'] == (None,'B')
+    assert uprogtable[1]['variables'][1]['variable'] == (None,'LO')
+    # Check axis is correct to sequence
+    assert uprogtable[0]['axis']['start'] ==  seq.pulses[0].tp.axis[0]['axis'].min()
+    assert uprogtable[0]['axis']['step'] ==  seq.pulses[0].tp.axis[0]['axis'][1]- seq.pulses[0].tp.axis[0]['axis'][0]
+    assert uprogtable[0]['axis']['dim'] ==  seq.pulses[0].tp.axis[0]['axis'].shape[0]
 
 
 def test_PulseSpel_ResonatorProfile():

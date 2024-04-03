@@ -30,9 +30,12 @@ release = '0.4-alpha'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [# 'sphinx.ext.autodoc',
+extensions = [
+            #   'sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
-              'sphinx.ext.autosummary',
+              'sphinx.ext.intersphinx',
+              #'sphinx.ext.autosummary',
+              'autoapi.extension',
               'sphinx_toolbox.collapse',
               'sphinx_toolbox.code',
               'sphinx_copybutton',
@@ -45,16 +48,23 @@ extensions = [# 'sphinx.ext.autodoc',
 # ----------------------------------------------------------------------
 add_module_names = True
 # Turn on sphinx.ext.autosummary
-autosummary_generate = True 
-# autodoc_class_signature = "separated"
-autoclass_content= "class"
-autodoc_inherit_docstrings=True
-autodoc_mock_imports = ["matlabengine", "matlab.engine", "XeprAPI"]
-# napoleon_numpy_docstring = True
-numpydoc_show_inherited_class_members=True
-numpydoc_show_class_members=True
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+autoapi_dirs = ['../autodeer']
+autodoc_typehints = "description"
+autoapi_template_dir = "_templates/autoapi"
+# autoapi_options = [
+#     "members",
+#     "undoc-members",
+#     "show-inheritance",
+#     # "show-module-summary",
+#     "imported-members",
+# ]
+autoapi_keep_files = True
+autoapi_add_toctree_entry = False
+autoapi_python_class_content= "both"
+# suppress_warnings = ["autoapi"]
+autoapi_python_use_implicit_namespaces = True
+autoapi_own_page_level = 'class'
+
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -65,7 +75,12 @@ source_suffix = {
     '.txt': 'markdown',
     '.md': 'markdown',
 }
-
+intersphinx_mapping = {
+    "deerlab": ("https://jeschkelab.github.io/DeerLab/", None),
+    "xarray": ("https://docs.xarray.dev/en/stable/index.html", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+}
+intersphinx_disabled_reftypes = ["*"]
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -75,7 +90,7 @@ html_theme = "furo"
 html_title = " "
 html_static_path = ["_static"]
 html_theme_options = {
-    "announcement": "Version 0.4 alpha out now!",
+    "announcement": "Version 0.7 alpha out now!",
     "light_logo": "autoDEER_EPR_light.svg",
     "dark_logo": "autoDEER_EPR_dark.svg",
 

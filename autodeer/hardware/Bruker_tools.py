@@ -1,5 +1,6 @@
 from autodeer.sequences import Sequence
 from autodeer.pulses import RectPulse, Delay, Detection
+from autodeer.utils import gcd, val_in_ns, val_in_us
 import numpy as np
 import re
 import time
@@ -158,16 +159,21 @@ class PSparvar:
                 var = progTable["Variable"][i]
                 vec = progTable["axis"][i]
                 parvar["variables"].append(var)
-                parvar["vec"].append(vec)
-                if type(sequence.pulses[pulse_num]) is Delay:
-                    parvar["types"].append("d")
-                else:
-                    parvar["types"].append("p")
+                if var == 'B':
+                    continue
                 
-                self.events.append(pulse_num)
+                if var == 't':
+                    #add this to the assoicated delay
+                    parvar["types"].append("d")
+                    self.events.append(pulse_num)
+                elif var == 'reptime':
+                    parvar["types"].append('srt')
+                    self.events.append('srt')
+                elif not isinstance(sequence.pulses[pulse_num], Detection):
+                    parvar["types"].append("p")
+                    self.events.append(pulse_num)
 
-                if var != "tp":
-                    self.PulseSpel = False
+                parvar["vec"].append(vec)
 
                 if len(np.unique(np.diff(vec))) != 1:
                     self.PulseSpel = False
@@ -179,10 +185,22 @@ class PSparvar:
             self.Bsweep = True
         else:
             self.Bsweep = False
-        self.ax_step = parvar["step"][0]
-        self.init = parvar["vec"][0][0]
-        self.dim = parvar["vec"][0].shape[0]
-        self.parvar = parvar
+
+        if "reptime" in parvar["variables"]:
+            self.repsweep = True
+        else:
+            self.repsweep = False
+        
+        if len(parvar['step']) == 0:
+            self.ax_step = None
+            self.init = None
+            self.dim = None
+            self.parvar = parvar
+        else:
+            self.ax_step = parvar["step"][0]
+            self.init = parvar["vec"][0][0]
+            self.dim = parvar["vec"][0].shape[0]
+            self.parvar = parvar
         pass
 
     def checkPulseSpel(self) -> bool:
@@ -203,20 +221,63 @@ possible_delays = [
     "d13", "d14", "d15", "d16", "d17", "d18", "d19", "d20", "d21", "d22",
     "d23", "d24", "d25", "d26", "d27", "d28", "d29", "d30"]
 
+possible_vars = ['a','b','c','e']
+
 possible_pulses = [
         "p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10"]
+
+def convert_progtable(progtable):
+    """
+    This function reformats the progtable to be compatible with the Bruker_tools. 
+    This is done by converting the axis of each moving pulse to be relative to the previous moving pulse.
+    """
+    n_entries = len(progtable['EventID'])
+    uaxes = np.unique(progtable['axID'])
+    n_uaxes = len(uaxes)
+
+    for ax in uaxes:
+        base_axis = None
+        total_axis = None
+        for i in range(n_entries):
+            if progtable['axID'][i] != ax:
+                continue
+            if progtable['Variable'][i] != 't':
+                continue
+            if base_axis is None:
+                base_axis = progtable['axis'][i]
+                total_axis = base_axis
+            else:
+                new_axis = progtable['axis'][i] - total_axis
+                total_axis = progtable['axis'][i]
+                progtable['axis'][i] = new_axis
+    
+    return progtable
+
+
+
+def calc_rel_positions(sequence):
+    """
+    Calcuates the starting relative positions of all pulses in a sequence.
+    """
+    n_pulses = len(sequence.pulses)
+    positions = np.zeros(n_pulses)
+    for i,pulse in enumerate(sequence.pulses):
+        positions[i] = pulse.t.value
+    rel_positions = np.diff(positions,prepend=0)
+    return rel_positions
 
 # =============================================================================
 
 
 class PulseSpel:
 
-    def __init__(self, sequence, MPFU=None, AWG=False) -> None:
+    def __init__(self, sequence, d0, MPFU=None, AWG=False) -> None:
 
         self._check_sequence(sequence)
-
+        self.convert_progtable(sequence.progTable)
         self.possible_delays = possible_delays.copy()
         self.possible_pulses = possible_pulses.copy()
+        self.possible_vars = possible_vars.copy()
         self.sequence = sequence
         self.var_hash = {}
         self.def_file_str = ""
@@ -228,13 +289,16 @@ class PulseSpel:
 
         
         # Build hash of initial pulses
+        # For every event and delay is created immediately prior to the event
+
+        rel_positions = calc_rel_positions(sequence)
         for id, pulse in enumerate(sequence.pulses):
+            str = self._new_delay(f"{id}d")
+            self._addDef(f"{str} = {int(rel_positions[id])}") 
+            
             if type(pulse) == Detection:
                 self.var_hash[id] = "pg"
                 self._addDef(f"pg = {int(pulse.tp.value)}")
-            elif type(pulse) == Delay:
-                str = self._new_delay(id)
-                self._addDef(f"{str} = {int(pulse.tp.value)}")
             else:
                 str = self._new_pulse(id)
                 self._addDef(f"{str} = {int(pulse.tp.value)}")
@@ -242,6 +306,7 @@ class PulseSpel:
         self._addDef(f"h = {sequence.shots.value}")
         self._addDef(f"n = {sequence.averages.value}")
         self._addDef(f"srt = {sequence.reptime.value:.0f} * srtu")
+        self._addDef(f"d0 = {d0:.0f} ")
 
 
         # Build table of parvars
@@ -260,14 +325,25 @@ class PulseSpel:
         place_hash = {}
         for i, parvar in enumerate(self.parvars):
             for j, event in enumerate(parvar.events): 
-                str = self._new_delay(f"{event}_step")
-                step_hash[event] = str
-                self._addDef(f"{str} = {parvar.parvar['step'][j]}")
-                if parvar.parvar['types'][j] == "d":
-                    str = self._new_delay(f"{event}_place")
-                elif parvar.parvar['types'][j] == "p":
+                if event == 'srt': #srt loop
+                    str = self._new_var('srt')
+                    self._addDef(f"{str} = {parvar.parvar['step'][j]} * srtu")
+                    str = self._new_var('srt_step')
+                    step_hash[event] = str
+                    self._addDef(f"{str} = {parvar.parvar['step'][j]} * srtu")
+                    place_hash[event] = 'srt'
+                elif parvar.parvar['types'][j] == 'p': #pulse loop
+                    str = self._new_delay(f"{event}_step")
+                    step_hash[f"{event}p"] = str
+                    self._addDef(f"{str} = {parvar.parvar['step'][j]}")
                     str = self._new_pulse(f"{event}_place")
-                place_hash[event] = str
+                    place_hash[f"{event}p"] = str
+                elif parvar.parvar['types'][j] == 'd': #delay loop
+                    str = self._new_delay(f"{event}_step")
+                    step_hash[f"{event}d"] = str
+                    self._addDef(f"{str} = {parvar.parvar['step'][j]}")
+                    str = self._new_delay(f"{event}_place")
+                    place_hash[f"{event}d"] = str
             dim_step = self._new_delay(f"dim{i}_step")
             self._addDef(f"{dim_step} = {parvar.ax_step}")
             self._addDef(f"d{20+i} = {parvar.init}")
@@ -297,6 +373,8 @@ class PulseSpel:
             self._addExp(f"{place_hash[i]} = {self.var_hash[i]}")
         if self.parvars[0].Bsweep:
             self._addExp(f"bsweep x=1 to sx")
+        elif self.parvars[0].repsweep:
+            self._addExp(f"for x=1 to sx")
         else:
             self._addExp(f"sweep x=1 to sx")
     
@@ -305,8 +383,20 @@ class PulseSpel:
 
         # # Read pulse sequence with phase cycle
         for id, pulse in enumerate(sequence.pulses):
-            if id in place_hash:
-                pulse_str = place_hash[id]
+            # if id in place_hash:
+            #     pulse_str = place_hash[id]
+            # else:
+            #     pulse_str = self.var_hash[id]
+            # Add delays
+            if f"{id}d" in place_hash:
+                delay_str = place_hash[f"{id}d"]
+            else:
+                delay_str = self.var_hash[f"{id}d"]
+            self._addExp(f"{delay_str}")
+
+            # Add pulses
+            if f"{id}p" in place_hash:
+                pulse_str = place_hash[f"{id}p"]
             else:
                 pulse_str = self.var_hash[id]
             if id in self.pcyc_hash:
@@ -315,10 +405,6 @@ class PulseSpel:
                 self._addExp(f"d0\nacq [sg1]")
             else:
                 self._addExp(f"{pulse_str}")
-        # if type(pulse) == Delay:
-        #     self._addExp(f"{}")
-        # else:
-        #     self._addExp(f"{} [{}]")
 
         self._addExp(f"next i")  # End of shots loop
         for i in place_hash.keys():
@@ -337,6 +423,11 @@ class PulseSpel:
         self.var_hash[key] = str
         return str
     
+    def _new_var(self, key):
+        str = self.possible_vars.pop(0)
+        self.var_hash[key] = str
+        return str
+
     def _new_pulse(self, key):
         str = self.possible_pulses.pop(0)
         self.var_hash[key] = str
@@ -499,42 +590,69 @@ def run_general(
     ValueError
         If an input is of the wrong type.
     """
-    if os.path.isabs(ps_file[0]):
-        base_path = ""
-    else:
-        base_path = MODULE_DIR
 
-    if len(ps_file) == 1:
-        # Assuming that both the EXP file and the DEF file have the same 
-        # name bar-extention
-        exp_file = base_path + ps_file[0] + ".exp"
-        def_file = base_path + ps_file[0] + ".def"
+    if os.path.isfile(ps_file[0]):
+        if os.path.isabs(ps_file[0]):
+            base_path = ""
+        else:
+            base_path = MODULE_DIR
 
-    elif len(ps_file) == 2:
+        if len(ps_file) == 1:
+            # Assuming that both the EXP file and the DEF file have the same 
+            # name bar-extention
+            exp_file = base_path + ps_file[0] + ".exp"
+            def_file = base_path + ps_file[0] + ".def"
+
+        elif len(ps_file) == 2:
+            
+            # EXP and DEF file have seperate name
+            exp_file = base_path + ps_file[0] + ".exp"
+            def_file = base_path + ps_file[1] + ".def"
+
+        else:
+            raise ValueError(
+                "ps_file must be of form ['EXP file'] or ['EXP file','DEF file']")
         
-        # EXP and DEF file have seperate name
-        exp_file = base_path + ps_file[0] + ".exp"
-        def_file = base_path + ps_file[1] + ".def"
+        with open(exp_file, "r") as exp_file:
+            exp_text = exp_file.read()
 
+        with open(def_file, "r") as def_file:
+            def_text = def_file.read()
     else:
-        raise ValueError(
-            "ps_file must be of form ['EXP file'] or ['EXP file','DEF file']")
+        exp_text = ps_file[0]
+        def_text = ps_file[1]
 
-    # Identifying a dimension change in settings
-    r = re.compile("dim([0-9]*)")
-    match_list: list = list(filter(
-        lambda list: list is not None, [r.match(i) for i in variables.keys()]))
-    if len(match_list) >= 1:
-        for i in range(0, len(match_list)):
-            key = match_list[i][0]
-            dim = int(r.findall(key)[0])
-            new_length = int(variables[key])
-            change_dimensions(exp_file, dim, new_length)
+    # # Identifying a dimension change in settings
+    # r = re.compile("dim([0-9]*)")
+    # match_list: list = list(filter(
+    #     lambda list: list is not None, [r.match(i) for i in variables.keys()]))
+    # if len(match_list) >= 1:
+    #     for i in range(0, len(match_list)):
+    #         key = match_list[i][0]
+    #         dim = int(r.findall(key)[0])
+    #         new_length = int(variables[key])
+    #         change_dimensions(exp_file, dim, new_length)
         
-    api.set_PulseSpel_exp_filepath(exp_file)
-    api.set_PulseSpel_def_filepath(def_file)
-    api.compile_PulseSpel_prg()
-    api.compile_PulseSpel_def()   
+
+
+    verbMsgParam = api.cur_exp.getParam('*ftEPR.PlsSPELVerbMsg')
+    plsSPELCmdParam = api.cur_exp.getParam('*ftEPR.PlsSPELCmd')
+    api.XeprCmds.aqPgSelectBuf(1)
+
+    api.cur_exp.getParam('*ftEpr.PlsSPELGlbTxt').value = def_text
+    api.XeprCmds.aqPgShowDef()
+
+    plsSPELCmdParam.value=3
+    while not "The variable values are set up" in verbMsgParam.value:
+        time.sleep(0.1)
+
+    api.XeprCmds.aqPgSelectBuf(2)
+
+    api.cur_exp.getParam('*ftEpr.PlsSPELPrgTxt').value = exp_text
+    plsSPELCmdParam.value=7
+    while not "Second pass ended" in verbMsgParam.value:
+        time.sleep(0.1)
+
 
     if "ReplaceMode" in settings:
         api.set_ReplaceMode(settings["ReplaceMode"]) 
@@ -551,34 +669,12 @@ def run_general(
     else:    
         api.set_Acquisition_mode(1)
 
-    # setting PS Variables
-
-    # Some Defaults first, these are overwritten if needed
-
-#     api.set_PulseSpel_var("p0", 16)
-#     api.set_PulseSpel_var("p1", 32)
-
-#     api.set_PulseSpel_var("d0", 400)
-#     api.set_PulseSpel_var("d1", 500)
-
-#     api.set_PulseSpel_var("d30", 16)
-#     api.set_PulseSpel_var("d31", 16)
-
-#     api.set_PulseSpel_var("h", 20)
-#     api.set_PulseSpel_var("n", 1000)
-#     api.set_PulseSpel_var("m", 1)
-
-    # Change all variables
 
     for var in variables:
         api.set_PulseSpel_var(var.lower(), variables[var])
 
     api.set_PulseSpel_experiment(exp[0])
     api.set_PulseSpel_phase_cycling(exp[1])
-
-    # Compile Defs and Program
-    api.compile_PulseSpel_prg()
-    api.compile_PulseSpel_def()  
 
     # Run Experiment
     if run is True:
@@ -633,18 +729,21 @@ def change_dimensions(path, dim: int, new_length):
     with open(path, 'w') as file:
         file.writelines(data)
 
-def _addAWGPulse(sequence, pulse_num, id, pcyc_str):
+def _addAWGPulse(sequence, pulse_num, id, pcyc_str,amp_var=None):
     awg_id = id
     pulse=sequence.pulses[pulse_num]
     if type(pulse) is RectPulse:
         shape = 0
         init_freq = pulse.freq.value
         final_freq = init_freq
-        if hasattr(pulse,"scale"):
-            amplitude = pulse.scale.value
+        if amp_var is not None:
+            amplitude = amp_var
         else:
-            amplitude = 0
-    
+            if hasattr(pulse,"scale"):
+                amplitude = pulse.scale.value
+            else:
+                amplitude = 0
+        
 
     def add_AWG_line(elements, comment=None, indent=2, repeat=1):
         string = ""
@@ -690,6 +789,7 @@ def get_arange(array):
     if np.ndim(array) > 1:
         raise ValueError("The array must be 1D")
 
+    array = np.around(array,6)
     unique_diff = np.unique(np.diff(array))
     step = unique_diff[0]
     start = array[0]
@@ -697,8 +797,9 @@ def get_arange(array):
 
     return start,stop+step, step
 
+
 def build_unique_progtable(seq):
-    progtable = seq.progtable
+    progtable = seq.progTable
     unique_axs = np.unique(progtable["axID"])
     u_progtable = []
     d_shifts=[]
@@ -711,19 +812,33 @@ def build_unique_progtable(seq):
             axes.append(progtable["axis"][i])
             variables.append((progtable["EventID"][i], progtable["Variable"][i]))
         
+        if np.any([a[1]=='scale' for a in variables]):
+            axes = [ax * 100 for ax in axes]
+
         # Find unique axis
         steps = []
         for axis in axes:
             start,_, step = get_arange(axis)
             steps.append(step)
-        common_step = np.gcd.reduce(steps)
+        if np.any(steps):
+            if np.all(np.mod(steps,1) == 0):
+                common_step = gcd(steps)
+            else:
+                common_step = np.min(steps)
+                # idx = np.argmin(steps)
+                # start = get_arange(axes[idx])
+            multipliers = np.array(steps)/common_step
+        else:
+            common_step = 0
+            multipliers = np.ones(len(steps))
+
+        start = axes[0][0]/multipliers[0]
+
+
         index = progtable["axID"].index(axID)
         common_axis={"start":start,"dim":np.shape(axes[0])[0],"step":common_step,"reduce":progtable["reduce"][index]}
-        multipliers = np.array(steps)/common_step
         n_steps = len(steps)
         vars = [{"variable": variables[i],"multiplier":multipliers[i]} for i in range(n_steps)]
-        u_progtable.append({"axID":axID,"axis":common_axis,"variables":vars})
-
         n_pulses = len(seq.pulses)
         t_shift = np.zeros(n_pulses)
         for var,mul in zip(variables,multipliers):
@@ -731,104 +846,156 @@ def build_unique_progtable(seq):
                 continue
             t_shift[var[0]] = mul
         
-        d_shift = {"axID":axID, "delay_shifts": np.diff(t_shift,prepend=0), "axis":common_axis}
-        d_shifts.append(d_shift) 
+        u_progtable.append({"axID":axID,"axis":common_axis,"variables":vars, "delay_shifts": np.diff(t_shift,prepend=0)})
 
 
-    return u_progtable, d_shifts
 
-def _addAWGPulse(self, sequence, pulse_num, id):
-    awg_id = id
-    pulse=sequence.pulses[pulse_num]
-    if type(pulse) is RectPulse:
-        shape = 0
-        init_freq = pulse.freq.value
-        final_freq = init_freq
-        if hasattr(pulse,"scale"):
-            amplitude = pulse.scale.value
-        else:
-            amplitude = 0
+    return u_progtable
+
+# def _addAWGPulse(self, sequence, pulse_num, id):
+#     awg_id = id
+#     pulse=sequence.pulses[pulse_num]
+#     if type(pulse) is RectPulse:
+#         shape = 0
+#         init_freq = pulse.freq.value
+#         final_freq = init_freq
+#         if hasattr(pulse,"scale"):
+#             amplitude = pulse.scale.value
+#         else:
+#             amplitude = 0
     
 
-    def add_AWG_line(elements, comment=None, indent=2, repeat=1):
-        string = ""
-        string += " "*indent
-        for i in range(0,repeat):
-            if isinstance(elements,list) or isinstance(elements,np.ndarray):
-                for ele in elements:
-                    string += f"{ele:<4}  "
-            else:
-                string += f"{elements:<4}  "
+#     def add_AWG_line(elements, comment=None, indent=2, repeat=1):
+#         string = ""
+#         string += " "*indent
+#         for i in range(0,repeat):
+#             if isinstance(elements,list) or isinstance(elements,np.ndarray):
+#                 for ele in elements:
+#                     string += f"{ele:<4}  "
+#             else:
+#                 string += f"{elements:<4}  "
         
-        if comment is not None:
-            string += ";  " + comment
+#         if comment is not None:
+#             string += ";  " + comment
         
-        string += "\n"
-        return string
+#         string += "\n"
+#         return string
 
-    string = ""
+#     string = ""
     
-    # phase = np.round(np.degrees(pulse.pcyc["Phases"]))
-    phase = np.round(np.degrees(sequence.pcyc_cycles[:,sequence.pcyc_vars.index(pulse_num)]))
+#     # phase = np.round(np.degrees(pulse.pcyc["Phases"]))
+#     phase = np.round(np.degrees(sequence.pcyc_cycles[:,sequence.pcyc_vars.index(pulse_num)]))
 
-    num_cycles = len(phase)
+#     num_cycles = len(phase)
     
-    string += f"begin awg{awg_id}\n"
-    string += add_AWG_line(
-        init_freq, repeat=num_cycles, comment="Initial Frequency [MHz]")
-    string += add_AWG_line(
-        final_freq, repeat=num_cycles, comment="Final Frequency [MHz]")
-    string += add_AWG_line(
-        phase, repeat=1, comment="Phase")
-    string += add_AWG_line(
-        amplitude, repeat=num_cycles, comment="Amplitude")
-    string += add_AWG_line(
-        shape, repeat=num_cycles, comment="Shape")
-    string += f"end awg{awg_id}\n"
+#     string += f"begin awg{awg_id}\n"
+#     string += add_AWG_line(
+#         init_freq, repeat=num_cycles, comment="Initial Frequency [MHz]")
+#     string += add_AWG_line(
+#         final_freq, repeat=num_cycles, comment="Final Frequency [MHz]")
+#     string += add_AWG_line(
+#         phase, repeat=1, comment="Phase")
+#     string += add_AWG_line(
+#         amplitude, repeat=num_cycles, comment="Amplitude")
+#     string += add_AWG_line(
+#         shape, repeat=num_cycles, comment="Shape")
+#     string += f"end awg{awg_id}\n"
 
-    self.pcyc_str += string
+#     self.pcyc_str += string
 
-    return f"awg{id}"
+#     return f"awg{id}"
 
 def check_variable(var:str, uprog):
-    for i in range(len(uprog['variables'])):
-        if uprog['variables'][i]["variable"][1] == var:
-            return True
-        
-    return False
-    
-def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
 
-    uprogtable = build_unique_progtable(sequence.progTable,sequence)
+    if isinstance(uprog,list):
+        for up in uprog:
+            if check_variable(var,up):
+                return True
+        return False
+    else:
+        for i in range(len(uprog['variables'])):
+            if uprog['variables'][i]["variable"][1] == var:
+                return True
+        return False
+    
+def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
+    """Write the pulsespel file for a given sequence. 
+
+    Parameters
+    ----------
+    sequence : Sequence
+        The sequence class to be converted.
+    AWG : bool, optional
+        Is this a pulse spel file for an AWG spectrometer, by default False
+    MPFU : list, optional
+        A list of MPFU channels, by default False
+
+    Returns
+    -------
+    str
+        The string for the definition file
+    str
+        The string for the experiment file
+    """
+
+    uprogtable = build_unique_progtable(sequence)
     possible_delays = [
         "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "d10", "d11", "d12",
         "d13", "d14", "d15", "d16", "d17", "d18", "d19", "d20", "d21", "d22",
         "d23", "d24", "d25", "d26", "d27", "d28", "d29", "d30"]
+    possible_pulses= ["p0", "p1","p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9"]
     loop_iterators = ["i","j"]
     loop_dims = ["m","f"]
+    letter_vars = ['b','c','e','f','g']
+    possible_amps = ["aa1","aa2","aa3","aa4","aa5","aa6","aa7","aa8","aa9","aa10",
+                     "ab1","ab2","ab3","ab4","ab5","ab6","ab7","ab8","ab9","ab10",
+                     "ac1","ac2","ac3","ac4","ac5","ac6","ac7","ac8","ac9","ac10"]
 
     n_pulses = len(sequence.pulses)
     n_axes = len(uprogtable)
 
     static_delay_hash = {0:"d9"}
+    static_pulse_hash = {}
     mv_delay_hash = {}
+    mv_pulse_hash = {}
     axis_start_hash = {}
     axis_step_hash = {}
     axis_val_hash = {}
+    mv_pulse_amp_hash = {}
+    static_pulse_amp_hash = {}
+    
     axs_ids = []
+
+
     head = "begin exp \"auto\" [INTG QUAD] \n"
     foot = "end exp"
     def_file = "begin defs \n"
     dims = "begin defs \n dim s["
     pcyc_str = ""
 
+    # Add shot repetition time
+    if not check_variable("reptime", uprogtable):
+        def_file += f"srt = {val_in_us(sequence.reptime, False):.0f} * srtu\n"
+
+    def_file += f"d0 = {d0:.0f}\n"
+    prev_pulse = None
     for i,pulse in enumerate(sequence.pulses):
         static_delay_hash[i] = possible_delays.pop()
-        def_file += f"{static_delay_hash[i]} = {pulse.t.value}\n"
+        if prev_pulse is None:
+            def_file += f"{static_delay_hash[i]} = {pulse.t.value}\n"
+        else:
+            def_file += f"{static_delay_hash[i]} = {pulse.t.value - prev_pulse.t.value}\n"
+        
         if type(pulse) is Detection:
             def_file += f"pg = {pulse.tp.value}\n"
         else:
-            def_file += f"p{i} = {pulse.tp.value}\n"
+            static_pulse_hash[i] = possible_pulses.pop()
+            def_file += f"{static_pulse_hash[i]} = {pulse.tp.value}\n"
+
+        if AWG and (not isinstance(pulse,Detection)):
+            static_pulse_amp_hash[i] = possible_amps.pop()
+            def_file += f"{static_pulse_amp_hash[i]} = {int(pulse.scale.value * 100):d}\n"
+        prev_pulse = pulse
 
     for axis in uprogtable:
         ax_ID = axis["axID"]
@@ -849,16 +1016,16 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
         kept_axes_param = ["x"]
     elif n_axes - n_reduced == 2:
         kept_axes_param = ["x","y"]
-    elif n_axes - n_reduced == 0:
-        raise RuntimeWarning("Transient experiments are not currently supported")
-    elif n_axes - n_reduced > 2:
-        raise RuntimeWarning("A maximum of 2 non reduced axes are allowed.")
+    # elif n_axes - n_reduced == 0:
+    #     raise RuntimeWarning("Transient experiments are not currently supported")
+    # elif n_axes - n_reduced > 2:
+    #     raise RuntimeWarning("A maximum of 2 non reduced axes are allowed.")
 
 
 
     # Setup averaging loop
-    head += "for k=1 to m \ntotscans(n) \n"
-    def_file += f"k = {sequence.averages.value}\n"
+    head += "for k=1 to m \ntotscans(m) \n"
+    def_file += f"m = {sequence.averages.value}\n"
 
     foot = "scansdone(k) \nnext k \n"+foot
 
@@ -873,7 +1040,10 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
             loop_str = "bsweep {param}=1 to {stop} \n"
         else:
             reduce = uprogtable[index]['axis']["reduce"]
-            loop_str = "for {param}=1 to {stop} \n"
+            if ax == 0 and not check_variable("reptime", uprog):
+                loop_str = "sweep {param}=1 to {stop} \n"
+            else:
+                loop_str = "for {param}=1 to {stop} \n"
         
         if reduce:
             param = loop_iterators.pop()
@@ -886,7 +1056,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
             stop = 'sx'
             foot = f"dx=dx+{axis_step_hash[ax]}\n"+ foot
         elif param == 'y':
-            stop == 'sy'
+            stop = 'sy'
             foot = f"dy=dy+{axis_step_hash[ax]}\n"+ foot
         else:
             stop = loop_dims.pop()
@@ -897,11 +1067,59 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
             for i in changing_pulses:
                 if i not in mv_delay_hash:
                     mv_delay_hash[i] = possible_delays.pop()
-                    delay_build = f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n" + delay_build 
-                foot = f"{axis_val_hash[ax]}={axis_val_hash[ax]}+{axis_step_hash[ax]}\n"+ foot
-                delay_build += f"{mv_delay_hash[i]} = {mv_delay_hash[i]} + {axis_val_hash[ax]} \n"
+                    # delay_build = f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n" + delay_build 
+                    head += f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n"
+                for k in range(int(np.abs(uprog["delay_shifts"][i]))):
+                    if uprog["delay_shifts"][i] > 0: 
+                        sign = "+"
+                    else: 
+                        sign = "-"
+                    # foot = f"{axis_val_hash[ax]}={axis_val_hash[ax]}{sign}{axis_step_hash[ax]}\n"+ foot
+                    foot = f"{mv_delay_hash[i]}={mv_delay_hash[i]}{sign}{axis_step_hash[ax]}\n"+ foot
+                # delay_build += f"{mv_delay_hash[i]} = {mv_delay_hash[i]} + {axis_val_hash[ax]} \n"
+        if check_variable("tp", uprog):
+            for var in uprog["variables"]:
+                if var["variable"][1] != "tp":
+                    continue
+                pulse_id = var["variable"][0]
+                mult = var["multiplier"]
+                mv_pulse_hash[pulse_id] = possible_pulses.pop()
+                head += f"{mv_pulse_hash[pulse_id]} = {static_pulse_hash[pulse_id]}\n"
+                if mult > 0:
+                    sign = "+"
+                else:
+                    sign = "-"
+                for k in range(int(np.abs(mult))):
+                    foot = f"{mv_pulse_hash[pulse_id]}={mv_pulse_hash[pulse_id]}{sign}{axis_step_hash[ax]}\n"+ foot
+        if check_variable("reptime", uprog):
+            for var in uprog["variables"]:
+                if var["variable"][1] != "reptime":
+                    continue
+                reptime0_var = letter_vars.pop()
+                head += f"srt = {reptime0_var}\n"
+                axis = val_in_us(sequence.reptime, True)
+                def_file += f"{reptime0_var} = {axis[0]:.0f} * srtu\n"
+                srt_step_var = letter_vars.pop()
+                def_file += f"{srt_step_var} = {var['multiplier']*uprog['axis']['step']:.0f} * srtu\n"
+                foot = f"srt=srt + {srt_step_var}\n"+ foot
+        if check_variable("scale", uprog):
+            for var in uprog["variables"]:
+                if var["variable"][1] != "scale":
+                    continue
+                pulse_id = var["variable"][0]
+                mult = var["multiplier"]
+                mv_pulse_amp_hash[pulse_id] = possible_amps.pop()
+                head += f"{mv_pulse_amp_hash[pulse_id]} = {static_pulse_amp_hash[pulse_id]}\n"
+                
+                if mult > 0:
+                    sign = "+"
+                else:
+                    sign = "-"
+                for k in range(int(np.abs(mult))):
+                    foot = f"{mv_pulse_amp_hash[pulse_id]}={mv_pulse_amp_hash[pulse_id]}{sign}{axis_step_hash[ax]}\n"+ foot
 
-        head +=  f"{axis_val_hash[ax]} = 0\n"
+
+        # head +=  f"{axis_val_hash[ax]} = 0\n"
         head += loop_str.format(param=param,stop=stop)
 
 
@@ -921,7 +1139,8 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
             if (type(pulse) is Detection):
                 continue
             id += 1
-            pcyc_str, awg_id = _addAWGPulse(sequence,pulse_num, id, pcyc_str)
+            amp_var = mv_pulse_amp_hash[pulse_num] if pulse_num in mv_pulse_amp_hash else static_pulse_amp_hash[pulse_num]
+            pcyc_str, awg_id = _addAWGPulse(sequence,pulse_num, id, pcyc_str,amp_var)
             pcyc_hash[pulse_num] = awg_id
 
         pcyc = PSPhaseCycle(sequence, MPFU=None, OnlyDet=True)
@@ -932,7 +1151,7 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
         pcyc_str = pcyc.__str__()
 
     # Add Pulse Sequence
-    pulse_str = ""
+    pulse_str = "d9\n"
     for id, pulse in enumerate(sequence.pulses):
         if id in mv_delay_hash:
             pulse_str += f"{mv_delay_hash[id]}\n"
@@ -942,8 +1161,10 @@ def write_pulsespel_file(sequence, AWG=False, MPFU=False ):
         if type(pulse) == Detection:
             pulse_str += f"d0\nacq [sg1]\n"
         else:
-            pulse_str += f"p{id} [{pcyc_hash[id]}]\n"
-
+            if id in mv_pulse_hash:
+                pulse_str += f"{mv_pulse_hash[id]} [{pcyc_hash[id]}]\n"
+            else:
+                pulse_str += f"{static_pulse_hash[id]} [{pcyc_hash[id]}]\n"
 
 
     dims = dims[:-1]

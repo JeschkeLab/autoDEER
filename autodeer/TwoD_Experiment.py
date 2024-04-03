@@ -68,7 +68,7 @@ class TwoDExperimentAnalysis:
     def import_dataset(self,dataset):
         self.time = dataset.time
         self.data = dataset.data
-        self.scan = dataset.scans_done
+        self.scan = dataset.scans
         self.shots = dataset.shot_p_point
         self.shrt = dataset.shrt
 

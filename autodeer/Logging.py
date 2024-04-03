@@ -1,8 +1,36 @@
 import logging
 import logging.handlers as handlers
+import os
+import PyQt6.QtCore as QtCore
 
 
-def setup_logs():
+class DictFormater(logging.Formatter):
+
+    def format(self, record):
+        
+        entry = {
+            'time': record.asctime,
+            'name': record.name,
+            'level': record.levelname,
+            'message': record.msg
+        }
+
+        return entry
+    
+
+class QtLogHandler(QtCore.QObject, logging.Handler):
+
+    signal = QtCore.pyqtSignal(dict)
+    def __init__(self, level=logging.NOTSET):
+        super().__init__(level=level)
+        
+
+    def emit(self, record):
+        entry = self.format(record)
+        self.signal.emit(entry)
+
+
+def setup_logs(folder: str):
     """
     General command to setup system wide logging.
 
@@ -14,16 +42,39 @@ def setup_logs():
     formatter = logging.Formatter(
         '%(asctime)s [%(name)s] - %(levelname)s: %(message)s')
 
-    # A new log is created every week, after 4 weeks the oldest is deleated.
-    # This might be changed to daily at a later date, we will see how it goes
+    autoDEER_log = logging.getLogger('autoDEER')
+    interface_log = logging.getLogger('interface')
     logHandler_core = handlers.TimedRotatingFileHandler(
-        'core.log', when='W0', backupCount=4)
-    logHandler_core.setLevel(logging.INFO)
+        os.path.join(folder,'autoDEER.log'), when='D', backupCount=4)
     logHandler_core.setFormatter(formatter)
-    logging.getLogger('core').addHandler(logHandler_core)
+    autoDEER_log.setLevel(logging.INFO)
+    autoDEER_log.addHandler(logHandler_core)
+
+    QTHandler = QtLogHandler()
+    QTHandler.setFormatter(DictFormater())
+    autoDEER_log.addHandler(QTHandler)
 
     logHandler_hardware = handlers.TimedRotatingFileHandler(
-        'hardware.log', when='W0', backupCount=4)
-    logHandler_hardware.setLevel(logging.INFO)
+        os.path.join(folder,'interface.log'), when='D', backupCount=4)
     logHandler_hardware.setFormatter(formatter)
-    logging.getLogger('hardware').addHandler(logHandler_hardware)
+    interface_log.setLevel(logging.INFO)
+    interface_log.addHandler(logHandler_hardware)
+    interface_log.addHandler(QTHandler)
+
+
+def change_log_level(core='INFO',interface='INFO'):
+    """
+    Change the log level of the core and hardware loggers.
+
+    Parameters
+    ----------
+    core : str
+        The log level for the core logger.
+    interface : str
+        The log level for the hardware logger.
+    """
+    logging.getLogger('autoDEER').setLevel(core)
+    logging.getLogger('autoDEER').info(f'Level set to {core}')
+    logging.getLogger('interface').setLevel(interface)
+    logging.getLogger('interface').info(f'Level set to {interface}')
+

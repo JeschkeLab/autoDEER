@@ -1,0 +1,46 @@
+Spectrometer:
+  Type: Complete Spectrometer
+  Manufacturer: Bruker
+  Model: E580
+  Local Name: C243
+
+  AWG: False
+  MPFU: True
+  Hybrid: False
+
+  Bridge:
+    Min Freq: 33 #GHz
+    Max Freq: 35 #GHz
+    Freq Cal: [3.85625754e-10, -5.92378391e+03, 3.52260651e+02, -6.91334739e+00, 5.08737812e-02]
+    d0: 650 #ns
+    MPFU Channels: ['+<x>', '-<x>','+<y>', '-<y>']
+    Pulse dt: 2  #ns
+    Det dt: 0.5  #ns
+    Det res: 8  #bit
+    Video BW: 20
+
+Resonators:
+  HOlder 5 :
+    Center Freq: 34.265 #GHz
+    Q: 80
+  Three Loop-gap:
+    Center Freq: 33.976 #GHz
+    Q: 80
+
+autoDEER:
+  logging:
+    autoDEER: 'DEBUG' # Default: 'INFO
+    interface: 'DEBUG' # Default: 'INFO'
+  
+  DeerLab:
+    nnlsSolver: 'cvx'  # Default: 'cvx'
+    xtol: 1e-8  # Default: 1e-8
+    ftol: 1e-8  # Default: 1e-8
+    max_nfev: 1e8  # Default: 1e8
+    lin_maxiter: 1e4  # Default: 1e4
+    lin_tol: 1e-15  # Default: 1e-15
+    regparam: 'bic' # Default: 'aic'
+
+  Refresh_time: 0.5  # mins Default: 3
+  cores: 3
+  Min_tp: 16
