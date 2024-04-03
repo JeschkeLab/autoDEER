@@ -11,6 +11,7 @@ from .pulses import *
 from .criteria import *
 from .dataset import *
 from .reporter import Reporter, combo_figure
+from .colors import primary_colors
 
 try:
     import PyQt6
