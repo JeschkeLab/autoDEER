@@ -115,11 +115,7 @@
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
 
-<div class="announcement">
-  <aside class="announcement-content">
-     Version 0.7 alpha out now! 
-  </aside>
-</div>
+
 
 <div class="page">
   <header class="mobile-header">
@@ -141,7 +137,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -165,13 +161,16 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul class="current">
+  <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Installation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../Install_python.html">Installing Python</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Tutorial</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../Algorithum.html">The Automated Algorithum</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../gui_guide.html">autoDEER GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Jupyter_interface.html">Jupyter Interface</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../API_docs.html">API doc</a></li>
@@ -184,8 +183,12 @@
 </li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../releasenotes.html">Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/JeschkeLab/autoDEER">Github</a></li>
 </ul>
 
 </div>
@@ -214,7 +217,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -223,7 +226,8 @@
           <section id="autoepr">
 <h1>autoEPR<a class="headerlink" href="#autoepr" title="Link to this heading">#</a></h1>
 <p>AutoEPR is a Python-based spectrometer-independent automation toolbox. It was originally designed as the back end for automating DEER experiments (autoDEER) but it is also readily expandable to a large variety of other pulse EPR experiments. Currently, it is still fully integrated into autoDEER this will likely change at a later date.</p>
-<p>Features included in autoEPR:</p>
+<img alt="../../_images/autoEPR.svg" class="align-center" src="../../_images/autoEPR.svg" /><section id="features-included-in-autoepr">
+<h2>Features included in autoEPR:<a class="headerlink" href="#features-included-in-autoepr" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Automated Control: Fully automated experiments from pulse tunning and set-up experiments (Field-Sweeps, Resonator profiles, etc…) to final measurement and analysis. This can all be done such that the user only needs to press a single button and walk away.</p></li>
 <li><p>Integrated Analysis: Whilst the experiment is running, the toolbox can actively process and analyse the data. This analysis can be used to either set future experimental parameters or to intelligently end the experiment once specific criteria have been satisfied. It is possible to expand to all Python-based data analysis packages.</p></li>
@@ -232,6 +236,7 @@
 </ul>
 <div class="toctree-wrapper compound">
 </div>
+</section>
 </section>
 
         </article>
@@ -263,7 +268,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll
+                Copyright &#169; 2021-2024, Hugo Karas, Gunnar Jeschke, Stefan Stoll
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -277,13 +282,32 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">autoEPR</a><ul>
+<li><a class="reference internal" href="#features-included-in-autoepr">Features included in autoEPR:</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2220c937"></script>
+</div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=32e29ea5"></script>

@@ -16,4 +16,6 @@ There are two mains ways of using autoDEER:
     :hidden:
     :maxdepth: 2
     
+    ./Algorithum.rst
     ./gui_guide.rst
+    ./Jupyter_interface.rst

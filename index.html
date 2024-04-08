@@ -115,11 +115,7 @@
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
 
-<div class="announcement">
-  <aside class="announcement-content">
-     Version 0.7 alpha out now! 
-  </aside>
-</div>
+
 
 <div class="page">
   <header class="mobile-header">
@@ -141,7 +137,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -165,13 +161,16 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="source/Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Installation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="source/Install_python.html">Installing Python</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="source/tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Tutorial</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="source/Algorithum.html">The Automated Algorithum</a></li>
 <li class="toctree-l2"><a class="reference internal" href="source/gui_guide.html">autoDEER GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/Jupyter_interface.html">Jupyter Interface</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="source/API_docs.html">API doc</a></li>
@@ -184,8 +183,12 @@
 </li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="source/releasenotes.html">Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/contributing.html">Contributing Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/JeschkeLab/autoDEER">Github</a></li>
 </ul>
 
 </div>
@@ -214,33 +217,42 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section id="welcome-to-autoepr-autodeer">
-<h1>Welcome to autoEPR &amp; autoDEER!<a class="headerlink" href="#welcome-to-autoepr-autodeer" title="Link to this heading">#</a></h1>
+          <section id="welcome-to-autodeer">
+<h1>Welcome to autoDEER!<a class="headerlink" href="#welcome-to-autodeer" title="Link to this heading">#</a></h1>
 <div class="admonition caution">
 <p class="admonition-title">Caution</p>
 <p>This documentation is a work in progress and not yet complete.
-Please be patient and if anything is unclear, please contact the developers.</p>
+Please be patient and if anything is unclear and please feel free to contact the developers.</p>
 </div>
-<p><strong>autoEPR</strong> is a free software package for the running of automated pulsed EPR
-experiments. It is designed to work with any arbitrary EPR sequence, including
-shaped pulses, on any modern spectrometer.</p>
-<p>AutoEPR can be applied to many experiments in pulse EPR, currently, we are only
-working on an implementation for DEER, autoDEER.</p>
-<p><strong>autoDEER</strong> is a specific implementation of autoEPR for the purpose of push-button
-automatic Double Electron Electron Resonance (DEER) spectroscopy.</p>
-<img alt="_images/autoDEER%26autoEPR.svg" src="_images/autoDEER%26autoEPR.svg" /><div class="admonition warning">
+<p>autoDEER is a spectrometer independent Python package developed to enable push-button
+fully automated DEER. The program is built around a well established and tested optimised algorithum.
+It can be either interfaced using the user friendly GUI or via Python code. Additionally, the backend “autoEPR” can
+be used to build new projects.</p>
+<img alt="_images/AbstractFigure.svg" class="align-center" src="_images/AbstractFigure.svg" /><section id="autodeer-s-key-features">
+<h2>autoDEER’s Key Features<a class="headerlink" href="#autodeer-s-key-features" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Fully Automated Push Button DEER</p></li>
+<li><p>Integrated Fitting</p></li>
+<li><p>Spectrometer Independence</p></li>
+<li><p>Intuitive Graphical User Interface</p></li>
+<li><p>High Quality PDF Report Generator</p></li>
+<li><p>and much more…</p></li>
+</ul>
+<div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>autoEPR and autoDEER are actively developed software package, that is still very much a work in process. At this moment in time, we only recommend it is used by people who understand how
-the python code work and can debug when it goes wrong. Please consider this to be an alpha release, it is hoped that a more stable beta version can be released soon.</p>
+<p>autoDEER is an actively developed software package, that is still very much a work in process. Please consider this to be a beta release.</p>
 </div>
 <div class="toctree-wrapper compound">
 </div>
+<div class="toctree-wrapper compound">
+</div>
+</section>
 </section>
 
         </article>
@@ -262,7 +274,7 @@ the python code work and can debug when it goes wrong. Please consider this to b
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll
+                Copyright &#169; 2021-2024, Hugo Karas, Gunnar Jeschke, Stefan Stoll
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -276,13 +288,34 @@ the python code work and can debug when it goes wrong. Please consider this to b
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Welcome to autoDEER!</a><ul>
+<li><a class="reference internal" href="#autodeer-s-key-features">autoDEER’s Key Features</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=2220c937"></script>
+</div><script src="_static/documentation_options.js?v=48f8e935"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=32e29ea5"></script>

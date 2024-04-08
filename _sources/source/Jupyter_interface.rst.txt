@@ -1,4 +1,4 @@
-Jupyter_interface
+Jupyter Interface
 =================
 
 Advanced users will likely want to have more control over their experiments, 

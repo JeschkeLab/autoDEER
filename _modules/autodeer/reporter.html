@@ -114,11 +114,7 @@
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
 
-<div class="announcement">
-  <aside class="announcement-content">
-     Version 0.7 alpha out now! 
-  </aside>
-</div>
+
 
 <div class="page">
   <header class="mobile-header">
@@ -164,13 +160,16 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../source/Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Installation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../source/Install_python.html">Installing Python</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../source/tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Tutorial</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../source/Algorithum.html">The Automated Algorithum</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../source/gui_guide.html">autoDEER GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../source/Jupyter_interface.html">Jupyter Interface</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../source/API_docs.html">API doc</a></li>
@@ -183,8 +182,12 @@
 </li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../source/releasenotes.html">Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../source/contributing.html">Contributing Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/JeschkeLab/autoDEER">Github</a></li>
 </ul>
 
 </div>
@@ -242,18 +245,18 @@
 <span class="kn">import</span> <span class="nn">deerlab</span> <span class="k">as</span> <span class="nn">dl</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 <div class="viewcode-block" id="styles">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.styles">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.styles">[docs]</a>
 <span class="n">styles</span> <span class="o">=</span> <span class="n">getSampleStyleSheet</span><span class="p">()</span></div>
 
 
 
 <div class="viewcode-block" id="package_dir">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.package_dir">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.package_dir">[docs]</a>
 <span class="n">package_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="SvgFlowable">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.SvgFlowable">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.SvgFlowable">[docs]</a>
 <span class="k">class</span> <span class="nc">SvgFlowable</span><span class="p">(</span><span class="n">Flowable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert byte streasm containing SVG into a Reportlab Flowable.&quot;&quot;&quot;</span>
 
@@ -266,14 +269,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">drawing</span><span class="o">.</span><span class="n">setProperties</span><span class="p">({</span><span class="s2">&quot;vAlign&quot;</span><span class="p">:</span> <span class="s2">&quot;CENTER&quot;</span><span class="p">,</span> <span class="s2">&quot;hAlign&quot;</span><span class="p">:</span> <span class="s2">&quot;CENTER&quot;</span><span class="p">})</span>
 
 <div class="viewcode-block" id="SvgFlowable.wrap">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.SvgFlowable.wrap">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.SvgFlowable.wrap">[docs]</a>
     <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_args</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return diagram size.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SvgFlowable.draw">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.SvgFlowable.draw">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.SvgFlowable.draw">[docs]</a>
     <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Render the chart.&quot;&quot;&quot;</span>
         <span class="n">renderPDF</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drawing</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canv</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
@@ -282,7 +285,7 @@
 
 
 <div class="viewcode-block" id="Reporter">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter">[docs]</a>
 <span class="k">class</span> <span class="nc">Reporter</span><span class="p">():</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">pagesize</span><span class="o">=</span><span class="s1">&#39;A4&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -310,7 +313,7 @@
             <span class="k">pass</span>
     
 <div class="viewcode-block" id="Reporter.header">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter.header">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter.header">[docs]</a>
     <span class="k">def</span> <span class="nf">header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
         <span class="n">logo</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">package_dir</span> <span class="o">+</span> <span class="s1">&#39;/docsrc/_static/autoDEER_light.png&#39;</span><span class="p">)</span>
         <span class="n">canvas</span><span class="o">.</span><span class="n">saveState</span><span class="p">()</span>
@@ -323,7 +326,7 @@
 
 
 <div class="viewcode-block" id="Reporter.footer">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter.footer">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter.footer">[docs]</a>
     <span class="k">def</span> <span class="nf">footer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
         <span class="n">canvas</span><span class="o">.</span><span class="n">saveState</span><span class="p">()</span>
         <span class="n">page_number</span> <span class="o">=</span> <span class="n">canvas</span><span class="o">.</span><span class="n">getPageNumber</span><span class="p">()</span>
@@ -336,7 +339,7 @@
 
 
 <div class="viewcode-block" id="Reporter._build">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter._build">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter._build">[docs]</a>
     <span class="k">def</span> <span class="nf">_build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Convert ordered dict to list of values and then flatten</span>
 
@@ -348,13 +351,13 @@
 
 
 <div class="viewcode-block" id="Reporter.add_title">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter.add_title">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter.add_title">[docs]</a>
     <span class="k">def</span> <span class="nf">add_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">story</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">Paragraph</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">styles</span><span class="p">[</span><span class="s1">&#39;Title&#39;</span><span class="p">])]</span></div>
 
 
 <div class="viewcode-block" id="Reporter.add_new_section">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter.add_new_section">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter.add_new_section">[docs]</a>
     <span class="k">def</span> <span class="nf">add_new_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
         <span class="n">substory</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">substory</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Paragraph</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">styles</span><span class="p">[</span><span class="s1">&#39;Heading2&#39;</span><span class="p">]))</span>
@@ -362,7 +365,7 @@
 
 
 <div class="viewcode-block" id="Reporter.add_text">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter.add_text">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter.add_text">[docs]</a>
     <span class="k">def</span> <span class="nf">add_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">title</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">story</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Paragraph</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">styles</span><span class="p">[</span><span class="s1">&#39;Heading4&#39;</span><span class="p">]))</span>
@@ -370,7 +373,7 @@
 
     
 <div class="viewcode-block" id="Reporter.add_code_block">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter.add_code_block">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter.add_code_block">[docs]</a>
     <span class="k">def</span> <span class="nf">add_code_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">title</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">story</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Paragraph</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">styles</span><span class="p">[</span><span class="s1">&#39;Heading4&#39;</span><span class="p">]))</span>
@@ -378,7 +381,7 @@
 
     
 <div class="viewcode-block" id="Reporter.add_figure">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter.add_figure">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter.add_figure">[docs]</a>
     <span class="k">def</span> <span class="nf">add_figure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">figure</span><span class="p">,</span> <span class="n">title</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="c1"># Add a matplotlib figure to the reportlab document</span>
         <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -400,20 +403,20 @@
 
 
 <div class="viewcode-block" id="Reporter.add_space">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter.add_space">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter.add_space">[docs]</a>
     <span class="k">def</span> <span class="nf">add_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">story</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Spacer</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">))</span></div>
 
 
     
 <div class="viewcode-block" id="Reporter.add_page_break">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter.add_page_break">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter.add_page_break">[docs]</a>
     <span class="k">def</span> <span class="nf">add_page_break</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">story</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PageBreak</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="Reporter.add_table">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.Reporter.add_table">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.Reporter.add_table">[docs]</a>
     <span class="k">def</span> <span class="nf">add_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">lists</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a table as a reportlab flowable from a list of lists</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -425,7 +428,7 @@
 
 
 <div class="viewcode-block" id="create_report">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.create_report">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.create_report">[docs]</a>
 <span class="k">def</span> <span class="nf">create_report</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">Results</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">SpectrometerInfo</span><span class="p">:</span><span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">UserInputs</span><span class="p">:</span><span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Pulses</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">report</span> <span class="o">=</span> <span class="n">Reporter</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="n">save_path</span><span class="p">,</span><span class="n">pagesize</span><span class="o">=</span><span class="s1">&#39;A4&#39;</span><span class="p">)</span>
 
@@ -517,7 +520,7 @@
 
 
 <div class="viewcode-block" id="combo_figure">
-<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.reporter.combo_figure">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/reporter/index.html#autodeer.combo_figure">[docs]</a>
 <span class="k">def</span> <span class="nf">combo_figure</span><span class="p">(</span><span class="n">EDFS</span><span class="p">,</span> <span class="n">respro</span><span class="p">,</span> <span class="n">pulses</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">relaxation</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">init_deer</span><span class="p">,</span> <span class="n">long_deer</span> <span class="p">,</span><span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a 2x2 summary figure. </span>
@@ -575,7 +578,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll
+                Copyright &#169; 2021-2024, Hugo Karas, Gunnar Jeschke, Stefan Stoll
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -595,7 +598,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2220c937"></script>
+</div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=32e29ea5"></script>

@@ -114,11 +114,7 @@
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
 
-<div class="announcement">
-  <aside class="announcement-content">
-     Version 0.7 alpha out now! 
-  </aside>
-</div>
+
 
 <div class="page">
   <header class="mobile-header">
@@ -164,13 +160,16 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../source/Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Installation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../source/Install_python.html">Installing Python</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../source/tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Tutorial</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../source/Algorithum.html">The Automated Algorithum</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../source/gui_guide.html">autoDEER GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../source/Jupyter_interface.html">Jupyter Interface</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../source/API_docs.html">API doc</a></li>
@@ -183,8 +182,12 @@
 </li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../source/releasenotes.html">Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../source/contributing.html">Contributing Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/JeschkeLab/autoDEER">Github</a></li>
 </ul>
 
 </div>
@@ -286,7 +289,7 @@
 
 <span class="c1"># =============================================================================</span>
 <div class="viewcode-block" id="DEERanalysis">
-<a class="viewcode-back" href="../../autoapi/autodeer/DEER_analysis/index.html#autodeer.DEER_analysis.DEERanalysis">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.DEER_analysis.DEERanalysis">[docs]</a>
 <span class="k">def</span> <span class="nf">DEERanalysis</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">compactness</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ROI</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="s1">&#39;5pDEER&#39;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
 
@@ -553,8 +556,13 @@
         <span class="n">lam</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fit</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;mod&quot;</span><span class="p">)</span>
         <span class="n">prod</span> <span class="o">*=</span> <span class="n">dl</span><span class="o">.</span><span class="n">bg_hom3d</span><span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="n">reftime</span><span class="p">,</span> <span class="n">conc</span><span class="p">,</span> <span class="n">lam</span><span class="p">)</span>
         <span class="n">scale</span> <span class="o">+=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">lam</span>
+    
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">fit</span><span class="p">,</span><span class="s1">&#39;P_scale&#39;</span><span class="p">):</span>
+        <span class="n">scale</span> <span class="o">*=</span> <span class="n">fit</span><span class="o">.</span><span class="n">P_scale</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">fit</span><span class="p">,</span><span class="s1">&#39;scale&#39;</span><span class="p">):</span>
+        <span class="n">scale</span> <span class="o">*=</span> <span class="n">fit</span><span class="o">.</span><span class="n">scale</span>
 
-    <span class="k">return</span> <span class="n">fit</span><span class="o">.</span><span class="n">P_scale</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">prod</span></div>
+    <span class="k">return</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">prod</span></div>
 
 
 <div class="viewcode-block" id="calc_correction_factor">
@@ -569,7 +577,7 @@
 
 
 <div class="viewcode-block" id="DEERanalysis_plot">
-<a class="viewcode-back" href="../../autoapi/autodeer/DEER_analysis/index.html#autodeer.DEER_analysis.DEERanalysis_plot">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.DEER_analysis.DEERanalysis_plot">[docs]</a>
 <span class="k">def</span> <span class="nf">DEERanalysis_plot</span><span class="p">(</span><span class="n">fit</span><span class="p">,</span> <span class="n">background</span><span class="p">:</span><span class="nb">bool</span><span class="p">,</span> <span class="n">ROI</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;DEERanalysis_plot Generates a figure showing both the time domain and</span>
 <span class="sd">    distance domain data along with extra important infomation such as the </span>
@@ -700,7 +708,7 @@
 
 
 <div class="viewcode-block" id="DEERanalysis_plot_pub">
-<a class="viewcode-back" href="../../autoapi/autodeer/DEER_analysis/index.html#autodeer.DEER_analysis.DEERanalysis_plot_pub">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.DEER_analysis.DEERanalysis_plot_pub">[docs]</a>
 <span class="k">def</span> <span class="nf">DEERanalysis_plot_pub</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">ROI</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates a vertical plot of the DEER analysis results, ready for publication.</span>
@@ -762,7 +770,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="IdentifyROI">
-<a class="viewcode-back" href="../../autoapi/autodeer/DEER_analysis/index.html#autodeer.DEER_analysis.IdentifyROI">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.DEER_analysis.IdentifyROI">[docs]</a>
 <span class="k">def</span> <span class="nf">IdentifyROI</span><span class="p">(</span>
         <span class="n">P</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">criterion</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.99</span><span class="p">,</span>
         <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gauss&quot;</span><span class="p">):</span>
@@ -907,7 +915,7 @@
 
 
 <div class="viewcode-block" id="normalise_01">
-<a class="viewcode-back" href="../../autoapi/autodeer/DEER_analysis/index.html#autodeer.DEER_analysis.normalise_01">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.DEER_analysis.normalise_01">[docs]</a>
 <span class="k">def</span> <span class="nf">normalise_01</span><span class="p">(</span><span class="n">A</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Normalizes the input vector A to be between 0 and 1.</span>
@@ -1004,7 +1012,7 @@
 
 
 <div class="viewcode-block" id="optimise_pulses">
-<a class="viewcode-back" href="../../autoapi/autodeer/DEER_analysis/index.html#autodeer.DEER_analysis.optimise_pulses">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.DEER_analysis.optimise_pulses">[docs]</a>
 <span class="k">def</span> <span class="nf">optimise_pulses</span><span class="p">(</span><span class="n">Fieldsweep</span><span class="p">,</span> <span class="n">pump_pulse</span><span class="p">,</span> <span class="n">exc_pulse</span><span class="p">,</span> <span class="n">ref_pulse</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;brute&#39;</span><span class="p">,</span>
                     <span class="n">nDEER</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_ref_pulses</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Optimise the pulse positions to maximise the pump-exc overlap.</span>
@@ -1121,7 +1129,7 @@
 
 
 <div class="viewcode-block" id="plot_overlap">
-<a class="viewcode-back" href="../../autoapi/autodeer/DEER_analysis/index.html#autodeer.DEER_analysis.plot_overlap">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.DEER_analysis.plot_overlap">[docs]</a>
 <span class="k">def</span> <span class="nf">plot_overlap</span><span class="p">(</span><span class="n">Fieldsweep</span><span class="p">,</span> <span class="n">pump_pulse</span><span class="p">,</span> <span class="n">exc_pulse</span><span class="p">,</span> <span class="n">ref_pulse</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">respro</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_ref_pulses</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">axs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plots the pump and excitation profiles as well as the fieldsweep and filter profile.</span>
 
@@ -1214,7 +1222,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll
+                Copyright &#169; 2021-2024, Hugo Karas, Gunnar Jeschke, Stefan Stoll
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1234,7 +1242,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2220c937"></script>
+</div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=32e29ea5"></script>

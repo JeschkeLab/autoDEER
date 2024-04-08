@@ -114,11 +114,7 @@
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
 
-<div class="announcement">
-  <aside class="announcement-content">
-     Version 0.7 alpha out now! 
-  </aside>
-</div>
+
 
 <div class="page">
   <header class="mobile-header">
@@ -164,13 +160,16 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../source/Install.html">Installation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Installation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../source/Install_python.html">Installing Python</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../source/tutorial.html">Tutorial</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Tutorial</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../source/Algorithum.html">The Automated Algorithum</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../source/gui_guide.html">autoDEER GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../source/Jupyter_interface.html">Jupyter Interface</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../source/API_docs.html">API doc</a></li>
@@ -183,8 +182,12 @@
 </li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../source/releasenotes.html">Release Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../source/contributing.html">Contributing Guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/JeschkeLab/autoDEER">Github</a></li>
 </ul>
 
 </div>
@@ -235,7 +238,7 @@
 
 
 <div class="viewcode-block" id="Pulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse">[docs]</a>
 <span class="k">class</span> <span class="nc">Pulse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a general experimental pulse.</span>
@@ -292,7 +295,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="Pulse._addPhaseCycle">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._addPhaseCycle">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._addPhaseCycle">[docs]</a>
     <span class="k">def</span> <span class="nf">_addPhaseCycle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phases</span><span class="p">,</span> <span class="n">detections</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Adds a phase cycle to the pulse sequence.</span>
@@ -311,7 +314,7 @@
 
 
 <div class="viewcode-block" id="Pulse._buildFMAM">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._buildFMAM">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._buildFMAM">[docs]</a>
     <span class="k">def</span> <span class="nf">_buildFMAM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Builds the amplitude modulation (AM) and frequency modulation (FM) of a given function.</span>
@@ -333,7 +336,7 @@
 
     
 <div class="viewcode-block" id="Pulse.build_shape">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.build_shape">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.build_shape">[docs]</a>
     <span class="k">def</span> <span class="nf">build_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span>
@@ -352,7 +355,7 @@
 
 
 <div class="viewcode-block" id="Pulse.build_table">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.build_table">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.build_table">[docs]</a>
     <span class="k">def</span> <span class="nf">build_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Builds a table of variables, axes, and UUIDs for all non-static Parameters in the object.</span>
@@ -376,7 +379,7 @@
 
     
 <div class="viewcode-block" id="Pulse.is_static">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.is_static">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.is_static">[docs]</a>
     <span class="k">def</span> <span class="nf">is_static</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Check if all parameters in the pulse object are static.</span>
@@ -392,7 +395,7 @@
 
 
 <div class="viewcode-block" id="Pulse.isDelayFocused">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.isDelayFocused">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.isDelayFocused">[docs]</a>
     <span class="k">def</span> <span class="nf">isDelayFocused</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Does the pulse contain a specified time, `t`?</span>
@@ -406,7 +409,7 @@
 
     
 <div class="viewcode-block" id="Pulse.isPulseFocused">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.isPulseFocused">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.isPulseFocused">[docs]</a>
     <span class="k">def</span> <span class="nf">isPulseFocused</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Does the pulse contain a specified time, `t`?</span>
@@ -420,7 +423,7 @@
 
 
 <div class="viewcode-block" id="Pulse.plot">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.plot">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.plot">[docs]</a>
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plots the time domain representation of this pulse.</span>
 
@@ -449,7 +452,7 @@
 
     
 <div class="viewcode-block" id="Pulse._calc_fft">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._calc_fft">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._calc_fft">[docs]</a>
     <span class="k">def</span> <span class="nf">_calc_fft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">10000</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_buildFMAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complex</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">pad</span><span class="p">))</span>
@@ -463,7 +466,7 @@
 
     <span class="nd">@cached</span><span class="p">(</span><span class="n">thread_safe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <div class="viewcode-block" id="Pulse.exciteprofile">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.exciteprofile">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.exciteprofile">[docs]</a>
     <span class="k">def</span> <span class="nf">exciteprofile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freqs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Excitation profile</span>
 
@@ -557,7 +560,7 @@
 
 
 <div class="viewcode-block" id="Pulse.plot_fft">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.plot_fft">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.plot_fft">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_fft</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 
         <span class="n">ax</span><span class="p">,</span> <span class="n">ft</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_fft</span><span class="p">(</span><span class="mf">1e4</span><span class="p">)</span>
@@ -571,7 +574,7 @@
 
 
 <div class="viewcode-block" id="Pulse._pcyc_str">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._pcyc_str">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._pcyc_str">[docs]</a>
     <span class="k">def</span> <span class="nf">_pcyc_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcyc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -609,7 +612,7 @@
 
 
 <div class="viewcode-block" id="Pulse.__str__">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.__str__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.__str__">[docs]</a>
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Build header line</span>
         <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">79</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;autoDEER Pulse Definition&quot;</span> <span class="o">+</span> \
@@ -691,7 +694,7 @@
 
 
 <div class="viewcode-block" id="Pulse.copy">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.copy">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.copy">[docs]</a>
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a deep-copy of the pulse. I.e. Every parameter object is</span>
 <span class="sd">        re-created at another memory space.</span>
@@ -761,7 +764,7 @@
     
 
 <div class="viewcode-block" id="Pulse._to_dict">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._to_dict">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._to_dict">[docs]</a>
     <span class="k">def</span> <span class="nf">_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">to_return</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">__version__</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Pulse&quot;</span><span class="p">,</span> <span class="s2">&quot;subclass&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">))}</span>
 
@@ -775,7 +778,7 @@
 
     
 <div class="viewcode-block" id="Pulse._to_json">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._to_json">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._to_json">[docs]</a>
     <span class="k">def</span> <span class="nf">_to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">class</span> <span class="nc">autoEPREncoder</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONEncoder</span><span class="p">):</span>
             <span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
@@ -805,7 +808,7 @@
 
 
 <div class="viewcode-block" id="Pulse.save">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.save">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.save">[docs]</a>
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the Pulse to a JSON file.</span>
 
@@ -835,7 +838,7 @@
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Pulse._from_dict">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._from_dict">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._from_dict">[docs]</a>
     <span class="k">def</span> <span class="nf">_from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dct</span><span class="p">):</span>
         <span class="n">new_pulse</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="n">Parameter</span><span class="o">.</span><span class="n">_from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;tp&quot;</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">dct</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> 
@@ -853,7 +856,7 @@
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Pulse._from_json">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._from_json">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._from_json">[docs]</a>
     <span class="k">def</span> <span class="nf">_from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">JSONstring</span><span class="p">):</span>
         <span class="n">dct</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">JSONstring</span><span class="p">,</span> <span class="n">object_hook</span><span class="o">=</span><span class="n">autoEPRDecoder</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">)</span></div>
@@ -861,7 +864,7 @@
     
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Pulse.load">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.load">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.load">[docs]</a>
     <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a Pulse object from a JSON file.</span>
 
@@ -897,7 +900,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="Detection">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Detection">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Detection">[docs]</a>
 <span class="k">class</span> <span class="nc">Detection</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a detection pulse.</span>
@@ -930,7 +933,7 @@
 
 
 <div class="viewcode-block" id="Delay">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Delay">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Delay">[docs]</a>
 <span class="k">class</span> <span class="nc">Delay</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    DEPRECATION WARNING: THIS WILL BE REMOVED SOON.</span>
@@ -953,7 +956,7 @@
 
 
 <div class="viewcode-block" id="RectPulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.RectPulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.RectPulse">[docs]</a>
 <span class="k">class</span> <span class="nc">RectPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a rectangular monochromatic pulse.</span>
@@ -981,7 +984,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="RectPulse.func">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.RectPulse.func">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.RectPulse.func">[docs]</a>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
         <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">AM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
@@ -994,7 +997,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="HSPulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.HSPulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.HSPulse">[docs]</a>
 <span class="k">class</span> <span class="nc">HSPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a hyperboilc secant frequency-swept pulse.</span>
@@ -1049,7 +1052,7 @@
 
 
 <div class="viewcode-block" id="HSPulse.func">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.HSPulse.func">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.HSPulse.func">[docs]</a>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
         <span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">value</span>
         <span class="n">order1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order1</span><span class="o">.</span><span class="n">value</span>
@@ -1078,7 +1081,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="ChirpPulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.ChirpPulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.ChirpPulse">[docs]</a>
 <span class="k">class</span> <span class="nc">ChirpPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a linear frequency-swept pulse.</span>
@@ -1119,7 +1122,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="ChirpPulse.func">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.ChirpPulse.func">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.ChirpPulse.func">[docs]</a>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
         <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">AM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
@@ -1142,7 +1145,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="SincPulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.SincPulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.SincPulse">[docs]</a>
 <span class="k">class</span> <span class="nc">SincPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 
 
@@ -1174,7 +1177,7 @@
 
 
 <div class="viewcode-block" id="SincPulse.func">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.SincPulse.func">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.SincPulse.func">[docs]</a>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
         <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">FM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="o">.</span><span class="n">value</span>
@@ -1185,7 +1188,7 @@
 
     
 <div class="viewcode-block" id="GaussianPulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.GaussianPulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.GaussianPulse">[docs]</a>
 <span class="k">class</span> <span class="nc">GaussianPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a Gaussian monochromatic pulse.</span>
@@ -1211,7 +1214,7 @@
 
 
 <div class="viewcode-block" id="GaussianPulse.func">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.GaussianPulse.func">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.GaussianPulse.func">[docs]</a>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
         <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">FM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="o">.</span><span class="n">value</span>
@@ -1224,7 +1227,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="build_default_pulses">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.build_default_pulses">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.build_default_pulses">[docs]</a>
 <span class="k">def</span> <span class="nf">build_default_pulses</span><span class="p">(</span><span class="n">AWG</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">tp</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
 
     <span class="n">exc_pulse</span> <span class="o">=</span> <span class="n">RectPulse</span><span class="p">(</span>  
@@ -1264,7 +1267,7 @@
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll
+                Copyright &#169; 2021-2024, Hugo Karas, Gunnar Jeschke, Stefan Stoll
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -1284,7 +1287,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2220c937"></script>
+</div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=32e29ea5"></script>
