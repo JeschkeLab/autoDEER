@@ -315,8 +315,13 @@ def background_func(t, fit):
         lam = getattr(fit, f"mod")
         prod *= dl.bg_hom3d(t-reftime, conc, lam)
         scale += -1 * lam
+    
+    if hasattr(fit,'P_scale'):
+        scale *= fit.P_scale
+    elif hasattr(fit,'scale'):
+        scale *= fit.scale
 
-    return fit.P_scale * scale * prod
+    return scale * prod
 
 def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
 
