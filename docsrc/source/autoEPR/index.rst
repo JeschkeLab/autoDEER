@@ -3,7 +3,13 @@ autoEPR
 
 AutoEPR is a Python-based spectrometer-independent automation toolbox. It was originally designed as the back end for automating DEER experiments (autoDEER) but it is also readily expandable to a large variety of other pulse EPR experiments. Currently, it is still fully integrated into autoDEER this will likely change at a later date.
 
+.. image:: ../images/autoEPR.svg
+    :align: center
+
+
+
 Features included in autoEPR:
+-----------------------------
 
 * Automated Control: Fully automated experiments from pulse tunning and set-up experiments (Field-Sweeps, Resonator profiles, etc…) to final measurement and analysis. This can all be done such that the user only needs to press a single button and walk away. 
 * Integrated Analysis: Whilst the experiment is running, the toolbox can actively process and analyse the data. This analysis can be used to either set future experimental parameters or to intelligently end the experiment once specific criteria have been satisfied. It is possible to expand to all Python-based data analysis packages.

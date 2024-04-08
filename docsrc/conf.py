@@ -18,11 +18,11 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'autoDEER'
-copyright = '2021-2023, Hugo Karas, Gunnar Jeschke, Stefan Stoll'
+copyright = '2021-2024, Hugo Karas, Gunnar Jeschke, Stefan Stoll'
 author = 'Hugo Karas'
 
 # The full version, including alpha/beta/rc tags
-release = '0.4-alpha'
+release = '0.7'
 
 
 # -- General configuration ---------------------------------------------------
@@ -77,7 +77,6 @@ source_suffix = {
 }
 intersphinx_mapping = {
     "deerlab": ("https://jeschkelab.github.io/DeerLab/", None),
-    "xarray": ("https://docs.xarray.dev/en/stable/index.html", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
 }
 intersphinx_disabled_reftypes = ["*"]
@@ -90,7 +89,7 @@ html_theme = "furo"
 html_title = " "
 html_static_path = ["_static"]
 html_theme_options = {
-    "announcement": "Version 0.7 alpha out now!",
+    # "announcement": "Version 0.7 out now!",
     "light_logo": "autoDEER_EPR_light.svg",
     "dark_logo": "autoDEER_EPR_dark.svg",
 

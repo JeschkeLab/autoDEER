@@ -1,34 +1,48 @@
 
-Welcome to autoEPR & autoDEER!
+Welcome to autoDEER!
 ====================================
 
 .. caution:: 
     This documentation is a work in progress and not yet complete. 
-    Please be patient and if anything is unclear, please contact the developers.
+    Please be patient and if anything is unclear and please feel free to contact the developers.
 
-**autoEPR** is a free software package for the running of automated pulsed EPR 
-experiments. It is designed to work with any arbitrary EPR sequence, including
-shaped pulses, on any modern spectrometer. 
+autoDEER is a spectrometer independent Python package developed to enable push-button
+fully automated DEER. The program is built around a well established and tested optimised algorithum. 
+It can be either interfaced using the user friendly GUI or via Python code. Additionally, the backend "autoEPR" can 
+be used to build new projects. 
 
-AutoEPR can be applied to many experiments in pulse EPR, currently, we are only
-working on an implementation for DEER, autoDEER. 
+.. image:: _static/AbstractFigure.svg
+    :align: center
 
-**autoDEER** is a specific implementation of autoEPR for the purpose of push-button 
-automatic Double Electron Electron Resonance (DEER) spectroscopy.
+autoDEER's Key Features
+-----------------------
 
-.. image:: source/images/autoDEER&autoEPR.svg
+- Fully Automated Push Button DEER
+- Integrated Fitting
+- Spectrometer Independence
+- Intuitive Graphical User Interface
+- High Quality PDF Report Generator
+- and much more...
 
 .. warning:: 
-    autoEPR and autoDEER are actively developed software package, that is still very much a work in process. At this moment in time, we only recommend it is used by people who understand how
-    the python code work and can debug when it goes wrong. Please consider this to be an alpha release, it is hoped that a more stable beta version can be released soon.
+    autoDEER is an actively developed software package, that is still very much a work in process. Please consider this to be a beta release.
       
 .. toctree::
     :maxdepth: 1
     :hidden:
+    :caption: User Guide
 
     ./source/Install.rst
     ./source/tutorial.rst
     ./source/API_docs.rst
     ./source/autoEPR/index.rst
+
+.. toctree::
+    :hidden:
+    :caption: About
+
     ./source/releasenotes.rst
     ./source/contributing.rst
+    Github <https://github.com/JeschkeLab/autoDEER>
+
+

@@ -2,8 +2,11 @@ Release Notes
 =============
 
 
-Version 0.7.0 (2024-02-01):
+Version 0.7.0 (2024-04-01):
 +++++++++++++++++++++++++++
 
 - Added Graphical User Interface (GUI)
-- Added support for Bruker AWG
+- Major improvements to the automated algorithm and reliability
+- Improvements to the PDF reports
+- Updated Documentation and shift to autoapi based API docs
+- Added initial support for Bruker AWG
