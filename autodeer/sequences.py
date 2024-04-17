@@ -202,6 +202,14 @@ class Sequence:
         self._buildPhaseCycle()
         self._estimate_time()
 
+    @property
+    def num_acqs(self):
+        self._buildPhaseCycle()
+        acqs = self.averages.value * self.shots.value * self.pcyc_dets.shape[0]
+        if hasattr(self,'evo_params'):
+            acqs *= np.prod([np.prod(param.dim) for param in self.evo_params])
+        return acqs
+
     def _estimate_time(self):
         """
         Calculates the estimated experiment time in seconds.
@@ -1662,9 +1670,9 @@ class RefocusedEcho2DSequence(Sequence):
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
         self.tau1 = Parameter(name="tau1", value=tau, dim=dim, step=step, unit="ns",
-            description="1st interpulse delay")
+            description="1st interpulse delay",virtual=True)
         self.tau2 = Parameter(name="tau2", value=tau, dim=dim, step=step, unit="ns",
-            description="2nd interpulse delay")
+            description="2nd interpulse delay",virtual=True)
 
         if "pi_pulse" in kwargs:
             self.pi_pulse = kwargs["pi_pulse"]
