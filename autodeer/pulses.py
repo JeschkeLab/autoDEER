@@ -270,9 +270,25 @@ class Pulse:
         else:
             offsets = freqs
 
-        t = self.ax
+        offsets 
+        t = self.ax 
         nOffsets = offsets.shape[0]
-        amp_factor = self.flipangle.value / (2 * np.pi * np.trapz(self.AM,t))
+
+        if isinstance(self, RectPulse) or isinstance(self, GaussianPulse):
+            amp_factor = self.flipangle.value / (2 * np.pi * np.trapz(self.AM,t))
+        else:
+            Qcrit = (2/np.pi)*np.log(2/(1+np.cos(self.flipangle.value)));
+            Qcrit = np.min([Qcrit,5])
+
+            if isinstance(self, ChirpPulse):
+                sweeprate = np.abs(self.final_freq.value-self.init_freq.value) / self.tp.value
+            elif isinstance(self, HSPulse):
+                sweeprate = self.beta.value * self.BW.value / 2*self.tp.value
+
+            amp_factor = np.sqrt(2*np.pi*Qcrit*sweeprate)/(2*np.pi);
+
+
+
         ISignal = np.real(self.complex) * amp_factor
         QSignal = np.imag(self.complex) * amp_factor
         npoints = ISignal.shape[0]
@@ -694,7 +710,35 @@ class RectPulse(Pulse):
         FM = np.zeros(nx) + self.freq.value
         return AM, FM
 
+class GaussianPulse(Pulse):
+    """
+    Represents a Gaussian monochromatic pulse.
+    """
 
+    def __init__(self, *, tp=32,FWHM=16, freq=0, **kwargs) -> None:
+        """    Represents a Gaussian monochromatic pulse.
+
+        Parameters
+        ----------
+        tp : float
+            Pulse length in ns, by default 128
+        FWHM : float,
+            The full width at half maximum of the pulse
+        freq : float, optional
+            The frequency of the pulse, by default 0
+        """
+        Pulse.__init__(self, tp=tp,name='GaussianPulse', **kwargs)
+        self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
+        self.FWHM = Parameter("FWHM", FWHM, "ns", "Full Width at Half Maximum of the Pulse")
+        self._buildFMAM(self.func)
+        pass
+
+    def func(self, ax):
+        nx = ax.shape[0]
+        sigma = self.FWHM.value / (2 * np.sqrt(2 * np.log(2)))
+        AM = np.exp(-ax**2 / (2 * sigma**2))
+        FM = np.zeros(nx) + self.freq.value
+        return AM, FM
 # =============================================================================
 
 class HSPulse(Pulse):
@@ -870,36 +914,36 @@ class SincPulse(Pulse):
 
         return AM, FM
     
-class GaussianPulse(Pulse):
-    """
-    Represents a Gaussian monochromatic pulse.
-    """
+# class GaussianPulse(Pulse):
+#     """
+#     Represents a Gaussian monochromatic pulse.
+#     """
 
-    def __init__(self, *, tp=128, freq=0, **kwargs) -> None:
-        """    Represents a Gaussian monochromatic pulse.
-
-
-        Parameters
-        ----------
-        tp : int
-            Pulse length in ns, by default 128
-        freq : int, optional
-            The frequency of the pulse, by default 0
-        """
-
-        Pulse.__init__(self, tp=tp,name='GaussianPulse', **kwargs)
-        self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
-
-        self._buildFMAM(self.func)
-        pass
+#     def __init__(self, *, tp=128, freq=0, **kwargs) -> None:
+#         """    Represents a Gaussian monochromatic pulse.
 
 
-    def func(self, ax):
-        nx = ax.shape[0]
-        FM = np.zeros(nx) + self.freq.value
-        AM = np.exp(-ax**2/(((self.tp.value/2)**2)/(-1*np.log(0.001))))
+#         Parameters
+#         ----------
+#         tp : int
+#             Pulse length in ns, by default 128
+#         freq : int, optional
+#             The frequency of the pulse, by default 0
+#         """
 
-        return AM, FM
+#         Pulse.__init__(self, tp=tp,name='GaussianPulse', **kwargs)
+#         self.freq = Parameter("Freq", freq, "GHz", "Frequency of the Pulse")
+
+#         self._buildFMAM(self.func)
+#         pass
+
+
+#     def func(self, ax):
+#         nx = ax.shape[0]
+#         FM = np.zeros(nx) + self.freq.value
+#         AM = np.exp(-ax**2/(((self.tp.value/2)**2)/(-1*np.log(0.001))))
+
+#         return AM, FM
     
 # =============================================================================
 
