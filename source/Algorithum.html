@@ -5,11 +5,11 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="autoDEER GUI" href="gui_guide.html" /><link rel="prev" title="Tutorial" href="tutorial.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.04.27 -->
         <title>The Automated Algorithum - </title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=437aa6ec" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -114,6 +114,8 @@
 <label class="overlay toc-overlay" for="__toc">
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
 
 
@@ -222,42 +224,42 @@
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
-        <article role="main">
+        <article role="main" id="furo-main-content">
           <section id="the-automated-algorithum">
-<h1>The Automated Algorithum<a class="headerlink" href="#the-automated-algorithum" title="Link to this heading">#</a></h1>
+<h1>The Automated Algorithum<a class="headerlink" href="#the-automated-algorithum" title="Link to this heading">¶</a></h1>
 <p>When using the Graphical User Interface it is possible to use the full power of
 autoDEER by using the optimised automated algorithum. This has been developed
 to require minimal user input, and with a press of a button can measure the distance
 distribution of unknown sample.</p>
 <img alt="The Algorithum" class="align-center" src="../_images/FlowDiagram.svg" /><section id="steps-explained">
-<h2>Steps Explained<a class="headerlink" href="#steps-explained" title="Link to this heading">#</a></h2>
+<h2>Steps Explained<a class="headerlink" href="#steps-explained" title="Link to this heading">¶</a></h2>
 <section id="user-inputs">
-<h3>1. User Inputs<a class="headerlink" href="#user-inputs" title="Link to this heading">#</a></h3>
+<h3>1. User Inputs<a class="headerlink" href="#user-inputs" title="Link to this heading">¶</a></h3>
 <p>Before the algorithum can start the user must provide some details. The most important of these being the approximate resonator frequency. Additionally, the user should specify how much time they have and give a sample name. The user can also specify the labelling efficency if they know it is not 100%.</p>
 </section>
 <section id="fieldsweep">
-<h3>2. Fieldsweep<a class="headerlink" href="#fieldsweep" title="Link to this heading">#</a></h3>
+<h3>2. Fieldsweep<a class="headerlink" href="#fieldsweep" title="Link to this heading">¶</a></h3>
 <p>The first experiment caried out is an Echo Detected Field Sweep (EDFS). This EDFS spectrum is then fitted and the fitter function will be used later in the optimisation of DEER pulses.</p>
 </section>
 <section id="srt-scan">
-<h3>3. SRT Scan<a class="headerlink" href="#srt-scan" title="Link to this heading">#</a></h3>
+<h3>3. SRT Scan<a class="headerlink" href="#srt-scan" title="Link to this heading">¶</a></h3>
 <p>Now that an echo has been established, the next step is to optimise the shot repetition time (SRT). The SRT if optimised by running a  Hahn Echo with increasing SRT, and a SRT is chose which allows for a 90% signal recovery.</p>
 </section>
 <section id="resonator-profile">
-<h3>4. Resonator Profile<a class="headerlink" href="#resonator-profile" title="Link to this heading">#</a></h3>
+<h3>4. Resonator Profile<a class="headerlink" href="#resonator-profile" title="Link to this heading">¶</a></h3>
 <p>It is important to charecterise the frequency response of the resonator. This is need to clarify that the spectrum is located optimally. For rectangular pulsed experiments this can be used to identify the shortest possible pulse length, and for shaped and chirped pulses it can be used for resonator compensation.
 The profile is generated from a series of refocused echo nutation experiments, where the initial hard pulse is varied in length. The nutation profiles are carried out across a frequency range, the magnetic field is adjusted such that the system is always on resonance.</p>
 </section>
 <section id="relaxation-studies">
-<h3>5. Relaxation Studies<a class="headerlink" href="#relaxation-studies" title="Link to this heading">#</a></h3>
+<h3>5. Relaxation Studies<a class="headerlink" href="#relaxation-studies" title="Link to this heading">¶</a></h3>
 <p>Relaxation studies are carried out by autoDEER primarily to identify the maximum inter-pulse delays for DEER experiments, but also to predict run times.
 All samples measure both a Hahn Echo decay and a Carr-Purcell 2 pulse echo decay. For 4pDEER only measurments a 2D refoucsed echo decay sequence needs to be measured to optimise the inter pulse delays.</p>
 </section>
 <section id="optimising-deer-sequence-parameters">
-<h3>6. Optimising DEER Sequence Parameters<a class="headerlink" href="#optimising-deer-sequence-parameters" title="Link to this heading">#</a></h3>
+<h3>6. Optimising DEER Sequence Parameters<a class="headerlink" href="#optimising-deer-sequence-parameters" title="Link to this heading">¶</a></h3>
 <p>Now all the sample characterisation and setup experiments have been completed, we can now generate the optimised parameters for running an initial DEER measurement</p>
 <section id="parameter">
-<h4>Parameter<a class="headerlink" href="#parameter" title="Link to this heading">#</a></h4>
+<h4>Parameter<a class="headerlink" href="#parameter" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Pulse Sequence: Unless the maximum <span class="math notranslate nohighlight">\(\tau_{evo}\)</span> is less than 1.5 :math:<a href="#id1"><span class="problematic" id="id2">`</span></a>mu`s, the algorithum will use a 5pDEER sequence. This is because 5pDEER nearly always gives a higher sensitivity than 4pDEER.</p></li>
 <li><p><span class="math notranslate nohighlight">\(\tau_1\)</span> and <span class="math notranslate nohighlight">\(\tau_2\)</span>: These are calculated from the CP-decay or 2D refocused echo decay for the initial DEER or including the region of interest (ROI) for the final DEER.</p></li>
@@ -267,19 +269,19 @@ All samples measure both a Hahn Echo decay and a Carr-Purcell 2 pulse echo decay
 </section>
 </section>
 <section id="initial-deer-experiment">
-<h3>7. Initial DEER Experiment<a class="headerlink" href="#initial-deer-experiment" title="Link to this heading">#</a></h3>
+<h3>7. Initial DEER Experiment<a class="headerlink" href="#initial-deer-experiment" title="Link to this heading">¶</a></h3>
 <p>An Initial 2-4 hour DEER measurement is carried out to determine the approximate distance distribution. This experiment is run until a SNR of 20 is reached.
 The distance distribution is then calculated using a model free appraoch and DeerLab.
 The distance distribution is then used to calculate the optimal <span class="math notranslate nohighlight">\(\tau_{evo}\)</span> for the final DEER experiment.</p>
 </section>
 <section id="final-deer-experiment">
-<h3>8. Final DEER Experiment<a class="headerlink" href="#final-deer-experiment" title="Link to this heading">#</a></h3>
+<h3>8. Final DEER Experiment<a class="headerlink" href="#final-deer-experiment" title="Link to this heading">¶</a></h3>
 <p>Finally, the final DEER experiment is carried out. The <span class="math notranslate nohighlight">\(\tau_{evo}\)</span> comes from the ROI of the initial distance distribution unless it exceeds what can be achieved in the maximum time.
 Again the distance distribution is calculated using a model free appraoch and DeerLab.</p>
 </section>
 </section>
 <section id="limitations">
-<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading">#</a></h2>
+<h2>Limitations<a class="headerlink" href="#limitations" title="Link to this heading">¶</a></h2>
 <p>At the moment the algorithum has only been designed to work on most common DEER experiments, so the following limitations apply:</p>
 <ul class="simple">
 <li><p>Nitroxide Labeled Samples</p></li>
@@ -371,9 +373,9 @@ Again the distance distribution is calculated using a model free appraoch and De
     </aside>
   </div>
 </div><script src="../_static/documentation_options.js?v=48f8e935"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>

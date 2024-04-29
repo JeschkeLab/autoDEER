@@ -52,6 +52,7 @@ Classes
    autodeer.Sequence
    autodeer.CarrPurcellAnalysis
    autodeer.ReptimeAnalysis
+   autodeer.RefocusedEcho2DAnalysis
    autodeer.Sequence
    autodeer.DEERSequence
    autodeer.HahnEchoSequence
@@ -795,10 +796,36 @@ Attributes
        **num_ref_pulses** : int, optional
            The total number of refocusing pulses, by default 2
 
-   :Returns:
+       **full_output** : bool, optional
+           Return the full output, by default False
 
-       _type_
-           _description_
+       **Returns**
+           ..
+
+       **-------**
+           ..
+
+       **ad.Pulse**
+           The optimised pump pulse
+
+       **ad.Pulse**
+           The optimised excitation pulse
+
+       **ad.Pulse**
+           The optimised refocusing pulse
+
+       **str or number**
+           The best filter, only if a list of filters is provided
+
+       **float**
+           The functional value after optimisation, only if full_output is True
+
+       **tuple**
+           The grid of the optimisation, only if full_output is True
+
+       **tuple**
+           The output of the optimisation, only if full_output is True
+
 
 
 
@@ -1503,6 +1530,105 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+.. py:class:: RefocusedEcho2DAnalysis(dataset, sequence = None)
+
+
+   
+
+   Analysis and calculation of Refocused Echo 2D data. 
+
+
+   :Parameters:
+
+       **dataset**
+           The dataset to be analyzed.
+
+       **sequence** : Sequence, optional
+           The sequence object describing the experiment. (not currently used)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: plot2D(contour=True, norm='Normal', axs=None, fig=None)
+
+      
+      Create a 2D plot of the 2D relaxation data.
+
+
+      :Parameters:
+
+          **contour** : bool, optional
+              Plot the contour of the data, by default True
+
+          **norm** : str, optional
+              Normalise the data, by default 'Normal'. Options are 'Normal' and 'tau2'. With 'tau2' normalisation, the data is normalised to the maximum of each row.
+
+          **axs** : Axes, optional
+              The axes to plot to, by default None
+
+          **fig** : Figure, optional
+              The figure to plot to, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: plot1D(axs=None, fig=None)
+
+      
+      Create a 1D plot of the 2D relaxation data.
+
+
+      :Parameters:
+
+          **axs** : Axes, optional
+              The axes to plot to, by default None
+
+          **fig** : Figure, optional
+              The figure to plot to, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
 
 .. py:function:: build_table(source, params, params_widths)
 

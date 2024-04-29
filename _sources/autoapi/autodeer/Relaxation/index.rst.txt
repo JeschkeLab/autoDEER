@@ -15,6 +15,7 @@ Classes
 
    autodeer.Relaxation.CarrPurcellAnalysis
    autodeer.Relaxation.ReptimeAnalysis
+   autodeer.Relaxation.RefocusedEcho2DAnalysis
 
 
 
@@ -315,4 +316,103 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+.. py:class:: RefocusedEcho2DAnalysis(dataset, sequence = None)
+
+
+   
+
+   Analysis and calculation of Refocused Echo 2D data. 
+
+
+   :Parameters:
+
+       **dataset**
+           The dataset to be analyzed.
+
+       **sequence** : Sequence, optional
+           The sequence object describing the experiment. (not currently used)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: plot2D(contour=True, norm='Normal', axs=None, fig=None)
+
+      
+      Create a 2D plot of the 2D relaxation data.
+
+
+      :Parameters:
+
+          **contour** : bool, optional
+              Plot the contour of the data, by default True
+
+          **norm** : str, optional
+              Normalise the data, by default 'Normal'. Options are 'Normal' and 'tau2'. With 'tau2' normalisation, the data is normalised to the maximum of each row.
+
+          **axs** : Axes, optional
+              The axes to plot to, by default None
+
+          **fig** : Figure, optional
+              The figure to plot to, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: plot1D(axs=None, fig=None)
+
+      
+      Create a 1D plot of the 2D relaxation data.
+
+
+      :Parameters:
+
+          **axs** : Axes, optional
+              The axes to plot to, by default None
+
+          **fig** : Figure, optional
+              The figure to plot to, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
 

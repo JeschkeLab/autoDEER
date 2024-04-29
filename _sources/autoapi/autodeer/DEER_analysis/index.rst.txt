@@ -448,10 +448,36 @@ Attributes
        **num_ref_pulses** : int, optional
            The total number of refocusing pulses, by default 2
 
-   :Returns:
+       **full_output** : bool, optional
+           Return the full output, by default False
 
-       _type_
-           _description_
+       **Returns**
+           ..
+
+       **-------**
+           ..
+
+       **ad.Pulse**
+           The optimised pump pulse
+
+       **ad.Pulse**
+           The optimised excitation pulse
+
+       **ad.Pulse**
+           The optimised refocusing pulse
+
+       **str or number**
+           The best filter, only if a list of filters is provided
+
+       **float**
+           The functional value after optimisation, only if full_output is True
+
+       **tuple**
+           The grid of the optimisation, only if full_output is True
+
+       **tuple**
+           The output of the optimisation, only if full_output is True
+
 
 
 

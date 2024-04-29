@@ -5,11 +5,11 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="API doc" href="API_docs.html" /><link rel="prev" title="autoDEER GUI" href="gui_guide.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.04.27 -->
         <title>Jupyter Interface - </title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=437aa6ec" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -114,6 +114,8 @@
 <label class="overlay toc-overlay" for="__toc">
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
 
 
@@ -222,9 +224,9 @@
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
-        <article role="main">
+        <article role="main" id="furo-main-content">
           <section id="jupyter-interface">
-<h1>Jupyter Interface<a class="headerlink" href="#jupyter-interface" title="Link to this heading">#</a></h1>
+<h1>Jupyter Interface<a class="headerlink" href="#jupyter-interface" title="Link to this heading">¶</a></h1>
 <p>Advanced users will likely want to have more control over their experiments,
 beyond what the GUI can provide. For this reason, autoDEER has a Jupyter
 interface that allows users to run experiments from within a Jupyter notebook.
@@ -233,7 +235,7 @@ modifications to the alogoithm.</p>
 <p>In this example, we show how to run a five-pulse DEER experiment using
 rectangular pulses.</p>
 <section id="setup">
-<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading">#</a></h2>
+<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading">¶</a></h2>
 <p>First, we must import all the necessary packages and the interface. In this
 example we are using a custom ETH-AWG interface.</p>
 <div class="code-cell docutils container">
@@ -262,7 +264,7 @@ is made.</p>
 </div>
 </section>
 <section id="field-sweep">
-<h2>Field Sweep<a class="headerlink" href="#field-sweep" title="Link to this heading">#</a></h2>
+<h2>Field Sweep<a class="headerlink" href="#field-sweep" title="Link to this heading">¶</a></h2>
 <p>An Echo Detected Field Sweep (EDFS) is detected. This allows a more precise
 gyromagnetic ratio to be calculated. Before we can do this, we must first
 tune a pair of rectangular pulses.</p>
@@ -329,7 +331,7 @@ tune a pair of rectangular pulses.</p>
 </div>
 </section>
 <section id="resonator-profile">
-<h2>Resonator Profile<a class="headerlink" href="#resonator-profile" title="Link to this heading">#</a></h2>
+<h2>Resonator Profile<a class="headerlink" href="#resonator-profile" title="Link to this heading">¶</a></h2>
 <p>A resonator profile allows us to find the central frequency and optimise the
 frequency so that most of the spins are inside our ‘dip’.</p>
 <div class="code-cell docutils container">
@@ -394,7 +396,7 @@ frequency so that most of the spins are inside our ‘dip’.</p>
 </div>
 </section>
 <section id="deer">
-<h2>DEER<a class="headerlink" href="#deer" title="Link to this heading">#</a></h2>
+<h2>DEER<a class="headerlink" href="#deer" title="Link to this heading">¶</a></h2>
 <p>Now we have the necessary setup experiments it is time to start thinking about
 DEER. A DEER experiment is normally formed from three types of pulses. An
 excitation π/2 pulse, a refousing π pulse and finally a pump π pulse. There will
@@ -694,9 +696,9 @@ be a frequency seperation between the excitation pulse and the pump pulse.</p>
     </aside>
   </div>
 </div><script src="../_static/documentation_options.js?v=48f8e935"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     </body>

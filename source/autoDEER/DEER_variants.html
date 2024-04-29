@@ -5,11 +5,11 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.04.27 -->
         <title>DEER Variants - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=437aa6ec" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -114,6 +114,8 @@
 <label class="overlay toc-overlay" for="__toc">
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
 
 
@@ -222,9 +224,9 @@
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
-        <article role="main">
+        <article role="main" id="furo-main-content">
           <section id="deer-variants">
-<h1>DEER Variants<a class="headerlink" href="#deer-variants" title="Link to this heading">#</a></h1>
+<h1>DEER Variants<a class="headerlink" href="#deer-variants" title="Link to this heading">¶</a></h1>
 <p>Over the years many different versions of DEER spectroscopy have been
 developed. Initially, it was 3-pulse and 4-pulse. With the advent of
 high-speed AWGs, the number of sequences expanded, even more, to include 5-pulse,
@@ -239,7 +241,7 @@ high-speed AWGs, the number of sequences expanded, even more, to include 5-pulse
 <p>Other variants can be created using the autoEPR package. If you would like them
 to be added to autoDEER, please make a pull request on GitHub.</p>
 <section id="selecting-a-version">
-<h2>Selecting a version<a class="headerlink" href="#selecting-a-version" title="Link to this heading">#</a></h2>
+<h2>Selecting a version<a class="headerlink" href="#selecting-a-version" title="Link to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sequence</span> <span class="o">=</span> <span class="n">DEERSequence</span><span class="p">(</span>
     <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro_exp</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="mf">2e3</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
     <span class="n">tau1</span><span class="o">=</span><span class="n">tau</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">tau2</span><span class="o">=</span><span class="n">tau</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">tau3</span><span class="o">=</span><span class="mf">0.2</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
@@ -255,9 +257,9 @@ phase cycle. Depending on the sequence different inter-pulse delays need to be
 specified, please check the correct table below.</p>
 </section>
 <section id="deer-versions">
-<h2>DEER versions<a class="headerlink" href="#deer-versions" title="Link to this heading">#</a></h2>
+<h2>DEER versions<a class="headerlink" href="#deer-versions" title="Link to this heading">¶</a></h2>
 <section id="pulse-deer">
-<h3>4-pulse DEER<a class="headerlink" href="#pulse-deer" title="Link to this heading">#</a></h3>
+<h3>4-pulse DEER<a class="headerlink" href="#pulse-deer" title="Link to this heading">¶</a></h3>
 <img alt="../../_images/4pDEER.svg" src="../../_images/4pDEER.svg" /><p>4-pulse DEER was originally called deadtime free DEER. It is formed from a
 refocused echo where a single pump pulse is swept between the two :pi pulses.</p>
 <p>Advantages and Disadvantages</p>
@@ -288,7 +290,7 @@ refocused echo where a single pump pulse is swept between the two :pi pulses.</p
 </div>
 </section>
 <section id="id1">
-<h3>5-pulse DEER<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<h3>5-pulse DEER<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
 <img alt="../../_images/5pDEER.svg" src="../../_images/5pDEER.svg" /><p>5-pulse DEER was developed by Borbat et. al. [1] It is a small modification of 4-pulse DEER by adding an additional fixed pump pulse before the first pi pulse.
 This change moves the primary dipolar pathway to occur at tau3 after the first pi pulse. The effect of this is that a longer dipolar evolution time
 is measurable for a given tau1 + tau2.</p>
@@ -321,7 +323,7 @@ is measurable for a given tau1 + tau2.</p>
 </div>
 </section>
 <section id="id2">
-<h3>7-pulse DEER<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<h3>7-pulse DEER<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
 <img alt="../../_images/7pDEER.svg" src="../../_images/7pDEER.svg" /><p>7-pulse DEER was developed by Spindler et. al. [2] It involves extending the Carr-Purcell relaxation sequence and having a total of three pump pulses. Two of these
 pump pulses move together inwards and one if fixed.</p>
 <p><strong>Command:</strong> <code class="docutils literal notranslate"><span class="pre">sequence.seven_pulse()</span></code></p>
@@ -350,7 +352,7 @@ pump pulses move together inwards and one if fixed.</p>
 </div>
 </section>
 <section id="ndeer">
-<h3>nDEER<a class="headerlink" href="#ndeer" title="Link to this heading">#</a></h3>
+<h3>nDEER<a class="headerlink" href="#ndeer" title="Link to this heading">¶</a></h3>
 <p>Non-selective DEER (nDEER) was developed by Doll and Jeschke.[3] The basic premise is that instead of only refocusing the excited spins with
 the excitation pulses, that you excite all spins.</p>
 <p>One version of nDEER allows the pump pulse to be swept through the pi pulses to
@@ -376,7 +378,7 @@ extend the dipolar modulation time whilst keeping a high MNR.</p>
 </section>
 </section>
 <section id="selecting-a-phase-cycle">
-<h2>Selecting a phase cycle<a class="headerlink" href="#selecting-a-phase-cycle" title="Link to this heading">#</a></h2>
+<h2>Selecting a phase cycle<a class="headerlink" href="#selecting-a-phase-cycle" title="Link to this heading">¶</a></h2>
 <p>A selection of pre-programmed phase cycles are included. They can be
 chosen with.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sequence</span><span class="o">.</span><span class="n">select_pcyc</span><span class="p">(</span><span class="s2">&quot;[Short Code]&quot;</span><span class="p">)</span>
@@ -449,7 +451,7 @@ chosen with.</p>
 </table>
 </div>
 <section id="references">
-<h3>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h3>
+<h3>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h3>
 <ol class="arabic simple">
 <li><p>Borbat, P. P., Georgieva, E. R. &amp; Freed, J. H. Improved Sensitivity for Long-Distance Measurements in Biomolecules: Five-Pulse Double Electron–Electron Resonance. J. Phys. Chem. Lett. 4, (2013)</p></li>
 <li><p>Spindler, P. E. et al. Carr–Purcell Pulsed Electron Double Resonance with Shaped Inversion Pulses. J. Phys. Chem. Lett. 6, (2015)</p></li>
@@ -521,9 +523,9 @@ chosen with.</p>
     </aside>
   </div>
 </div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="../../_static/scripts/furo.js?v=4e2eecee"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     </body>

@@ -5,11 +5,11 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Interfaces" href="Interface.html" /><link rel="prev" title="Getting Started" href="Getting_Started.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.04.27 -->
         <title>Creating a Custom Sequence - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=437aa6ec" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -114,6 +114,8 @@
 <label class="overlay toc-overlay" for="__toc">
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
 
 
@@ -222,9 +224,9 @@
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
-        <article role="main">
+        <article role="main" id="furo-main-content">
           <section id="creating-a-custom-sequence">
-<h1>Creating a Custom Sequence<a class="headerlink" href="#creating-a-custom-sequence" title="Link to this heading">#</a></h1>
+<h1>Creating a Custom Sequence<a class="headerlink" href="#creating-a-custom-sequence" title="Link to this heading">¶</a></h1>
 <p>autoEPR can be used to script and develop EPR pulse sequences in Python.</p>
 <p>Pulse sequences are built up of two main object: <span class="xref std std-ref">Sequences</span>
 and <span class="xref std std-ref">Pulses</span>. In its simplest form, a pulse sequence is just a
@@ -247,7 +249,7 @@ used in autoEPR. However, most interfaces can only take sequences of one type.
 Sequences can be converted between each other with the <cite>Sequence.convert()</cite>
 command.</p>
 <section id="creating-your-first-sequence">
-<h2>Creating your first sequence<a class="headerlink" href="#creating-your-first-sequence" title="Link to this heading">#</a></h2>
+<h2>Creating your first sequence<a class="headerlink" href="#creating-your-first-sequence" title="Link to this heading">¶</a></h2>
 <p>Here I will demonstrate how to build a simple Hahn Echo sequence using
 rectangular pulses.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">autodeer</span> <span class="k">as</span> <span class="nn">ad</span>
@@ -316,7 +318,7 @@ infomation.</p>
 <cite>HahnEchoSequence</cite>. A full list of standard sequences can be found <span class="xref std std-ref">here</span></p>
 </section>
 <section id="using-shaped-and-chirped-pulses">
-<h2>Using Shaped and Chirped pulses<a class="headerlink" href="#using-shaped-and-chirped-pulses" title="Link to this heading">#</a></h2>
+<h2>Using Shaped and Chirped pulses<a class="headerlink" href="#using-shaped-and-chirped-pulses" title="Link to this heading">¶</a></h2>
 <p>So far we have only looked at monochromatic rectangular pulses. It is often
 advantageous to use wideband-shaped and chirped pulses. Chirped pulses allow for
 a wider excitation bandwidth at a lower power level, and shaped pulse is used
@@ -324,7 +326,7 @@ to reduce excitation side-lobes.</p>
 <p>Many standard pulses are included, however, custom pulses can also be created.
 A full list of standard pulses can be found <span class="xref std std-ref">here</span></p>
 <section id="chirped-pulses">
-<h3>Chirped pulses<a class="headerlink" href="#chirped-pulses" title="Link to this heading">#</a></h3>
+<h3>Chirped pulses<a class="headerlink" href="#chirped-pulses" title="Link to this heading">¶</a></h3>
 <p>The simplest type of chirped pulse is a linear chip and it is implemented in
 the:ref:<cite>ChirpPulse &lt;ChirpPulse&gt;</cite> method. ChirpPulse requires the parameters
 as RectPulse when being declared as well as two frequency parameters. Options:
@@ -343,7 +345,7 @@ import infomation.</p>
 </div>
 </section>
 <section id="custom-pulses">
-<h3>Custom pulses<a class="headerlink" href="#custom-pulses" title="Link to this heading">#</a></h3>
+<h3>Custom pulses<a class="headerlink" href="#custom-pulses" title="Link to this heading">¶</a></h3>
 <p>Unlike when making custom sequences it is not recommended that you use an
 an instance of the class, instead it is recommended that create a new class which
 inherits from the class <span class="xref std std-ref">Pulse</span>.</p>
@@ -386,7 +388,7 @@ For a rectangular pulse this is simply:</p>
 </section>
 </section>
 <section id="what-is-not-currently-supported">
-<h2>What is not currently supported?<a class="headerlink" href="#what-is-not-currently-supported" title="Link to this heading">#</a></h2>
+<h2>What is not currently supported?<a class="headerlink" href="#what-is-not-currently-supported" title="Link to this heading">¶</a></h2>
 <ol class="arabic simple">
 <li><p>RF pulses (No ENDOR or DNP)</p></li>
 </ol>
@@ -468,9 +470,9 @@ For a rectangular pulse this is simply:</p>
     </aside>
   </div>
 </div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="../../_static/scripts/furo.js?v=4e2eecee"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     </body>

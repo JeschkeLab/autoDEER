@@ -17,10 +17,10 @@ Classes
    autodeer.pulses.Detection
    autodeer.pulses.Delay
    autodeer.pulses.RectPulse
+   autodeer.pulses.GaussianPulse
    autodeer.pulses.HSPulse
    autodeer.pulses.ChirpPulse
    autodeer.pulses.SincPulse
-   autodeer.pulses.GaussianPulse
 
 
 
@@ -589,6 +589,48 @@ Functions
 
 
 
+.. py:class:: GaussianPulse(*, tp=32, FWHM=16, freq=0, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   Represents a Gaussian monochromatic pulse.
+
+
+   Represents a Gaussian monochromatic pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           Pulse length in ns, by default 128
+
+       **FWHM** : float,
+           The full width at half maximum of the pulse
+
+       **freq** : float, optional
+           The frequency of the pulse, by default 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: func(ax)
+
+
+
 .. py:class:: HSPulse(*, tp=128, order1=1, order2=6, beta=20, **kwargs)
 
 
@@ -697,45 +739,6 @@ Functions
 
        **window** : _type_, optional
            The window function, by default None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-   .. py:method:: func(ax)
-
-
-
-.. py:class:: GaussianPulse(*, tp=128, freq=0, **kwargs)
-
-
-   Bases: :py:obj:`Pulse`
-
-   Represents a Gaussian monochromatic pulse.
-
-
-   Represents a Gaussian monochromatic pulse.
-
-
-   :Parameters:
-
-       **tp** : int
-           Pulse length in ns, by default 128
-
-       **freq** : int, optional
-           The frequency of the pulse, by default 0
 
 
 

@@ -5,11 +5,11 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Creating a Custom Sequence" href="Sequencer.html" /><link rel="prev" title="autoEPR" href="index.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.04.27 -->
         <title>Getting Started - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=437aa6ec" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -114,6 +114,8 @@
 <label class="overlay toc-overlay" for="__toc">
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
 
 
@@ -222,9 +224,9 @@
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
-        <article role="main">
+        <article role="main" id="furo-main-content">
           <section id="getting-started">
-<h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h1>
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h1>
 <p>autoEPR allows the user to script together multiple EPR sequences and
 measurements along with active-data processing to develop completely automatic
 push-button style experiments.</p>
@@ -239,7 +241,7 @@ push-button style experiments.</p>
 <p>A more advanced experiment might contain more than one sequence and/or conduct
 active data analysis whilst the sequence is still running.</p>
 <section id="setting-up-your-script">
-<h2>Setting up your script<a class="headerlink" href="#setting-up-your-script" title="Link to this heading">#</a></h2>
+<h2>Setting up your script<a class="headerlink" href="#setting-up-your-script" title="Link to this heading">¶</a></h2>
 <p>autoEPR is a python package. Before use, it must be imported along with the
 correct interface.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">autodeer</span>
@@ -251,7 +253,7 @@ correct interface.</p>
 <a class="reference internal" href="../../autoapi/autodeer/hardware/Bruker_AWG/index.html#autodeer.hardware.Bruker_AWG.BrukerAWG" title="autodeer.hardware.Bruker_AWG.BrukerAWG"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BrukerAWG</span></code></a> interface which can simply be accesed with
 <cite>interface</cite>. This is done to keep scripts as general between interfaces.</p>
 <section id="defining-the-sequence">
-<h3>1. Defining the sequence<a class="headerlink" href="#defining-the-sequence" title="Link to this heading">#</a></h3>
+<h3>1. Defining the sequence<a class="headerlink" href="#defining-the-sequence" title="Link to this heading">¶</a></h3>
 <p>The first step is creating a pulse sequence to be run. autoEPR has a built-in
 python-based pulse-sequencer. This can be used to easily develop a general
 spectrometer-independent pulse sequence. There is no need to interface with
@@ -270,7 +272,7 @@ experiment.</p>
 </div>
 </section>
 <section id="tuning-for-the-sequence">
-<h3>2. Tuning for the sequence<a class="headerlink" href="#tuning-for-the-sequence" title="Link to this heading">#</a></h3>
+<h3>2. Tuning for the sequence<a class="headerlink" href="#tuning-for-the-sequence" title="Link to this heading">¶</a></h3>
 <p>Before the sequence can be run additional tuning information must be added. This
 comes in the form of adding a scale value to each pulse in the sequence. There
 are a few ways of tuning a pulse in EPR. autoEPR supports a selection of these
@@ -304,7 +306,7 @@ the dictionary will have keys in the form of “p[90/180]_[tp]_[freq]” e.g
 adjusted the cache needs to be cleared: <cite>interface.clear_cache()</cite>.</p>
 </section>
 <section id="starting-the-sequence">
-<h3>3. Starting the sequence<a class="headerlink" href="#starting-the-sequence" title="Link to this heading">#</a></h3>
+<h3>3. Starting the sequence<a class="headerlink" href="#starting-the-sequence" title="Link to this heading">¶</a></h3>
 <p>Now that spectrometer is tuned and the sequence has the appropriate scaling
 information we can now launch the actual sequence. Only one piece of information
 is needed, a file name.
@@ -320,7 +322,7 @@ is needed, a file name.
 <cite>axes</cite> and but also extra paramaters from the sequence.</p>
 </section>
 <section id="stopping-the-sequence">
-<h3>4. Stopping the sequence<a class="headerlink" href="#stopping-the-sequence" title="Link to this heading">#</a></h3>
+<h3>4. Stopping the sequence<a class="headerlink" href="#stopping-the-sequence" title="Link to this heading">¶</a></h3>
 <p>Deciding when to stop a measurement is much more involved than when to start.
 Normally, this is done by either time or a set number of scans. Both of these
 are normally decided before the measurement has started and before the quality
@@ -345,7 +347,7 @@ regular interval is required, this can be specified by passing the argument
 </div></blockquote>
 </section>
 <section id="data-analysis">
-<h3>5. Data analysis<a class="headerlink" href="#data-analysis" title="Link to this heading">#</a></h3>
+<h3>5. Data analysis<a class="headerlink" href="#data-analysis" title="Link to this heading">¶</a></h3>
 <p>Now we have data we need to analyse it. For standard experiments this is simple
 as autoEPR contains built in analysis modules however, you are free to process
 the data as required.</p>
@@ -358,7 +360,7 @@ the data as required.</p>
 </section>
 </section>
 <section id="next-steps">
-<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">#</a></h2>
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">¶</a></h2>
 <p>More complicated multi-step experiments can be created by combining mutliple
 pulse sequence into one script.</p>
 <p>For more infomation check here:</p>
@@ -446,9 +448,9 @@ pulse sequence into one script.</p>
     </aside>
   </div>
 </div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="../../_static/scripts/furo.js?v=4e2eecee"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     </body>

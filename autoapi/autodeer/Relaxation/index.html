@@ -5,11 +5,11 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2024.01.29 -->
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.04.27 -->
         <title>autodeer.Relaxation - </title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=437aa6ec" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -114,6 +114,8 @@
 <label class="overlay toc-overlay" for="__toc">
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
 
 
@@ -222,13 +224,13 @@
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
-        <article role="main">
+        <article role="main" id="furo-main-content">
           <section id="module-autodeer.Relaxation">
-<span id="autodeer-relaxation"></span><h1><a class="reference internal" href="#module-autodeer.Relaxation" title="autodeer.Relaxation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">autodeer.Relaxation</span></code></a><a class="headerlink" href="#module-autodeer.Relaxation" title="Link to this heading">#</a></h1>
+<span id="autodeer-relaxation"></span><h1><a class="reference internal" href="#module-autodeer.Relaxation" title="autodeer.Relaxation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">autodeer.Relaxation</span></code></a><a class="headerlink" href="#module-autodeer.Relaxation" title="Link to this heading">¶</a></h1>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 <section id="classes">
-<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h3>
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h3>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -238,12 +240,15 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#autodeer.Relaxation.ReptimeAnalysis" title="autodeer.Relaxation.ReptimeAnalysis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReptimeAnalysis</span></code></a></p></td>
 <td><p>Analysis and calculation of Reptime based saturation recovery.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis" title="autodeer.Relaxation.RefocusedEcho2DAnalysis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis</span></code></a></p></td>
+<td><p>Analysis and calculation of Refocused Echo 2D data.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
 </section>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h3>
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h3>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -258,7 +263,7 @@
 </div>
 </section>
 <section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h3>
+<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h3>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -270,7 +275,7 @@
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="autodeer.Relaxation.CarrPurcellAnalysis">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.Relaxation.</span></span><span class="sig-name descname"><span class="pre">CarrPurcellAnalysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.Relaxation.</span></span><span class="sig-name descname"><span class="pre">CarrPurcellAnalysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis" title="Link to this definition">¶</a></dt>
 <dd><p>Analysis and calculation of Carr Purcell decay.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -280,12 +285,12 @@
 </dl>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>sequence</strong> (<a class="reference internal" href="../sequences/index.html#autodeer.sequences.Sequence" title="autodeer.sequences.Sequence"><em>autodeer.sequences.Sequence</em></a>) – </p>
+<dd class="field-even"><p><strong>sequence</strong> (<a class="reference internal" href="../sequences/index.html#autodeer.sequences.Sequence" title="autodeer.sequences.Sequence"><em>autodeer.sequences.Sequence</em></a>)</p>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.Relaxation.CarrPurcellAnalysis.fit">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mono'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.fit" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mono'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.fit" title="Link to this definition">¶</a></dt>
 <dd><p>Fit the experimental CP decay</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -295,14 +300,14 @@
 </dl>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>type</strong> (<em>str</em>) – </p>
+<dd class="field-even"><p><strong>type</strong> (<em>str</em>)</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.Relaxation.CarrPurcellAnalysis.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.plot" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.plot" title="Link to this definition">¶</a></dt>
 <dd><p>Plot the carr purcell decay with fit, if avaliable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -318,7 +323,7 @@
 </dl>
 </dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>norm</strong> (<em>bool</em>) – </p>
+<dd class="field-odd"><p><strong>norm</strong> (<em>bool</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>matplotlib.figure.Figure</p>
@@ -328,7 +333,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.Relaxation.CarrPurcellAnalysis.check_decay">
-<span class="sig-name descname"><span class="pre">check_decay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.check_decay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.check_decay" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">check_decay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.check_decay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.check_decay" title="Link to this definition">¶</a></dt>
 <dd><p>Checks that the data has decayed to 5% in the time lenght of the dataset.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -342,7 +347,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.Relaxation.CarrPurcellAnalysis.find_optimal">
-<span class="sig-name descname"><span class="pre">find_optimal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SNR_target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averages</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.find_optimal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.find_optimal" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">find_optimal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SNR_target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averages</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.find_optimal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.find_optimal" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the optimal inter pulse delay for a given total measurment
 time.</p>
 <dl class="field-list simple">
@@ -368,7 +373,7 @@ number of shots will be calculated from the dataset.</p>
 </dl>
 </dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>target_time</strong> (<em>float</em>) – </p>
+<dd class="field-odd"><p><strong>target_time</strong> (<em>float</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
@@ -380,7 +385,7 @@ number of shots will be calculated from the dataset.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="autodeer.Relaxation.ReptimeAnalysis">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.Relaxation.</span></span><span class="sig-name descname"><span class="pre">ReptimeAnalysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#ReptimeAnalysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.ReptimeAnalysis" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.Relaxation.</span></span><span class="sig-name descname"><span class="pre">ReptimeAnalysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#ReptimeAnalysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.ReptimeAnalysis" title="Link to this definition">¶</a></dt>
 <dd><p>Analysis and calculation of Reptime based saturation recovery.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -392,29 +397,29 @@ number of shots will be calculated from the dataset.</p>
 </dl>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>sequence</strong> (<a class="reference internal" href="../sequences/index.html#autodeer.sequences.Sequence" title="autodeer.sequences.Sequence"><em>autodeer.sequences.Sequence</em></a>) – </p>
+<dd class="field-even"><p><strong>sequence</strong> (<a class="reference internal" href="../sequences/index.html#autodeer.sequences.Sequence" title="autodeer.sequences.Sequence"><em>autodeer.sequences.Sequence</em></a>)</p>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.Relaxation.ReptimeAnalysis.fit">
-<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#ReptimeAnalysis.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.ReptimeAnalysis.fit" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#ReptimeAnalysis.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.ReptimeAnalysis.fit" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.Relaxation.ReptimeAnalysis.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#ReptimeAnalysis.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.ReptimeAnalysis.plot" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#ReptimeAnalysis.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.ReptimeAnalysis.plot" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.Relaxation.ReptimeAnalysis.calc_optimal_reptime">
-<span class="sig-name descname"><span class="pre">calc_optimal_reptime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recovery</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#ReptimeAnalysis.calc_optimal_reptime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.ReptimeAnalysis.calc_optimal_reptime" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">calc_optimal_reptime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recovery</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#ReptimeAnalysis.calc_optimal_reptime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.ReptimeAnalysis.calc_optimal_reptime" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="autodeer.Relaxation.detect_ESEEM">
-<span class="sig-prename descclassname"><span class="pre">autodeer.Relaxation.</span></span><span class="sig-name descname"><span class="pre">detect_ESEEM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'deuteron'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#detect_ESEEM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.detect_ESEEM" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">autodeer.Relaxation.</span></span><span class="sig-name descname"><span class="pre">detect_ESEEM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'deuteron'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#detect_ESEEM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.detect_ESEEM" title="Link to this definition">¶</a></dt>
 <dd><p>Detect if the dataset is an ESEEM experiment.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -438,12 +443,12 @@ number of shots will be calculated from the dataset.</p>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="autodeer.Relaxation.cmap">
-<span class="sig-prename descclassname"><span class="pre">autodeer.Relaxation.</span></span><span class="sig-name descname"><span class="pre">cmap</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['#D95B6F',</span> <span class="pre">'#42A399']</span></em><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#cmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.cmap" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">autodeer.Relaxation.</span></span><span class="sig-name descname"><span class="pre">cmap</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['#D95B6F',</span> <span class="pre">'#42A399']</span></em><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#cmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.cmap" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="autodeer.Relaxation.plot_1Drelax">
-<span class="sig-prename descclassname"><span class="pre">autodeer.Relaxation.</span></span><span class="sig-name descname"><span class="pre">plot_1Drelax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">cmap</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#plot_1Drelax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.plot_1Drelax" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">autodeer.Relaxation.</span></span><span class="sig-name descname"><span class="pre">plot_1Drelax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">cmap</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#plot_1Drelax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.plot_1Drelax" title="Link to this definition">¶</a></dt>
 <dd><p>Create a superimposed plot of relaxation data and fits.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -459,6 +464,61 @@ number of shots will be calculated from the dataset.</p>
 </dl>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="autodeer.Relaxation.RefocusedEcho2DAnalysis">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.Relaxation.</span></span><span class="sig-name descname"><span class="pre">RefocusedEcho2DAnalysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#RefocusedEcho2DAnalysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis" title="Link to this definition">¶</a></dt>
+<dd><p>Analysis and calculation of Refocused Echo 2D data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>dataset</strong></dt><dd><p>The dataset to be analyzed.</p>
+</dd>
+<dt><strong>sequence</strong><span class="classifier">Sequence, optional</span></dt><dd><p>The sequence object describing the experiment. (not currently used)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>sequence</strong> (<a class="reference internal" href="../sequences/index.html#autodeer.sequences.Sequence" title="autodeer.sequences.Sequence"><em>autodeer.sequences.Sequence</em></a>)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.Relaxation.RefocusedEcho2DAnalysis.plot2D">
+<span class="sig-name descname"><span class="pre">plot2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contour</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Normal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#RefocusedEcho2DAnalysis.plot2D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.plot2D" title="Link to this definition">¶</a></dt>
+<dd><p>Create a 2D plot of the 2D relaxation data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>contour</strong><span class="classifier">bool, optional</span></dt><dd><p>Plot the contour of the data, by default True</p>
+</dd>
+<dt><strong>norm</strong><span class="classifier">str, optional</span></dt><dd><p>Normalise the data, by default ‘Normal’. Options are ‘Normal’ and ‘tau2’. With ‘tau2’ normalisation, the data is normalised to the maximum of each row.</p>
+</dd>
+<dt><strong>axs</strong><span class="classifier">Axes, optional</span></dt><dd><p>The axes to plot to, by default None</p>
+</dd>
+<dt><strong>fig</strong><span class="classifier">Figure, optional</span></dt><dd><p>The figure to plot to, by default None</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.Relaxation.RefocusedEcho2DAnalysis.plot1D">
+<span class="sig-name descname"><span class="pre">plot1D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#RefocusedEcho2DAnalysis.plot1D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.plot1D" title="Link to this definition">¶</a></dt>
+<dd><p>Create a 1D plot of the 2D relaxation data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>axs</strong><span class="classifier">Axes, optional</span></dt><dd><p>The axes to plot to, by default None</p>
+</dd>
+<dt><strong>fig</strong><span class="classifier">Figure, optional</span></dt><dd><p>The figure to plot to, by default None</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -523,6 +583,11 @@ number of shots will be calculated from the dataset.</p>
 <li><a class="reference internal" href="#autodeer.Relaxation.detect_ESEEM"><code class="docutils literal notranslate"><span class="pre">detect_ESEEM()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.cmap"><code class="docutils literal notranslate"><span class="pre">cmap</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.plot_1Drelax"><code class="docutils literal notranslate"><span class="pre">plot_1Drelax()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis</span></code></a><ul>
+<li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.plot2D"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.plot2D()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.plot1D"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.plot1D()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -539,9 +604,9 @@ number of shots will be calculated from the dataset.</p>
     </aside>
   </div>
 </div><script src="../../../_static/documentation_options.js?v=48f8e935"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="../../../_static/scripts/furo.js?v=4e2eecee"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     </body>
