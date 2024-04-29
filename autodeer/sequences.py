@@ -1657,14 +1657,14 @@ class RefocusedEcho2DSequence(Sequence):
             not specified a RectPulse will be created instead. 
         """
 
-        name = "Carr-Purcell"
+        name = "RefocusedEcho2D"
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
         self.tau1 = Parameter(name="tau1", value=tau, dim=dim, step=step, unit="ns",
-            description="1st interpulse delay")
+            description="1st interpulse delay",virtual=True)
         self.tau2 = Parameter(name="tau2", value=tau, dim=dim, step=step, unit="ns",
-            description="2nd interpulse delay")
+            description="2nd interpulse delay",virtual=True)
 
         if "pi_pulse" in kwargs:
             self.pi_pulse = kwargs["pi_pulse"]
