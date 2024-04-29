@@ -1,4 +1,5 @@
 from matplotlib.figure import Figure
+import matplotlib.cm as cm
 import numpy as np
 from deerlab import noiselevel
 import matplotlib.pyplot as plt
@@ -339,3 +340,104 @@ def plot_1Drelax(*args,fig=None, axs=None,cmap=cmap):
     axs.set_ylabel('Signal / $ A.U. $')
 
     return fig
+
+
+class RefocusedEcho2DAnalysis():
+
+    def __init__(self, dataset, sequence: Sequence = None) -> None:
+        """Analysis and calculation of Refocused Echo 2D data. 
+
+        Parameters
+        ----------
+        dataset : 
+            The dataset to be analyzed.
+        sequence : Sequence, optional
+            The sequence object describing the experiment. (not currently used)
+        """
+        self.axis = []
+        if 'tau1' in dataset.coords and 'tau2' in dataset.coords:
+            self.axis.append(dataset['tau1'])
+            self.axis.append(dataset['tau2'])
+        elif 'Xt' in dataset.coords:
+            self.axis.append(dataset['Xt'])
+            self.axis.append(dataset['Yt'])
+        
+        dataset.epr.correctphasefull
+        self.data = dataset.data
+        self.dataset = dataset
+
+    def plot2D(self, contour=True, norm = 'Normal', axs=None, fig=None):
+        """
+        Create a 2D plot of the 2D relaxation data.
+
+        Parameters
+        ----------
+        contour : bool, optional
+            Plot the contour of the data, by default True
+        norm : str, optional
+            Normalise the data, by default 'Normal'. Options are 'Normal' and 'tau2'. With 'tau2' normalisation, the data is normalised to the maximum of each row.
+        axs : Axes, optional
+            The axes to plot to, by default None
+        fig : Figure, optional 
+            The figure to plot to, by default None
+        
+        """
+
+        data = self.data.real
+        if norm == 'Normal':
+            data = data/np.max(data)
+        elif norm == 'tau2':
+            data = data/np.max(data,axis=1)[:,None]
+
+        if axs is None and fig is None:
+            fig, axs = plt.subplots()
+        elif axs is None:
+            axs = fig.subplots(1,1)
+
+        cmap = cm.get_cmap('Purples',lut=None)
+        cmap_contour = cm.get_cmap('Greys_r',lut=None)
+
+        axs.pcolormesh(self.axis[0],self.axis[1],data,cmap=cmap)
+        if contour is True:
+            axs.contour(self.axis[0],self.axis[1],data, cmap=cmap_contour)
+        axs.set_xlabel(r'$\tau_1$ / $(\mu s)$')
+        axs.set_ylabel(r'$\tau_2$ / $(\mu s)$')
+        axs.set_xlim(min(self.axis[0]),max(self.axis[0]))
+        axs.set_ylim(min(self.axis[1]),max(self.axis[1]))
+        axs.set_aspect('equal')
+
+        return fig
+
+    def plot1D(self,axs=None,fig=None):
+        """
+        Create a 1D plot of the 2D relaxation data.
+
+        Parameters
+        ----------
+        axs : Axes, optional
+            The axes to plot to, by default None
+        fig : Figure, optional
+            The figure to plot to, by default None
+        """
+
+        # TODO: Expand to include optimal data when the 2D data is not symetrical
+        if axs is None and fig is None:
+            fig, axs = plt.subplots()
+        elif axs is None:
+            axs = fig.subplots(1,1)
+
+        data = self.data.real
+        data /= np.max(data)
+
+        optimal_4p = np.argmax(data,axis=1)
+        
+        
+        axs.plot(self.axis[0],np.diag(data[:,optimal_4p]),label='4 Pulse',color=cmap[0])
+        axs.plot(self.axis[0]*2,np.diag(data),label='5 pulse',color=cmap[1])
+        axs.legend()
+        axs.set_xlabel(r'$\tau_{evo}$ / $(\mu s)$')
+        axs.set_ylabel('Signal / A.U.')
+
+        return fig
+
+        

@@ -764,11 +764,24 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
         Is the sequence an nDEER sequrence, by default False. If True then the refocusing pulse is not optimised.
     num_ref_pulses : int, optional
         The total number of refocusing pulses, by default 2
-
+    full_output : bool, optional
+        Return the full output, by default False
     Returns
     -------
-    _type_
-        _description_
+    ad.Pulse
+        The optimised pump pulse
+    ad.Pulse
+        The optimised excitation pulse
+    ad.Pulse
+        The optimised refocusing pulse
+    str or number
+        The best filter, only if a list of filters is provided
+    float
+        The functional value after optimisation, only if full_output is True
+    tuple
+        The grid of the optimisation, only if full_output is True
+    tuple
+        The output of the optimisation, only if full_output is True
     """
 
 
@@ -848,7 +861,7 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
             return new_pump_pulse, new_exc_pulse, new_ref_pulse, filter[best]
     else:
         if full_output:
-            return new_pump_pulse, new_exc_pulse, new_ref_pulse, funct, grid,Jout
+            return new_pump_pulse, new_exc_pulse, new_ref_pulse, funct, grid, Jout
         else:
             return new_pump_pulse, new_exc_pulse, new_ref_pulse,
 
