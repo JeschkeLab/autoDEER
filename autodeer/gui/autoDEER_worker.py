@@ -275,13 +275,20 @@ class autoDEERWorker(QtCore.QRunnable):
         if ('tau1' in self.user_inputs) and (self.user_inputs['tau1'] != 0):
             tau1 = self.user_inputs['tau1']
             tau2 = self.user_inputs['tau2']
-            tau3 = self.user_inputs['tau3']
             deertype = self.user_inputs['ExpType']
+            if deertype == '5pDEER':
+                tau3 = self.user_inputs['tau3']
+            else:
+                tau3 = None
+            
         elif self.deer_inputs != {}:
             tau1 = self.deer_inputs['tau1']
             tau2 = self.deer_inputs['tau2']
-            tau3 = self.deer_inputs['tau3']
             deertype = self.deer_inputs['ExpType']
+            if deertype == '5pDEER':
+                tau3 = self.deer_inputs['tau3']
+            else:
+                tau3 = None
             dt = self.deer_inputs['dt']
  
         else:

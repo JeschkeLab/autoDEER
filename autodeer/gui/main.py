@@ -228,15 +228,16 @@ class autoDEERUI(QMainWindow):
         light_pixmap = light_pixmap.scaledToHeight(30)
         self.Connected_Light.setPixmap(light_pixmap)
 
-    def load_folder(self):
-        file = str(QFileDialog.getExistingDirectory(self, "Select Directory",str(Path.home())))
-        self.pathLineEdit.setText(file)
-        self.current_folder = file
+    def load_folder(self,*args, folder_path=None):
+        if folder_path is None:
+            folder_path = str(QFileDialog.getExistingDirectory(self, "Select Directory",str(Path.home())))
+        self.pathLineEdit.setText(folder_path)
+        self.current_folder = folder_path
 
         setup_logs(self.current_folder)
         global main_log
         main_log = logging.getLogger('autoDEER')
-        main_log.info(f"Loading folder {file}")
+        main_log.info(f"Loading folder {self.current_folder}")
     
     def load_epr_file(self, store_location):
 
@@ -689,47 +690,36 @@ class autoDEERUI(QMainWindow):
         self.relax_ax = axs
 
     def refresh_relax_figure(self):
-        self.relax_ax.cla()
-
-        fig = self.relax_canvas.figure
-        axs = self.relax_ax
-
-        relax1D_results = []
-        if 'relax' in self.current_results:
-            relax1D_results.append(self.current_results['relax'])
-        if 'T2_relax' in self.current_results:
-            relax1D_results.append(self.current_results['T2_relax'])
-
-        ad.plot_1Drelax(*relax1D_results,axs=axs,fig=fig,cmap=ad.primary_colors)
-
-        # axs.set_xlabel("Total Sequence Length ($\mu s$)")
-        # axs.set_ylabel("Signal (A. U.)")
         
-        # if 'relax' in self.current_results:
-        #     CP_results = self.current_results['relax']
-        #     CP_data = CP_results.data
-        #     CP_data /= CP_data.max()
-        #     if hasattr(CP_results, "fit_result"):
-        #         axs.plot(CP_results.axis*4, CP_data, '.', label='CP', color='C1', ms=6)
-        #         axs.plot(CP_results.axis*4, CP_results.func(
-        #             CP_results.axis, *CP_results.fit_result[0]), label='CP-fit', color='C1', lw=2)
-        #     else:
-        #         axs.plot(CP_results.axis*4, CP_data, label='data', color='C1')
-        
-        # if 'T2_relax' in self.current_results:
-        #     T2_results = self.current_results['T2_relax']
-        #     T2_data = T2_results.data
-        #     T2_data /= T2_data.max()
-        #     if hasattr(T2_results, "fit_result"):
-        #         axs.plot(T2_results.axis*2, T2_data, '.', label='T2', color='C2', ms=6)
-        #         axs.plot(T2_results.axis*2, T2_results.func(
-        #             T2_results.axis, *T2_results.fit_result[0]), label='T2-fit', color='C2', lw=2)
-        #     else:
-        #         axs.plot(T2_results.axis*2, T2_data, label='data', color='C2')
-            
-        # axs.legend()
+
+        if 'relax2D' in self.current_results:
+            self.relax_ax[0].cla()
+            self.relax_ax[1].cla()
+            fig, axs  = plt.subplots(2,1,figsize=(12.5, 6.28),layout='constrained',height_ratios=[2,1])
+            relax_canvas = FigureCanvas(fig)
+            self.relax_canvas.figure.clear()
+            self.relax_v_left.replaceWidget(self.relax_canvas,relax_canvas)
+            self.relax_canvas = relax_canvas
+            self.relax_ax = axs
+
+            self.current_results['relax2D'].plot2D(axs=self.relax_ax[0],fig=fig)
+            self.current_results['relax2D'].plot1D(axs=self.relax_ax[1],fig=fig)        
+        else:
+            self.relax_ax.cla()
+            fig = self.relax_canvas.figure
+            axs = self.relax_ax
+            relax1D_results = []
+            if 'relax' in self.current_results:
+                relax1D_results.append(self.current_results['relax'])
+            if 'T2_relax' in self.current_results:
+                relax1D_results.append(self.current_results['T2_relax'])
+
+            ad.plot_1Drelax(*relax1D_results,axs=axs,fig=fig,cmap=ad.primary_colors)
+
         self.relax_canvas.draw()
 
+
+        
     def refresh_relax(self, fitresult):
         self.current_results['relax'] = fitresult
 
@@ -789,10 +779,45 @@ class autoDEERUI(QMainWindow):
         self.Tab_widget.setCurrentIndex(3)
         
         self.check_CP(fitresult)
+        
+        if self.worker is not None:
+            CP_decay = fitresult.func(fitresult.axis, *fitresult.fit_result[0]).data
+            # Find the index when CP_decay is below 0.05
+            CP_decay = CP_decay/CP_decay[0]
+            CP_decay_bool = CP_decay < 0.05
+            CP_decay_idx = np.where(CP_decay_bool)[0]
+            if len(CP_decay_idx) == 0:
+                CP_decay_idx = len(CP_decay)
+            else:
+                CP_decay_idx = CP_decay_idx[0]
+            max_tau = fitresult.axis[CP_decay_idx]
+            max_tau = ad.round_step(max_tau,1)
+            main_log.info(f"Max tau {max_tau:.2f} us")
+            self.worker.set_2D_max_tau(max_tau)
 
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
+    def update_relax2D(self, dataset=None):
+        if dataset is None:
+            dataset = self.current_data['relax2D']
+        else:
+            self.current_data['relax2D'] = dataset
+
+        # Since there is no fitting in the 2D data analysis it can be run in the main thread
+
+        relax2DAnalysis = ad.RefocusedEcho2DAnalysis(dataset)
+        self.current_results['relax2D'] = relax2DAnalysis
+
+        self.refresh_relax_figure()
+
+        self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR,self.waveform_precision)
+        self.deer_settings['dt'] = 16
+        self.worker.update_deersettings(self.deer_settings)
+
+        if self.waitCondition is not None: # Wake up the runner thread
+            self.waitCondition.wakeAll()
+
     
     def update_T2(self,dataset=None):
         if dataset is None:
@@ -999,6 +1024,10 @@ class autoDEERUI(QMainWindow):
         self.worker.signals.relax_result.connect(lambda x: self.save_data(x,'CP_Q'))
         self.worker.signals.T2_result.connect(self.update_T2)
         self.worker.signals.T2_result.connect(lambda x: self.save_data(x,'T2'))
+
+        self.worker.signals.Relax2D_result.connect(self.update_relax2D)
+        self.worker.signals.Relax2D_result.connect(lambda x: self.save_data(x,'2D_DEC'))
+
         self.worker.signals.quickdeer_result.connect(self.update_quickdeer)
         self.worker.signals.quickdeer_result.connect(lambda x: self.save_data(x,'DEER_5P_Q_quick'))
         self.worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
@@ -1006,8 +1035,6 @@ class autoDEERUI(QMainWindow):
         self.worker.signals.longdeer_result.connect(lambda x: self.save_data(x,'DEER_5P_Q_long'))
 
         self.worker.signals.longdeer_result.connect(self.update_longdeer)
-
-
         self.worker.signals.reptime_scan_result.connect(self.update_reptime)
 
         self.worker.signals.timeout.connect(self.timeout)
