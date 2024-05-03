@@ -240,6 +240,7 @@
 <span class="kn">import</span> <span class="nn">scipy.signal</span> <span class="k">as</span> <span class="nn">sig</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span><span class="p">,</span><span class="n">brute</span>
 <span class="kn">from</span> <span class="nn">autodeer.colors</span> <span class="kn">import</span> <span class="n">primary_colors</span><span class="p">,</span> <span class="n">ReIm_colors</span>
+<span class="kn">from</span> <span class="nn">autodeer.utils</span> <span class="kn">import</span> <span class="n">round_step</span>
 
 
 <div class="viewcode-block" id="log">
@@ -568,8 +569,23 @@
 
 
 <div class="viewcode-block" id="calc_correction_factor">
-<a class="viewcode-back" href="../../autoapi/autodeer/DEER_analysis/index.html#autodeer.DEER_analysis.calc_correction_factor">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.DEER_analysis.calc_correction_factor">[docs]</a>
 <span class="k">def</span> <span class="nf">calc_correction_factor</span><span class="p">(</span><span class="n">fit_result</span><span class="p">,</span><span class="n">aim_MNR</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span><span class="n">aim_time</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fit_result : Deerlab.FitResult</span>
+<span class="sd">        The fit result from the DEER analysis.</span>
+<span class="sd">    aim_MNR : float, optional</span>
+<span class="sd">        The desired MNR, by default 25</span>
+<span class="sd">    aim_time : float, optional</span>
+<span class="sd">        The desired time in hours, by default 2</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The correction factor for the number of averages.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">dataset</span> <span class="o">=</span> <span class="n">fit_result</span><span class="o">.</span><span class="n">dataset</span>
     <span class="n">runtime_s</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">nAvgs</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">nPcyc</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shots</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">reptime</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
@@ -1224,6 +1240,121 @@
     <span class="n">axs</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Frequency (MHz)&#39;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">fig</span></div>
+
+
+<div class="viewcode-block" id="calc_deer_settings">
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.DEER_analysis.calc_deer_settings">[docs]</a>
+<span class="k">def</span> <span class="nf">calc_deer_settings</span><span class="p">(</span><span class="n">experiment</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">CPdecay</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Refocused2D</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">target_MNR</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">waveform_precision</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the optimal DEER settings based on the avaliable relaxation data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    experiment : str</span>
+<span class="sd">        Type of DEER experiment, either &#39;auto&#39;, &#39;4pDEER&#39; or &#39;5pDEER&#39;</span>
+<span class="sd">    CPdecay : ad.CarrPurcellAnalysis</span>
+<span class="sd">        Carr-Purcell relaxation data</span>
+<span class="sd">    Refocused2D : ad.RefocusedEcho2DAnalysis, optional</span>
+<span class="sd">        Refocused 2D data required for &#39;4pDEER&#39;, by default None</span>
+<span class="sd">    target_time : int, optional</span>
+<span class="sd">        Target time for the DEER experiment in hours, by default 2</span>
+<span class="sd">    target_MNR : float, optional</span>
+<span class="sd">        Target modulation to noise ratio, by default 20</span>
+<span class="sd">    waveform_precision : int, optional</span>
+<span class="sd">        Precision of the waveform in ns, by default 2</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        DEER settings, with keys: </span>
+<span class="sd">            -&#39;ExpType&#39;: &#39;4pDEER&#39; or &#39;5pDEER&#39;</span>
+<span class="sd">            -&#39;tau1&#39;: in us</span>
+<span class="sd">            -&#39;tau2&#39;: in us</span>
+<span class="sd">            -&#39;tau3&#39;: in us, only for 5pDEER</span>
+<span class="sd">            -&#39;AimTime&#39;: in hours</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+
+<span class="sd">    This function will calcate the optimal DEER settings based on the avaliable relaxation data, depending on the experiment type.</span>
+<span class="sd">    For 4pDEER, the optimal tau1 and tau2 are calculated based on the refocused 2D data, and for 5pDEER, the optimal tau2 is calculated based on the CPdecay data or refocused 2D if CP decay data is not availiable.</span>
+<span class="sd">    If the optimal tau2 for 5pDEER is less than 1.5us, the function will calculate the optimal tau1 and tau2 for 4pDEER instead. This is only possible if the refocused 2D data is availiable, otherwise a non optimal tau1 of 0.4us is used.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Calculate the DEER settings from the avaliable relaxation data</span>
+    <span class="c1"># Move out of the GUI Code asap</span>
+
+    <span class="n">deer_settings</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">experiment</span> <span class="o">==</span> <span class="s1">&#39;4pDEER&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">Refocused2D</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Refocused2D data required for 4pDEER&quot;</span><span class="p">)</span>
+        <span class="c1"># Calcualting a 4pDEER Sequence</span>
+        <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;4pDEER&#39;</span>
+
+        <span class="c1"># Calculate tau1 and tau2</span>
+        <span class="n">tau1</span><span class="p">,</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;4pDEER&#39;</span><span class="p">,</span><span class="n">SNR_target</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="n">target_time</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">tau2</span> <span class="o">&lt;</span> <span class="mf">2.5</span><span class="p">:</span>
+            <span class="c1"># 2hr dipolar evo too short for meaningful results. Using double the time instead</span>
+            <span class="n">target_time</span> <span class="o">*=</span> <span class="mi">2</span>
+            <span class="n">tau1</span><span class="p">,</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;4pDEER&#39;</span><span class="p">,</span><span class="n">SNR_target</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="n">target_time</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">tau2</span> <span class="o">&lt;</span> <span class="mf">2.5</span><span class="p">:</span>
+            <span class="c1"># Dipolar evo time still too short. Hardcoding a 2.5us dipolar evo time</span>
+            <span class="n">tau1</span><span class="p">,</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">optimal_tau1</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;4pDEER&#39;</span><span class="p">,</span><span class="n">tau2</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
+        
+
+        <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_step</span><span class="p">(</span><span class="n">tau1</span><span class="p">,</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_step</span><span class="p">(</span><span class="n">tau2</span><span class="p">,</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+        <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;AimTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_time</span>
+
+    <span class="k">elif</span> <span class="p">(</span><span class="n">experiment</span> <span class="o">==</span> <span class="s1">&#39;5pDEER&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">experiment</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">):</span>
+        <span class="c1"># Calculate a 5pDEER Sequence</span>
+        <span class="k">if</span> <span class="n">CPdecay</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tau2hrs</span> <span class="o">=</span> <span class="n">CPdecay</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="n">SNR_target</span><span class="o">=</span><span class="n">target_MNR</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="n">target_time</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
+            <span class="n">tau4hrs</span> <span class="o">=</span> <span class="n">CPdecay</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="n">SNR_target</span><span class="o">=</span><span class="n">target_MNR</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="n">target_time</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">Refocused2D</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tau2hrs</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;5pDEER&#39;</span><span class="p">,</span><span class="n">SNR_target</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="n">target_time</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
+            <span class="n">tau4hrs</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;5pDEER&#39;</span><span class="p">,</span><span class="n">SNR_target</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="n">target_time</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;CPdecay data required for 5pDEER&quot;</span><span class="p">)</span>
+
+        
+        <span class="k">if</span> <span class="p">(</span><span class="n">tau2hrs</span> <span class="o">&lt;</span> <span class="mf">1.5</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tau4hrs</span> <span class="o">&gt;</span> <span class="mf">1.5</span><span class="p">):</span>
+            <span class="c1"># 2hr dipolar evo too short for meaningful results. Using 4hr number instead</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_step</span><span class="p">(</span><span class="n">tau4hrs</span><span class="p">,</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_step</span><span class="p">(</span><span class="n">tau4hrs</span><span class="p">,</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau3&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_step</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;5pDEER&#39;</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;AimTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_time</span><span class="o">*</span><span class="mi">2</span>
+
+        <span class="k">elif</span> <span class="p">(</span><span class="n">tau2hrs</span> <span class="o">&lt;</span> <span class="mf">1.5</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tau4hrs</span> <span class="o">&lt;</span> <span class="mf">1.5</span><span class="p">):</span>
+            <span class="c1"># 2hr &amp; 4hr dipolar evo too short for meaningful results. Hardcoding a 2.5us dipolar evo time, in 4pDEER and 4hrs</span>
+            <span class="c1"># self.raise_warning(f&quot;2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time&quot;)</span>
+            <span class="n">tau2</span> <span class="o">=</span> <span class="mf">2.5</span>
+            <span class="k">if</span> <span class="n">Refocused2D</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tau1</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">optimal_tau1</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;4pDEER&#39;</span><span class="p">,</span><span class="n">tau2</span><span class="o">=</span><span class="n">tau2</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tau1</span> <span class="o">=</span> <span class="mf">0.4</span>
+
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_step</span><span class="p">(</span><span class="n">tau1</span><span class="p">,</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_step</span><span class="p">(</span><span class="n">tau2</span><span class="p">,</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+            
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;4pDEER&#39;</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;AimTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_time</span> <span class="o">*</span> <span class="mi">2</span>
+            <span class="c1"># self.raise_warning(f&quot;2hr dipolar evo {tau2hrs:.2f} us, using 4pDEER&quot;)</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Normal case, using 2hr dipolar evo time</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_step</span><span class="p">(</span><span class="n">tau2hrs</span><span class="p">,</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_step</span><span class="p">(</span><span class="n">tau2hrs</span><span class="p">,</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau3&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_step</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;5pDEER&#39;</span>
+            <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;AimTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_time</span>
+
+    <span class="k">return</span> <span class="n">deer_settings</span></div>
 
 </pre></div>
         </article>

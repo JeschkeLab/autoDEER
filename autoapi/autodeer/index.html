@@ -421,6 +421,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.normalise_01" title="autodeer.normalise_01"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalise_01</span></code></a>(A)</p></td>
 <td><p>Normalizes the input vector A to be between 0 and 1.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.calc_correction_factor" title="autodeer.calc_correction_factor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_correction_factor</span></code></a>(fit_result[, aim_MNR, aim_time])</p></td>
+<td><p>Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.calc_deer_settings" title="autodeer.calc_deer_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_deer_settings</span></code></a>(experiment[, CPdecay, Refocused2D, ...])</p></td>
+<td><p>Calculates the optimal DEER settings based on the avaliable relaxation data</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#autodeer.detect_ESEEM" title="autodeer.detect_ESEEM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">detect_ESEEM</span></code></a>(dataset[, type, threshold])</p></td>
 <td><p>Detect if the dataset is an ESEEM experiment.</p></td>
 </tr>
@@ -1026,6 +1032,75 @@ A (numpy.ndarray): Input vector to be normalized.</p>
 numpy.ndarray: Normalized vector between 0 and 1.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="autodeer.calc_correction_factor">
+<span class="sig-prename descclassname"><span class="pre">autodeer.</span></span><span class="sig-name descname"><span class="pre">calc_correction_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aim_MNR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aim_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/autodeer/DEER_analysis.html#calc_correction_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.calc_correction_factor" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.
+Parameters
+———-
+fit_result : Deerlab.FitResult</p>
+<blockquote>
+<div><p>The fit result from the DEER analysis.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>aim_MNR<span class="classifier">float, optional</span></dt><dd><p>The desired MNR, by default 25</p>
+</dd>
+<dt>aim_time<span class="classifier">float, optional</span></dt><dd><p>The desired time in hours, by default 2</p>
+</dd>
+</dl>
+<section id="returns">
+<h4>Returns<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h4>
+<dl class="simple">
+<dt>float</dt><dd><p>The correction factor for the number of averages.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="autodeer.calc_deer_settings">
+<span class="sig-prename descclassname"><span class="pre">autodeer.</span></span><span class="sig-name descname"><span class="pre">calc_deer_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CPdecay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Refocused2D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_MNR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">waveform_precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/autodeer/DEER_analysis.html#calc_deer_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.calc_deer_settings" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the optimal DEER settings based on the avaliable relaxation data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>experiment</strong><span class="classifier">str</span></dt><dd><p>Type of DEER experiment, either ‘auto’, ‘4pDEER’ or ‘5pDEER’</p>
+</dd>
+<dt><strong>CPdecay</strong><span class="classifier">ad.CarrPurcellAnalysis</span></dt><dd><p>Carr-Purcell relaxation data</p>
+</dd>
+<dt><strong>Refocused2D</strong><span class="classifier">ad.RefocusedEcho2DAnalysis, optional</span></dt><dd><p>Refocused 2D data required for ‘4pDEER’, by default None</p>
+</dd>
+<dt><strong>target_time</strong><span class="classifier">int, optional</span></dt><dd><p>Target time for the DEER experiment in hours, by default 2</p>
+</dd>
+<dt><strong>target_MNR</strong><span class="classifier">float, optional</span></dt><dd><p>Target modulation to noise ratio, by default 20</p>
+</dd>
+<dt><strong>waveform_precision</strong><span class="classifier">int, optional</span></dt><dd><p>Precision of the waveform in ns, by default 2</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dict</dt><dd><dl class="simple">
+<dt>DEER settings, with keys:</dt><dd><p>-‘ExpType’: ‘4pDEER’ or ‘5pDEER’
+-‘tau1’: in us
+-‘tau2’: in us
+-‘tau3’: in us, only for 5pDEER
+-‘AimTime’: in hours</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>experiment</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function will calcate the optimal DEER settings based on the avaliable relaxation data, depending on the experiment type.
+For 4pDEER, the optimal tau1 and tau2 are calculated based on the refocused 2D data, and for 5pDEER, the optimal tau2 is calculated based on the CPdecay data or refocused 2D if CP decay data is not availiable.
+If the optimal tau2 for 5pDEER is less than 1.5us, the function will calculate the optimal tau1 and tau2 for 4pDEER instead. This is only possible if the refocused 2D data is availiable, otherwise a non optimal tau1 of 0.4us is used.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="autodeer.Sequence">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.</span></span><span class="sig-name descname"><span class="pre">Sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reptime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shots</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/autodeer/sequences.html#Sequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Sequence" title="Link to this definition">¶</a></dt>
@@ -1482,6 +1557,51 @@ number of shots will be calculated from the dataset.</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.RefocusedEcho2DAnalysis.find_optimal">
+<span class="sig-name descname"><span class="pre">find_optimal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SNR_target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averages</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/autodeer/Relaxation.html#RefocusedEcho2DAnalysis.find_optimal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.RefocusedEcho2DAnalysis.find_optimal" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the optimal inter pulse delay for a given total measurment time, using either 4pulse or 5pulse data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>type</strong><span class="classifier">str</span></dt><dd><p>The type of data to use, either ‘4pDEER’ or ‘5pDEER’</p>
+</dd>
+<dt><strong>SNR_target</strong><span class="classifier">float</span></dt><dd><p>The Signal to Noise ratio target.</p>
+</dd>
+<dt><strong>target_time</strong><span class="classifier">float</span></dt><dd><p>The target time in hours</p>
+</dd>
+<dt><strong>target_step: float</strong></dt><dd><p>The target step size in ns.</p>
+</dd>
+<dt><strong>averages</strong><span class="classifier">int, optional</span></dt><dd><p>The total number of shots taken, by default None. If None, the
+number of shots will be calculated from the dataset.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>tau1: float</dt><dd><p>The calculated optimal tau1 in us</p>
+</dd>
+<dt>tau2: float</dt><dd><p>The calculated optimal tau2 in us</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>str</em>)</p></li>
+<li><p><strong>target_time</strong> (<em>float</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="autodeer.RefocusedEcho2DAnalysis.optimal_tau1">
+<span class="sig-name descname"><span class="pre">optimal_tau1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/autodeer/Relaxation.html#RefocusedEcho2DAnalysis.optimal_tau1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.RefocusedEcho2DAnalysis.optimal_tau1" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -2064,7 +2184,7 @@ rectangular pulses or specified pulses.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="autodeer.RefocusedEcho2DSequence">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.</span></span><span class="sig-name descname"><span class="pre">RefocusedEcho2DSequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reptime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/autodeer/sequences.html#RefocusedEcho2DSequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.RefocusedEcho2DSequence" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.</span></span><span class="sig-name descname"><span class="pre">RefocusedEcho2DSequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reptime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/autodeer/sequences.html#RefocusedEcho2DSequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.RefocusedEcho2DSequence" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#id27" title="autodeer.Sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Sequence</span></code></a></p>
 <p>Represents a 2D Refocused-echo Sequence.</p>
 <p>Build a 2D Refocused-echo sequence using either
@@ -2082,11 +2202,9 @@ rectangular pulses or specified pulses.</p>
 </dd>
 <dt><strong>shots</strong><span class="classifier">int</span></dt><dd><p>The number of shots per point</p>
 </dd>
-<dt><strong>tau</strong><span class="classifier">int</span></dt><dd><p>The starting value in ns</p>
+<dt><strong>tau</strong><span class="classifier">int</span></dt><dd><p>The maximum total sequence length in us</p>
 </dd>
 <dt><strong>dim: int</strong></dt><dd><p>The number of points in both the X and Y axis</p>
-</dd>
-<dt><strong>step: float</strong></dt><dd><p>The step in ns for both the X and Y axis</p>
 </dd>
 </dl>
 </dd>
@@ -2781,6 +2899,8 @@ focused depending on the current state</p>
 <li><a class="reference internal" href="#autodeer.optimise_pulses"><code class="docutils literal notranslate"><span class="pre">optimise_pulses()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.plot_overlap"><code class="docutils literal notranslate"><span class="pre">plot_overlap()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.normalise_01"><code class="docutils literal notranslate"><span class="pre">normalise_01()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.calc_correction_factor"><code class="docutils literal notranslate"><span class="pre">calc_correction_factor()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.calc_deer_settings"><code class="docutils literal notranslate"><span class="pre">calc_deer_settings()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Sequence"><code class="docutils literal notranslate"><span class="pre">Sequence</span></code></a><ul>
 <li><a class="reference internal" href="#autodeer.Sequence.seqtable_steps"><code class="docutils literal notranslate"><span class="pre">Sequence.seqtable_steps</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Sequence.plot"><code class="docutils literal notranslate"><span class="pre">Sequence.plot()</span></code></a></li>
@@ -2825,6 +2945,8 @@ focused depending on the current state</p>
 <li><a class="reference internal" href="#autodeer.RefocusedEcho2DAnalysis"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis</span></code></a><ul>
 <li><a class="reference internal" href="#autodeer.RefocusedEcho2DAnalysis.plot2D"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.plot2D()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.RefocusedEcho2DAnalysis.plot1D"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.plot1D()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.RefocusedEcho2DAnalysis.find_optimal"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.find_optimal()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.RefocusedEcho2DAnalysis.optimal_tau1"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.optimal_tau1()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">build_table()</span></code></a></li>

@@ -61,7 +61,7 @@ Functions
    .. py:method:: set_spectrometer_connected_light(state)
 
 
-   .. py:method:: load_folder()
+   .. py:method:: load_folder(*args, folder_path=None)
 
 
    .. py:method:: load_epr_file(store_location)
@@ -133,6 +133,9 @@ Functions
    .. py:method:: refresh_relax(fitresult)
 
 
+   .. py:method:: update_relax2D(dataset=None)
+
+
    .. py:method:: update_T2(dataset=None)
 
 
@@ -180,10 +183,13 @@ Functions
       ..
           !! processed by numpydoc !!
 
+   .. py:method:: RunAutoDEER(advanced=False)
+
+
    .. py:method:: RunFullyAutoDEER()
 
 
-   .. py:method:: RunAdvanedAutoDEER()
+   .. py:method:: RunAdvancedAutoDEER()
 
 
    .. py:method:: create_report()

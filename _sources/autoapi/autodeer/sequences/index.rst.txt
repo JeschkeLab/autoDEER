@@ -870,7 +870,7 @@ Classes
 
 
 
-.. py:class:: RefocusedEcho2DSequence(*, B, LO, reptime, averages, shots, tau, dim=100, step=50, **kwargs)
+.. py:class:: RefocusedEcho2DSequence(*, B, LO, reptime, averages, shots, tau, dim=100, **kwargs)
 
 
    Bases: :py:obj:`Sequence`
@@ -900,13 +900,10 @@ Classes
            The number of shots per point
 
        **tau** : int
-           The starting value in ns
+           The maximum total sequence length in us
 
        **dim: int**
            The number of points in both the X and Y axis
-
-       **step: float**
-           The step in ns for both the X and Y axis
 
 
 
