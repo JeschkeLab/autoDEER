@@ -238,9 +238,13 @@ def _simulate_deer(sequence,exp_type=None):
 
 def _simulate_CP(sequence):
 
+    if isinstance(sequence, DEERSequence):
+        xaxis = val_in_ns(sequence.tau2)
+    elif isinstance(sequence, CarrPurcellSequence):
+        xaxis = val_in_ns(sequence.step)
 
     func = lambda x, a, b, e: a*np.exp(-b*x**e)
-    xaxis = val_in_ns(sequence.tau2)
+    
     data = func(xaxis,1,2e-6,1.8)
     data = add_phaseshift(data, 0.05)
     return xaxis, data

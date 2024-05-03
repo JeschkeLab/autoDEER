@@ -747,29 +747,33 @@ class autoDEERUI(QMainWindow):
     
         self.current_results['relax'].tau2hrs = tau2hrs
 
+        if 'relax2D' in self.current_results:
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR,self.waveform_precision)
+        else:
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR,self.waveform_precision)
         
         
-        if (tau2hrs < 1.5) and (tau4hrs > 1.5):
-            self.raise_warning(f"2hr dipolar evo too short. Using 4hr number")
-            self.deer_settings['tau1'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
-            self.deer_settings['tau2'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
-            self.deer_settings['ExpType'] = '5pDEER'
-            self.aim_time = 4
+        # if (tau2hrs < 1.5) and (tau4hrs > 1.5):
+        #     self.raise_warning(f"2hr dipolar evo too short. Using 4hr number")
+        #     self.deer_settings['tau1'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
+        #     self.deer_settings['tau2'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
+        #     self.deer_settings['ExpType'] = '5pDEER'
+        #     self.aim_time = 4
         
-        elif (tau2hrs < 1.5) and (tau4hrs < 1.5):
-            self.current_results['relax'].tau2hrs = 2.5
-            self.raise_warning(f"2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time")
-            self.deer_settings['tau1'] = ad.round_step(0.4,self.waveform_precision/1e3)
-            self.deer_settings['tau2'] = ad.round_step(2.5,self.waveform_precision/1e3)
-            self.deer_settings['ExpType'] = '4pDEER'
-            self.raise_warning(f"2hr dipolar evo {tau2hrs:.2f} us, using 4pDEER")
+        # elif (tau2hrs < 1.5) and (tau4hrs < 1.5):
+        #     self.current_results['relax'].tau2hrs = 2.5
+        #     self.raise_warning(f"2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time")
+        #     self.deer_settings['tau1'] = ad.round_step(0.4,self.waveform_precision/1e3)
+        #     self.deer_settings['tau2'] = ad.round_step(2.5,self.waveform_precision/1e3)
+        #     self.deer_settings['ExpType'] = '4pDEER'
+        #     self.raise_warning(f"2hr dipolar evo {tau2hrs:.2f} us, using 4pDEER")
 
-        else:  
-            self.deer_settings['tau1'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
-            self.deer_settings['tau2'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
-            self.deer_settings['ExpType'] = '5pDEER'
+        # else:  
+        #     self.deer_settings['tau1'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
+        #     self.deer_settings['tau2'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
+        #     self.deer_settings['ExpType'] = '5pDEER'
             
-        self.deer_settings['tau3'] = 0.3
+        # self.deer_settings['tau3'] = 0.3
         self.deer_settings['dt'] = 16
         self.worker.update_deersettings(
             self.deer_settings

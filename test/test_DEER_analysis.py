@@ -73,10 +73,6 @@ def test_IdentifyROI():
     assert ROI[0] == 1.75
     assert ROI[1] == 4.25
 
-@pytest.mark.notimplemented
-def test_remove_echo():
-    pass
-
 def test_shift_pulse_freq_mono():
     pulse = RectPulse(tp=16,freq=0,flipangle=np.pi/2)
     pulse_shifted = shift_pulse_freq(pulse, 0.1)
@@ -151,3 +147,47 @@ def test_optimise_pulses():
     fig = plot_overlap(fsweep, pump_pulse, exc_pulse, ref_pulse)
     assert fig is not None
 
+from autodeer.hardware.dummy import _simulate_CP, _simulate_2D_relax
+from autodeer.Relaxation import CarrPurcellAnalysis, RefocusedEcho2DAnalysis
+
+def get_CPAnalysis():
+    seq = CarrPurcellSequence(
+        B=12220, LO=34.0, reptime=3e3,averages=1, shots=50, tau=10,n=2)
+    x,V = _simulate_CP(seq)
+    dataset = create_dataset_from_sequence(V,seq)
+    dataset.attrs['nAvgs'] = 1
+    CP = CarrPurcellAnalysis(dataset)
+    CP.fit('double')
+    return CP
+
+def get_Ref2DAnalysis():
+    seq = RefocusedEcho2DSequence(
+        B=12220, LO=34.0, reptime=3e3,averages=1, shots=50, tau=10,)
+    x,V = _simulate_2D_relax(seq)
+    dataset = create_dataset_from_sequence(V,seq)
+    dataset.attrs['nAvgs'] = 1
+    Ref2D = RefocusedEcho2DAnalysis(dataset)
+    return Ref2D
+
+
+@pytest.mark.parametrize("exp",['auto','5pDEER','4pDEER'])
+def test_calc_deer_settings(exp):
+    CP_dataset = get_CPAnalysis()
+    Ref2D_dataset = get_Ref2DAnalysis()
+
+    settings = calc_deer_settings(exp,CP_dataset, Ref2D_dataset)
+
+    if exp == '5pDEER' or exp == 'auto':
+        assert settings['tau1'] == pytest.approx(2.478,rel=1e-3)
+        assert settings['tau2'] == pytest.approx(2.478,rel=1e-3)
+        assert settings['tau3'] == pytest.approx(0.3,abs=0.05)
+        assert settings['AimTime'] == pytest.approx(2,rel=1e-3)
+        assert settings['ExpType'] == '5pDEER'
+    elif exp == '4pDEER':
+        assert settings['tau1'] == pytest.approx(3.7,rel=1e-3)
+        assert settings['tau2'] == pytest.approx(7.5,rel=1e-3)
+        assert 'tau3' not in settings
+        assert settings['AimTime'] == pytest.approx(2,rel=1e-3)
+        assert settings['ExpType'] == '4pDEER'
+     
+    print(settings)

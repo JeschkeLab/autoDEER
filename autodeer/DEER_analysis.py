@@ -14,6 +14,7 @@ import numbers
 import scipy.signal as sig
 from scipy.optimize import minimize,brute
 from autodeer.colors import primary_colors, ReIm_colors
+from autodeer.utils import round_step
 
 
 log = logging.getLogger('autoDEER.DEER')
@@ -324,6 +325,21 @@ def background_func(t, fit):
     return scale * prod
 
 def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
+    """
+    Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.
+    Parameters
+    ----------
+    fit_result : Deerlab.FitResult
+        The fit result from the DEER analysis.
+    aim_MNR : float, optional
+        The desired MNR, by default 25
+    aim_time : float, optional
+        The desired time in hours, by default 2
+    Returns
+    -------
+    float
+        The correction factor for the number of averages.
+    """
 
     dataset = fit_result.dataset
     runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e-6
@@ -945,3 +961,115 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     axs.set_xlabel('Frequency (MHz)')
 
     return fig
+
+def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_time=2,target_MNR=20, waveform_precision=2):
+    """
+    Calculates the optimal DEER settings based on the avaliable relaxation data
+
+    Parameters
+    ----------
+    experiment : str
+        Type of DEER experiment, either 'auto', '4pDEER' or '5pDEER'
+    CPdecay : ad.CarrPurcellAnalysis
+        Carr-Purcell relaxation data
+    Refocused2D : ad.RefocusedEcho2DAnalysis, optional
+        Refocused 2D data required for '4pDEER', by default None
+    target_time : int, optional
+        Target time for the DEER experiment in hours, by default 2
+    target_MNR : float, optional
+        Target modulation to noise ratio, by default 20
+    waveform_precision : int, optional
+        Precision of the waveform in ns, by default 2
+
+    Returns
+    -------
+    dict
+        DEER settings, with keys: 
+            -'ExpType': '4pDEER' or '5pDEER'
+            -'tau1': in us
+            -'tau2': in us
+            -'tau3': in us, only for 5pDEER
+            -'AimTime': in hours
+
+    Notes
+    -----
+
+    This function will calcate the optimal DEER settings based on the avaliable relaxation data, depending on the experiment type.
+    For 4pDEER, the optimal tau1 and tau2 are calculated based on the refocused 2D data, and for 5pDEER, the optimal tau2 is calculated based on the CPdecay data or refocused 2D if CP decay data is not availiable.
+    If the optimal tau2 for 5pDEER is less than 1.5us, the function will calculate the optimal tau1 and tau2 for 4pDEER instead. This is only possible if the refocused 2D data is availiable, otherwise a non optimal tau1 of 0.4us is used.
+
+    """
+
+    # Calculate the DEER settings from the avaliable relaxation data
+    # Move out of the GUI Code asap
+
+    deer_settings = {}
+
+    if experiment == '4pDEER':
+        if Refocused2D is None:
+            raise ValueError("Refocused2D data required for 4pDEER")
+        # Calcualting a 4pDEER Sequence
+        deer_settings['ExpType'] = '4pDEER'
+
+        # Calculate tau1 and tau2
+        tau1,tau2 = Refocused2D.find_optimal(type='4pDEER',SNR_target=20, target_time=target_time, target_step=0.015)
+        
+        if tau2 < 2.5:
+            # 2hr dipolar evo too short for meaningful results. Using double the time instead
+            target_time *= 2
+            tau1,tau2 = Refocused2D.find_optimal(type='4pDEER',SNR_target=20, target_time=target_time, target_step=0.015)
+        
+        if tau2 < 2.5:
+            # Dipolar evo time still too short. Hardcoding a 2.5us dipolar evo time
+            tau1,tau2 = Refocused2D.optimal_tau1(type='4pDEER',tau2=2.5)
+        
+
+        deer_settings['tau1'] = round_step(tau1,waveform_precision/1e3)
+        deer_settings['tau2'] = round_step(tau2,waveform_precision/1e3)
+        deer_settings['AimTime'] = target_time
+
+    elif (experiment == '5pDEER') or (experiment == 'auto'):
+        # Calculate a 5pDEER Sequence
+        if CPdecay is not None:
+            tau2hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time, target_step=0.015)
+            tau4hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time*2, target_step=0.015)
+        elif Refocused2D is not None:
+            tau2hrs = Refocused2D.find_optimal(type='5pDEER',SNR_target=20, target_time=target_time, target_step=0.015)
+            tau4hrs = Refocused2D.find_optimal(type='5pDEER',SNR_target=20, target_time=target_time*2, target_step=0.015)
+        else:
+            raise ValueError("CPdecay data required for 5pDEER")
+
+        
+        if (tau2hrs < 1.5) and (tau4hrs > 1.5):
+            # 2hr dipolar evo too short for meaningful results. Using 4hr number instead
+            deer_settings['tau1'] = round_step(tau4hrs,waveform_precision/1e3)
+            deer_settings['tau2'] = round_step(tau4hrs,waveform_precision/1e3)
+            deer_settings['tau3'] = round_step(0.3,waveform_precision/1e3)
+            deer_settings['ExpType'] = '5pDEER'
+            deer_settings['AimTime'] = target_time*2
+
+        elif (tau2hrs < 1.5) and (tau4hrs < 1.5):
+            # 2hr & 4hr dipolar evo too short for meaningful results. Hardcoding a 2.5us dipolar evo time, in 4pDEER and 4hrs
+            # self.raise_warning(f"2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time")
+            tau2 = 2.5
+            if Refocused2D is not None:
+                tau1 = Refocused2D.optimal_tau1(type='4pDEER',tau2=tau2)
+            else:
+                tau1 = 0.4
+
+            deer_settings['tau1'] = round_step(tau1,waveform_precision/1e3)
+            deer_settings['tau2'] = round_step(tau2,waveform_precision/1e3)
+            
+            deer_settings['ExpType'] = '4pDEER'
+            deer_settings['AimTime'] = target_time * 2
+            # self.raise_warning(f"2hr dipolar evo {tau2hrs:.2f} us, using 4pDEER")
+        
+        else:
+            # Normal case, using 2hr dipolar evo time
+            deer_settings['tau1'] = round_step(tau2hrs,waveform_precision/1e3)
+            deer_settings['tau2'] = round_step(tau2hrs,waveform_precision/1e3)
+            deer_settings['tau3'] = round_step(0.3,waveform_precision/1e3)
+            deer_settings['ExpType'] = '5pDEER'
+            deer_settings['AimTime'] = target_time
+
+    return deer_settings

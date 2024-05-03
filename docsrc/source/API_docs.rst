@@ -25,6 +25,7 @@ Analysis Modules
    autodeer.ResPro.ResonatorProfileAnalysis
    autodeer.Relaxation.CarrPurcellAnalysis
    autodeer.Relaxation.ReptimeAnalysis
+   autodeer.Relaxation.RefocusedEcho2DAnalysis
    autodeer.DEER_analysis.DEERanalysis
 
 Sequences
@@ -105,8 +106,11 @@ Optimisation
 .. autoapisummary::
 
     autodeer.DEER_analysis.optimise_pulses
+    autodeer.DEER_analysis.calc_deer_settings
+    autodeer.DEER_analysis.calc_correction_factor
     autodeer.pulses.build_default_pulses
     autodeer.ResPro.optimise_spectra_position
+
 I/O
 ~~~
 
