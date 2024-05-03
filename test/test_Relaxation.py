@@ -1,7 +1,7 @@
 from autodeer.Relaxation import *
 from autodeer import eprload
-from autodeer.hardware.dummy import _simulate_CP, _simulate_reptimescan
-from autodeer.sequences import DEERSequence, ReptimeScan
+from autodeer.hardware.dummy import _simulate_CP, _simulate_reptimescan, _simulate_2D_relax
+from autodeer.sequences import DEERSequence, ReptimeScan, RefocusedEcho2DSequence
 from autodeer.dataset import *
 import pytest
 from matplotlib.figure import Figure as mplFigure
@@ -49,3 +49,33 @@ def test_ReptimeAnalysis_from_dataset():
     assert np.abs(optimal - 3e3)/3e3 < 0.1
     fig = RA.plot()
     assert isinstance(fig,mplFigure)
+
+# --------------------------- Test RefocusedEcho2DAnalysis ------------------------
+
+def get_Ref2DAnalysis():
+    seq = RefocusedEcho2DSequence(
+        B=12220, LO=34.0, reptime=3e3,averages=1, shots=50, tau=10,)
+    x,V = _simulate_2D_relax(seq)
+    dataset = create_dataset_from_sequence(V,seq)
+    dataset.attrs['nAvgs'] = 1
+    Ref2D = RefocusedEcho2DAnalysis(dataset)
+    return Ref2D
+
+def test_RefocusedEcho2DAnalysis_from_dataset():
+    Ref2D = get_Ref2DAnalysis()
+
+    tau1, tau2 = Ref2D.find_optimal(type='4pDEER', SNR_target=20, target_time=2, target_step=15)
+    assert tau1 == pytest.approx(4.0,rel=1e-3)
+    assert tau2 == pytest.approx(7.9,rel=1e-3)
+
+    tau1_2 = Ref2D.optimal_tau1(tau2)
+    assert tau1_2 == pytest.approx(tau1,rel=1e-3)
+
+    tau1, tau2 = Ref2D.find_optimal(type='5pDEER', SNR_target=20, target_time=2, target_step=15)
+    assert tau1 == pytest.approx(6.9,rel=1e-3)
+    assert tau2 == pytest.approx(6.9,rel=1e-3)
+
+
+    
+
+    
