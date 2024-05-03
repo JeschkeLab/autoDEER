@@ -381,11 +381,14 @@ class autoDEERWorker(QtCore.QRunnable):
         
         if (seq is None) or (seq == '5pDEER'):
             methods.append(self.run_CP_relax)
-        elif seq == '4pDEER':
+        elif (seq == '4pDEER') or (seq == 'Ref2D'):
             methods.append(self.run_CP_relax)
             methods.append(self.run_2D_relax)
         
         methods.append(self.run_T2_relax)
+
+        if seq == 'Ref2D':
+            return methods
 
         if quick_deer:
             methods.append(self.run_quick_deer)

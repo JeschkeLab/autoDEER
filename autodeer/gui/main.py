@@ -176,7 +176,7 @@ class autoDEERUI(QMainWindow):
         self.queue = Queue()
 
         self.FullyAutoButton.clicked.connect(self.RunFullyAutoDEER)
-        self.AdvancedAutoButton.clicked.connect(self.RunAdvanedAutoDEER)
+        self.AdvancedAutoButton.clicked.connect(self.RunAdvancedAutoDEER)
 
         docs_url = QtCore.QUrl('https://jeschkelab.github.io/autoDEER/')
         github_url = QtCore.QUrl('https://github.com/JeschkeLab/autoDEER/')
@@ -301,7 +301,7 @@ class autoDEERUI(QMainWindow):
             if model == 'Dummy':
                 from autodeer.hardware.dummy import dummyInterface
                 self.spectromterInterface = dummyInterface(filename_edit)
-                self.spectromterInterface.savefolder = self.current_folder
+                self.spectromterInterface._savefolder = self.current_folder
                 self.Bruker=False
             elif model == 'ETH_AWG':
                 from autodeer.hardware.ETH_awg import ETH_awg_interface
@@ -858,9 +858,9 @@ class autoDEERUI(QMainWindow):
 
         
     def advanced_mode_inputs(self):
-        self.Exp_types.addItems(['5pDEER','4pDEER','3pDEER','nDEER'])
-        self.ExcPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
-        self.RefPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
+        self.Exp_types.addItems(['5pDEER','4pDEER','Ref2D'])
+        self.ExcPulseSelect.addItems(['Auto', 'Rectangular','Gauss'])
+        self.RefPulseSelect.addItems(['Auto', 'Rectangular', 'Gauss'])
         self.PumpPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
 
     def update_quickdeer(self, dataset=None):
