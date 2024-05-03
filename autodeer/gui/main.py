@@ -814,10 +814,7 @@ class autoDEERUI(QMainWindow):
         else:
             self.deer_settings['ESEEM'] = None
             main_log.info(f"No ESEEM detected")
-        
-
         # Since the T2 values are not used for anything there is no need pausing the spectrometer    
-        
 
         T2_worker = Worker(T2_process, dataset)
         T2_worker.signals.result.connect(self.refresh_T2)
@@ -841,7 +838,7 @@ class autoDEERUI(QMainWindow):
                 self.worker.run_T2_relax(dt=new_dt)
 
     def check_CP(self, fitresult):
-        # Check if the T2 measurment is too short. 
+        # Check if the CP measurment is too short. 
 
         test_result = fitresult.check_decay()
 
@@ -947,7 +944,7 @@ class autoDEERUI(QMainWindow):
         QMessageBox.about(self,'Warning!', msg)
         main_log.warning(msg)
 
-    def RunFullyAutoDEER(self):
+    def RunAutoDEER(self, advanced=False):
 
         if self.spectromterInterface is None or self.connected is False:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
@@ -966,6 +963,14 @@ class autoDEERUI(QMainWindow):
 
         self.userinput = userinput
 
+        if advanced:
+            self.deer_settings['ExpType'] = self.Exp_types.currentText()
+            self.deer_settings['tau1'] = self.Tau1Value.value()
+            self.deer_settings['tau2'] = self.Tau2Value.value()
+            self.deer_settings['tau3'] = self.Tau3Value.value()
+        else:
+            self.deer_settings = {'ExpType':'5pDEER','tau1':0,'tau2':0,'tau3':0}
+
         # Block the autoDEER buttons
         self.FullyAutoButton.setEnabled(False)
         self.AdvancedAutoButton.setEnabled(False)
@@ -980,6 +985,8 @@ class autoDEERUI(QMainWindow):
             user_inputs=userinput, cores=self.cores )
         
         self.starttime = time.time()
+
+        self.worker.update_deersettings(self.deer_settings)
     
         self.worker.signals.status.connect(self.msgbar.setText)
         self.worker.signals.status.connect(main_log.info)
@@ -1016,63 +1023,12 @@ class autoDEERUI(QMainWindow):
         main_log.info(f"Starting autoDEER")
 
         return self.worker
+    
+    def RunFullyAutoDEER(self):
+        return self.RunAutoDEER(advanced=False)
 
-    def RunAdvanedAutoDEER(self):
-
-        if self.spectromterInterface is None or self.connected is False:
-            QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
-            main_log.error('Could not run autoDEER. A interface needs to be connected first!')
-            return None
-        
-        if self.current_folder is None:
-            QMessageBox.about(self,'ERORR!', 'A folder needs to be selected first!')
-            main_log.error('Could not run autoDEER. A folder needs to be selected first!')
-            return None
-
-        
-        
-        userinput = {}
-        userinput['MaxTime'] = self.MaxTime.value()
-        userinput['sample'] = self.SampleName.text()
-        userinput['Temp'] = self.TempValue.value()
-        userinput['ExpType'] = self.Exp_types.currentText()
-        userinput['tau1'] = self.Tau1Value.value()
-        userinput['tau2'] = self.Tau2Value.value()
-        userinput['tau3'] = self.Tau3Value.value()
-        userinput['ExcPulse'] = self.ExcPulseSelect.currentText()
-        userinput['RefPulse'] = self.RefPulseSelect.currentText()
-        userinput['PumpPulse'] = self.PumpPulseSelect.currentText()
-        userinput['DEER_update_func'] = self.q_DEER.refresh_deer
-
-        # Block the autoDEER buttons
-        self.FullyAutoButton.setEnabled(False)
-        self.AdvancedAutoButton.setEnabled(False)
-
-        self.waitCondition = QtCore.QWaitCondition()
-        mutex = QtCore.QMutex()
-
-
-        worker = autoDEERWorker(
-            self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
-            results=self.current_results,LO=self.LO, gyro = self.gyro,
-            user_inputs=userinput, cores=self.cores)
-        worker.signals.status.connect(self.msgbar.setText)
-        worker.signals.fsweep_result.connect(self.update_fieldsweep)
-        worker.signals.respro_result.connect(self.update_respro)
-        worker.signals.optimise_pulses.connect(self.optimise_pulses)
-        worker.signals.relax_result.connect(self.update_relax)
-        worker.signals.quickdeer_result.connect(self.update_quickdeer)
-        worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
-        worker.signals.longdeer_update.connect(self.longDEER.refresh_deer)
-
-        worker.signals.reptime_scan_result.connect(self.update_reptime)
-
-        worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
-        worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
-
-        self.worker = worker
-        self.threadpool.start(self.worker)
-        main_log.info(f"Starting autoDEER with user inputs")
+    def RunAdvancedAutoDEER(self):
+        return self.RunAutoDEER(advanced=True)
 
     def create_report(self):
         save_path = QFileDialog.getSaveFileName(self, 'Save File', self.current_folder, ".pdf")
