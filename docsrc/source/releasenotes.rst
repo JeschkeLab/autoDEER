@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+Version 0.8.0 (TBA):
++++++++++++++++++++++++++++
+- Major Support Update for 2D Decoherence
+  - `RefocusedEcho2DSequence` reforumlated to support match normal style
 
 Version 0.7.0 (2024-04-01):
 +++++++++++++++++++++++++++
