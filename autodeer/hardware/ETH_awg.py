@@ -824,7 +824,7 @@ def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
             for item in p.dim:
                 dim.append(item)
 
-
+    OG_seq_progTable = seq.progTable
     new_seq = seq.copy()
     new_seq.averages.value=1
     new_params = copy.copy(seq.evo_params)
@@ -834,12 +834,32 @@ def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
     # is removed axis a reduced axis
     if fixed_param.uuid in seq.reduce_uuid:
         reduced = True
+    else:
+        reduced = False
     new_reduce_param = []
     for p in new_params:
         if p.uuid == fixed_param.uuid:
             continue
         elif p.uuid in seq.reduce_uuid:
             new_reduce_param.append(p)
+
+    def set_params_by_uuid(new_seq, progTable,uuid,index):
+        n_elements = len(progTable['EventID'])
+        for i in range(n_elements):
+            ele_uuid = progTable['uuid'][i]
+            if ele_uuid != uuid:
+                continue
+
+            var = progTable['Variable'][i]
+            axis = progTable['axis'][i]
+            if progTable['EventID'][i] is None:
+                # A sequence parameter
+                param = getattr(new_seq, var)
+                new_value = param.value + axis[index]
+            else:
+                param = getattr(new_seq.pulses[progTable['EventID'][i]], var)
+                new_value = param.value + axis[index]
+            param.value = new_value
 
     
     nAvg=seq.averages.value
@@ -849,10 +869,12 @@ def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
         for i in range(fixed_param.dim[0]):
             if stop_flag.is_set():
                     break
-            droped_param.value = fixed_param.get_axis()[i]
-            new_seq.evolution(new_params,new_reduce_param)
+            # droped_param.value = fixed_param.get_axis()[i]
+            tmp_seq = new_seq.copy()
+            set_params_by_uuid(tmp_seq, OG_seq_progTable, droped_param.uuid, i)
+            tmp_seq.evolution(new_params,new_reduce_param)
             
-            interface.launch_normal(new_seq, savename=f"{savename}_avg{iavg}of{nAvg}_{i}of{fixed_param.dim[0]}",IFgain=IFgain,reset_cur_exp=False)
+            interface.launch_normal(tmp_seq, savename=f"{savename}_avg{iavg+1}of{nAvg}_{i+1}of{fixed_param.dim[0]}", IFgain=IFgain, reset_cur_exp=False)
 
             while bool(interface.engine.dig_interface('savenow')):
                 if stop_flag.is_set():
@@ -860,9 +882,9 @@ def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
                 time.sleep(1)
 
             if reduced:
-                single_scan_data = interface.acquire_dataset_from_matlab(cur_exp=new_seq).data
+                single_scan_data = interface.acquire_dataset_from_matlab(cur_exp=tmp_seq).data
             else:
-                single_scan_data[:,i] = interface.acquire_dataset_from_matlab(cur_exp=new_seq).data
+                single_scan_data[:,i] = interface.acquire_dataset_from_matlab(cur_exp=tmp_seq).data
         
         if stop_flag.is_set():
             break
