@@ -519,51 +519,6 @@ number of shots will be calculated from the dataset.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="autodeer.Relaxation.RefocusedEcho2DAnalysis.find_optimal">
-<span class="sig-name descname"><span class="pre">find_optimal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SNR_target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averages</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#RefocusedEcho2DAnalysis.find_optimal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.find_optimal" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the optimal inter pulse delay for a given total measurment time, using either 4pulse or 5pulse data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>type</strong><span class="classifier">str</span></dt><dd><p>The type of data to use, either ‘4pDEER’ or ‘5pDEER’</p>
-</dd>
-<dt><strong>SNR_target</strong><span class="classifier">float</span></dt><dd><p>The Signal to Noise ratio target.</p>
-</dd>
-<dt><strong>target_time</strong><span class="classifier">float</span></dt><dd><p>The target time in hours</p>
-</dd>
-<dt><strong>target_step: float</strong></dt><dd><p>The target step size in ns.</p>
-</dd>
-<dt><strong>averages</strong><span class="classifier">int, optional</span></dt><dd><p>The total number of shots taken, by default None. If None, the
-number of shots will be calculated from the dataset.</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>tau1: float</dt><dd><p>The calculated optimal tau1 in us</p>
-</dd>
-<dt>tau2: float</dt><dd><p>The calculated optimal tau2 in us</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>type</strong> (<em>str</em>)</p></li>
-<li><p><strong>target_time</strong> (<em>float</em>)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="autodeer.Relaxation.RefocusedEcho2DAnalysis.optimal_tau1">
-<span class="sig-name descname"><span class="pre">optimal_tau1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#RefocusedEcho2DAnalysis.optimal_tau1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.optimal_tau1" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </section>
@@ -631,8 +586,6 @@ number of shots will be calculated from the dataset.</p>
 <li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis</span></code></a><ul>
 <li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.plot2D"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.plot2D()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.plot1D"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.plot1D()</span></code></a></li>
-<li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.find_optimal"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.find_optimal()</span></code></a></li>
-<li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.optimal_tau1"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.optimal_tau1()</span></code></a></li>
 </ul>
 </li>
 </ul>

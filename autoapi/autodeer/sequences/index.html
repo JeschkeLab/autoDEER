@@ -836,7 +836,7 @@ rectangular pulses or specified pulses.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="autodeer.sequences.RefocusedEcho2DSequence">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.sequences.</span></span><span class="sig-name descname"><span class="pre">RefocusedEcho2DSequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reptime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/sequences.html#RefocusedEcho2DSequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.sequences.RefocusedEcho2DSequence" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">autodeer.sequences.</span></span><span class="sig-name descname"><span class="pre">RefocusedEcho2DSequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reptime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/sequences.html#RefocusedEcho2DSequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.sequences.RefocusedEcho2DSequence" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#autodeer.sequences.Sequence" title="autodeer.sequences.Sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Sequence</span></code></a></p>
 <p>Represents a 2D Refocused-echo Sequence.</p>
 <p>Build a 2D Refocused-echo sequence using either
@@ -854,9 +854,11 @@ rectangular pulses or specified pulses.</p>
 </dd>
 <dt><strong>shots</strong><span class="classifier">int</span></dt><dd><p>The number of shots per point</p>
 </dd>
-<dt><strong>tau</strong><span class="classifier">int</span></dt><dd><p>The maximum total sequence length in us</p>
+<dt><strong>tau</strong><span class="classifier">int</span></dt><dd><p>The starting value in ns</p>
 </dd>
 <dt><strong>dim: int</strong></dt><dd><p>The number of points in both the X and Y axis</p>
+</dd>
+<dt><strong>step: float</strong></dt><dd><p>The step in ns for both the X and Y axis</p>
 </dd>
 </dl>
 </dd>

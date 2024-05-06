@@ -30,7 +30,6 @@ Functions
    autodeer.DEER_analysis.functional
    autodeer.DEER_analysis.optimise_pulses
    autodeer.DEER_analysis.plot_overlap
-   autodeer.DEER_analysis.calc_deer_settings
 
 
 
@@ -90,38 +89,6 @@ Attributes
 
 .. py:function:: calc_correction_factor(fit_result, aim_MNR=25, aim_time=2)
 
-   
-   Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.
-   Parameters
-   ----------
-   fit_result : Deerlab.FitResult
-       The fit result from the DEER analysis.
-   aim_MNR : float, optional
-       The desired MNR, by default 25
-   aim_time : float, optional
-       The desired time in hours, by default 2
-   Returns
-   -------
-   float
-       The correction factor for the number of averages.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
 
 .. py:function:: DEERanalysis_plot(fit, background, ROI=None, axs=None, fig=None, text=True)
 
@@ -571,62 +538,6 @@ Attributes
 
 
 
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: calc_deer_settings(experiment, CPdecay=None, Refocused2D=None, target_time=2, target_MNR=20, waveform_precision=2)
-
-   
-   Calculates the optimal DEER settings based on the avaliable relaxation data
-
-
-   :Parameters:
-
-       **experiment** : str
-           Type of DEER experiment, either 'auto', '4pDEER' or '5pDEER'
-
-       **CPdecay** : ad.CarrPurcellAnalysis
-           Carr-Purcell relaxation data
-
-       **Refocused2D** : ad.RefocusedEcho2DAnalysis, optional
-           Refocused 2D data required for '4pDEER', by default None
-
-       **target_time** : int, optional
-           Target time for the DEER experiment in hours, by default 2
-
-       **target_MNR** : float, optional
-           Target modulation to noise ratio, by default 20
-
-       **waveform_precision** : int, optional
-           Precision of the waveform in ns, by default 2
-
-   :Returns:
-
-       dict
-           DEER settings, with keys: 
-               -'ExpType': '4pDEER' or '5pDEER'
-               -'tau1': in us
-               -'tau2': in us
-               -'tau3': in us, only for 5pDEER
-               -'AimTime': in hours
-
-
-
-
-
-
-
-
-   .. rubric:: Notes
-
-   This function will calcate the optimal DEER settings based on the avaliable relaxation data, depending on the experiment type.
-   For 4pDEER, the optimal tau1 and tau2 are calculated based on the refocused 2D data, and for 5pDEER, the optimal tau2 is calculated based on the CPdecay data or refocused 2D if CP decay data is not availiable.
-   If the optimal tau2 for 5pDEER is less than 1.5us, the function will calculate the optimal tau1 and tau2 for 4pDEER instead. This is only possible if the refocused 2D data is availiable, otherwise a non optimal tau1 of 0.4us is used.
 
 
 

@@ -1106,7 +1106,7 @@
             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span>
                 <span class="n">dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
-
+    <span class="n">OG_seq_progTable</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">progTable</span>
     <span class="n">new_seq</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">new_seq</span><span class="o">.</span><span class="n">averages</span><span class="o">.</span><span class="n">value</span><span class="o">=</span><span class="mi">1</span>
     <span class="n">new_params</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">evo_params</span><span class="p">)</span>
@@ -1116,12 +1116,32 @@
     <span class="c1"># is removed axis a reduced axis</span>
     <span class="k">if</span> <span class="n">fixed_param</span><span class="o">.</span><span class="n">uuid</span> <span class="ow">in</span> <span class="n">seq</span><span class="o">.</span><span class="n">reduce_uuid</span><span class="p">:</span>
         <span class="n">reduced</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">reduced</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">new_reduce_param</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">new_params</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">uuid</span> <span class="o">==</span> <span class="n">fixed_param</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="k">elif</span> <span class="n">p</span><span class="o">.</span><span class="n">uuid</span> <span class="ow">in</span> <span class="n">seq</span><span class="o">.</span><span class="n">reduce_uuid</span><span class="p">:</span>
             <span class="n">new_reduce_param</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_params_by_uuid</span><span class="p">(</span><span class="n">new_seq</span><span class="p">,</span> <span class="n">progTable</span><span class="p">,</span><span class="n">uuid</span><span class="p">,</span><span class="n">index</span><span class="p">):</span>
+        <span class="n">n_elements</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">progTable</span><span class="p">[</span><span class="s1">&#39;EventID&#39;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_elements</span><span class="p">):</span>
+            <span class="n">ele_uuid</span> <span class="o">=</span> <span class="n">progTable</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ele_uuid</span> <span class="o">!=</span> <span class="n">uuid</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">var</span> <span class="o">=</span> <span class="n">progTable</span><span class="p">[</span><span class="s1">&#39;Variable&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">axis</span> <span class="o">=</span> <span class="n">progTable</span><span class="p">[</span><span class="s1">&#39;axis&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">progTable</span><span class="p">[</span><span class="s1">&#39;EventID&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># A sequence parameter</span>
+                <span class="n">param</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">new_seq</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+                <span class="n">new_value</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">axis</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">param</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">new_seq</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="n">progTable</span><span class="p">[</span><span class="s1">&#39;EventID&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]],</span> <span class="n">var</span><span class="p">)</span>
+                <span class="n">new_value</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">axis</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">new_value</span>
 
     
     <span class="n">nAvg</span><span class="o">=</span><span class="n">seq</span><span class="o">.</span><span class="n">averages</span><span class="o">.</span><span class="n">value</span>
@@ -1131,10 +1151,12 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">fixed_param</span><span class="o">.</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="k">if</span> <span class="n">stop_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
                     <span class="k">break</span>
-            <span class="n">droped_param</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">fixed_param</span><span class="o">.</span><span class="n">get_axis</span><span class="p">()[</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">new_seq</span><span class="o">.</span><span class="n">evolution</span><span class="p">(</span><span class="n">new_params</span><span class="p">,</span><span class="n">new_reduce_param</span><span class="p">)</span>
+            <span class="c1"># droped_param.value = fixed_param.get_axis()[i]</span>
+            <span class="n">tmp_seq</span> <span class="o">=</span> <span class="n">new_seq</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">set_params_by_uuid</span><span class="p">(</span><span class="n">tmp_seq</span><span class="p">,</span> <span class="n">OG_seq_progTable</span><span class="p">,</span> <span class="n">droped_param</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">tmp_seq</span><span class="o">.</span><span class="n">evolution</span><span class="p">(</span><span class="n">new_params</span><span class="p">,</span><span class="n">new_reduce_param</span><span class="p">)</span>
             
-            <span class="n">interface</span><span class="o">.</span><span class="n">launch_normal</span><span class="p">(</span><span class="n">new_seq</span><span class="p">,</span> <span class="n">savename</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">savename</span><span class="si">}</span><span class="s2">_avg</span><span class="si">{</span><span class="n">iavg</span><span class="si">}</span><span class="s2">of</span><span class="si">{</span><span class="n">nAvg</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">of</span><span class="si">{</span><span class="n">fixed_param</span><span class="o">.</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">IFgain</span><span class="o">=</span><span class="n">IFgain</span><span class="p">,</span><span class="n">reset_cur_exp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">interface</span><span class="o">.</span><span class="n">launch_normal</span><span class="p">(</span><span class="n">tmp_seq</span><span class="p">,</span> <span class="n">savename</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">savename</span><span class="si">}</span><span class="s2">_avg</span><span class="si">{</span><span class="n">iavg</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">of</span><span class="si">{</span><span class="n">nAvg</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">of</span><span class="si">{</span><span class="n">fixed_param</span><span class="o">.</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">IFgain</span><span class="o">=</span><span class="n">IFgain</span><span class="p">,</span> <span class="n">reset_cur_exp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
             <span class="k">while</span> <span class="nb">bool</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dig_interface</span><span class="p">(</span><span class="s1">&#39;savenow&#39;</span><span class="p">)):</span>
                 <span class="k">if</span> <span class="n">stop_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
@@ -1142,9 +1164,9 @@
                 <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">reduced</span><span class="p">:</span>
-                <span class="n">single_scan_data</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">acquire_dataset_from_matlab</span><span class="p">(</span><span class="n">cur_exp</span><span class="o">=</span><span class="n">new_seq</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+                <span class="n">single_scan_data</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">acquire_dataset_from_matlab</span><span class="p">(</span><span class="n">cur_exp</span><span class="o">=</span><span class="n">tmp_seq</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">single_scan_data</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">acquire_dataset_from_matlab</span><span class="p">(</span><span class="n">cur_exp</span><span class="o">=</span><span class="n">new_seq</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+                <span class="n">single_scan_data</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">acquire_dataset_from_matlab</span><span class="p">(</span><span class="n">cur_exp</span><span class="o">=</span><span class="n">tmp_seq</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
         
         <span class="k">if</span> <span class="n">stop_flag</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
             <span class="k">break</span>

@@ -286,10 +286,6 @@
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERSignals.relax_result">[docs]</a>
     <span class="n">relax_result</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="autoDEERSignals.Relax2D_result">
-<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERSignals.Relax2D_result">[docs]</a>
-    <span class="n">Relax2D_result</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span></div>
-
 <div class="viewcode-block" id="autoDEERSignals.T2_result">
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERSignals.T2_result">[docs]</a>
     <span class="n">T2_result</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span></div>
@@ -358,8 +354,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span> <span class="o">=</span> <span class="n">user_inputs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stop_flag</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">quick_deer_state</span> <span class="o">=</span> <span class="kc">True</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_tau</span> <span class="o">=</span> <span class="mi">5</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
             <span class="k">def</span> <span class="nf">savename</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
@@ -526,23 +520,49 @@
 <div class="viewcode-block" id="autoDEERWorker.run_2D_relax">
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.run_2D_relax">[docs]</a>
     <span class="k">def</span> <span class="nf">run_2D_relax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;Running 2D decoherence experiment&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;Running 2D relaxation experiment&#39;</span><span class="p">)</span>
         <span class="n">LO</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LO</span>
         <span class="n">gyro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span>
-        <span class="n">reptime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reptime</span>
+        <span class="n">reptime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reptime</span></div>
 
-        <span class="n">seq</span> <span class="o">=</span> <span class="n">RefocusedEcho2DSequence</span><span class="p">(</span>
-            <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">20</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">),</span>
-            <span class="n">tau</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_tau</span><span class="p">,</span> <span class="n">pi2_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;exc_pulse&#39;</span><span class="p">],</span>
-            <span class="n">pi_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;ref_pulse&#39;</span><span class="p">],</span> <span class="n">det_event</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;det_event&#39;</span><span class="p">])</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">savename</span><span class="p">(</span><span class="s2">&quot;2D_DEC&quot;</span><span class="p">),</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span><span class="n">test_interval</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">isrunning</span><span class="p">():</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updaterate</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">Relax2D_result</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">acquire_dataset</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;2D decoherence experiment complete&#39;</span><span class="p">)</span></div>
+    <span class="c1"># def run_quick_deer(self, dt=16):</span>
+    <span class="c1">#     if (&#39;tau1&#39; in self.user_inputs) and (self.user_inputs[&#39;tau1&#39;] != 0):</span>
+    <span class="c1">#         self.signals.status.emit(&#39;Skipping QuickDEER&#39;)</span>
+    <span class="c1">#         return &#39;skip&#39;</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         self.signals.status.emit(&#39;Running QuickDEER&#39;)</span>
+            
+    <span class="c1">#         tau = self.results[&#39;relax&#39;].tau2hrs</span>
+            
+    <span class="c1">#         LO = self.LO</span>
+    <span class="c1">#         gyro = self.gyro</span>
+    <span class="c1">#         reptime = self.reptime</span>
+    <span class="c1">#         deer = DEERSequence(</span>
+    <span class="c1">#             B=LO/gyro, LO=LO,reptime=reptime,averages=150,shots=int(15*self.noise_mode),</span>
+    <span class="c1">#             tau1=tau, tau2=tau, tau3=0.3, dt=dt,</span>
+    <span class="c1">#             exc_pulse=self.pulses[&#39;exc_pulse&#39;], ref_pulse=self.pulses[&#39;ref_pulse&#39;],</span>
+    <span class="c1">#             pump_pulse=self.pulses[&#39;pump_pulse&#39;], det_event=self.pulses[&#39;det_event&#39;]</span>
+    <span class="c1">#             )</span>
+            
+    <span class="c1">#         deer.five_pulse()</span>
+    <span class="c1">#         if self.AWG:</span>
+    <span class="c1">#             deer.select_pcyc(&quot;16step_5p&quot;)</span>
+    <span class="c1">#         else:</span>
+    <span class="c1">#             deer.select_pcyc(&quot;DC&quot;)</span>
+    <span class="c1">#         deer._estimate_time();</span>
 
+    <span class="c1">#         # build criteria</span>
+            
+
+    <span class="c1">#         self.interface.launch(deer,savename=f&quot;{self.samplename}_quickdeer&quot;,IFgain=2)</span>
+    <span class="c1">#         with threadpool_limits(limits=self.cores, user_api=&#39;blas&#39;):</span>
+    <span class="c1">#             self.interface.terminate_at(total_crit,verbosity=2,test_interval=0.5)</span>
+    <span class="c1">#         while self.interface.isrunning():</span>
+    <span class="c1">#             time.sleep(self.updaterate)</span>
+
+    <span class="c1">#         self.signals.quickdeer_result.emit(self.interface.acquire_dataset())</span>
+    <span class="c1">#         self.signals.status.emit(&#39;QuickDEER experiment complete&#39;)</span>
     
 <div class="viewcode-block" id="autoDEERWorker.run_quick_deer">
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.run_quick_deer">[docs]</a>
@@ -580,20 +600,13 @@
         <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;tau1&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
             <span class="n">tau1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span>
             <span class="n">tau2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span>
+            <span class="n">tau3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;tau3&#39;</span><span class="p">]</span>
             <span class="n">deertype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">deertype</span> <span class="o">==</span> <span class="s1">&#39;5pDEER&#39;</span><span class="p">:</span>
-                <span class="n">tau3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;tau3&#39;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">tau3</span> <span class="o">=</span> <span class="kc">None</span>
-            
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span> <span class="o">!=</span> <span class="p">{}:</span>
             <span class="n">tau1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span>
             <span class="n">tau2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span>
+            <span class="n">tau3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">[</span><span class="s1">&#39;tau3&#39;</span><span class="p">]</span>
             <span class="n">deertype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">deertype</span> <span class="o">==</span> <span class="s1">&#39;5pDEER&#39;</span><span class="p">:</span>
-                <span class="n">tau3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">[</span><span class="s1">&#39;tau3&#39;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">tau3</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span>
  
         <span class="k">else</span><span class="p">:</span>
@@ -686,39 +699,6 @@
         <span class="k">return</span> <span class="s1">&#39;skip&#39;</span></div>
 
 
-<div class="viewcode-block" id="autoDEERWorker._build_methods">
-<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker._build_methods">[docs]</a>
-    <span class="k">def</span> <span class="nf">_build_methods</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-
-        <span class="n">seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-            <span class="n">quick_deer</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">quick_deer</span> <span class="o">=</span> <span class="kc">False</span>
-        
-        <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">run_fsweep</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">run_reptime_opt</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">run_respro</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">run_fsweep</span><span class="p">,</span>
-                   <span class="bp">self</span><span class="o">.</span><span class="n">tune_pulses</span><span class="p">]</span>
-        
-        <span class="k">if</span> <span class="p">(</span><span class="n">seq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">seq</span> <span class="o">==</span> <span class="s1">&#39;5pDEER&#39;</span><span class="p">):</span>
-            <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_CP_relax</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">seq</span> <span class="o">==</span> <span class="s1">&#39;4pDEER&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">seq</span> <span class="o">==</span> <span class="s1">&#39;Ref2D&#39;</span><span class="p">):</span>
-            <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_CP_relax</span><span class="p">)</span>
-            <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_2D_relax</span><span class="p">)</span>
-        
-        <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_T2_relax</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">seq</span> <span class="o">==</span> <span class="s1">&#39;Ref2D&#39;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">methods</span>
-
-        <span class="k">if</span> <span class="n">quick_deer</span><span class="p">:</span>
-            <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_quick_deer</span><span class="p">)</span>
-        
-        <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_long_deer</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">methods</span></div>
-
-
     <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">()</span>    
 <div class="viewcode-block" id="autoDEERWorker.run">
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.run">[docs]</a>
@@ -728,11 +708,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stop_flag</span> <span class="o">=</span> <span class="kc">False</span>
 
 
-        <span class="c1"># methods = [self.run_fsweep,self.run_reptime_opt,self.run_respro,self.run_fsweep,</span>
-        <span class="c1">#            self.tune_pulses,self.run_CP_relax,self.run_T2_relax,self.run_quick_deer,</span>
-        <span class="c1">#            self.run_long_deer]</span>
-        
-        <span class="n">methods</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_methods</span><span class="p">()</span>
+        <span class="n">methods</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">run_fsweep</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">run_reptime_opt</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">run_respro</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">run_fsweep</span><span class="p">,</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">tune_pulses</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">run_CP_relax</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">run_T2_relax</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">run_quick_deer</span><span class="p">,</span>
+                   <span class="bp">self</span><span class="o">.</span><span class="n">run_long_deer</span><span class="p">]</span>
 
         <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">methods</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_flag</span><span class="p">:</span>
@@ -780,13 +758,6 @@
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.update_gyro">[docs]</a>
     <span class="k">def</span> <span class="nf">update_gyro</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">gyro</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span> <span class="o">=</span> <span class="n">gyro</span></div>
-
-
-<div class="viewcode-block" id="autoDEERWorker.set_2D_max_tau">
-<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.set_2D_max_tau">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_2D_max_tau</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_tau</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_tau</span> <span class="o">=</span> <span class="n">max_tau</span></div>
-
 
 <div class="viewcode-block" id="autoDEERWorker.update_deersettings">
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.update_deersettings">[docs]</a>

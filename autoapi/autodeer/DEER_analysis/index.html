@@ -247,7 +247,7 @@
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.DEER_analysis.calc_correction_factor" title="autodeer.DEER_analysis.calc_correction_factor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_correction_factor</span></code></a>(fit_result[, aim_MNR, aim_time])</p></td>
-<td><p>Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.</p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#autodeer.DEER_analysis.DEERanalysis_plot" title="autodeer.DEER_analysis.DEERanalysis_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEERanalysis_plot</span></code></a>(fit, background[, ROI, axs, fig, text])</p></td>
 <td><p>DEERanalysis_plot Generates a figure showing both the time domain and</p></td>
@@ -281,9 +281,6 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#autodeer.DEER_analysis.plot_overlap" title="autodeer.DEER_analysis.plot_overlap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_overlap</span></code></a>(Fieldsweep, pump_pulse, exc_pulse, ref_pulse)</p></td>
 <td><p>Plots the pump and excitation profiles as well as the fieldsweep and filter profile.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.DEER_analysis.calc_deer_settings" title="autodeer.DEER_analysis.calc_deer_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_deer_settings</span></code></a>(experiment[, CPdecay, Refocused2D, ...])</p></td>
-<td><p>Calculates the optimal DEER settings based on the avaliable relaxation data</p></td>
 </tr>
 </tbody>
 </table>
@@ -341,27 +338,7 @@ float: The duration of the longest pulse in microseconds.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="autodeer.DEER_analysis.calc_correction_factor">
 <span class="sig-prename descclassname"><span class="pre">autodeer.DEER_analysis.</span></span><span class="sig-name descname"><span class="pre">calc_correction_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aim_MNR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aim_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/DEER_analysis.html#calc_correction_factor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.DEER_analysis.calc_correction_factor" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.
-Parameters
-———-
-fit_result : Deerlab.FitResult</p>
-<blockquote>
-<div><p>The fit result from the DEER analysis.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>aim_MNR<span class="classifier">float, optional</span></dt><dd><p>The desired MNR, by default 25</p>
-</dd>
-<dt>aim_time<span class="classifier">float, optional</span></dt><dd><p>The desired time in hours, by default 2</p>
-</dd>
-</dl>
-<section id="returns">
-<h4>Returns<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>float</dt><dd><p>The correction factor for the number of averages.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="autodeer.DEER_analysis.DEERanalysis_plot">
@@ -653,50 +630,6 @@ If the string ‘Matched’ is used a matched filter is used.</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="autodeer.DEER_analysis.calc_deer_settings">
-<span class="sig-prename descclassname"><span class="pre">autodeer.DEER_analysis.</span></span><span class="sig-name descname"><span class="pre">calc_deer_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CPdecay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Refocused2D</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_MNR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">waveform_precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/DEER_analysis.html#calc_deer_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.DEER_analysis.calc_deer_settings" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates the optimal DEER settings based on the avaliable relaxation data</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>experiment</strong><span class="classifier">str</span></dt><dd><p>Type of DEER experiment, either ‘auto’, ‘4pDEER’ or ‘5pDEER’</p>
-</dd>
-<dt><strong>CPdecay</strong><span class="classifier">ad.CarrPurcellAnalysis</span></dt><dd><p>Carr-Purcell relaxation data</p>
-</dd>
-<dt><strong>Refocused2D</strong><span class="classifier">ad.RefocusedEcho2DAnalysis, optional</span></dt><dd><p>Refocused 2D data required for ‘4pDEER’, by default None</p>
-</dd>
-<dt><strong>target_time</strong><span class="classifier">int, optional</span></dt><dd><p>Target time for the DEER experiment in hours, by default 2</p>
-</dd>
-<dt><strong>target_MNR</strong><span class="classifier">float, optional</span></dt><dd><p>Target modulation to noise ratio, by default 20</p>
-</dd>
-<dt><strong>waveform_precision</strong><span class="classifier">int, optional</span></dt><dd><p>Precision of the waveform in ns, by default 2</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>dict</dt><dd><dl class="simple">
-<dt>DEER settings, with keys:</dt><dd><p>-‘ExpType’: ‘4pDEER’ or ‘5pDEER’
--‘tau1’: in us
--‘tau2’: in us
--‘tau3’: in us, only for 5pDEER
--‘AimTime’: in hours</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd>
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>experiment</strong> (<em>str</em>)</p>
-</dd>
-</dl>
-<p class="rubric">Notes</p>
-<p>This function will calcate the optimal DEER settings based on the avaliable relaxation data, depending on the experiment type.
-For 4pDEER, the optimal tau1 and tau2 are calculated based on the refocused 2D data, and for 5pDEER, the optimal tau2 is calculated based on the CPdecay data or refocused 2D if CP decay data is not availiable.
-If the optimal tau2 for 5pDEER is less than 1.5us, the function will calculate the optimal tau1 and tau2 for 4pDEER instead. This is only possible if the refocused 2D data is availiable, otherwise a non optimal tau1 of 0.4us is used.</p>
-</dd></dl>
-
 </section>
 </section>
 </section>
@@ -760,7 +693,6 @@ If the optimal tau2 for 5pDEER is less than 1.5us, the function will calculate t
 <li><a class="reference internal" href="#autodeer.DEER_analysis.functional"><code class="docutils literal notranslate"><span class="pre">functional()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.DEER_analysis.optimise_pulses"><code class="docutils literal notranslate"><span class="pre">optimise_pulses()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.DEER_analysis.plot_overlap"><code class="docutils literal notranslate"><span class="pre">plot_overlap()</span></code></a></li>
-<li><a class="reference internal" href="#autodeer.DEER_analysis.calc_deer_settings"><code class="docutils literal notranslate"><span class="pre">calc_deer_settings()</span></code></a></li>
 </ul>
 </li>
 </ul>

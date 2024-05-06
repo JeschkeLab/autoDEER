@@ -89,10 +89,6 @@ Classes
 
       
 
-   .. py:attribute:: Relax2D_result
-
-      
-
    .. py:attribute:: T2_result
 
       
@@ -247,9 +243,6 @@ Classes
    .. py:method:: tune_pulses()
 
 
-   .. py:method:: _build_methods()
-
-
    .. py:method:: run()
 
 
@@ -266,9 +259,6 @@ Classes
 
 
    .. py:method:: update_gyro(gyro)
-
-
-   .. py:method:: set_2D_max_tau(max_tau)
 
 
    .. py:method:: update_deersettings(deer_settings)

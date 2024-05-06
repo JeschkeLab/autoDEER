@@ -32,7 +32,6 @@ Functions
    autodeer.hardware.dummy._simulate_T2
    autodeer.hardware.dummy._similate_respro
    autodeer.hardware.dummy._simulate_reptimescan
-   autodeer.hardware.dummy._simulate_2D_relax
    autodeer.hardware.dummy._gen_ESEEM
 
 
@@ -193,9 +192,6 @@ Attributes
 
 
 .. py:function:: _simulate_reptimescan(sequence)
-
-
-.. py:function:: _simulate_2D_relax(sequence)
 
 
 .. py:function:: _gen_ESEEM(t, freq, depth)
