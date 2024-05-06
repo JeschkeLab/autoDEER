@@ -176,7 +176,7 @@ class autoDEERUI(QMainWindow):
         self.queue = Queue()
 
         self.FullyAutoButton.clicked.connect(self.RunFullyAutoDEER)
-        self.AdvancedAutoButton.clicked.connect(self.RunAdvanedAutoDEER)
+        self.AdvancedAutoButton.clicked.connect(self.RunAdvancedAutoDEER)
 
         docs_url = QtCore.QUrl('https://jeschkelab.github.io/autoDEER/')
         github_url = QtCore.QUrl('https://github.com/JeschkeLab/autoDEER/')
@@ -228,15 +228,16 @@ class autoDEERUI(QMainWindow):
         light_pixmap = light_pixmap.scaledToHeight(30)
         self.Connected_Light.setPixmap(light_pixmap)
 
-    def load_folder(self):
-        file = str(QFileDialog.getExistingDirectory(self, "Select Directory",str(Path.home())))
-        self.pathLineEdit.setText(file)
-        self.current_folder = file
+    def load_folder(self,*args, folder_path=None):
+        if folder_path is None:
+            folder_path = str(QFileDialog.getExistingDirectory(self, "Select Directory",str(Path.home())))
+        self.pathLineEdit.setText(folder_path)
+        self.current_folder = folder_path
 
         setup_logs(self.current_folder)
         global main_log
         main_log = logging.getLogger('autoDEER')
-        main_log.info(f"Loading folder {file}")
+        main_log.info(f"Loading folder {self.current_folder}")
     
     def load_epr_file(self, store_location):
 
@@ -301,7 +302,7 @@ class autoDEERUI(QMainWindow):
             if model == 'Dummy':
                 from autodeer.hardware.dummy import dummyInterface
                 self.spectromterInterface = dummyInterface(filename_edit)
-                self.spectromterInterface.savefolder = self.current_folder
+                self.spectromterInterface._savefolder = self.current_folder
                 self.Bruker=False
             elif model == 'ETH_AWG':
                 from autodeer.hardware.ETH_awg import ETH_awg_interface
@@ -689,47 +690,36 @@ class autoDEERUI(QMainWindow):
         self.relax_ax = axs
 
     def refresh_relax_figure(self):
-        self.relax_ax.cla()
-
-        fig = self.relax_canvas.figure
-        axs = self.relax_ax
-
-        relax1D_results = []
-        if 'relax' in self.current_results:
-            relax1D_results.append(self.current_results['relax'])
-        if 'T2_relax' in self.current_results:
-            relax1D_results.append(self.current_results['T2_relax'])
-
-        ad.plot_1Drelax(*relax1D_results,axs=axs,fig=fig,cmap=ad.primary_colors)
-
-        # axs.set_xlabel("Total Sequence Length ($\mu s$)")
-        # axs.set_ylabel("Signal (A. U.)")
         
-        # if 'relax' in self.current_results:
-        #     CP_results = self.current_results['relax']
-        #     CP_data = CP_results.data
-        #     CP_data /= CP_data.max()
-        #     if hasattr(CP_results, "fit_result"):
-        #         axs.plot(CP_results.axis*4, CP_data, '.', label='CP', color='C1', ms=6)
-        #         axs.plot(CP_results.axis*4, CP_results.func(
-        #             CP_results.axis, *CP_results.fit_result[0]), label='CP-fit', color='C1', lw=2)
-        #     else:
-        #         axs.plot(CP_results.axis*4, CP_data, label='data', color='C1')
-        
-        # if 'T2_relax' in self.current_results:
-        #     T2_results = self.current_results['T2_relax']
-        #     T2_data = T2_results.data
-        #     T2_data /= T2_data.max()
-        #     if hasattr(T2_results, "fit_result"):
-        #         axs.plot(T2_results.axis*2, T2_data, '.', label='T2', color='C2', ms=6)
-        #         axs.plot(T2_results.axis*2, T2_results.func(
-        #             T2_results.axis, *T2_results.fit_result[0]), label='T2-fit', color='C2', lw=2)
-        #     else:
-        #         axs.plot(T2_results.axis*2, T2_data, label='data', color='C2')
-            
-        # axs.legend()
+
+        if 'relax2D' in self.current_results:
+            self.relax_ax[0].cla()
+            self.relax_ax[1].cla()
+            fig, axs  = plt.subplots(2,1,figsize=(12.5, 6.28),layout='constrained',height_ratios=[2,1])
+            relax_canvas = FigureCanvas(fig)
+            self.relax_canvas.figure.clear()
+            self.relax_v_left.replaceWidget(self.relax_canvas,relax_canvas)
+            self.relax_canvas = relax_canvas
+            self.relax_ax = axs
+
+            self.current_results['relax2D'].plot2D(axs=self.relax_ax[0],fig=fig)
+            self.current_results['relax2D'].plot1D(axs=self.relax_ax[1],fig=fig)        
+        else:
+            self.relax_ax.cla()
+            fig = self.relax_canvas.figure
+            axs = self.relax_ax
+            relax1D_results = []
+            if 'relax' in self.current_results:
+                relax1D_results.append(self.current_results['relax'])
+            if 'T2_relax' in self.current_results:
+                relax1D_results.append(self.current_results['T2_relax'])
+
+            ad.plot_1Drelax(*relax1D_results,axs=axs,fig=fig,cmap=ad.primary_colors)
+
         self.relax_canvas.draw()
 
+
+        
     def refresh_relax(self, fitresult):
         self.current_results['relax'] = fitresult
 
@@ -747,29 +737,33 @@ class autoDEERUI(QMainWindow):
     
         self.current_results['relax'].tau2hrs = tau2hrs
 
+        if 'relax2D' in self.current_results:
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR,self.waveform_precision)
+        else:
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR,self.waveform_precision)
         
         
-        if (tau2hrs < 1.5) and (tau4hrs > 1.5):
-            self.raise_warning(f"2hr dipolar evo too short. Using 4hr number")
-            self.deer_settings['tau1'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
-            self.deer_settings['tau2'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
-            self.deer_settings['ExpType'] = '5pDEER'
-            self.aim_time = 4
+        # if (tau2hrs < 1.5) and (tau4hrs > 1.5):
+        #     self.raise_warning(f"2hr dipolar evo too short. Using 4hr number")
+        #     self.deer_settings['tau1'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
+        #     self.deer_settings['tau2'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
+        #     self.deer_settings['ExpType'] = '5pDEER'
+        #     self.aim_time = 4
         
-        elif (tau2hrs < 1.5) and (tau4hrs < 1.5):
-            self.current_results['relax'].tau2hrs = 2.5
-            self.raise_warning(f"2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time")
-            self.deer_settings['tau1'] = ad.round_step(0.4,self.waveform_precision/1e3)
-            self.deer_settings['tau2'] = ad.round_step(2.5,self.waveform_precision/1e3)
-            self.deer_settings['ExpType'] = '4pDEER'
-            self.raise_warning(f"2hr dipolar evo {tau2hrs:.2f} us, using 4pDEER")
+        # elif (tau2hrs < 1.5) and (tau4hrs < 1.5):
+        #     self.current_results['relax'].tau2hrs = 2.5
+        #     self.raise_warning(f"2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time")
+        #     self.deer_settings['tau1'] = ad.round_step(0.4,self.waveform_precision/1e3)
+        #     self.deer_settings['tau2'] = ad.round_step(2.5,self.waveform_precision/1e3)
+        #     self.deer_settings['ExpType'] = '4pDEER'
+        #     self.raise_warning(f"2hr dipolar evo {tau2hrs:.2f} us, using 4pDEER")
 
-        else:  
-            self.deer_settings['tau1'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
-            self.deer_settings['tau2'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
-            self.deer_settings['ExpType'] = '5pDEER'
+        # else:  
+        #     self.deer_settings['tau1'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
+        #     self.deer_settings['tau2'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
+        #     self.deer_settings['ExpType'] = '5pDEER'
             
-        self.deer_settings['tau3'] = 0.3
+        # self.deer_settings['tau3'] = 0.3
         self.deer_settings['dt'] = 16
         self.worker.update_deersettings(
             self.deer_settings
@@ -785,10 +779,45 @@ class autoDEERUI(QMainWindow):
         self.Tab_widget.setCurrentIndex(3)
         
         self.check_CP(fitresult)
+        
+        if self.worker is not None:
+            CP_decay = fitresult.func(fitresult.axis, *fitresult.fit_result[0]).data
+            # Find the index when CP_decay is below 0.05
+            CP_decay = CP_decay/CP_decay[0]
+            CP_decay_bool = CP_decay < 0.05
+            CP_decay_idx = np.where(CP_decay_bool)[0]
+            if len(CP_decay_idx) == 0:
+                CP_decay_idx = len(CP_decay)
+            else:
+                CP_decay_idx = CP_decay_idx[0]
+            max_tau = fitresult.axis[CP_decay_idx]
+            max_tau = ad.round_step(max_tau,1)
+            main_log.info(f"Max tau {max_tau:.2f} us")
+            self.worker.set_2D_max_tau(max_tau)
 
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
+    def update_relax2D(self, dataset=None):
+        if dataset is None:
+            dataset = self.current_data['relax2D']
+        else:
+            self.current_data['relax2D'] = dataset
+
+        # Since there is no fitting in the 2D data analysis it can be run in the main thread
+
+        relax2DAnalysis = ad.RefocusedEcho2DAnalysis(dataset)
+        self.current_results['relax2D'] = relax2DAnalysis
+
+        self.refresh_relax_figure()
+
+        self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR,self.waveform_precision)
+        self.deer_settings['dt'] = 16
+        self.worker.update_deersettings(self.deer_settings)
+
+        if self.waitCondition is not None: # Wake up the runner thread
+            self.waitCondition.wakeAll()
+
     
     def update_T2(self,dataset=None):
         if dataset is None:
@@ -810,10 +839,7 @@ class autoDEERUI(QMainWindow):
         else:
             self.deer_settings['ESEEM'] = None
             main_log.info(f"No ESEEM detected")
-        
-
         # Since the T2 values are not used for anything there is no need pausing the spectrometer    
-        
 
         T2_worker = Worker(T2_process, dataset)
         T2_worker.signals.result.connect(self.refresh_T2)
@@ -837,7 +863,7 @@ class autoDEERUI(QMainWindow):
                 self.worker.run_T2_relax(dt=new_dt)
 
     def check_CP(self, fitresult):
-        # Check if the T2 measurment is too short. 
+        # Check if the CP measurment is too short. 
 
         test_result = fitresult.check_decay()
 
@@ -858,9 +884,9 @@ class autoDEERUI(QMainWindow):
 
         
     def advanced_mode_inputs(self):
-        self.Exp_types.addItems(['5pDEER','4pDEER','3pDEER','nDEER'])
-        self.ExcPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
-        self.RefPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
+        self.Exp_types.addItems(['5pDEER','4pDEER','Ref2D'])
+        self.ExcPulseSelect.addItems(['Auto', 'Rectangular','Gauss'])
+        self.RefPulseSelect.addItems(['Auto', 'Rectangular', 'Gauss'])
         self.PumpPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
 
     def update_quickdeer(self, dataset=None):
@@ -943,7 +969,7 @@ class autoDEERUI(QMainWindow):
         QMessageBox.about(self,'Warning!', msg)
         main_log.warning(msg)
 
-    def RunFullyAutoDEER(self):
+    def RunAutoDEER(self, advanced=False):
 
         if self.spectromterInterface is None or self.connected is False:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
@@ -962,6 +988,14 @@ class autoDEERUI(QMainWindow):
 
         self.userinput = userinput
 
+        if advanced:
+            self.deer_settings['ExpType'] = self.Exp_types.currentText()
+            self.deer_settings['tau1'] = self.Tau1Value.value()
+            self.deer_settings['tau2'] = self.Tau2Value.value()
+            self.deer_settings['tau3'] = self.Tau3Value.value()
+        else:
+            self.deer_settings = {'ExpType':'5pDEER','tau1':0,'tau2':0,'tau3':0}
+
         # Block the autoDEER buttons
         self.FullyAutoButton.setEnabled(False)
         self.AdvancedAutoButton.setEnabled(False)
@@ -976,6 +1010,8 @@ class autoDEERUI(QMainWindow):
             user_inputs=userinput, cores=self.cores )
         
         self.starttime = time.time()
+
+        self.worker.update_deersettings(self.deer_settings)
     
         self.worker.signals.status.connect(self.msgbar.setText)
         self.worker.signals.status.connect(main_log.info)
@@ -988,6 +1024,10 @@ class autoDEERUI(QMainWindow):
         self.worker.signals.relax_result.connect(lambda x: self.save_data(x,'CP_Q'))
         self.worker.signals.T2_result.connect(self.update_T2)
         self.worker.signals.T2_result.connect(lambda x: self.save_data(x,'T2'))
+
+        self.worker.signals.Relax2D_result.connect(self.update_relax2D)
+        self.worker.signals.Relax2D_result.connect(lambda x: self.save_data(x,'2D_DEC'))
+
         self.worker.signals.quickdeer_result.connect(self.update_quickdeer)
         self.worker.signals.quickdeer_result.connect(lambda x: self.save_data(x,'DEER_5P_Q_quick'))
         self.worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
@@ -995,8 +1035,6 @@ class autoDEERUI(QMainWindow):
         self.worker.signals.longdeer_result.connect(lambda x: self.save_data(x,'DEER_5P_Q_long'))
 
         self.worker.signals.longdeer_result.connect(self.update_longdeer)
-
-
         self.worker.signals.reptime_scan_result.connect(self.update_reptime)
 
         self.worker.signals.timeout.connect(self.timeout)
@@ -1012,63 +1050,12 @@ class autoDEERUI(QMainWindow):
         main_log.info(f"Starting autoDEER")
 
         return self.worker
+    
+    def RunFullyAutoDEER(self):
+        return self.RunAutoDEER(advanced=False)
 
-    def RunAdvanedAutoDEER(self):
-
-        if self.spectromterInterface is None or self.connected is False:
-            QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
-            main_log.error('Could not run autoDEER. A interface needs to be connected first!')
-            return None
-        
-        if self.current_folder is None:
-            QMessageBox.about(self,'ERORR!', 'A folder needs to be selected first!')
-            main_log.error('Could not run autoDEER. A folder needs to be selected first!')
-            return None
-
-        
-        
-        userinput = {}
-        userinput['MaxTime'] = self.MaxTime.value()
-        userinput['sample'] = self.SampleName.text()
-        userinput['Temp'] = self.TempValue.value()
-        userinput['ExpType'] = self.Exp_types.currentText()
-        userinput['tau1'] = self.Tau1Value.value()
-        userinput['tau2'] = self.Tau2Value.value()
-        userinput['tau3'] = self.Tau3Value.value()
-        userinput['ExcPulse'] = self.ExcPulseSelect.currentText()
-        userinput['RefPulse'] = self.RefPulseSelect.currentText()
-        userinput['PumpPulse'] = self.PumpPulseSelect.currentText()
-        userinput['DEER_update_func'] = self.q_DEER.refresh_deer
-
-        # Block the autoDEER buttons
-        self.FullyAutoButton.setEnabled(False)
-        self.AdvancedAutoButton.setEnabled(False)
-
-        self.waitCondition = QtCore.QWaitCondition()
-        mutex = QtCore.QMutex()
-
-
-        worker = autoDEERWorker(
-            self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
-            results=self.current_results,LO=self.LO, gyro = self.gyro,
-            user_inputs=userinput, cores=self.cores)
-        worker.signals.status.connect(self.msgbar.setText)
-        worker.signals.fsweep_result.connect(self.update_fieldsweep)
-        worker.signals.respro_result.connect(self.update_respro)
-        worker.signals.optimise_pulses.connect(self.optimise_pulses)
-        worker.signals.relax_result.connect(self.update_relax)
-        worker.signals.quickdeer_result.connect(self.update_quickdeer)
-        worker.signals.quickdeer_update.connect(self.q_DEER.refresh_deer)
-        worker.signals.longdeer_update.connect(self.longDEER.refresh_deer)
-
-        worker.signals.reptime_scan_result.connect(self.update_reptime)
-
-        worker.signals.finished.connect(lambda: self.FullyAutoButton.setEnabled(True))
-        worker.signals.finished.connect(lambda: self.AdvancedAutoButton.setEnabled(True))
-
-        self.worker = worker
-        self.threadpool.start(self.worker)
-        main_log.info(f"Starting autoDEER with user inputs")
+    def RunAdvancedAutoDEER(self):
+        return self.RunAutoDEER(advanced=True)
 
     def create_report(self):
         save_path = QFileDialog.getSaveFileName(self, 'Save File', self.current_folder, ".pdf")

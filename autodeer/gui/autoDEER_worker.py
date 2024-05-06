@@ -34,6 +34,7 @@ class autoDEERSignals(QtCore.QObject):
     respro_result = QtCore.pyqtSignal(object)
     # optimise_pulses = QtCore.pyqtSignal(object)
     relax_result = QtCore.pyqtSignal(object)
+    Relax2D_result = QtCore.pyqtSignal(object)
     T2_result = QtCore.pyqtSignal(object)
     quickdeer_result = QtCore.pyqtSignal(object)
     longdeer_result = QtCore.pyqtSignal(object)
@@ -78,6 +79,8 @@ class autoDEERWorker(QtCore.QRunnable):
         self.user_inputs = user_inputs
         self.stop_flag = False
         self.quick_deer_state = True
+
+        self.max_tau = 5
 
         if (self.project is None) or (self.project == ''):
             def savename(exp, suffix=""):
@@ -227,48 +230,22 @@ class autoDEERWorker(QtCore.QRunnable):
 
 
     def run_2D_relax(self):
-        self.signals.status.emit('Running 2D relaxation experiment')
+        self.signals.status.emit('Running 2D decoherence experiment')
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
 
-    # def run_quick_deer(self, dt=16):
-    #     if ('tau1' in self.user_inputs) and (self.user_inputs['tau1'] != 0):
-    #         self.signals.status.emit('Skipping QuickDEER')
-    #         return 'skip'
-    #     else:
-    #         self.signals.status.emit('Running QuickDEER')
-            
-    #         tau = self.results['relax'].tau2hrs
-            
-    #         LO = self.LO
-    #         gyro = self.gyro
-    #         reptime = self.reptime
-    #         deer = DEERSequence(
-    #             B=LO/gyro, LO=LO,reptime=reptime,averages=150,shots=int(15*self.noise_mode),
-    #             tau1=tau, tau2=tau, tau3=0.3, dt=dt,
-    #             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
-    #             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
-    #             )
-            
-    #         deer.five_pulse()
-    #         if self.AWG:
-    #             deer.select_pcyc("16step_5p")
-    #         else:
-    #             deer.select_pcyc("DC")
-    #         deer._estimate_time();
+        seq = RefocusedEcho2DSequence(
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(20*self.noise_mode),
+            tau=self.max_tau, pi2_pulse=self.pulses['exc_pulse'],
+            pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
 
-    #         # build criteria
-            
-
-    #         self.interface.launch(deer,savename=f"{self.samplename}_quickdeer",IFgain=2)
-    #         with threadpool_limits(limits=self.cores, user_api='blas'):
-    #             self.interface.terminate_at(total_crit,verbosity=2,test_interval=0.5)
-    #         while self.interface.isrunning():
-    #             time.sleep(self.updaterate)
-
-    #         self.signals.quickdeer_result.emit(self.interface.acquire_dataset())
-    #         self.signals.status.emit('QuickDEER experiment complete')
+        self.interface.launch(seq,savename=self.savename("2D_DEC"),IFgain=2)
+        self.interface.terminate_at(SNRCriteria(10),test_interval=0.5)
+        while self.interface.isrunning():
+            time.sleep(self.updaterate)
+        self.signals.Relax2D_result.emit(self.interface.acquire_dataset())
+        self.signals.status.emit('2D decoherence experiment complete')
     
     def run_quick_deer(self):
 
@@ -298,13 +275,20 @@ class autoDEERWorker(QtCore.QRunnable):
         if ('tau1' in self.user_inputs) and (self.user_inputs['tau1'] != 0):
             tau1 = self.user_inputs['tau1']
             tau2 = self.user_inputs['tau2']
-            tau3 = self.user_inputs['tau3']
             deertype = self.user_inputs['ExpType']
+            if deertype == '5pDEER':
+                tau3 = self.user_inputs['tau3']
+            else:
+                tau3 = None
+            
         elif self.deer_inputs != {}:
             tau1 = self.deer_inputs['tau1']
             tau2 = self.deer_inputs['tau2']
-            tau3 = self.deer_inputs['tau3']
             deertype = self.deer_inputs['ExpType']
+            if deertype == '5pDEER':
+                tau3 = self.deer_inputs['tau3']
+            else:
+                tau3 = None
             dt = self.deer_inputs['dt']
  
         else:
@@ -390,6 +374,36 @@ class autoDEERWorker(QtCore.QRunnable):
 
         return 'skip'
 
+    def _build_methods(self):
+
+        seq = self.deer_inputs['ExpType']
+
+        if (self.deer_inputs['tau1'] == 0) and (self.deer_inputs['tau2'] == 0):
+            quick_deer = True
+        else:
+            quick_deer = False
+        
+        methods = [self.run_fsweep,self.run_reptime_opt,self.run_respro,self.run_fsweep,
+                   self.tune_pulses]
+        
+        if (seq is None) or (seq == '5pDEER'):
+            methods.append(self.run_CP_relax)
+        elif (seq == '4pDEER') or (seq == 'Ref2D'):
+            methods.append(self.run_CP_relax)
+            methods.append(self.run_2D_relax)
+        
+        methods.append(self.run_T2_relax)
+
+        if seq == 'Ref2D':
+            return methods
+
+        if quick_deer:
+            methods.append(self.run_quick_deer)
+        
+        methods.append(self.run_long_deer)
+
+        return methods
+
     @QtCore.pyqtSlot()    
     def run(self):
 
@@ -397,9 +411,11 @@ class autoDEERWorker(QtCore.QRunnable):
         self.stop_flag = False
 
 
-        methods = [self.run_fsweep,self.run_reptime_opt,self.run_respro,self.run_fsweep,
-                   self.tune_pulses,self.run_CP_relax,self.run_T2_relax,self.run_quick_deer,
-                   self.run_long_deer]
+        # methods = [self.run_fsweep,self.run_reptime_opt,self.run_respro,self.run_fsweep,
+        #            self.tune_pulses,self.run_CP_relax,self.run_T2_relax,self.run_quick_deer,
+        #            self.run_long_deer]
+        
+        methods = self._build_methods()
 
         for method in methods:
             if self.stop_flag:
@@ -432,6 +448,10 @@ class autoDEERWorker(QtCore.QRunnable):
 
     def update_gyro(self,gyro):
         self.gyro = gyro
+
+    def set_2D_max_tau(self, max_tau):
+        self.max_tau = max_tau
+
     def update_deersettings(self,deer_settings):
         self.deer_inputs = deer_settings
 

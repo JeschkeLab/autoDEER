@@ -439,5 +439,81 @@ class RefocusedEcho2DAnalysis():
         axs.set_ylabel('Signal / A.U.')
 
         return fig
+    
+    def find_optimal(self,type:str,SNR_target, target_time: float, target_step, averages=None) -> float:
+        """Calculate the optimal inter pulse delay for a given total measurment time, using either 4pulse or 5pulse data.
+
+        Parameters
+        ----------
+        type : str
+            The type of data to use, either '4pDEER' or '5pDEER'
+        SNR_target : float
+            The Signal to Noise ratio target.
+        target_time : float
+            The target time in hours
+        target_step: float
+            The target step size in ns.
+        averages : int, optional
+            The total number of shots taken, by default None. If None, the
+            number of shots will be calculated from the dataset.
+
+        Returns
+        -------
+        tau1: float
+            The calculated optimal tau1 in us
+        tau2: float
+            The calculated optimal tau2 in us
+
+        Notes:
+        ------
+        The shot repetition time is assumed to be the same as for the relxaation data and is taken from the dataset.
+        """
+
+        dataset = self.dataset
+        if averages is None:
+            averages = dataset.nAvgs * dataset.shots * dataset.nPcyc
+        target_shrt = dataset.reptime * 1e-6
+
+        data = np.abs(self.data)
+        data /= np.max(data)
+
+        calc_data = data
+
+        # averages = self.seq.shots.value * self.seq.averages.value
+        self.noise = noiselevel(data)
+        data_snr = calc_data / self.noise
+        data_snr_avgs = data_snr / np.sqrt(averages)
+
+        if type == '4pDEER':
+            data_snr_avgs_tau2 = np.max(data_snr_avgs,axis=1)
+
+            # Target time
+            target_time = target_time * 3600
+            g = (target_time * target_step / target_shrt) * 1/(self.axis[1].data)
+            f = (SNR_target/data_snr_avgs_tau2)**2
+
+            tau2_idx = np.argmin(np.abs(g-f))
+            self.tau2 = self.axis[1].data[tau2_idx]
+            self.tau1 = self.axis[0].data[np.argmax(data_snr_avgs[:,tau2_idx])]
+            return self.tau1, self.tau2
+        
+        elif type == '5pDEER':
+            data_snr_avgs_CP = np.diag(data_snr_avgs)
+            target_time = target_time * 3600
+            g = (target_time * target_step / target_shrt) * 1/(self.axis[1].data)
+            f = (SNR_target/data_snr_avgs_CP)**2
+            tau2_idx = np.argmin(np.abs(g-f))
+            self.tau2 = self.axis[1].data[tau2_idx]
+            return self.tau2, self.tau2
+        
+
+    
+    def optimal_tau1(self,tau2=None,):
+
+        tau2_idx = np.argmin(np.abs(self.axis[1].data - tau2))
+        self.tau1 = self.axis[0].data[np.argmax(self.data[:,tau2_idx])]
+        return self.tau1            
+
+            
 
         

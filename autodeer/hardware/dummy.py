@@ -111,6 +111,8 @@ class dummyInterface(Interface):
             axes, data = _simulate_reptimescan(self.cur_exp)
         elif isinstance(self.cur_exp,T2RelaxationSequence):
             axes, data = _simulate_T2(self.cur_exp,self.ESEEM)
+        elif isinstance(self.cur_exp,RefocusedEcho2DSequence):
+            axes, data = _simulate_2D_relax(self.cur_exp)
         else:
             raise NotImplementedError("Sequence not implemented")
 
@@ -236,9 +238,13 @@ def _simulate_deer(sequence,exp_type=None):
 
 def _simulate_CP(sequence):
 
+    if isinstance(sequence, DEERSequence):
+        xaxis = val_in_ns(sequence.tau2)
+    elif isinstance(sequence, CarrPurcellSequence):
+        xaxis = val_in_ns(sequence.step)
 
     func = lambda x, a, b, e: a*np.exp(-b*x**e)
-    xaxis = val_in_ns(sequence.tau2)
+    
     data = func(xaxis,1,2e-6,1.8)
     data = add_phaseshift(data, 0.05)
     return xaxis, data
@@ -276,9 +282,18 @@ def _simulate_reptimescan(sequence):
     data = add_phaseshift(data, 0.05)
     return t, data
 
-# def _simulate_2D_relax(sequence):
+def _simulate_2D_relax(sequence):
+    sigma = 0.8
+    func = lambda x, y: np.exp(-((x**2 + y**2 - 1*x*y) / (2*sigma**2)))
 
-#     def func(x,y,T2):
+    xaxis = val_in_us(sequence.tau1)
+    yaxis = val_in_us(sequence.tau2)
+
+    X, Y = np.meshgrid(xaxis, yaxis)
+    data = func(X, Y)
+    data = add_phaseshift(data, 0.05)
+    return [xaxis, yaxis], data
+
         
 
 def _gen_ESEEM(t,freq,depth):

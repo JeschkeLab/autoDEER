@@ -1624,7 +1624,7 @@ class RefocusedEcho2DSequence(Sequence):
     Represents a 2D Refocused-echo Sequence. 
     """
     def __init__(self, *, B, LO, reptime, averages, shots,
-            tau, dim=100, step=50, **kwargs) -> None:
+            tau, dim=100, **kwargs) -> None:
         """Build a 2D Refocused-echo sequence using either 
         rectangular pulses or specified pulses.
 
@@ -1641,11 +1641,10 @@ class RefocusedEcho2DSequence(Sequence):
         shots : int
             The number of shots per point
         tau : int
-            The starting value in ns
+            The maximum total sequence length in us
         dim: int
             The number of points in both the X and Y axis
-        step: float
-            The step in ns for both the X and Y axis
+    
 
         Optional Parameters
         -------------------
@@ -1661,10 +1660,15 @@ class RefocusedEcho2DSequence(Sequence):
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
-        self.tau1 = Parameter(name="tau1", value=tau, dim=dim, step=step, unit="ns",
+        
+        tau_init = 400
+        dt = (tau * 1e3) / dim
+
+        self.tau1 = Parameter(name="tau1", value=tau_init, dim=dim, step=dt, unit="ns",
             description="1st interpulse delay",virtual=True)
-        self.tau2 = Parameter(name="tau2", value=tau, dim=dim, step=step, unit="ns",
+        self.tau2 = Parameter(name="tau2", value=tau_init, dim=dim, step=dt, unit="ns",
             description="2nd interpulse delay",virtual=True)
+
 
         if "pi_pulse" in kwargs:
             self.pi_pulse = kwargs["pi_pulse"]
