@@ -362,6 +362,8 @@
             <span class="n">axes</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">_simulate_reptimescan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="p">,</span><span class="n">T2RelaxationSequence</span><span class="p">):</span>
             <span class="n">axes</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">_simulate_T2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ESEEM</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="p">,</span><span class="n">RefocusedEcho2DSequence</span><span class="p">):</span>
+            <span class="n">axes</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">_simulate_2D_relax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Sequence not implemented&quot;</span><span class="p">)</span>
 
@@ -509,9 +511,13 @@
 <a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy._simulate_CP">[docs]</a>
 <span class="k">def</span> <span class="nf">_simulate_CP</span><span class="p">(</span><span class="n">sequence</span><span class="p">):</span>
 
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">DEERSequence</span><span class="p">):</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">val_in_ns</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">tau2</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">CarrPurcellSequence</span><span class="p">):</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">val_in_ns</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">step</span><span class="p">)</span>
 
     <span class="n">func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">b</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="n">e</span><span class="p">)</span>
-    <span class="n">xaxis</span> <span class="o">=</span> <span class="n">val_in_ns</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">tau2</span><span class="p">)</span>
+    
     <span class="n">data</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">xaxis</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">2e-6</span><span class="p">,</span><span class="mf">1.8</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">add_phaseshift</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">xaxis</span><span class="p">,</span> <span class="n">data</span></div>
@@ -559,9 +565,21 @@
     <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">data</span></div>
 
 
-<span class="c1"># def _simulate_2D_relax(sequence):</span>
+<div class="viewcode-block" id="_simulate_2D_relax">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy._simulate_2D_relax">[docs]</a>
+<span class="k">def</span> <span class="nf">_simulate_2D_relax</span><span class="p">(</span><span class="n">sequence</span><span class="p">):</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.8</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span>
 
-<span class="c1">#     def func(x,y,T2):</span>
+    <span class="n">xaxis</span> <span class="o">=</span> <span class="n">val_in_us</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">tau1</span><span class="p">)</span>
+    <span class="n">yaxis</span> <span class="o">=</span> <span class="n">val_in_us</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">tau2</span><span class="p">)</span>
+
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">yaxis</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">add_phaseshift</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">yaxis</span><span class="p">],</span> <span class="n">data</span></div>
+
+
         
 
 <div class="viewcode-block" id="_gen_ESEEM">

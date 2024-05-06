@@ -1966,7 +1966,7 @@
 <span class="sd">    Represents a 2D Refocused-echo Sequence. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="p">,</span> <span class="n">averages</span><span class="p">,</span> <span class="n">shots</span><span class="p">,</span>
-            <span class="n">tau</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tau</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a 2D Refocused-echo sequence using either </span>
 <span class="sd">        rectangular pulses or specified pulses.</span>
 
@@ -1983,11 +1983,10 @@
 <span class="sd">        shots : int</span>
 <span class="sd">            The number of shots per point</span>
 <span class="sd">        tau : int</span>
-<span class="sd">            The starting value in ns</span>
+<span class="sd">            The maximum total sequence length in us</span>
 <span class="sd">        dim: int</span>
 <span class="sd">            The number of points in both the X and Y axis</span>
-<span class="sd">        step: float</span>
-<span class="sd">            The step in ns for both the X and Y axis</span>
+<span class="sd">    </span>
 
 <span class="sd">        Optional Parameters</span>
 <span class="sd">        -------------------</span>
@@ -2003,10 +2002,15 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="n">averages</span><span class="p">,</span>
             <span class="n">shots</span><span class="o">=</span><span class="n">shots</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tau1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau1&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span>
+        
+        <span class="n">tau_init</span> <span class="o">=</span> <span class="mi">400</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span> <span class="o">/</span> <span class="n">dim</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau1&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau_init</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">&quot;1st interpulse delay&quot;</span><span class="p">,</span><span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau2&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau2&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau_init</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">&quot;2nd interpulse delay&quot;</span><span class="p">,</span><span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
 
         <span class="k">if</span> <span class="s2">&quot;pi_pulse&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pi_pulse</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pi_pulse&quot;</span><span class="p">]</span>
