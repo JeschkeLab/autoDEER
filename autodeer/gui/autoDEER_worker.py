@@ -241,7 +241,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
 
         self.interface.launch(seq,savename=self.savename("2D_DEC"),IFgain=2)
-        self.interface.terminate_at(SNRCriteria(10),test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(30),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.Relax2D_result.emit(self.interface.acquire_dataset())
@@ -388,11 +388,11 @@ class autoDEERWorker(QtCore.QRunnable):
         
         if (seq is None) or (seq == '5pDEER'):
             methods.append(self.run_CP_relax)
+            methods.append(self.run_T2_relax)
         elif (seq == '4pDEER') or (seq == 'Ref2D'):
             methods.append(self.run_CP_relax)
+            methods.append(self.run_T2_relax)
             methods.append(self.run_2D_relax)
-        
-        methods.append(self.run_T2_relax)
 
         if seq == 'Ref2D':
             return methods

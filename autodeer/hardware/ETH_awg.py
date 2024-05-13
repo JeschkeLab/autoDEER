@@ -105,7 +105,7 @@ class ETH_awg_interface(Interface):
         if self.bg_data is None:
             data = self.acquire_dataset_from_matlab(verbosity=verbosity)
         else:
-            data = create_dataset_from_sequence(self.bg_data, self.cur_exp)
+            data = self.bg_data
 
         return super().acquire_dataset(data)
     
@@ -254,10 +254,11 @@ class ETH_awg_interface(Interface):
                 for item in p.dim:
                     dim.append(item)
         self.cur_exp = sequence
+        init_data = np.zeros(dim,dtype=np.complex128)
+        self.bg_data = create_dataset_from_sequence(init_data,self.cur_exp,extra_params={'nAvgs':0})
+        
         self.stop_flag = threading.Event()
         self.bg_thread = threading.Thread(target=bg_thread,args=[self,sequence,savename,IFgain,axID,self.stop_flag])
-        self.bg_data = np.zeros(dim,dtype=np.complex128)
-
         self.bg_thread.start()
         log.debug('Background thread starting')
 
@@ -318,7 +319,7 @@ class ETH_awg_interface(Interface):
         while self.isrunning():
             time.sleep(10)
         dataset = self.acquire_dataset()
-        dataset.epr.correctphase
+        dataset = dataset.epr.correctphase
 
         data = np.abs(dataset.data)
         scale = np.around(dataset.pulse0_scale[data.argmax()].data,2)
@@ -467,7 +468,7 @@ class ETH_awg_interface(Interface):
             while self.isrunning():
                 time.sleep(10)
             dataset = self.acquire_dataset()
-            dataset.epr.correctphase
+            dataset = dataset.epr.correctphase
             data = dataset.data
             axis = dataset.pulse0_scale
             # data = correctphase(dataset.data)
@@ -810,7 +811,7 @@ class ETH_awg_interface(Interface):
             self.engine.dig_interface('terminate', nargout=0)
             self.stop_flag.set()
             self.bg_thread = None
-            self.bg_data = None
+            
         pass
 
 
@@ -888,4 +889,5 @@ def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
         
         if stop_flag.is_set():
             break
-        interface.bg_data += single_scan_data
+        interface.bg_data.data += single_scan_data
+        interface.bg_data.attrs['nAvgs'] = iavg+1

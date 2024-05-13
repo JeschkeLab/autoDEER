@@ -691,10 +691,15 @@ class autoDEERUI(QMainWindow):
 
     def refresh_relax_figure(self):
         
-
-        if 'relax2D' in self.current_results:
+        if isinstance(self.relax_ax, np.ndarray):
             self.relax_ax[0].cla()
             self.relax_ax[1].cla()
+        else:
+            self.relax_ax.cla()
+
+
+        if 'relax2D' in self.current_results:
+            
             fig, axs  = plt.subplots(2,1,figsize=(12.5, 6.28),layout='constrained',height_ratios=[2,1])
             relax_canvas = FigureCanvas(fig)
             self.relax_canvas.figure.clear()
@@ -705,7 +710,6 @@ class autoDEERUI(QMainWindow):
             self.current_results['relax2D'].plot2D(axs=self.relax_ax[0],fig=fig)
             self.current_results['relax2D'].plot1D(axs=self.relax_ax[1],fig=fig)        
         else:
-            self.relax_ax.cla()
             fig = self.relax_canvas.figure
             axs = self.relax_ax
             relax1D_results = []

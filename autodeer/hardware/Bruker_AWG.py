@@ -253,7 +253,7 @@ class BrukerAWG(Interface):
         while self.isrunning():
             time.sleep(10)
         dataset = self.acquire_dataset()
-        dataset.epr.correctphase
+        dataset = dataset.epr.correctphase
 
         data = np.abs(dataset.data)
         scale = np.around(dataset.pulse0_scale[data.argmax()].data,2)
@@ -358,7 +358,7 @@ class BrukerAWG(Interface):
             while self.isrunning():
                 time.sleep(10)
             dataset = self.acquire_dataset()
-            dataset.epr.correctphase
+            dataset = dataset.epr.correctphase
             data = dataset.data
             axis = dataset.pulse0_scale
             # data = correctphase(dataset.data)

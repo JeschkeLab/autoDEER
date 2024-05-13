@@ -32,7 +32,7 @@ class CarrPurcellAnalysis():
         else:
             self.axis = dataset['X']
         
-        dataset.epr.correctphasefull
+        dataset = dataset.epr.correctphasefull
         self.data = dataset.data
         self.dataset = dataset
         # if sequence is None and hasattr(dataset,'sequence'):
@@ -362,7 +362,7 @@ class RefocusedEcho2DAnalysis():
             self.axis.append(dataset['Xt'])
             self.axis.append(dataset['Yt'])
         
-        dataset.epr.correctphasefull
+        dataset = dataset.epr.correctphasefull
         self.data = dataset.data
         self.dataset = dataset
 
