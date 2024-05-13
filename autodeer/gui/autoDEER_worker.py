@@ -161,7 +161,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
         RPseq = ResonatorProfileSequence(
             B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(50*self.noise_mode),
-            pi2_pulse=p90, pi_pulse=p180,
+            pi2_pulse=p90, pi_pulse=p180,fwidth=0.15
         )
 
         self.interface.launch(RPseq,savename=self.savename("ResPro"),IFgain=2)
