@@ -166,7 +166,6 @@ class EPRAccessor:
     def __init__(self, xarray_obj):
         self._obj = xarray_obj
 
-    @property
     def save(self, filename,type='netCDF'):
 
         if type == 'netCDF':
