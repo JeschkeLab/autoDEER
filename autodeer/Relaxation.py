@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from autodeer.sequences import Sequence
 import deerlab as dl
+from scipy.interpolate import SmoothBivariateSpline
 # ===========================================================================
 
 
@@ -365,8 +366,22 @@ class RefocusedEcho2DAnalysis():
         dataset.epr.correctphasefull
         self.data = dataset.data
         self.dataset = dataset
+        
 
-    def plot2D(self, contour=True, norm = 'Normal', axs=None, fig=None):
+    def _smooth(self,*args,**kwargs):
+        train_x = self.axis[0].data
+        train_y = self.axis[1].data
+        train_z = self.data.real
+        train_x, train_y = np.meshgrid(train_x, train_y)
+        train_x = train_x.flatten()
+        train_y = train_y.flatten()
+        train_z = train_z.flatten()
+
+        self.spline = SmoothBivariateSpline(train_x, train_y, train_z,*args,**kwargs)
+        self.data_smooth = self.spline(train_x, train_y,grid=False).reshape(self.data.shape)
+        return self.data_smooth
+
+    def plot2D(self, contour=True,smooth=False, norm = 'Normal', axs=None, fig=None):
         """
         Create a 2D plot of the 2D relaxation data.
 
@@ -382,8 +397,13 @@ class RefocusedEcho2DAnalysis():
             The figure to plot to, by default None
         
         """
+        if smooth is True:
+            if not hasattr(self,'data_smooth'):
+                self._smooth()
+            data = self.data_smooth
+        else:
+            data = self.data.real
 
-        data = self.data.real
         if norm == 'Normal':
             data = data/np.max(data)
         elif norm == 'tau2':
@@ -396,6 +416,7 @@ class RefocusedEcho2DAnalysis():
 
         cmap = cm.get_cmap('Purples',lut=None)
         cmap_contour = cm.get_cmap('Greys_r',lut=None)
+
 
         axs.pcolormesh(self.axis[0],self.axis[1],data,cmap=cmap)
         if contour is True:
@@ -426,7 +447,9 @@ class RefocusedEcho2DAnalysis():
         elif axs is None:
             axs = fig.subplots(1,1)
 
-        data = self.data.real
+        if not hasattr(self,'data_smooth'):
+                self._smooth()
+        data = self.data_smooth
         data /= np.max(data)
 
         optimal_4p = np.argmax(data,axis=1)
@@ -474,7 +497,10 @@ class RefocusedEcho2DAnalysis():
             averages = dataset.nAvgs * dataset.shots * dataset.nPcyc
         target_shrt = dataset.reptime * 1e-6
 
-        data = np.abs(self.data)
+        if not hasattr(self,'data_smooth'):
+                self._smooth()
+        data = self.data_smooth
+        # data = np.abs(self.data)
         data /= np.max(data)
 
         calc_data = data
@@ -509,9 +535,11 @@ class RefocusedEcho2DAnalysis():
 
     
     def optimal_tau1(self,tau2=None,):
-
+        if not hasattr(self,'data_smooth'):
+                self._smooth()
+        data = self.data_smooth
         tau2_idx = np.argmin(np.abs(self.axis[1].data - tau2))
-        self.tau1 = self.axis[0].data[np.argmax(self.data[:,tau2_idx])]
+        self.tau1 = self.axis[0].data[np.argmax(data[:,tau2_idx])]
         return self.tau1            
 
             
