@@ -152,7 +152,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     if exp_type == '4pDEER':
         pathways = [1,2,3]
     elif exp_type == '5pDEER':
-        pathways = [1,2,3,4,5]
+        pathways = [1,5]
     elif exp_type == '3pDEER':
         pathways = [1,2]
     else:

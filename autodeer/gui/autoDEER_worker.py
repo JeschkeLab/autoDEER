@@ -200,11 +200,12 @@ class autoDEERWorker(QtCore.QRunnable):
             relax.select_pcyc("16step_5p")
         else:
             relax.select_pcyc("DC")
+            relax.shots.value *= 8 
         relax._estimate_time();
         relax.pulses[1].scale.value = 0
         relax.pulses[3].scale.value = 0
         self.interface.launch(relax,savename=self.savename("CP_Q"),IFgain=2)
-        self.interface.terminate_at(SNRCriteria(20),test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(30),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.relax_result.emit(self.interface.acquire_dataset())
@@ -326,6 +327,7 @@ class autoDEERWorker(QtCore.QRunnable):
         
         if not self.AWG:
             deer.select_pcyc('DC')
+            deer.shots.value *= 8 
         elif deertype == '5pDEER':
             deer.select_pcyc("16step_5p")
         elif deertype == '4pDEER':
