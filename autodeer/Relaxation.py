@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from autodeer.sequences import Sequence
 import deerlab as dl
-from scipy.interpolate import SmoothBivariateSpline
+from scipy.linalg import svd
 # ===========================================================================
 
 
@@ -368,17 +368,27 @@ class RefocusedEcho2DAnalysis():
         self.dataset = dataset
         
 
-    def _smooth(self,*args,**kwargs):
-        train_x = self.axis[0].data
-        train_y = self.axis[1].data
-        train_z = self.data.real
-        train_x, train_y = np.meshgrid(train_x, train_y)
-        train_x = train_x.flatten()
-        train_y = train_y.flatten()
-        train_z = train_z.flatten()
+    def _smooth(self,elements=3):
+        """
+        Used SVD to smooth the 2D data.
 
-        self.spline = SmoothBivariateSpline(train_x, train_y, train_z,*args,**kwargs)
-        self.data_smooth = self.spline(train_x, train_y,grid=False).reshape(self.data.shape)
+        Parameters
+        ----------
+        elements : int, optional
+            The number of elements to use in the smoothing, by default 3
+        
+        Returns
+        -------
+        np.ndarray
+            The smoothed data.
+        """
+
+        U,E,V = svd(self.data.real)
+        E_mod = E.copy()
+        E_mod[elements:] = 0
+        mod_data = U @ np.diag(E_mod) @ V
+        self.data_smooth = mod_data
+
         return self.data_smooth
 
     def plot2D(self, contour=True,smooth=False, norm = 'Normal', axs=None, fig=None):
