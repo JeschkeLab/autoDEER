@@ -152,6 +152,10 @@ class ETH_awg_interface(Interface):
                     data = uwb_eval_match(Matfile, exp,verbosity=verbosity,filter_type='cheby2',filter_width=0.01)
                 else:
                     data = uwb_eval_match(Matfile, exp,verbosity=verbosity)
+
+                if np.all(data.data == 0+0j):
+                    time.sleep(10)
+                    continue
             except OSError:
                 time.sleep(10)
             except IndexError:
@@ -880,7 +884,7 @@ def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
             while bool(interface.engine.dig_interface('savenow')):
                 if stop_flag.is_set():
                     break
-                time.sleep(1)
+                time.sleep(10)
 
             if reduced:
                 single_scan_data = interface.acquire_dataset_from_matlab(cur_exp=tmp_seq).data
