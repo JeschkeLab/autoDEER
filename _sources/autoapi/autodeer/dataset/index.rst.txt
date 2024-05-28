@@ -48,9 +48,6 @@ Functions
 .. py:class:: EPRAccessor(xarray_obj)
 
 
-   .. py:property:: save
-
-
    .. py:property:: correctphase
 
 
@@ -67,6 +64,9 @@ Functions
 
 
    .. py:property:: sequence
+
+
+   .. py:method:: save(filename, type='netCDF')
 
 
 

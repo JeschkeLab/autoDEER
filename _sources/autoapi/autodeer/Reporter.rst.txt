@@ -1,0 +1,56 @@
+.. py:class:: Reporter(filepath, pagesize='A4')
+
+
+   .. py:method:: header(canvas, doc)
+
+
+   .. py:method:: footer(canvas, doc)
+
+
+   .. py:method:: _build()
+
+
+   .. py:method:: add_title(key, title)
+
+
+   .. py:method:: add_new_section(key, title)
+
+
+   .. py:method:: add_text(key, text, title=None)
+
+
+   .. py:method:: add_code_block(key, code, title=None)
+
+
+   .. py:method:: add_figure(key, figure, title=None)
+
+
+   .. py:method:: add_space(key, height=5)
+
+
+   .. py:method:: add_page_break(key)
+
+
+   .. py:method:: add_table(key, lists)
+
+      
+      Generates a table as a reportlab flowable from a list of lists
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

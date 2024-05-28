@@ -1,0 +1,49 @@
+.. py:class:: ELDORtune(api, d0=700, ps_length=16, srt=6000000.0)
+
+
+   
+
+   Tuning incoherent ELDOR channel for optimal power using nutation 
+   experiments
+
+
+   :Parameters:
+
+       **api** : XeprAPILink
+           The spectrometer API object
+
+       **d0** : int, optional
+           The approximate position of d0, this should be lower than ideal,
+            by default 700
+
+       **ps_length** : int, optional
+           The length of the pi/2 pulse, by default 16
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: _setup_exp(tau1=400, tau2=400)
+
+
+   .. py:method:: _get_exp()
+
+
+   .. py:method:: find_min(dataset)
+
+
+   .. py:method:: tune(target)
+
+

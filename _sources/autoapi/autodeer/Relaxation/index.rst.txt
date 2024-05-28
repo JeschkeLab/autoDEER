@@ -277,7 +277,7 @@ Attributes
        !! processed by numpydoc !!
 
 .. py:data:: cmap
-   :value: ['#D95B6F', '#42A399']
+   :value: "['#D95B6F', '#42A399']"
 
    
 
@@ -349,7 +349,38 @@ Attributes
    ..
        !! processed by numpydoc !!
 
-   .. py:method:: plot2D(contour=True, norm='Normal', axs=None, fig=None)
+   .. py:method:: _smooth(elements=3)
+
+      
+      Used SVD to smooth the 2D data.
+
+
+      :Parameters:
+
+          **elements** : int, optional
+              The number of elements to use in the smoothing, by default 3
+
+      :Returns:
+
+          np.ndarray
+              The smoothed data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: plot2D(contour=True, smooth=False, norm='Normal', axs=None, fig=None)
 
       
       Create a 2D plot of the 2D relaxation data.

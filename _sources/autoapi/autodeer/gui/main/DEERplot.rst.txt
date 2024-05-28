@@ -1,0 +1,35 @@
+.. py:class:: DEERplot(parent=None)
+
+
+   Bases: :py:obj:`PyQt6.QtWidgets.QWidget`
+
+   .. py:method:: toolbar()
+
+
+   .. py:method:: setup_inputs()
+
+
+   .. py:method:: update_inputs_from_dataset()
+
+
+   .. py:method:: clearLayout(layout)
+
+
+   .. py:method:: update_analysis_table()
+
+
+   .. py:method:: update_fit_result()
+
+
+   .. py:method:: create_figure()
+
+
+   .. py:method:: update_figure()
+
+
+   .. py:method:: process_deeranalysis(wait_condition=None, update_func=None)
+
+
+   .. py:method:: refresh_deer(fitresult, wait_condition=None, update_func=None)
+
+

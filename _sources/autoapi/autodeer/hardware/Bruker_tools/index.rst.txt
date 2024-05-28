@@ -127,17 +127,17 @@ Attributes
 
 
 .. py:data:: possible_delays
-   :value: ['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd10', 'd11', 'd12', 'd13', 'd14', 'd15',...
+   :value: "['d1', 'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd10', 'd11', 'd12', 'd13', 'd14', 'd15',..."
 
    
 
 .. py:data:: possible_vars
-   :value: ['a', 'b', 'c', 'e']
+   :value: "['a', 'b', 'c', 'e']"
 
    
 
 .. py:data:: possible_pulses
-   :value: ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10']
+   :value: "['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10']"
 
    
 

@@ -1,0 +1,41 @@
+.. py:class:: TimeCriteria(name, end_time, description = '', **kwargs)
+
+
+   Bases: :py:obj:`Criteria`
+
+   A class for defining criteria for terminating experiments. This should
+   only be subclassed and not used directly.
+
+
+   Criteria testing for a specific finishing time. The finishing time 
+   is given as absolute time in the locale of the computer, it is *not* 
+   how the long the measurment continues for. 
+
+
+   :Parameters:
+
+       **name** : str
+           _description_
+
+       **end_time** : float
+           Finishing time in seconds since epoch
+
+       **description** : str, optional
+           _description_, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

@@ -1,0 +1,158 @@
+.. py:class:: autoDEERWorker(interface, wait, mutex, pulses, results, LO, gyro, AWG=True, user_inputs = None, *args, **kwargs)
+
+
+   Bases: :py:obj:`PyQt6.QtCore.QRunnable`
+
+   
+   Worker thread
+
+   Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+   :param callback: The function callback to run on this worker thre Supplied args and
+                    kwargs will be passed through to the runner.
+   :type callback: function
+   :param args: Arguments to pass to the callback function
+   :param kwargs: Keywords to pass to the callback function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+   .. py:method:: pause_and_wait()
+
+
+   .. py:method:: run_fsweep()
+
+      
+      Initialise the runner function with passed args, kwargs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: run_respro()
+
+      
+      Initialise the runner function for resonator profile.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: run_CP_relax(dt=200)
+
+      
+      Initialise the runner function for relaxation. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: run_T2_relax(dt=60)
+
+
+   .. py:method:: run_2D_relax()
+
+
+   .. py:method:: run_quick_deer()
+
+
+   .. py:method:: run_long_deer()
+
+
+   .. py:method:: run_deer(end_criteria, signal, dt=16, shot=50, averages=1000)
+
+
+   .. py:method:: run_reptime_opt()
+
+
+   .. py:method:: tune_pulses()
+
+
+   .. py:method:: _build_methods()
+
+
+   .. py:method:: run()
+
+
+   .. py:method:: new_data(data)
+
+
+   .. py:method:: new_pulses(pulses)
+
+
+   .. py:method:: update_LO(LO)
+
+
+   .. py:method:: update_reptime(reptime)
+
+
+   .. py:method:: update_gyro(gyro)
+
+
+   .. py:method:: set_2D_max_tau(max_tau)
+
+
+   .. py:method:: update_deersettings(deer_settings)
+
+
+   .. py:method:: stop()
+
+
+   .. py:method:: set_noise_mode(level)
+
+

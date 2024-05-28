@@ -1,0 +1,103 @@
+.. py:class:: PulseProfile(api, d0=700, ps_length=16, srt=4000000.0)
+
+
+   
+
+   Tuning incoherent ELDOR channel for optimal power using nutation 
+   experiments
+
+
+   :Parameters:
+
+       **api** : XeprAPILink
+           The spectrometr API object
+
+       **d0** : int, optional
+           The approximate position of d0, this should be lower than ideal,
+            by default 700
+
+       **ps_length** : int, optional
+           The length of the pi/2 pulse, by default 16
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: _setup_exp(tau=400)
+
+      
+      Setup the pulse profile experiment. 
+
+
+      :Parameters:
+
+          **tau** : int, optional
+              The seperation between :math:'\pi/2' and :math:'pi' in the Hahn 
+              echo, by default 400
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _freq_sweep(nu, step, gyro)
+
+      
+      Run the frequency sweep for a pulse profile. 
+
+
+      :Parameters:
+
+          **nu** : list
+              A list detailing the starting and ending frequency,
+              [nu_init, nu_final]
+
+          **step** : float
+              The frequency step, given in GHz
+
+          **gyro** : float
+              The gyromagnetic ratio in G/GHz. 
+
+      :Returns:
+
+          _type_
+              _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

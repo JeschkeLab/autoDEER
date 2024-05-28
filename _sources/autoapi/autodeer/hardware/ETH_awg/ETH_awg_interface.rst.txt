@@ -1,0 +1,367 @@
+.. py:class:: ETH_awg_interface(awg_freq=1.5, dig_rate=2)
+
+
+   Bases: :py:obj:`autodeer.classes.Interface`
+
+   Represents the interface for connecting to Andrin Doll style spectrometers.
+
+
+   An interface for connecting to a Andrin Doll style spectrometer,
+   commonly in use at ETH Zürich.
+
+
+   :Parameters:
+
+       **awg_freq** : float
+           The normal operating AWG frequency. 
+           Sequence.LO = AWG.LO + AWG.awg_freq 
+
+       **dig_rate** : float
+           The speed of the digitser in GSa/s
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:property:: savefolder
+
+
+   .. py:method:: connect(session=None)
+
+      
+      Connect to a running matlab session. If more than one session has 
+      been started this will choose the first one. It is recomended that only
+      one session is open at one time, or that the engine is started with a
+      known name.
+
+
+      :Parameters:
+
+          **session** : str, optional
+              The string denoting a specific session to connect to
+              , by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: acquire_dataset(verbosity=0)
+
+      
+      Acquires the dataset.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: acquire_dataset_from_matlab(verbosity=0, **kwargs)
+
+      
+      Acquire and return the current or most recent dataset.
+
+
+
+      :Returns:
+
+          dict
+              The dataset
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: launch(sequence, savename, IFgain = 0)
+
+      
+      Launch a sequence on the spectrometer.
+
+
+      :Parameters:
+
+          **sequence** : Sequence
+              The pulse sequence to launched.
+
+          **savename** : str
+              The save name for the file.
+
+          **IFgain** : int
+              The IF gain, either [0,1,2], default 0.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: launch_normal(sequence, savename, IFgain = 0, reset_cur_exp=True)
+
+
+   .. py:method:: launch_long(sequence, savename, IFgain = 0, axID=-1)
+
+      
+      Launch a sequence on the spectrometer that is too long for a single file.
+      This is to get around the issues with the sequence table by running a background loop
+      that takes control. 
+
+      **current issues**:
+      - uses some bruker tools functions
+      - only works for a single averages
+      - creates many extra files
+
+      :Parameters:
+
+          **sequence** : Sequence
+              The pulse sequence to launched.
+
+          **savename** : str
+              The save name for the file.
+
+          **IFgain** : int
+              The IF gain, either [0,1,2], default 0.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: isrunning()
+
+
+   .. py:method:: tune_rectpulse(*, tp, LO, B, reptime, shots=400)
+
+      
+      Generates a rectangular pi and pi/2 pulse of the given length at 
+      the given field position. This value is stored in the pulse cache. 
+
+
+      :Parameters:
+
+          **tp** : float
+              Pulse length in ns
+
+          **LO** : float
+              Central frequency of this pulse in GHz
+
+          **B** : float
+              Magnetic B0 field position in Gauss
+
+          **reptime: float**
+              Shot repetion time in us.
+
+          **shots: int**
+              The number of shots
+
+      :Returns:
+
+          p90: RectPulse
+              A tuned rectangular pi/2 pulse of length tp
+
+          p180: RectPulse
+              A tuned rectangular pi pulse of length tp
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune_pulse(pulse, mode, LO, B, reptime, shots=400)
+
+      
+      Tunes a single pulse a range of methods.
+
+
+      :Parameters:
+
+          **pulse** : Pulse
+              The Pulse object in need of tuning.
+
+          **mode** : str
+              The method to be used.
+
+          **LO** : float
+              The local oscilator frequency in GHz
+
+          **B** : float
+              Magnetic B0 field position in Gauss
+
+          **reptime** : us
+              Shot repetion time in us.
+
+          **shots: int**
+              The number of shots
+
+      :Returns:
+
+          Tunned Pulse: Pulse
+              The returned pulse object that is now tunned.
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune(*, sequence=None, mode='amp_hahn', LO=None, gyro=None)
+
+
+   .. py:method:: _build_exp_struct(sequence)
+
+
+   .. py:method:: _build_pulse(pulse)
+
+
+   .. py:method:: _build_phase_cycle(sequence)
+
+
+   .. py:method:: _build_parvar(id, sequence)
+
+      
+      This interface takes a dictionary called a parvar for all 
+      progressive elements. It is this object that controls how the
+      sequence changes with time.
+
+      .. note::
+          This interface interprets any change in `LO` as being a 
+          change in the IF frequency of all pulses and detections.
+           I.e. the physcial LO **does not** change. 
+
+      :Parameters:
+
+          **id** : _type_
+              _description_
+
+          **sequence** : _type_
+              _description_
+
+      :Returns:
+
+          dict
+              _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: terminate()
+
+      
+      Stops the current experiment
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

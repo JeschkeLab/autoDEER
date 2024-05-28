@@ -1,0 +1,65 @@
+.. py:class:: PulseSpel(sequence, d0, MPFU=None, AWG=False)
+
+
+   .. py:method:: _new_delay(key)
+
+
+   .. py:method:: _new_var(key)
+
+
+   .. py:method:: _new_pulse(key)
+
+
+   .. py:method:: save(filepath)
+
+
+   .. py:method:: _addDef(str)
+
+
+   .. py:method:: _addExp(str)
+
+
+   .. py:method:: _ExpDefs()
+
+
+   .. py:method:: _addScanLoop()
+
+
+   .. py:method:: _addPhaseCycle()
+
+
+   .. py:method:: _addAWGPulse(sequence, pulse_num, id)
+
+
+   .. py:method:: _check_sequence(sequence)
+
+
+   .. py:method:: _cmpl_Exp()
+
+
+   .. py:method:: _cmpl_def()
+
+
+   .. py:method:: __str__()
+
+      
+      Return str(self).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

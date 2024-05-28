@@ -1,0 +1,185 @@
+.. py:class:: dummy_api
+
+
+   Bases: :py:obj:`autodeer.hardware.XeprAPI_link.XeprAPILink`
+
+   .. py:method:: find_Xepr()
+
+
+   .. py:method:: is_exp_running()
+
+
+   .. py:method:: acquire_scan()
+
+      
+      This script detects the end of the scan and acquires the data set. 
+      This requires that the experiment is still running, or recently 
+      finished. Once it has been saved this will no longer work.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: acquire_scan_at(scan_num)
+
+      
+      This script acquires the scan after a specific number of scans
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: acquire_scan_2d()
+
+      
+      This function acquires the dataset after a full 2D scan.
+      This is done by identifying the number of scan steps per sweep and 
+      acquiring the data on that scan.
+      This requires that the experiment has not been saved. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: compile_PulseSpel_def()
+
+
+   .. py:method:: compile_PulseSpel_prg()
+
+
+   .. py:method:: set_PulseSpel_var(variable, value)
+
+      
+      This can be used to change any pulse spell variable whilst the 
+      experiment is running. These changes take effect at the beginning of 
+      the next scan
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: run_exp()
+
+      
+      Runs the current experiment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: stop_exp()
+
+      
+      Stops the current experiment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: abort_exp()
+
+      
+      Aborts the current experiment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

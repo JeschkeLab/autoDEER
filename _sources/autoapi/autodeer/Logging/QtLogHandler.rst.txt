@@ -1,0 +1,63 @@
+.. py:class:: QtLogHandler(level=logging.NOTSET)
+
+
+   Bases: :py:obj:`PyQt6.QtCore.QObject`, :py:obj:`logging.Handler`
+
+   Handler instances dispatch logging events to specific destinations.
+
+   The base handler class. Acts as a placeholder which defines the Handler
+   interface. Handlers can optionally use Formatter instances to format
+   records as desired. By default, no formatter is specified; in this case,
+   the 'raw' message as determined by record.message is logged.
+
+
+   Initializes the instance - basically setting the formatter to None
+   and the filter list to empty.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: signal
+
+      
+
+   .. py:method:: emit(record)
+
+      
+      Do whatever it takes to actually log the specified logging record.
+
+      This version is intended to be implemented by subclasses and so
+      raises a NotImplementedError.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

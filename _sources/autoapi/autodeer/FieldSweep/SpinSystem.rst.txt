@@ -1,0 +1,3 @@
+.. py:class:: SpinSystem(espins, nspin, g, A)
+
+

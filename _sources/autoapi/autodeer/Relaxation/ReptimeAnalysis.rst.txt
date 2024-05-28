@@ -1,0 +1,41 @@
+.. py:class:: ReptimeAnalysis(dataset, sequence = None)
+
+
+   
+
+   Analysis and calculation of Reptime based saturation recovery. 
+
+
+   :Parameters:
+
+       **dataset**
+           The dataset to be analyzed.
+
+       **sequence** : Sequence, optional
+           The sequence object describing the experiment. (not currently used)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: fit(**kwargs)
+
+
+   .. py:method:: plot(axs=None, fig=None)
+
+
+   .. py:method:: calc_optimal_reptime(recovery=0.9)
+
+

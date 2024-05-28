@@ -1,0 +1,57 @@
+.. py:class:: dummy_hidden
+
+
+   .. py:method:: __getitem__(name)
+
+      
+      This method returns a given parameter class for the name provided
+
+      :param name: The name of parameter needed
+      :type name: string
+      :return: Instance of dummy_param class corresponding to the searched name
+      :rtype: dummy_param class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: getParam(name)
+
+      
+      Extracts a paremeter from the current exeperiment
+
+      :param name: The name of the parameter to be extracted
+      :type name: string
+      :return: An instance of the parameter class for the given paramter name
+      :rtype: parameter Class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

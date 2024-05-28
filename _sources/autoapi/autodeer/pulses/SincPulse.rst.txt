@@ -1,0 +1,44 @@
+.. py:class:: SincPulse(*, tp=128, freq=0, order=6, window=None, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   Represents a general experimental pulse.
+
+
+   Represents a sinc shaped monochromatic pulse.
+
+
+   :Parameters:
+
+       **tp** : int
+           Pulse length in ns, by default 128
+
+       **freq** : int, optional
+           The frequency of the pulse, by default 0
+
+       **order** : int, optional
+           The order of this sinc function, by default 6
+
+       **window** : _type_, optional
+           The window function, by default None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: func(ax)
+
+

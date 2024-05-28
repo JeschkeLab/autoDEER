@@ -1,0 +1,74 @@
+.. py:class:: SvgFlowable(svg)
+
+
+   Bases: :py:obj:`reportlab.platypus.Flowable`
+
+   Convert byte streasm containing SVG into a Reportlab Flowable.
+
+
+   Convert SVG to RML drawing on initializtion.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: wrap(*_args)
+
+      
+      Return diagram size.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: draw()
+
+      
+      Render the chart.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

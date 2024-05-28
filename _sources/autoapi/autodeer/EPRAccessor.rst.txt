@@ -1,0 +1,24 @@
+.. py:class:: EPRAccessor(xarray_obj)
+
+
+   .. py:property:: correctphase
+
+
+   .. py:property:: normalise
+
+
+   .. py:property:: correctphasefull
+
+
+   .. py:property:: SNR
+
+
+   .. py:property:: fft
+
+
+   .. py:property:: sequence
+
+
+   .. py:method:: save(filename, type='netCDF')
+
+

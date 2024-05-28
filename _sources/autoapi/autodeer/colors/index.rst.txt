@@ -9,17 +9,17 @@ Module Contents
 ---------------
 
 .. py:data:: primary_colors
-   :value: ['#D95B6F', '#42A399', 'E1AE38']
+   :value: "['#D95B6F', '#42A399', '#E1AE38']"
 
    
 
 .. py:data:: ReIm_colors
-   :value: ['#D61B00', '#00BBD6']
+   :value: "['#D61B00', '#00BBD6']"
 
    
 
 .. py:data:: shade_colors
-   :value: []
+   :value: '[]'
 
    
 

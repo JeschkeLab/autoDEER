@@ -1,0 +1,6 @@
+.. py:class:: dummy_param(min, max, type=int, par=None)
+
+
+   .. py:property:: value
+
+

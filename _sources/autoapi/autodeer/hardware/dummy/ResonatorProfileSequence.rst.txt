@@ -1,0 +1,63 @@
+.. py:class:: ResonatorProfileSequence(*, B, LO, reptime, averages, shots, fwidth=0.3, **kwargs)
+
+
+   Bases: :py:obj:`Sequence`
+
+   Builds nutation based Resonator Profile sequence. 
+
+
+   Build a resonator profile nutation sequence using either 
+   rectangular pulses or specified pulses.
+
+
+   :Parameters:
+
+       **B** : int or float
+           The B0 field, in Guass
+
+       **Bwidth: int or float**
+           The width of the field sweep, in Gauss
+
+       **LO** : int or float
+           The LO frequency in GHz
+
+       **reptime** : _type_
+           The shot repetition time in us
+
+       **averages** : int
+           The number of scans.
+
+       **shots** : int
+           The number of shots per point
+
+       **fwidth: float**
+           The frequency width of the resonator profile in GHz, 
+           by default 0.3GHz
+
+       **tau1: float**
+           The delay between the nutating pulse and the Hahn Echo, 
+           by default 2000 ns
+
+       **tau2: float**
+           The interpulse delay in the Hahn Echo, 
+           by default 500 ns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: _build_sequence()
+
+

@@ -1,0 +1,102 @@
+.. py:class:: autoDEERSignals
+
+
+   Bases: :py:obj:`PyQt6.QtCore.QObject`
+
+   
+   Defines the signals available from a running worker thre
+
+   Supported signals are:
+
+   finished
+       No data
+
+   error
+       tuple (exctype, value, traceback.format_exc() )
+
+   result
+       object data returned from processing, anything
+
+   progress
+       int indicating % progress
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+   .. py:attribute:: finished
+
+      
+
+   .. py:attribute:: error
+
+      
+
+   .. py:attribute:: result
+
+      
+
+   .. py:attribute:: progress
+
+      
+
+   .. py:attribute:: status
+
+      
+
+   .. py:attribute:: fsweep_result
+
+      
+
+   .. py:attribute:: respro_result
+
+      
+
+   .. py:attribute:: relax_result
+
+      
+
+   .. py:attribute:: Relax2D_result
+
+      
+
+   .. py:attribute:: T2_result
+
+      
+
+   .. py:attribute:: quickdeer_result
+
+      
+
+   .. py:attribute:: longdeer_result
+
+      
+
+   .. py:attribute:: quickdeer_update
+
+      
+
+   .. py:attribute:: longdeer_update
+
+      
+
+   .. py:attribute:: reptime_scan_result
+
+      
+
+   .. py:attribute:: timeout
+
+      
+

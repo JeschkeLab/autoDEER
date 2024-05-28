@@ -4,10 +4,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.04.27 -->
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
         <title>autodeer.pulses - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=437aa6ec" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -70,7 +70,7 @@
   <symbol id="svg-sun" viewBox="0 0 24 24">
     <title>Light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
       <circle cx="12" cy="12" r="5"></circle>
       <line x1="12" y1="1" x2="12" y2="3"></line>
       <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -85,7 +85,7 @@
   <symbol id="svg-moon" viewBox="0 0 24 24">
     <title>Dark mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
@@ -93,7 +93,7 @@
   <symbol id="svg-sun-half" viewBox="0 0 24 24">
     <title>Auto light/dark mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
       <circle cx="12" cy="12" r="9" />
       <path d="M13 12h5" />
@@ -101,6 +101,60 @@
       <path d="M13 18h1" />
       <path d="M13 9h4" />
       <path d="M13 6h1" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" /
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
 </svg>
@@ -133,7 +187,8 @@
       <div class="theme-toggle-container theme-toggle-header">
         <button class="theme-toggle">
           <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
-          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
           <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
@@ -212,7 +267,8 @@
           <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
-              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
               <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
@@ -240,7 +296,7 @@
 
 
 <div class="viewcode-block" id="Pulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse">[docs]</a>
 <span class="k">class</span> <span class="nc">Pulse</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a general experimental pulse.</span>
@@ -297,7 +353,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="Pulse._addPhaseCycle">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._addPhaseCycle">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._addPhaseCycle">[docs]</a>
     <span class="k">def</span> <span class="nf">_addPhaseCycle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phases</span><span class="p">,</span> <span class="n">detections</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Adds a phase cycle to the pulse sequence.</span>
@@ -316,7 +372,7 @@
 
 
 <div class="viewcode-block" id="Pulse._buildFMAM">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._buildFMAM">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._buildFMAM">[docs]</a>
     <span class="k">def</span> <span class="nf">_buildFMAM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Builds the amplitude modulation (AM) and frequency modulation (FM) of a given function.</span>
@@ -338,7 +394,7 @@
 
     
 <div class="viewcode-block" id="Pulse.build_shape">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.build_shape">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.build_shape">[docs]</a>
     <span class="k">def</span> <span class="nf">build_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span>
@@ -357,7 +413,7 @@
 
 
 <div class="viewcode-block" id="Pulse.build_table">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.build_table">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.build_table">[docs]</a>
     <span class="k">def</span> <span class="nf">build_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Builds a table of variables, axes, and UUIDs for all non-static Parameters in the object.</span>
@@ -381,7 +437,7 @@
 
     
 <div class="viewcode-block" id="Pulse.is_static">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.is_static">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.is_static">[docs]</a>
     <span class="k">def</span> <span class="nf">is_static</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Check if all parameters in the pulse object are static.</span>
@@ -397,7 +453,7 @@
 
 
 <div class="viewcode-block" id="Pulse.isDelayFocused">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.isDelayFocused">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.isDelayFocused">[docs]</a>
     <span class="k">def</span> <span class="nf">isDelayFocused</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Does the pulse contain a specified time, `t`?</span>
@@ -411,7 +467,7 @@
 
     
 <div class="viewcode-block" id="Pulse.isPulseFocused">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.isPulseFocused">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.isPulseFocused">[docs]</a>
     <span class="k">def</span> <span class="nf">isPulseFocused</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Does the pulse contain a specified time, `t`?</span>
@@ -425,7 +481,7 @@
 
 
 <div class="viewcode-block" id="Pulse.plot">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.plot">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.plot">[docs]</a>
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plots the time domain representation of this pulse.</span>
 
@@ -454,7 +510,7 @@
 
     
 <div class="viewcode-block" id="Pulse._calc_fft">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._calc_fft">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._calc_fft">[docs]</a>
     <span class="k">def</span> <span class="nf">_calc_fft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">10000</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_buildFMAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complex</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">pad</span><span class="p">))</span>
@@ -468,7 +524,7 @@
 
     <span class="nd">@cached</span><span class="p">(</span><span class="n">thread_safe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <div class="viewcode-block" id="Pulse.exciteprofile">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.exciteprofile">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.exciteprofile">[docs]</a>
     <span class="k">def</span> <span class="nf">exciteprofile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freqs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Excitation profile</span>
 
@@ -540,7 +596,7 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ChirpPulse</span><span class="p">):</span>
                 <span class="n">sweeprate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">value</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">HSPulse</span><span class="p">):</span>
-                <span class="n">sweeprate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">BW</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">value</span>
+                <span class="n">sweeprate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">value</span>
 
             <span class="n">amp_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">Qcrit</span><span class="o">*</span><span class="n">sweeprate</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">);</span>
 
@@ -571,14 +627,14 @@
             <span class="n">Density</span> <span class="o">=</span> <span class="n">UPulse</span> <span class="o">@</span> <span class="n">Density0</span> <span class="o">@</span> <span class="n">UPulse</span><span class="o">.</span><span class="n">conjugate</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
             <span class="n">Mag</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">iOffset</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">Sx</span> <span class="o">@</span> <span class="n">Density</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">real</span>
             <span class="n">Mag</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">iOffset</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">Sy</span> <span class="o">@</span> <span class="n">Density</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">real</span>
-            <span class="n">Mag</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">iOffset</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">Sz</span> <span class="o">@</span> <span class="n">Density</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">real</span>
+            <span class="n">Mag</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">iOffset</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">Sz</span> <span class="o">*</span> <span class="n">Density</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">real</span>
         
         <span class="k">return</span> <span class="n">Mag</span><span class="p">[</span><span class="mi">0</span><span class="p">,:],</span> <span class="n">Mag</span><span class="p">[</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">Mag</span><span class="p">[</span><span class="mi">2</span><span class="p">,:]</span></div>
 
 
 
 <div class="viewcode-block" id="Pulse.plot_fft">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.plot_fft">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.plot_fft">[docs]</a>
     <span class="k">def</span> <span class="nf">plot_fft</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 
         <span class="n">ax</span><span class="p">,</span> <span class="n">ft</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_fft</span><span class="p">(</span><span class="mf">1e4</span><span class="p">)</span>
@@ -592,7 +648,7 @@
 
 
 <div class="viewcode-block" id="Pulse._pcyc_str">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._pcyc_str">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._pcyc_str">[docs]</a>
     <span class="k">def</span> <span class="nf">_pcyc_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcyc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -630,7 +686,7 @@
 
 
 <div class="viewcode-block" id="Pulse.__str__">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.__str__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.__str__">[docs]</a>
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Build header line</span>
         <span class="n">header</span> <span class="o">=</span> <span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">79</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;autoDEER Pulse Definition&quot;</span> <span class="o">+</span> \
@@ -712,7 +768,7 @@
 
 
 <div class="viewcode-block" id="Pulse.copy">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.copy">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.copy">[docs]</a>
     <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a deep-copy of the pulse. I.e. Every parameter object is</span>
 <span class="sd">        re-created at another memory space.</span>
@@ -782,7 +838,7 @@
     
 
 <div class="viewcode-block" id="Pulse._to_dict">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._to_dict">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._to_dict">[docs]</a>
     <span class="k">def</span> <span class="nf">_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">to_return</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">__version__</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Pulse&quot;</span><span class="p">,</span> <span class="s2">&quot;subclass&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">))}</span>
 
@@ -796,7 +852,7 @@
 
     
 <div class="viewcode-block" id="Pulse._to_json">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._to_json">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._to_json">[docs]</a>
     <span class="k">def</span> <span class="nf">_to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">class</span> <span class="nc">autoEPREncoder</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONEncoder</span><span class="p">):</span>
             <span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
@@ -826,7 +882,7 @@
 
 
 <div class="viewcode-block" id="Pulse.save">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.save">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.save">[docs]</a>
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the Pulse to a JSON file.</span>
 
@@ -856,7 +912,7 @@
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Pulse._from_dict">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._from_dict">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._from_dict">[docs]</a>
     <span class="k">def</span> <span class="nf">_from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dct</span><span class="p">):</span>
         <span class="n">new_pulse</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="n">Parameter</span><span class="o">.</span><span class="n">_from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;tp&quot;</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="n">dct</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">dct</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> 
@@ -874,7 +930,7 @@
 
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Pulse._from_json">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse._from_json">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._from_json">[docs]</a>
     <span class="k">def</span> <span class="nf">_from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">JSONstring</span><span class="p">):</span>
         <span class="n">dct</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">JSONstring</span><span class="p">,</span> <span class="n">object_hook</span><span class="o">=</span><span class="n">autoEPRDecoder</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_from_dict</span><span class="p">(</span><span class="n">dct</span><span class="p">)</span></div>
@@ -882,7 +938,7 @@
     
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Pulse.load">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Pulse.load">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.load">[docs]</a>
     <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a Pulse object from a JSON file.</span>
 
@@ -918,7 +974,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="Detection">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Detection">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Detection">[docs]</a>
 <span class="k">class</span> <span class="nc">Detection</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a detection pulse.</span>
@@ -951,7 +1007,7 @@
 
 
 <div class="viewcode-block" id="Delay">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.Delay">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Delay">[docs]</a>
 <span class="k">class</span> <span class="nc">Delay</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    DEPRECATION WARNING: THIS WILL BE REMOVED SOON.</span>
@@ -974,7 +1030,7 @@
 
 
 <div class="viewcode-block" id="RectPulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.RectPulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.RectPulse">[docs]</a>
 <span class="k">class</span> <span class="nc">RectPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a rectangular monochromatic pulse.</span>
@@ -1002,7 +1058,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="RectPulse.func">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.RectPulse.func">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.RectPulse.func">[docs]</a>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
         <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">AM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
@@ -1012,7 +1068,7 @@
 
 
 <div class="viewcode-block" id="GaussianPulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.GaussianPulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.GaussianPulse">[docs]</a>
 <span class="k">class</span> <span class="nc">GaussianPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a Gaussian monochromatic pulse.</span>
@@ -1037,7 +1093,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="GaussianPulse.func">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.GaussianPulse.func">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.GaussianPulse.func">[docs]</a>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
         <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FWHM</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
@@ -1049,7 +1105,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="HSPulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.HSPulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.HSPulse">[docs]</a>
 <span class="k">class</span> <span class="nc">HSPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a hyperboilc secant frequency-swept pulse.</span>
@@ -1104,7 +1160,7 @@
 
 
 <div class="viewcode-block" id="HSPulse.func">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.HSPulse.func">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.HSPulse.func">[docs]</a>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
         <span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">value</span>
         <span class="n">order1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order1</span><span class="o">.</span><span class="n">value</span>
@@ -1112,28 +1168,41 @@
         <span class="n">BW</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">BW</span><span class="o">.</span><span class="n">value</span>
         <span class="n">tp</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">ax</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
         <span class="n">tcent</span> <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="mi">2</span>
-        
+        <span class="n">ti</span> <span class="o">=</span> <span class="n">ax</span>
         <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">beta_exp1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">beta</span><span class="o">*</span><span class="mf">0.5</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">order1</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
-        <span class="n">beta_exp2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">beta</span><span class="o">*</span><span class="mf">0.5</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">order2</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+        <span class="c1"># beta_exp1 = np.log(beta*0.5**(1-order1)) / np.log(beta)</span>
+        <span class="c1"># beta_exp2 = np.log(beta*0.5**(1-order2)) / np.log(beta)</span>
+        <span class="c1"># cut = round(nx/2)</span>
+        <span class="c1"># AM = np.zeros(nx)</span>
+        <span class="c1"># AM[0:cut] = 1/np.cosh(</span>
+        <span class="c1">#     beta**beta_exp1 * (ax[0:cut]/tp)**order1)</span>
+        <span class="c1"># AM[cut:-1] = 1/np.cosh(</span>
+        <span class="c1">#     beta**beta_exp2 * (ax[cut:-1]/tp)**order2)</span>
+
+        <span class="c1"># FM = BW * cumulative_trapezoid(AM**2,ax,initial=0) /\</span>
+        <span class="c1">#      np.trapz(AM**2,ax) + self.init_freq.value</span>
+        <span class="n">sech</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">cosh</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> 
         <span class="n">cut</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">nx</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
-        <span class="n">AM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
-        <span class="n">AM</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">cut</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">cosh</span><span class="p">(</span>
-            <span class="n">beta</span><span class="o">**</span><span class="n">beta_exp1</span> <span class="o">*</span> <span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">cut</span><span class="p">]</span><span class="o">/</span><span class="n">tp</span><span class="p">)</span><span class="o">**</span><span class="n">order1</span><span class="p">)</span>
-        <span class="n">AM</span><span class="p">[</span><span class="n">cut</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">cosh</span><span class="p">(</span>
-            <span class="n">beta</span><span class="o">**</span><span class="n">beta_exp2</span> <span class="o">*</span> <span class="p">(</span><span class="n">ax</span><span class="p">[</span><span class="n">cut</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">tp</span><span class="p">)</span><span class="o">**</span><span class="n">order2</span><span class="p">)</span>
+        <span class="n">AM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">ti</span><span class="p">)</span>
+        <span class="n">AM</span><span class="p">[:</span><span class="n">cut</span><span class="p">]</span> <span class="o">=</span> <span class="n">sech</span><span class="p">(</span><span class="n">beta</span><span class="o">*</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">ti</span><span class="p">[:</span><span class="n">cut</span><span class="p">]</span><span class="o">/</span><span class="n">tp</span><span class="p">)</span><span class="o">**</span><span class="n">order1</span><span class="p">)</span>
+        <span class="n">AM</span><span class="p">[</span><span class="n">cut</span><span class="p">:]</span> <span class="o">=</span> <span class="n">sech</span><span class="p">(</span><span class="n">beta</span><span class="o">*</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">ti</span><span class="p">[</span><span class="n">cut</span><span class="p">:]</span><span class="o">/</span><span class="n">tp</span><span class="p">)</span><span class="o">**</span><span class="n">order2</span><span class="p">)</span>
 
-        <span class="n">FM</span> <span class="o">=</span> <span class="n">BW</span> <span class="o">*</span> <span class="n">cumulative_trapezoid</span><span class="p">(</span><span class="n">AM</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="n">ax</span><span class="p">,</span><span class="n">initial</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span>\
-             <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="n">AM</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="n">ax</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span>
 
-        <span class="k">return</span> <span class="n">AM</span><span class="p">,</span> <span class="n">FM</span></div>
+        <span class="n">BWinf</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">beta</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">freq</span> <span class="o">=</span> <span class="p">(</span><span class="n">BWinf</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">((</span><span class="n">beta</span><span class="o">/</span><span class="n">tp</span><span class="o">*</span><span class="n">ti</span><span class="p">))</span>
+        <span class="c1"># phase = 2*np.pi*(BWinf/2) * (tp/beta) * np.log(np.cosh((beta/tp)*ti))</span>
+
+        <span class="c1"># total_phase = phase * 2* np.pi * np.mean([self.init_freq.value,self.final_freq.value])</span>
+        
+        <span class="k">return</span> <span class="n">AM</span><span class="p">,</span> <span class="n">freq</span></div>
 </div>
 
 
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="ChirpPulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.ChirpPulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.ChirpPulse">[docs]</a>
 <span class="k">class</span> <span class="nc">ChirpPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a linear frequency-swept pulse.</span>
@@ -1174,7 +1243,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="ChirpPulse.func">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.ChirpPulse.func">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.ChirpPulse.func">[docs]</a>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
         <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">AM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
@@ -1197,7 +1266,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="SincPulse">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.SincPulse">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.SincPulse">[docs]</a>
 <span class="k">class</span> <span class="nc">SincPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
 
 
@@ -1229,7 +1298,7 @@
 
 
 <div class="viewcode-block" id="SincPulse.func">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.SincPulse.func">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.SincPulse.func">[docs]</a>
     <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
         <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">FM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">freq</span><span class="o">.</span><span class="n">value</span>
@@ -1273,7 +1342,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="build_default_pulses">
-<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.pulses.build_default_pulses">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.build_default_pulses">[docs]</a>
 <span class="k">def</span> <span class="nf">build_default_pulses</span><span class="p">(</span><span class="n">AWG</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">tp</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
 
     <span class="n">exc_pulse</span> <span class="o">=</span> <span class="n">RectPulse</span><span class="p">(</span>  

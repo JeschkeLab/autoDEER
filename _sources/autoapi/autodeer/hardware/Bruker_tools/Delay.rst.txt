@@ -1,0 +1,40 @@
+.. py:class:: Delay(*, tp, t=None)
+
+
+   Bases: :py:obj:`Pulse`
+
+   DEPRECATION WARNING: THIS WILL BE REMOVED SOON.
+
+   Represents a inter-pulse delay pulse.
+
+
+   The class for a general pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The pulse length in ns.
+
+       **scale** : float
+           The arbitary experimental pulse amplitude, 0-1.
+
+       **t** : float, optional
+           The pulse start time in ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

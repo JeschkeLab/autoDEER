@@ -1,0 +1,27 @@
+.. py:class:: Criteria(name, test, description = '', end_signal=None)
+
+
+   
+   A class for defining criteria for terminating experiments. This should
+   only be subclassed and not used directly.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+   .. py:method:: __add__(__o)
+
+

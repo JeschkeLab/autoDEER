@@ -1,0 +1,33 @@
+.. py:class:: PSparvar(sequence, id)
+
+
+   .. py:method:: checkPulseSpel()
+
+      
+      Checks if parvar can be run in PulseSpel.\
+      Criteria:
+          1) Only pulse/delay lengths changing
+          2) Constant integer step changes
+
+
+
+      :Returns:
+
+          bool
+              _description_
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

@@ -1,0 +1,110 @@
+.. py:class:: dummyInterface(config_file)
+
+
+   Bases: :py:obj:`autodeer.classes.Interface`
+
+   
+   Represents the interface connection from autoEPR to the spectrometer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+   .. py:method:: launch(sequence, savename, **kwargs)
+
+      
+      Launches the experiment and initialises autosaving.
+
+
+      :Parameters:
+
+          **sequence** : Sequence
+              The sequence to be launched
+
+          **savename** : str
+              The savename for this measurement. A timestamp will be added to the value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: acquire_dataset(**kwargs)
+
+      
+      Acquires the dataset.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune_rectpulse(*, tp, LO, B, reptime, **kwargs)
+
+
+   .. py:method:: tune_pulse(pulse, mode, LO, B, reptime, shots=400)
+
+
+   .. py:method:: isrunning()
+
+
+   .. py:method:: terminate()
+
+      
+      Terminates the experiment immediately. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

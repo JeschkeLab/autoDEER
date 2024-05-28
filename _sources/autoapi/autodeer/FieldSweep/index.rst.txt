@@ -152,6 +152,33 @@ Functions
    .. py:method:: calc_noise_level(SNR_target=30)
 
 
+   .. py:method:: smooth()
+
+      
+      Generates a smoothed version of the data using a 1D smoothing spline.
+
+
+
+      :Returns:
+
+          np.ndarray
+              The smoothed data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
    .. py:method:: fit(spintype='N', **kwargs)
 
 

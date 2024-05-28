@@ -1,0 +1,17 @@
+.. py:class:: LogDialog(parent = ...)
+
+
+   Bases: :py:obj:`PyQt6.QtWidgets.QDialog`
+
+   .. py:method:: add_new_entry(entry)
+
+
+   .. py:method:: update_log_text()
+
+
+   .. py:method:: clear_log()
+
+
+   .. py:method:: save_log_to_file()
+
+

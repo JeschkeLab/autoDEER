@@ -1,0 +1,37 @@
+.. py:class:: dummy_xepr
+
+
+   .. py:class:: XeprCmds
+
+
+      .. py:method:: aqPgShowPrg()
+
+
+      .. py:method:: aqPgCompile()
+
+
+      .. py:method:: aqExpSelect()
+
+
+      .. py:method:: aqPgLoad()
+
+
+      .. py:method:: aqPgDefLoad()
+
+
+      .. py:method:: aqPgDefSaveAs()
+
+
+      .. py:method:: aqPgSaveAs()
+
+
+      .. py:method:: vpSave(title, path)
+
+
+
+   .. py:method:: XeprExperiment(hidden=None)
+
+
+   .. py:method:: XeprDataset()
+
+

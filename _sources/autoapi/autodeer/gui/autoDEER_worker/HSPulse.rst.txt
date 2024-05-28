@@ -1,0 +1,41 @@
+.. py:class:: HSPulse(*, tp=128, order1=1, order2=6, beta=20, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   Represents a hyperboilc secant frequency-swept pulse.
+
+
+   The class for a general pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The pulse length in ns.
+
+       **scale** : float
+           The arbitary experimental pulse amplitude, 0-1.
+
+       **t** : float, optional
+           The pulse start time in ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: func(ax)
+
+

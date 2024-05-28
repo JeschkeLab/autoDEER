@@ -1,0 +1,202 @@
+.. py:class:: BrukerMPFU(config_file)
+
+
+   Bases: :py:obj:`autodeer.classes.Interface`
+
+   Represents the interface for connecting to MPFU based Bruker ELEXSYS-II 
+   Spectrometers.
+
+
+   An interface for connecting to MPFU based Bruker ELEXSYS-II 
+   Spectrometers.
+
+
+   :Parameters:
+
+       **config_file** : str
+           The path to a YAML configuration file.
+
+
+
+
+
+
+
+
+
+
+
+
+   :Attributes:
+
+       **bg_thread: None or threading.Thread**
+           If a background thread is needed, it is stored here.
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: connect(d0=None)
+
+
+   .. py:method:: setup(d0=None)
+
+
+   .. py:method:: acquire_dataset()
+
+      
+      Acquires the dataset.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _launch_complex_thread(sequence, axID=1, tune=True)
+
+
+   .. py:method:: launch(sequence, savename, start=True, tune=True, MPFU_overwrite=None, update_pulsespel=True, reset_bg_data=True, reset_cur_exp=True, **kwargs)
+
+      
+      Launches the experiment and initialises autosaving.
+
+
+      :Parameters:
+
+          **sequence** : Sequence
+              The sequence to be launched
+
+          **savename** : str
+              The savename for this measurement. A timestamp will be added to the value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune_rectpulse(*, tp, **kwargs)
+
+      
+      Mocks the tune_rectpulse command and returns a pair of RectPulses
+      with the given tp and 2*tp respectively. No scale is set.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune_pulse(pulse, *args, **kwargs)
+
+      
+      Mocks the tune_pulse command and returns the pulse unchanged.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune(sequence, B0, LO)
+
+
+   .. py:method:: isrunning()
+
+
+   .. py:method:: terminate(now=False)
+
+      
+      Terminates the experiment immediately. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: calc_d0()
+
+      
+      This creates an initial guess for d0. A better estimate can only be found after the field sweep. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: calc_d0_from_Hahn_Echo(B=None, LO=None)
+
+

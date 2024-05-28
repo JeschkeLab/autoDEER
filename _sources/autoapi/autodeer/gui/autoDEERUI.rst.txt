@@ -1,0 +1,142 @@
+.. py:class:: autoDEERUI
+
+
+   Bases: :py:obj:`autodeer.gui.tools.QMainWindow`
+
+   .. py:method:: set_spectrometer_connected_light(state)
+
+
+   .. py:method:: load_folder(*args, folder_path=None)
+
+
+   .. py:method:: load_epr_file(store_location)
+
+
+   .. py:method:: load_spectrometer_config(filename=None)
+
+
+   .. py:method:: select_resonator()
+
+
+   .. py:method:: change_LO()
+
+
+   .. py:method:: connect_spectrometer()
+
+
+   .. py:method:: raise_warning(message)
+
+
+   .. py:method:: save_data(dataset, filename)
+
+
+   .. py:method:: fsweep_toolbar()
+
+
+   .. py:method:: respro_toolbar()
+
+
+   .. py:method:: relax_toolbar()
+
+
+   .. py:method:: update_fieldsweep(dataset=None)
+
+
+   .. py:method:: create_fieldsweep_figure()
+
+
+   .. py:method:: refresh_fieldsweep_after_fit(fitresult)
+
+
+   .. py:method:: update_respro(dataset=None)
+
+
+   .. py:method:: create_respro_figure()
+
+
+   .. py:method:: refresh_respro(*args)
+
+
+   .. py:method:: optimise_pulses_button()
+
+
+   .. py:method:: optimise_pulses(pulses=None)
+
+
+   .. py:method:: update_optimise_pulses_figure()
+
+
+   .. py:method:: update_relax(dataset=None)
+
+
+   .. py:method:: create_relax_figure()
+
+
+   .. py:method:: refresh_relax_figure()
+
+
+   .. py:method:: refresh_relax(fitresult)
+
+
+   .. py:method:: update_relax2D(dataset=None)
+
+
+   .. py:method:: update_T2(dataset=None)
+
+
+   .. py:method:: check_T2(fitresult)
+
+
+   .. py:method:: check_CP(fitresult)
+
+
+   .. py:method:: refresh_T2(fitresult)
+
+
+   .. py:method:: advanced_mode_inputs()
+
+
+   .. py:method:: update_quickdeer(dataset=None)
+
+
+   .. py:method:: update_longdeer(dataset=None)
+
+
+   .. py:method:: update_reptime(dataset=None)
+
+
+   .. py:method:: timeout()
+
+      
+      Creates a pop up box as the experiment has timed out
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: RunAutoDEER(advanced=False)
+
+
+   .. py:method:: RunFullyAutoDEER()
+
+
+   .. py:method:: RunAdvancedAutoDEER()
+
+
+   .. py:method:: create_report()
+
+

@@ -1,0 +1,27 @@
+.. py:class:: XeprCmds
+
+
+   .. py:method:: aqPgShowPrg()
+
+
+   .. py:method:: aqPgCompile()
+
+
+   .. py:method:: aqExpSelect()
+
+
+   .. py:method:: aqPgLoad()
+
+
+   .. py:method:: aqPgDefLoad()
+
+
+   .. py:method:: aqPgDefSaveAs()
+
+
+   .. py:method:: aqPgSaveAs()
+
+
+   .. py:method:: vpSave(title, path)
+
+

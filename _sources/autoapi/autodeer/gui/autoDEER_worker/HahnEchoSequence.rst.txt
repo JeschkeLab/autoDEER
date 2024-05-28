@@ -1,0 +1,45 @@
+.. py:class:: HahnEchoSequence(*, B, LO, reptime, averages, shots, **kwargs)
+
+
+   Bases: :py:obj:`Sequence`
+
+   Represents a Hahn-Echo sequence. 
+
+
+   Build a Hahn-Echo sequence using either rectangular pulses or
+   specified pulses. By default no progression is added to this sequence.
+
+
+   :Parameters:
+
+       **B** : int or float
+           The B0 field, in Guass
+
+       **LO** : int or float
+           The LO frequency in GHz
+
+       **reptime** : _type_
+           The shot repetition time in us
+
+       **averages** : int
+           The number of scans.
+
+       **shots** : int
+           The number of shots per point
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

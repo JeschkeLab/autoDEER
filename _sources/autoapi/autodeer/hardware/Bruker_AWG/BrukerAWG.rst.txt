@@ -1,0 +1,248 @@
+.. py:class:: BrukerAWG(config_file)
+
+
+   Bases: :py:obj:`autodeer.classes.Interface`
+
+   Represents the interface for connecting to AWG based Bruker ELEXSYS-II 
+   Spectrometers.
+
+
+   An interface for connecting to AWG based Bruker ELEXSYS-II 
+   Spectrometers.
+
+
+   :Parameters:
+
+       **config_file** : str
+           The path to a YAML configuration file.
+
+
+
+
+
+
+
+
+
+
+
+
+   :Attributes:
+
+       **bg_thread: None or threading.Thread**
+           If a background thread is needed, it is stored here.
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: connect(d0=None)
+
+
+   .. py:method:: setup(d0=None)
+
+
+   .. py:method:: acquire_dataset()
+
+      
+      Acquires the dataset.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _launch_complex_thread(sequence, axID=1, tune=True)
+
+
+   .. py:method:: launch(sequence, savename, start=True, tune=True, MPFU_overwrite=None, update_pulsespel=True, reset_bg_data=True, reset_cur_exp=True, **kwargs)
+
+      
+      Launches the experiment and initialises autosaving.
+
+
+      :Parameters:
+
+          **sequence** : Sequence
+              The sequence to be launched
+
+          **savename** : str
+              The savename for this measurement. A timestamp will be added to the value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune_rectpulse(*, tp, LO, B, reptime, shots=400)
+
+      
+      Generates a rectangular pi and pi/2 pulse of the given length at 
+      the given field position. This value is stored in the pulse cache. 
+
+
+      :Parameters:
+
+          **tp** : float
+              Pulse length in ns
+
+          **LO** : float
+              Central frequency of this pulse in GHz
+
+          **B** : float
+              Magnetic B0 field position in Gauss
+
+          **reptime: float**
+              Shot repetion time in us.
+
+          **shots: int**
+              The number of shots
+
+      :Returns:
+
+          p90: RectPulse
+              A tuned rectangular pi/2 pulse of length tp
+
+          p180: RectPulse
+              A tuned rectangular pi pulse of length tp
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune_pulse(pulse, mode, LO, B, reptime, shots=400)
+
+      
+      Tunes a single pulse a range of methods.
+
+
+      :Parameters:
+
+          **pulse** : Pulse
+              The Pulse object in need of tuning.
+
+          **mode** : str
+              The method to be used.
+
+          **LO** : float
+              The local oscilator frequency in GHz
+
+          **B** : float
+              Magnetic B0 field position in Gauss
+
+          **reptime** : us
+              Shot repetion time in us.
+
+          **shots: int**
+              The number of shots
+
+      :Returns:
+
+          Tunned Pulse: Pulse
+              The returned pulse object that is now tunned.
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: tune_nutation(test_pulse)
+
+
+   .. py:method:: isrunning()
+
+
+   .. py:method:: terminate(now=False)
+
+      
+      Terminates the experiment immediately. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: calc_d0()
+
+      
+      This creates an initial guess for d0. A better estimate can only be found after the field sweep. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: calc_d0_from_Hahn_Echo(B=None, LO=None)
+
+

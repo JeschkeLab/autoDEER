@@ -1,0 +1,12 @@
+.. py:class:: DEER(api, d0, det_frq, pump_frq, srt=6000000.0)
+
+
+   .. py:method:: run_5p(tau1, tau2, dt = 16, deadtime = 80, num_points = 0, scans = 200)
+
+
+   .. py:method:: run_4p(tau1, tau2, dt = 16, deadtime = 80, num_points = 0, scans = 200)
+
+
+   .. py:method:: run_CP(tau, dt = 50, num_points = 200, scans = 1)
+
+

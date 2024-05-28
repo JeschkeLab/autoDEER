@@ -1,0 +1,143 @@
+.. py:class:: ResonatorProfileAnalysis(dataset, f_lims=(32, 36))
+
+
+   
+
+   Analysis and calculation of resonator profiles.
+
+
+   :Parameters:
+
+       **dataset** : xr.xarray
+           The dataset containing the nutations. It must have both a 'LO' axis
+           and a 'pulse0_tp' axis.
+
+       **f_lims** : tuple, optional
+           The frequency limits of the resonator profile, by default (33,35)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:method:: process_nutations(noisedensity = None, threshold = 2, nfft = 1000)
+
+      
+      Uses a power series to extract the resonator profile.
+
+
+      :Parameters:
+
+          **noisedensity** : tuple, optional
+              If not given the first trace is assumed to be so far off resonance
+              that it is just noise. 
+
+          **nfft: int, optional**
+              The length of the fft to be used, zero padded if requred, default
+              is 1000.
+
+          **threshold: int, optional**
+              The multiples above the noise a single must be to not be excluded,
+              default is 2.
+
+      :Returns:
+
+          prof_data: np.ndarray
+              The resonator profile, give in nutation frequency (GHz) 
+
+          prof_frqs: np.ndarray
+              The frequency axis in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _process_fit(R_limit=0.5)
+
+
+   .. py:method:: fit(f_diff_threshold=2, cores=1, multi_mode=False, fc_guess=34.05)
+
+      
+      Fit the resonator profile with a sum of lorentzians.
+
+
+      :Parameters:
+
+          **f_diff_threshold** : float, optional
+              The difference between two peaks at which they will be merged into one, by default 0.03
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: plot(fieldsweep=None, axs=None, fig=None)
+
+      
+      plot. 
+
+
+      :Parameters:
+
+          **fieldsweep** : FieldSweepAnalysis, optional
+              Overlays the FieldSweep if provided, by default None
+
+          **axs** : matplotlib.Axes, optional
+              Axes to plot on, by default None
+
+          **fig** : matplotlib.Figure, optional
+              Figure to plot on, by default None
+
+      :Returns:
+
+          Matplotlib.Figure
+              matplotlib figure object
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
