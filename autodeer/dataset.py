@@ -169,7 +169,7 @@ class EPRAccessor:
     def save(self, filename,type='netCDF'):
 
         if type == 'netCDF':
-            self._obj.to_netcdf(f"{filename}.epr")
+            self._obj.to_netcdf(f"{filename}.h5",engine='h5netcdf',invalid_netcdf=True)
 
     @property
     def correctphase(self):

@@ -283,7 +283,7 @@ class Pulse:
             if isinstance(self, ChirpPulse):
                 sweeprate = np.abs(self.final_freq.value-self.init_freq.value) / self.tp.value
             elif isinstance(self, HSPulse):
-                sweeprate = self.beta.value * self.BW.value / 2*self.tp.value
+                sweeprate = self.beta.value * np.abs(self.final_freq.value-self.init_freq.value) / 2*self.tp.value
 
             amp_factor = np.sqrt(2*np.pi*Qcrit*sweeprate)/(2*np.pi);
 
@@ -314,7 +314,7 @@ class Pulse:
             Density = UPulse @ Density0 @ UPulse.conjugate().T
             Mag[0, iOffset] = -2 * (Sx @ Density.T).sum().real
             Mag[1, iOffset] = -2 * (Sy @ Density.T).sum().real
-            Mag[2, iOffset] = -2 * (Sz @ Density.T).sum().real
+            Mag[2, iOffset] = -2 * (Sz * Density.T).sum().real
         
         return Mag[0,:], Mag[1,:], Mag[2,:]
 
@@ -801,21 +801,34 @@ class HSPulse(Pulse):
         BW = self.BW.value
         tp = ax.max() - ax.min()
         tcent = tp / 2
-        
+        ti = ax
         nx = ax.shape[0]
-        beta_exp1 = np.log(beta*0.5**(1-order1)) / np.log(beta)
-        beta_exp2 = np.log(beta*0.5**(1-order2)) / np.log(beta)
+        # beta_exp1 = np.log(beta*0.5**(1-order1)) / np.log(beta)
+        # beta_exp2 = np.log(beta*0.5**(1-order2)) / np.log(beta)
+        # cut = round(nx/2)
+        # AM = np.zeros(nx)
+        # AM[0:cut] = 1/np.cosh(
+        #     beta**beta_exp1 * (ax[0:cut]/tp)**order1)
+        # AM[cut:-1] = 1/np.cosh(
+        #     beta**beta_exp2 * (ax[cut:-1]/tp)**order2)
+
+        # FM = BW * cumulative_trapezoid(AM**2,ax,initial=0) /\
+        #      np.trapz(AM**2,ax) + self.init_freq.value
+        sech = lambda x: 1/np.cosh(x) 
         cut = round(nx/2)
-        AM = np.zeros(nx)
-        AM[0:cut] = 1/np.cosh(
-            beta**beta_exp1 * (ax[0:cut]/tp)**order1)
-        AM[cut:-1] = 1/np.cosh(
-            beta**beta_exp2 * (ax[cut:-1]/tp)**order2)
+        AM = np.zeros_like(ti)
+        AM[:cut] = sech(beta*0.5*(2*ti[:cut]/tp)**order1)
+        AM[cut:] = sech(beta*0.5*(2*ti[cut:]/tp)**order2)
 
-        FM = BW * cumulative_trapezoid(AM**2,ax,initial=0) /\
-             np.trapz(AM**2,ax) + self.init_freq.value
 
-        return AM, FM
+        BWinf = (self.final_freq.value - self.init_freq.value) / np.tanh(beta/2)
+
+        freq = (BWinf/2) * np.tanh((beta/tp*ti))
+        # phase = 2*np.pi*(BWinf/2) * (tp/beta) * np.log(np.cosh((beta/tp)*ti))
+
+        # total_phase = phase * 2* np.pi * np.mean([self.init_freq.value,self.final_freq.value])
+        
+        return AM, freq
 
 # =============================================================================
 
