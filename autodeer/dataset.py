@@ -173,13 +173,13 @@ class EPRAccessor:
 
     @property
     def correctphase(self):
-
+        new_obj = copy.deepcopy(self._obj)
         if np.iscomplexobj(self._obj.data):
                 corr_data = correctphase(self._obj.data)
-                self._obj.data = corr_data
+                new_obj.data = corr_data
         else:
             UserWarning("Data is not complex, phase correction not applied")
-        return self._obj
+        return new_obj
     
     @property
     def normalise(self):
@@ -188,13 +188,13 @@ class EPRAccessor:
     
     @property
     def correctphasefull(self):
-
+        new_obj = copy.deepcopy(self._obj)
         if np.iscomplexobj(self._obj.data):
                 Re,Im,_ = correctphase(self._obj.data,full_output=True)
-                self._obj.data = Re + 1j*Im
+                new_obj.data = Re + 1j*Im
         else:
             UserWarning("Data is not complex, phase correction not applied")
-        return self._obj
+        return new_obj
 
     @property
     def SNR(self):

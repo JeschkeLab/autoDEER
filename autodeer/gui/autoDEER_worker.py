@@ -80,7 +80,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.stop_flag = False
         self.quick_deer_state = True
 
-        self.max_tau = 5
+        self.max_tau = 3.5
 
         if (self.project is None) or (self.project == ''):
             def savename(exp, suffix=""):
@@ -190,7 +190,7 @@ class autoDEERWorker(QtCore.QRunnable):
         gyro = self.gyro
         reptime = self.reptime
         relax = DEERSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(10*self.noise_mode),
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(20*self.noise_mode),
             tau1=0.5, tau2=0.5, tau3=0.2, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -217,7 +217,7 @@ class autoDEERWorker(QtCore.QRunnable):
         reptime = self.reptime
 
         seq = T2RelaxationSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(20*self.noise_mode),
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(40*self.noise_mode),
             step=dt,dim=200,pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
@@ -236,12 +236,12 @@ class autoDEERWorker(QtCore.QRunnable):
         reptime = self.reptime
 
         seq = RefocusedEcho2DSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(20*self.noise_mode),
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(50*self.noise_mode),
             tau=self.max_tau, pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
 
         self.interface.launch(seq,savename=self.savename("2D_DEC"),IFgain=2)
-        self.interface.terminate_at(SNRCriteria(10),test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(30),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.Relax2D_result.emit(self.interface.acquire_dataset())
@@ -388,11 +388,11 @@ class autoDEERWorker(QtCore.QRunnable):
         
         if (seq is None) or (seq == '5pDEER'):
             methods.append(self.run_CP_relax)
+            methods.append(self.run_T2_relax)
         elif (seq == '4pDEER') or (seq == 'Ref2D'):
             methods.append(self.run_CP_relax)
+            methods.append(self.run_T2_relax)
             methods.append(self.run_2D_relax)
-        
-        methods.append(self.run_T2_relax)
 
         if seq == 'Ref2D':
             return methods
