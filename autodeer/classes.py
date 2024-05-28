@@ -113,8 +113,9 @@ class Interface:
             try:
                 # nAvgs = data.num_scans.value
                 nAvgs = data.attrs['nAvgs']
+
             except AttributeError or KeyError:
-                print("WARNING: Dataset missing number of averages(nAvgs)!")
+                self.log.warning("WARNING: Dataset missing number of averages(nAvgs)!")
                 nAvgs = 1
             finally:
                 if nAvgs < 1:

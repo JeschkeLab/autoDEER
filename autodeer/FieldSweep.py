@@ -9,6 +9,8 @@ from scipy.sparse import bsr_array
 import deerlab as dl
 from xarray import DataArray
 from autodeer.colors import primary_colors, ReIm_colors
+from scipy.interpolate import UnivariateSpline
+
 
 def create_Nmodel(mwFreq):
     """Create the field sweep model for a Nitroxide spin system. 
@@ -162,8 +164,23 @@ class FieldSweepAnalysis():
         if level < 0.2:
             level = 0.2
         return level 
-        
     
+    def smooth(self,):
+        """
+        Generates a smoothed version of the data using a 1D smoothing spline.
+        
+        Returns
+        -------
+        np.ndarray
+            The smoothed data.
+        """
+        smooth_spl = UnivariateSpline(self.axis, self.data)
+        smooth_spl_freq = UnivariateSpline(self.fs_x, self.data)
+        self.smooth_data = smooth_spl(self.axis)
+        self.func = smooth_spl
+        self.func_freq = smooth_spl_freq
+        return self.smooth_data
+        
     def fit(self, spintype='N', **kwargs):
 
         if spintype != 'N':
@@ -245,6 +262,16 @@ class FieldSweepAnalysis():
             elif axis.lower() == 'freq':
 
                 axs.plot(self.fs_x, np.flip(data), label='fit',c=primary_colors[0])
+            axs.legend() 
+        
+        elif hasattr(self,"smooth_data"):
+            if axis.lower() == 'field':
+                data = self.smooth_data / np.max(np.abs(self.smooth_data))
+                axs.plot(self.axis, data, label='smooth',c=primary_colors[0])
+            elif axis.lower() == 'freq':
+                data = self.func_freq(self.fs_x) 
+                data /= np.max(np.abs(data))
+                axs.plot(self.fs_x, data, label='smooth',c=primary_colors[0])
             axs.legend()
 
         return fig

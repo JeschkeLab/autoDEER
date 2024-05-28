@@ -166,11 +166,10 @@ class EPRAccessor:
     def __init__(self, xarray_obj):
         self._obj = xarray_obj
 
-    @property
     def save(self, filename,type='netCDF'):
 
         if type == 'netCDF':
-            self._obj.to_netcdf(f"{filename}.epr")
+            self._obj.to_netcdf(f"{filename}.h5",engine='h5netcdf',invalid_netcdf=True)
 
     @property
     def correctphase(self):
