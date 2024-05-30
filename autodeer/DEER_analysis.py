@@ -152,7 +152,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     if exp_type == '4pDEER':
         pathways = [1,2,3]
     elif exp_type == '5pDEER':
-        pathways = [1,2,3,4,5]
+        pathways = [1,5]
     elif exp_type == '3pDEER':
         pathways = [1,2]
     else:
@@ -270,7 +270,8 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     
     
     if ROI:
-        tau_max = lambda r: (r**3) *(2/4**3)
+        # tau_max = lambda r: (r**3) *(3/4**3)
+        tau_max = lambda r:  (r/3)**3 * 2
         fit.ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
         if fit.ROI[0] < 1:
             fit.ROI[0] = 1
