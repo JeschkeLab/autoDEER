@@ -157,6 +157,8 @@ def create_dataset_from_bruker(filepath):
     attr['LO'] = float(params['SPL']['MWFQ'])  / 1e9
     attr['B'] = float(params['SPL']['B0VL']) * 1e4
     attr['reptime'] = float(params['DSL']['ftEpr']['ShotRepTime'].replace('us',''))
+    attr['nAvgs'] = int(params['DSL']['recorder']['NbScansAcc'])
+    attr['shots'] = int(params['DSL']['ftEpr']['ShotsPLoop'])
     
     return xr.DataArray(data, dims=dims, coords=coords, attrs=attr)
 
