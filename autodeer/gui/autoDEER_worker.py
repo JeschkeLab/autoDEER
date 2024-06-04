@@ -116,9 +116,12 @@ class autoDEERWorker(QtCore.QRunnable):
         else:
             self.tp=12
 
+        if "night_hours" in kwargs:
+            night_hours = kwargs['night_hours']
+
         self.deer_inputs = {}
         
-        self.EndTimeCriteria = TimeCriteria('End Time',time.time() + self.user_inputs['MaxTime']*3600, "Overall end time",end_signal=self.signals.timeout.emit)
+        self.EndTimeCriteria = TimeCriteria('End Time',time.time() + self.user_inputs['MaxTime']*3600, "Overall end time",end_signal=self.signals.timeout.emit,night_hours=night_hours)
 
         # # Add the callback to our kwargs
         # self.kwargs['progress_callback'] = self.signals.progress

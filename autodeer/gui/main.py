@@ -1014,7 +1014,7 @@ class autoDEERUI(QMainWindow):
         self.worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
             pulses=self.pulses,results=self.current_results, AWG=self.AWG, LO=self.LO, gyro = self.gyro,
-            user_inputs=userinput, cores=self.cores )
+            user_inputs=userinput, cores=self.cores,night_hours=self.config['autoDEER']['Night Hours'] )
         
         self.starttime = time.time()
 
