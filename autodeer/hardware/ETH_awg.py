@@ -670,6 +670,15 @@ class ETH_awg_interface(Interface):
         elif type(pulse) is Pulse:
             event["pulsedef"]["type"] = 'FMAM'
             raise RuntimeError("Not yet implemented")
+        
+        if self.resonator is not None:
+            resonator = {}
+            resonator['LO'] = self.resonator.dataset.pulse1_LO # Change to LO after shifting resonator profile definition
+            resonator['nu1'] = self.resonator.profile
+            resonator['range'] = self.resonator.freqs.values - resonator['LO'] + self.awg_freq
+            resonator['scale'] = self.resonator.dataset.pulse0_scale
+
+            event["pulsedef"]["resonator"] = resonator
 
         return event
 

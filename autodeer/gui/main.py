@@ -562,6 +562,7 @@ class autoDEERUI(QMainWindow):
             fitresult = args[0]
 
         self.current_results['respro'] = fitresult
+        self.spectromterInterface.resonator = fitresult
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
             
@@ -641,7 +642,7 @@ class autoDEERUI(QMainWindow):
         else:
             center_freq = (param_in_MHz(exc_pulse.final_freq) + param_in_MHz(exc_pulse.init_freq))/2
             self.ExcFreqBox.setValue(center_freq)
-            self.ExcBWBox.setValue(param_in_MHz(exc_pulse.BW))
+            self.ExcBWBox.setValue(param_in_MHz(exc_pulse.bandwidth))
             self.ExcBWBox.setSuffix(' MHz')
             self.ExcTypeLine.setText(type_to_pulse_hash[type(exc_pulse)])
         
@@ -653,7 +654,7 @@ class autoDEERUI(QMainWindow):
         else:
             center_freq = (param_in_MHz(ref_pulse.final_freq) + param_in_MHz(ref_pulse.init_freq))/2
             self.RefFreqBox.setValue(center_freq)
-            self.RefBWBox.setValue(param_in_MHz(ref_pulse.BW))
+            self.RefBWBox.setValue(param_in_MHz(ref_pulse.bandwidth))
             self.RefBWBox.setSuffix(' MHz')
             self.RefTypeLine.setText(type_to_pulse_hash[type(ref_pulse)])
         
@@ -665,7 +666,7 @@ class autoDEERUI(QMainWindow):
         else:
             center_freq = (param_in_MHz(pump_pulse.final_freq) + param_in_MHz(pump_pulse.init_freq))/2
             self.PumpFreqBox.setValue(center_freq)
-            self.PumpBWBox.setValue(param_in_MHz(pump_pulse.BW))
+            self.PumpBWBox.setValue(param_in_MHz(pump_pulse.bandwidth))
             self.PumpBWBox.setSuffix(' MHz')
             self.PumpTypeLine.setText(type_to_pulse_hash[type(pump_pulse)])
 
@@ -711,7 +712,9 @@ class autoDEERUI(QMainWindow):
             self.current_results['relax2D'].plot1D(axs=self.relax_ax[1],fig=fig)        
         else:
             fig = self.relax_canvas.figure
+            fig.clear()
             axs = self.relax_ax
+            axs.cla()
             relax1D_results = []
             if 'relax' in self.current_results:
                 relax1D_results.append(self.current_results['relax'])
@@ -914,7 +917,7 @@ class autoDEERUI(QMainWindow):
 
             self.correction_factor = ad.calc_correction_factor(self.current_results['quickdeer'],self.aim_MNR,self.aim_time)
             main_log.info(f"Correction factor {self.correction_factor:.3f}")
-            max_tau = self.current_results['relax'].find_optimal(SNR_target=45/(mod_depth*self.correction_factor), target_time=remaining_time, target_step=dt/1e3)
+            max_tau = self.current_results['relax'].find_optimal(SNR_target=45/(mod_depth*np.sqrt(self.correction_factor)), target_time=remaining_time, target_step=dt/1e3)
             main_log.info(f"Max tau {max_tau:.2f} us")
             tau = np.min([rec_tau/2,max_tau])
             self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)

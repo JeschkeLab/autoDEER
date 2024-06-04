@@ -30,6 +30,7 @@ class Interface:
             self.log = logging.getLogger('interface')
         else:
             self.log = log
+        self.resonator = None
         pass
 
     def connect(self) -> None:
