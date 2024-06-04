@@ -127,7 +127,13 @@ class Interface:
             last_scan = nAvgs
             if verbosity > 0:
                 print("Testing")
-            condition = criterion.test(data, verbosity)
+
+            if isinstance(criterion,list):
+                conditions = [crit.test(data, verbosity) for crit in criterion]
+                condition = all(conditions)
+
+            else:
+                condition = criterion.test(data, verbosity)
 
             if not condition:
                 end_time = time.time()
@@ -135,9 +141,18 @@ class Interface:
                     if verbosity > 0:
                         print("Sleeping")
                     time.sleep(test_interval_seconds - (end_time - start_time))
-
-        if callable(criterion.end_signal):
-            criterion.end_signal()
+        
+        if isinstance(criterion,list):
+            for i,crit in enumerate(criterion):
+                if conditions[i]:
+                    if callable(crit.end_signal):
+                        crit.end_signal()
+                
+        else:
+            if callable(criterion.end_signal):
+                criterion.end_signal()
+        
+        
         self.terminate()
         pass
 
