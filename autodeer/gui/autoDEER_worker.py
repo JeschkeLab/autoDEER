@@ -139,6 +139,8 @@ class autoDEERWorker(QtCore.QRunnable):
         gyro_N = self.gyro
         reptime = self.reptime
         p90, p180 = self.interface.tune_rectpulse(tp=self.tp, LO=LO, B=LO/gyro_N, reptime = reptime,shots=int(100*self.noise_mode))
+        shots = int(50*self.noise_mode)
+        shots = np.min([shots,20])
         fsweep = FieldSweepSequence(
             B=LO/gyro_N, LO=LO,reptime=reptime,averages=50,shots=int(50*self.noise_mode),
             Bwidth = 250, 
@@ -147,7 +149,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
         self.interface.launch(fsweep,savename=self.savename("EDFS_Q"),IFgain=2)
         self.signals.status.emit('Field-sweep running')
-        self.interface.terminate_at(SNRCriteria(20))
+        self.interface.terminate_at(SNRCriteria(30))
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.status.emit('Field-sweep complete')
@@ -192,8 +194,10 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
+        shots = int(40*self.noise_mode)
+        shots = np.min([shots,10])
         relax = DEERSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(20*self.noise_mode),
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=shots,
             tau1=0.5, tau2=0.5, tau3=0.2, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -218,9 +222,11 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
+        shots = int(40*self.noise_mode)
+        shots = np.min([shots,10])
 
         seq = T2RelaxationSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(40*self.noise_mode),
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=shots,
             step=dt,dim=200,pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         

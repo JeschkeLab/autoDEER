@@ -155,7 +155,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>2</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideRight</enum>
@@ -301,7 +301,7 @@
               </widget>
              </item>
              <item>
-              <layout class="QFormLayout" name="formLayout_5">
+              <layout class="QFormLayout" name="Resonator_layout">
                <item row="0" column="1">
                 <widget class="QComboBox" name="resonatorComboBox">
                  <property name="sizePolicy">
@@ -986,10 +986,10 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="centerFrequencyLabel">
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="Qlabel">
                     <property name="text">
-                     <string>Centre Frequency</string>
+                     <string>Q</string>
                     </property>
                    </widget>
                   </item>
@@ -1006,13 +1006,6 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="qLabel">
-                    <property name="text">
-                     <string>Q</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="0" column="2">
                    <widget class="QLabel" name="centreFrequencyCI">
                     <property name="text">
@@ -1020,8 +1013,32 @@
                     </property>
                    </widget>
                   </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="centerFrequencyLabel">
+                    <property name="text">
+                     <string>Centre Frequency</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="1" column="2">
                    <widget class="QLabel" name="qCI">
+                    <property name="text">
+                     <string>(0.00, 0.00)</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_33">
+                    <property name="text">
+                     <string>ν&lt;sub&gt;1&lt;/sub&gt; max</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QDoubleSpinBox" name="nu1doubleSpinBox"/>
+                  </item>
+                  <item row="2" column="2">
+                   <widget class="QLabel" name="nu1CI">
                     <property name="text">
                      <string>(0.00, 0.00)</string>
                     </property>
@@ -1678,7 +1695,7 @@
      <x>0</x>
      <y>0</y>
      <width>967</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

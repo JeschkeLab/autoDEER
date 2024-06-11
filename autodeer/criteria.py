@@ -81,8 +81,8 @@ class TimeCriteria(Criteria):
             now = time.time()
             if night_hours is not None:
                 start, end = night_hours
-                now = datetime.datetime.fromtimestamp(now)
-                if now.hour >= start and now.hour < end:
+                now_struct = datetime.datetime.fromtimestamp(now)
+                if now_struct.hour >= start and now_struct.hour < end:
                     return False
 
             return now > end_time

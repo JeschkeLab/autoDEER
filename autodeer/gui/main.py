@@ -735,19 +735,20 @@ class autoDEERUI(QMainWindow):
         # self.relax_canvas.draw()
 
         self.refresh_relax_figure()
-        est_lambda = 0.4 * (self.userinput['label_eff']/100)
+        label_eff = self.userinput['label_eff'] / 100
+        est_lambda = 0.4 
         self.aim_time = 2
         self.aim_MNR = 20 / est_lambda
-        tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR, target_time=self.aim_time, target_step=0.015)
-        tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR, target_time=4, target_step=0.015)
-        max_tau = fitresult.find_optimal(SNR_target=45/est_lambda, target_time=self.userinput['MaxTime'], target_step=0.015)
+        tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/label_eff, target_time=self.aim_time, target_step=0.015)
+        tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/label_eff, target_time=4, target_step=0.015)
+        max_tau = fitresult.find_optimal(SNR_target=45/(est_lambda*label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
     
         self.current_results['relax'].tau2hrs = tau2hrs
 
         if 'relax2D' in self.current_results:
-            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR,self.waveform_precision)
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR/label_eff,self.waveform_precision)
         else:
-            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR,self.waveform_precision)
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR/label_eff,self.waveform_precision)
         
         
         # if (tau2hrs < 1.5) and (tau4hrs > 1.5):
@@ -874,15 +875,21 @@ class autoDEERUI(QMainWindow):
 
         test_result = fitresult.check_decay()
 
-        if test_result:
+        if test_result == 0:
             if self.waitCondition is not None: # Wake up the runner thread
                 self.waitCondition.wakeAll()
-        else:
+                return None
+        elif test_result == -1: # The trace needs to be longer
             test_dt = fitresult.axis[1] - fitresult.axis[0]
             test_dt *= 1e3
             new_dt = ad.round_step(test_dt*2,self.waveform_precision)
-            if self.worker is not None:
-                self.worker.run_CP_relax(dt=new_dt)
+        elif test_result == 1: # The trace needs to be shorter
+            test_dt = fitresult.axis[1] - fitresult.axis[0]
+            test_dt *= 1e3
+            new_dt = ad.round_step(test_dt/2,self.waveform_precision)
+        
+        if self.worker is not None:
+            self.worker.run_CP_relax(dt=new_dt)
 
 
     def refresh_T2(self, fitresult):

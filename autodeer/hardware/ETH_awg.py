@@ -119,28 +119,30 @@ class ETH_awg_interface(Interface):
         """
         cur_exp = self.workspace['currexp']
         folder_path = cur_exp['savepath']
-        filename = cur_exp['savename']
-        files = os.listdir(folder_path)
+        # filename = cur_exp['savename']
+        # files = os.listdir(folder_path)
 
-        def extract_date_time(str):
-            output = re.findall(r"(\d{8})_(\d{4})", str)
-            if output != []:
-                date = int(output[0][0])
-                start_time = int(output[0][1])
-                return date*10000 + start_time
-            else:
-                return 0
+        curexpname = self.workspace['currexpname']
+        # def extract_date_time(str):
+        #     output = re.findall(r"(\d{8})_(\d{4})", str)
+        #     if output != []:
+        #         date = int(output[0][0])
+        #         start_time = int(output[0][1])
+        #         return date*10000 + start_time
+        #     else:
+        #         return 0
         
-        newest = max([extract_date_time(file) for file in files])
-        date = newest // 10000
-        start_time = newest - date * 10000
-        path = folder_path + "\\" \
-            + f"{date:08d}_{start_time:04d}_{filename}.mat"
+        # newest = max([extract_date_time(file) for file in files])
+        # date = newest // 10000
+        # start_time = newest - date * 10000
+        # path = folder_path + "\\" \
+        #     + f"{date:08d}_{start_time:04d}_{filename}.mat"
         
-        
+        path = folder_path + "\\" + curexpname + ".mat"
         
         for i in range(0, 50):
             try:
+                e = 'None'
                 self.engine.dig_interface('savenow')
                 Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
                 # data = uwb_load(Matfile, options=options, verbosity=verbosity,sequence=self.cur_exp)
@@ -155,14 +157,15 @@ class ETH_awg_interface(Interface):
 
                 if np.all(data.data == 0+0j):
                     time.sleep(10)
+                    print("Data is all zeros")
                     continue
-            except OSError:
+            except OSError as e:
                 time.sleep(10)
-            except IndexError:
+            except IndexError as e:
                 time.sleep(10)
-            except ValueError:
+            except ValueError as e:
                 time.sleep(10)
-            except MatReadError:
+            except MatReadError as e:
                 time.sleep(10)
             else:
                 return data

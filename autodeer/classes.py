@@ -131,7 +131,7 @@ class Interface:
 
             if isinstance(criterion,list):
                 conditions = [crit.test(data, verbosity) for crit in criterion]
-                condition = all(conditions)
+                condition = any(conditions)
 
             else:
                 condition = criterion.test(data, verbosity)

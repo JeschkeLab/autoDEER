@@ -601,6 +601,7 @@ def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=No
             dta = [dta_sum]
             
         else:
+            print('The file has no attached data.')
             raise ValueError('The file has no attached data.')
 
         return [dta, nAvgs]
