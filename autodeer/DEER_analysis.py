@@ -660,11 +660,6 @@ def shift_pulse_freq(pulse, shift):
     """
     if hasattr(pulse, 'freq'):
         pulse.freq.value += shift
-    elif hasattr(pulse, 'BW'):
-        if hasattr(pulse, 'init_freq'):
-            pulse.init_freq.value += shift
-        elif hasattr(pulse, 'final_freq'):
-            pulse.final_freq.value += shift
     elif hasattr(pulse, 'init_freq') and hasattr(pulse, 'final_freq'):
         pulse.init_freq.value += shift
         pulse.final_freq.value += shift

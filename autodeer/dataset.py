@@ -157,6 +157,8 @@ def create_dataset_from_bruker(filepath):
     attr['LO'] = float(params['SPL']['MWFQ'])  / 1e9
     attr['B'] = float(params['SPL']['B0VL']) * 1e4
     attr['reptime'] = float(params['DSL']['ftEpr']['ShotRepTime'].replace('us',''))
+    attr['nAvgs'] = int(params['DSL']['recorder']['NbScansAcc'])
+    attr['shots'] = int(params['DSL']['ftEpr']['ShotsPLoop'])
     
     return xr.DataArray(data, dims=dims, coords=coords, attrs=attr)
 
@@ -166,21 +168,20 @@ class EPRAccessor:
     def __init__(self, xarray_obj):
         self._obj = xarray_obj
 
-    @property
     def save(self, filename,type='netCDF'):
 
         if type == 'netCDF':
-            self._obj.to_netcdf(f"{filename}.epr")
+            self._obj.to_netcdf(f"{filename}.h5",engine='h5netcdf',invalid_netcdf=True)
 
     @property
     def correctphase(self):
-
+        new_obj = copy.deepcopy(self._obj)
         if np.iscomplexobj(self._obj.data):
                 corr_data = correctphase(self._obj.data)
-                self._obj.data = corr_data
+                new_obj.data = corr_data
         else:
             UserWarning("Data is not complex, phase correction not applied")
-        return self._obj
+        return new_obj
     
     @property
     def normalise(self):
@@ -189,13 +190,13 @@ class EPRAccessor:
     
     @property
     def correctphasefull(self):
-
+        new_obj = copy.deepcopy(self._obj)
         if np.iscomplexobj(self._obj.data):
                 Re,Im,_ = correctphase(self._obj.data,full_output=True)
-                self._obj.data = Re + 1j*Im
+                new_obj.data = Re + 1j*Im
         else:
             UserWarning("Data is not complex, phase correction not applied")
-        return self._obj
+        return new_obj
 
     @property
     def SNR(self):

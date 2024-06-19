@@ -691,10 +691,15 @@ class autoDEERUI(QMainWindow):
 
     def refresh_relax_figure(self):
         
-
-        if 'relax2D' in self.current_results:
+        if isinstance(self.relax_ax, np.ndarray):
             self.relax_ax[0].cla()
             self.relax_ax[1].cla()
+        else:
+            self.relax_ax.cla()
+
+
+        if 'relax2D' in self.current_results:
+            
             fig, axs  = plt.subplots(2,1,figsize=(12.5, 6.28),layout='constrained',height_ratios=[2,1])
             relax_canvas = FigureCanvas(fig)
             self.relax_canvas.figure.clear()
@@ -705,7 +710,6 @@ class autoDEERUI(QMainWindow):
             self.current_results['relax2D'].plot2D(axs=self.relax_ax[0],fig=fig)
             self.current_results['relax2D'].plot1D(axs=self.relax_ax[1],fig=fig)        
         else:
-            self.relax_ax.cla()
             fig = self.relax_canvas.figure
             axs = self.relax_ax
             relax1D_results = []
@@ -909,9 +913,9 @@ class autoDEERUI(QMainWindow):
             remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60))
 
             self.correction_factor = ad.calc_correction_factor(self.current_results['quickdeer'],self.aim_MNR,self.aim_time)
+            main_log.info(f"Correction factor {self.correction_factor:.3f}")
             max_tau = self.current_results['relax'].find_optimal(SNR_target=45/(mod_depth*self.correction_factor), target_time=remaining_time, target_step=dt/1e3)
             main_log.info(f"Max tau {max_tau:.2f} us")
-            max_tau = 10.3
             tau = np.min([rec_tau/2,max_tau])
             self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
             self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
