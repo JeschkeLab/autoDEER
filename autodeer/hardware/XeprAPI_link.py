@@ -498,7 +498,7 @@ class XeprAPILink:
         title : str, optional
             _description_, by default None
         """
-        xepr_file_limit = 70
+        xepr_file_limit = 120
         directory, basename = os.path.split(path)
         if not title:
             title = basename
