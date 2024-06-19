@@ -201,13 +201,15 @@ class ETH_awg_interface(Interface):
                 unique_axIDs = list(set(axIDs))
                 unique_axIDs.sort()
                 if len(axIDs) == 1:
-                    print(False)
+                    return False
                 elif vars == unique_vars:
-                    print(False)
+                    return False
                 elif axIDs == unique_axIDs:
-                    print(True)
+                    return True
                 else:
                     raise ValueError('Pulse time is not unique for the same eventID')
+                
+            return False
 
 
         self.bg_thread=None
@@ -770,13 +772,18 @@ class ETH_awg_interface(Interface):
                 if pulse_num is not None:
                     if var in ["freq", "init_freq"]:
                         vec += self.awg_freq
-                        var = "nu_init"
+                        if isinstance(sequence.pulses[pulse_num],Detection):
+                            var = 'det_frq'
+                        else:
+                            var = "nu_init"
                     elif var == "final_freq":
                         vec += self.awg_freq
                         var = "nu_final"
 
                     if var == "t":
                         pulse_str = f"events{{{pulse_num+1}}}.t"
+                    elif var =='det_frq':
+                        pulse_str = f"events{{{pulse_num+1}}}.det_frq"
                     else:
                         pulse_str = f"events{{{pulse_num+1}}}.pulsedef.{var}"
                     

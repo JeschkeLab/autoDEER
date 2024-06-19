@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog, QPushButton
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
@@ -15,6 +15,7 @@ from autodeer.gui.tools import *
 from autodeer.gui.autoDEER_worker import autoDEERWorker
 from autodeer.gui.quickdeer import DEERplot
 from autodeer.gui.log import LogDialog
+from autodeer.gui.modetune import ModeTune
 import yaml
 import time
 import datetime
@@ -268,6 +269,13 @@ class autoDEERUI(QMainWindow):
         else:
             return None
         
+        if self.spectromterInterface is not None:
+            self.spectromterInterface = None
+            if hasattr(self,'modeTuneButton'):
+                self.modeTuneDialog.close()
+                self.Resonator_layout.removeWidget(self.modeTuneButton)
+
+        
 
         with open(filename_edit, mode='r') as f:
             config = yaml.safe_load(f)
@@ -309,6 +317,12 @@ class autoDEERUI(QMainWindow):
                 self.spectromterInterface = ETH_awg_interface()
                 self.spectromterInterface.savefolder = self.current_folder
                 self.Bruker=False
+                self.modeTuneDialog = ModeTune(self.spectromterInterface, gyro=self.gyro, threadpool=self.threadpool, current_folder=self.current_folder)
+                self.modeTuneButton = QPushButton('Mode Tune')
+                self.Resonator_layout.addWidget(self.modeTuneButton)
+                self.modeTuneButton.clicked.connect(self.modeTuneDialog.show)
+                
+
             elif model == 'Bruker_MPFU':
                 from autodeer.hardware.Bruker_MPFU import BrukerMPFU
                 self.spectromterInterface = BrukerMPFU(filename_edit)

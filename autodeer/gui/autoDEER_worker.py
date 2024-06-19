@@ -147,7 +147,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi2_pulse=p90, pi_pulse=p180,
         )
 
-        self.interface.launch(fsweep,savename=self.savename("EDFS_Q"),IFgain=2)
+        self.interface.launch(fsweep,savename=self.savename("EDFS_Q"),IFgain=1)
         self.signals.status.emit('Field-sweep running')
         self.interface.terminate_at(SNRCriteria(30))
         while self.interface.isrunning():
@@ -169,7 +169,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi2_pulse=p90, pi_pulse=p180,
         )
 
-        self.interface.launch(RPseq,savename=self.savename("ResPro"),IFgain=2)
+        self.interface.launch(RPseq,savename=self.savename("ResPro"),IFgain=1)
         self.signals.status.emit('Resonator Profile running')
 
         self.interface.terminate_at(SNRCriteria(5))
@@ -210,7 +210,7 @@ class autoDEERWorker(QtCore.QRunnable):
         relax._estimate_time();
         relax.pulses[1].scale.value = 0
         relax.pulses[3].scale.value = 0
-        self.interface.launch(relax,savename=self.savename("CP_Q"),IFgain=2)
+        self.interface.launch(relax,savename=self.savename("CP_Q"),IFgain=1)
         self.interface.terminate_at(SNRCriteria(20),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
@@ -230,7 +230,7 @@ class autoDEERWorker(QtCore.QRunnable):
             step=dt,dim=200,pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
-        self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=2)
+        self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=1)
         self.interface.terminate_at(SNRCriteria(30),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
@@ -361,7 +361,7 @@ class autoDEERWorker(QtCore.QRunnable):
         n_shots = int(np.min([int(50*self.noise_mode),50]))
         scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=12e3, averages=10, shots=n_shots,
                            pi2_pulse=p90, pi_pulse=p180)
-        self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",IFgain=2)
+        self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",IFgain=1)
         self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
