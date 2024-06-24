@@ -165,7 +165,7 @@ class FieldSweepAnalysis():
             level = 0.2
         return level 
     
-    def smooth(self,):
+    def smooth(self,*args,**kwargs):
         """
         Generates a smoothed version of the data using a 1D smoothing spline.
         

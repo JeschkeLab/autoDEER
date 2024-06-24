@@ -99,9 +99,10 @@ class Worker(QtCore.QRunnable):
         finally:
             self.signals.finished.emit()  # Done
 
-def fieldsweep_fit(fsweep_analysis):
-    fsweep_analysis.fit(xtol=1e-5, lin_maxiter=100)
-
+def fieldsweep_fit(fsweep_analysis,fit):
+    if fit:
+        fsweep_analysis.fit(xtol=1e-5, lin_maxiter=100)
+    fsweep_analysis.smooth() # Always smooth anyway
     return fsweep_analysis
 
 def respro_process(dataset, fieldsweep=None,cores=1):
@@ -480,7 +481,12 @@ class autoDEERUI(QMainWindow):
 
         if self.worker is not None:
             self.worker.update_gyro(fsweep_analysis.gyro)
-        worker = Worker(fieldsweep_fit, fsweep_analysis)
+        try:
+            fit = self.config['autoDEER']['FieldSweep']['Fit']
+        except KeyError:
+            fit = False
+        
+        worker = Worker(fieldsweep_fit, fsweep_analysis,fit)
         worker.signals.result.connect(self.refresh_fieldsweep_after_fit)
         
         self.threadpool.start(worker)
@@ -508,20 +514,36 @@ class autoDEERUI(QMainWindow):
 
         # Add fit resultss
 
-        self.gyroSpinBox.setValue(fitresult.gyro*1e3)
-        self.gxSpinBox.setValue(-0.0025 * fitresult.results.az + 2.0175)
-        self.gySpinBox.setValue(fitresult.results.gy)
-        self.gzSpinBox.setValue(fitresult.results.gz)
-        self.AxSpinBox.setValue(fitresult.results.axy*28.0328)
-        self.AySpinBox.setValue(fitresult.results.axy*28.0328)
-        self.AzSpinBox.setValue(fitresult.results.az*28.0328)
-        self.GBSpinBox.setValue(fitresult.results.GB)
-        self.BoffsetSpinBox.setValue(fitresult.results.Boffset)
+        if hasattr(fitresult,'results'): # Has been fit
+            self.gyroSpinBox.setValue(fitresult.gyro*1e3)
+            self.gxSpinBox.setValue(-0.0025 * fitresult.results.az + 2.0175)
+            self.gySpinBox.setValue(fitresult.results.gy)
+            self.gzSpinBox.setValue(fitresult.results.gz)
+            self.AxSpinBox.setValue(fitresult.results.axy*28.0328)
+            self.AySpinBox.setValue(fitresult.results.axy*28.0328)
+            self.AzSpinBox.setValue(fitresult.results.az*28.0328)
+            self.GBSpinBox.setValue(fitresult.results.GB)
+            self.BoffsetSpinBox.setValue(fitresult.results.Boffset)
 
-        gxCI = -0.0025 *fitresult.results.azUncert.ci(95)+ 2.0175
-        self.gxCI.setText(f"({gxCI[0]:.4f},{gxCI[1]:.4f})")
-        self.gyCI.setText(getCIstring(fitresult.results.gyUncert))
-        self.gzCI.setText(getCIstring(fitresult.results.gzUncert))
+            gxCI = -0.0025 *fitresult.results.azUncert.ci(95)+ 2.0175
+            self.gxCI.setText(f"({gxCI[0]:.4f},{gxCI[1]:.4f})")
+            self.gyCI.setText(getCIstring(fitresult.results.gyUncert))
+            self.gzCI.setText(getCIstring(fitresult.results.gzUncert))
+        else:
+            self.gyroSpinBox.setValue(fitresult.gyro*1e3)
+            self.gxSpinBox.setValue(0)
+            self.gySpinBox.setValue(0)
+            self.gzSpinBox.setValue(0)
+            self.AxSpinBox.setValue(0)
+            self.AySpinBox.setValue(0)
+            self.AzSpinBox.setValue(0)
+            self.GBSpinBox.setValue(0)
+            self.BoffsetSpinBox.setValue(0)
+
+            self.gxCI.setText('(-,-)')
+            self.gyCI.setText('(-,-)')
+            self.gzCI.setText('(-,-)')
+        
         self.Tab_widget.setCurrentIndex(1)
 
         if not ((self.pulses is None) or (self.pulses == {})):
