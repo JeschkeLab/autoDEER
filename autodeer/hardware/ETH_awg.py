@@ -286,7 +286,7 @@ class ETH_awg_interface(Interface):
         Parameters
         ----------
         tp : float
-            Pulse length in ns
+            Pulse length of pi/2 pulse in ns
         LO : float
             Central frequency of this pulse in GHz
         B : float
@@ -316,14 +316,7 @@ class ETH_awg_interface(Interface):
 
         amp_tune.evolution([scale])
         
-        # amp_tune.addPulsesProg(
-        #     pulses=[0,1],
-        #     variables=['scale','scale'],
-        #     axis_id=0,
-        #     axis=np.arange(0,0.9,0.02),
-        # )
-
-        self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+        self.launch(amp_tune, "autoDEER_amptune", IFgain=0)
 
         while self.isrunning():
             time.sleep(10)
@@ -386,44 +379,13 @@ class ETH_awg_interface(Interface):
             c_frq = 0.5*(pulse.final_freq.value + pulse.final_freq.value) + LO
 
         # Find rect pulses
-
-        # all_rect_pulses = list(self.pulses.keys())
-        # pulse_matches = []
-        # for pulse_name in all_rect_pulses:
-        #     # if not re.match(r"^p180_",pulse_name):
-        #     #     continue
-        #     pulse_frq = self.pulses[pulse_name].LO.value + self.pulses[pulse_name].freq.value
-        #     if not np.abs(pulse_frq - c_frq) < 0.01: #Within 10MHz
-        #         continue
-        #     pulse_matches.append(pulse_name)
-        
-        # # Find best pi pulse
-        # pi_length_best = 1e6
-        # for pulse_name in pulse_matches:
-        #     if re.match(r"^p180_",pulse_name):
-        #         ps_length = int(re.search(r"p180_(\d+)",pulse_name).groups()[0])
-        #         if ps_length < pi_length_best:
-        #             pi_length_best = ps_length
-        
-        # if pi_length_best == 1e6:
-        #     _, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
-        # else:
-        #     pi_pulse = self.pulses[f"p180_{pi_length_best}"]
-
-        # pi2_length_best = 1e6
-        # for pulse_name in pulse_matches:
-        #     if re.match(r"^p90_",pulse_name):
-        #         ps_length = int(re.search(r"p90_(\d+)",pulse_name).groups()[0])
-        #         if ps_length < pi2_length_best:
-        #             pi2_length_best = ps_length
-        
-        # if pi2_length_best == 1e6:
-        #     pi2_pulse, _ = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
-        # else:
-        #     pi2_pulse = self.pulses[f"p90_{pi2_length_best}"]
-
-        pi2_pulse, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
         if mode == "amp_hahn":
+            if pulse.flipangle.value == np.pi:
+                tp = pulse.tp.value / 2
+            elif pulse.flipangle.value == np.pi/2:
+                tp = pulse.tp.value
+
+            pi2_pulse, pi_pulse = self.tune_rectpulse(tp=tp, B=B, LO=c_frq, reptime=reptime)
             amp_tune =HahnEchoSequence(
                 B=B, LO=LO, 
                 reptime=reptime, averages=1, shots=shots,
@@ -435,17 +397,26 @@ class ETH_awg_interface(Interface):
 
             amp_tune.evolution([scale])
 
-            self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+            self.launch(amp_tune, "autoDEER_amptune", IFgain=0)
 
             while self.isrunning():
                 time.sleep(10)
             dataset = self.acquire_dataset()
+            dataset = dataset.epr.correctphase
+            data = np.abs(dataset.data)
+
             new_amp = np.around(dataset.pulse0_scale[dataset.data.argmax()].data,2)
+            if new_amp > 0.9:
+                raise RuntimeError("Not enough power avaliable.")
+        
+            if new_amp == 0:
+                warnings.warn("Pulse tuned with a scale of zero!")
+
             pulse.scale = Parameter('scale',new_amp,unit=None,description='The amplitude of the pulse 0-1')
             return pulse
 
         elif mode == "amp_nut":
-
+            pi2_pulse, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
             nut_tune = Sequence(
                 name="nut_tune", B=(B/LO*c_frq), LO=LO, reptime=reptime,
                 averages=1,shots=shots
@@ -472,7 +443,7 @@ class ETH_awg_interface(Interface):
             #     axis_id = 0,
             #     axis= np.arange(0,0.9,0.02)
             # )
-            self.launch(nut_tune, "autoDEER_amptune", IFgain=1)
+            self.launch(nut_tune, "autoDEER_amptune", IFgain=0)
 
             while self.isrunning():
                 time.sleep(10)
@@ -522,7 +493,7 @@ class ETH_awg_interface(Interface):
                 axis=np.arange(0,0.9,0.02),
             )
 
-            self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+            self.launch(amp_tune, "autoDEER_amptune", IFgain=0)
 
             while self.isrunning():
                 time.sleep(10)
@@ -576,7 +547,7 @@ class ETH_awg_interface(Interface):
                     axis=np.arange(0,0.9,0.02),
                 )
 
-                self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+                self.launch(amp_tune, "autoDEER_amptune", IFgain=0)
 
                 while self.isrunning():
                     time.sleep(10)
