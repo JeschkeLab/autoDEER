@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog, QPushButton
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
@@ -15,6 +15,7 @@ from autodeer.gui.tools import *
 from autodeer.gui.autoDEER_worker import autoDEERWorker
 from autodeer.gui.quickdeer import DEERplot
 from autodeer.gui.log import LogDialog
+from autodeer.gui.modetune import ModeTune
 import yaml
 import time
 import datetime
@@ -268,6 +269,13 @@ class autoDEERUI(QMainWindow):
         else:
             return None
         
+        if self.spectromterInterface is not None:
+            self.spectromterInterface = None
+            if hasattr(self,'modeTuneButton'):
+                self.modeTuneDialog.close()
+                self.Resonator_layout.removeWidget(self.modeTuneButton)
+
+        
 
         with open(filename_edit, mode='r') as f:
             config = yaml.safe_load(f)
@@ -309,6 +317,12 @@ class autoDEERUI(QMainWindow):
                 self.spectromterInterface = ETH_awg_interface()
                 self.spectromterInterface.savefolder = self.current_folder
                 self.Bruker=False
+                self.modeTuneDialog = ModeTune(self.spectromterInterface, gyro=self.gyro, threadpool=self.threadpool, current_folder=self.current_folder)
+                self.modeTuneButton = QPushButton('Mode Tune')
+                self.Resonator_layout.addWidget(self.modeTuneButton)
+                self.modeTuneButton.clicked.connect(self.modeTuneDialog.show)
+                
+
             elif model == 'Bruker_MPFU':
                 from autodeer.hardware.Bruker_MPFU import BrukerMPFU
                 self.spectromterInterface = BrukerMPFU(filename_edit)
@@ -562,6 +576,7 @@ class autoDEERUI(QMainWindow):
             fitresult = args[0]
 
         self.current_results['respro'] = fitresult
+        self.spectromterInterface.resonator = fitresult
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
             
@@ -641,7 +656,7 @@ class autoDEERUI(QMainWindow):
         else:
             center_freq = (param_in_MHz(exc_pulse.final_freq) + param_in_MHz(exc_pulse.init_freq))/2
             self.ExcFreqBox.setValue(center_freq)
-            self.ExcBWBox.setValue(param_in_MHz(exc_pulse.BW))
+            self.ExcBWBox.setValue(param_in_MHz(exc_pulse.bandwidth))
             self.ExcBWBox.setSuffix(' MHz')
             self.ExcTypeLine.setText(type_to_pulse_hash[type(exc_pulse)])
         
@@ -653,7 +668,7 @@ class autoDEERUI(QMainWindow):
         else:
             center_freq = (param_in_MHz(ref_pulse.final_freq) + param_in_MHz(ref_pulse.init_freq))/2
             self.RefFreqBox.setValue(center_freq)
-            self.RefBWBox.setValue(param_in_MHz(ref_pulse.BW))
+            self.RefBWBox.setValue(param_in_MHz(ref_pulse.bandwidth))
             self.RefBWBox.setSuffix(' MHz')
             self.RefTypeLine.setText(type_to_pulse_hash[type(ref_pulse)])
         
@@ -665,7 +680,7 @@ class autoDEERUI(QMainWindow):
         else:
             center_freq = (param_in_MHz(pump_pulse.final_freq) + param_in_MHz(pump_pulse.init_freq))/2
             self.PumpFreqBox.setValue(center_freq)
-            self.PumpBWBox.setValue(param_in_MHz(pump_pulse.BW))
+            self.PumpBWBox.setValue(param_in_MHz(pump_pulse.bandwidth))
             self.PumpBWBox.setSuffix(' MHz')
             self.PumpTypeLine.setText(type_to_pulse_hash[type(pump_pulse)])
 
@@ -711,7 +726,9 @@ class autoDEERUI(QMainWindow):
             self.current_results['relax2D'].plot1D(axs=self.relax_ax[1],fig=fig)        
         else:
             fig = self.relax_canvas.figure
+            fig.clear()
             axs = self.relax_ax
+            axs.cla()
             relax1D_results = []
             if 'relax' in self.current_results:
                 relax1D_results.append(self.current_results['relax'])
@@ -732,19 +749,20 @@ class autoDEERUI(QMainWindow):
         # self.relax_canvas.draw()
 
         self.refresh_relax_figure()
-        est_lambda = 0.4 * (self.userinput['label_eff']/100)
+        label_eff = self.userinput['label_eff'] / 100
+        est_lambda = 0.4 
         self.aim_time = 2
         self.aim_MNR = 20 / est_lambda
-        tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR, target_time=self.aim_time, target_step=0.015)
-        tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR, target_time=4, target_step=0.015)
-        max_tau = fitresult.find_optimal(SNR_target=45/est_lambda, target_time=self.userinput['MaxTime'], target_step=0.015)
+        tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/label_eff, target_time=self.aim_time, target_step=0.015)
+        tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/label_eff, target_time=4, target_step=0.015)
+        max_tau = fitresult.find_optimal(SNR_target=45/(est_lambda*label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
     
         self.current_results['relax'].tau2hrs = tau2hrs
 
         if 'relax2D' in self.current_results:
-            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR,self.waveform_precision)
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR/label_eff,self.waveform_precision)
         else:
-            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR,self.waveform_precision)
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR/label_eff,self.waveform_precision)
         
         
         # if (tau2hrs < 1.5) and (tau4hrs > 1.5):
@@ -871,15 +889,21 @@ class autoDEERUI(QMainWindow):
 
         test_result = fitresult.check_decay()
 
-        if test_result:
+        if test_result == 0:
             if self.waitCondition is not None: # Wake up the runner thread
                 self.waitCondition.wakeAll()
-        else:
+                return None
+        elif test_result == -1: # The trace needs to be longer
             test_dt = fitresult.axis[1] - fitresult.axis[0]
             test_dt *= 1e3
             new_dt = ad.round_step(test_dt*2,self.waveform_precision)
-            if self.worker is not None:
-                self.worker.run_CP_relax(dt=new_dt)
+        elif test_result == 1: # The trace needs to be shorter
+            test_dt = fitresult.axis[1] - fitresult.axis[0]
+            test_dt *= 1e3
+            new_dt = ad.round_step(test_dt/2,self.waveform_precision)
+        
+        if self.worker is not None:
+            self.worker.run_CP_relax(dt=new_dt)
 
 
     def refresh_T2(self, fitresult):
@@ -914,7 +938,7 @@ class autoDEERUI(QMainWindow):
 
             self.correction_factor = ad.calc_correction_factor(self.current_results['quickdeer'],self.aim_MNR,self.aim_time)
             main_log.info(f"Correction factor {self.correction_factor:.3f}")
-            max_tau = self.current_results['relax'].find_optimal(SNR_target=45/(mod_depth*self.correction_factor), target_time=remaining_time, target_step=dt/1e3)
+            max_tau = self.current_results['relax'].find_optimal(SNR_target=45/(mod_depth*np.sqrt(self.correction_factor)), target_time=remaining_time, target_step=dt/1e3)
             main_log.info(f"Max tau {max_tau:.2f} us")
             tau = np.min([rec_tau/2,max_tau])
             self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
@@ -1011,7 +1035,7 @@ class autoDEERUI(QMainWindow):
         self.worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
             pulses=self.pulses,results=self.current_results, AWG=self.AWG, LO=self.LO, gyro = self.gyro,
-            user_inputs=userinput, cores=self.cores )
+            user_inputs=userinput, cores=self.cores,night_hours=self.config['autoDEER']['Night Hours'] )
         
         self.starttime = time.time()
 

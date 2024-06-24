@@ -119,28 +119,30 @@ class ETH_awg_interface(Interface):
         """
         cur_exp = self.workspace['currexp']
         folder_path = cur_exp['savepath']
-        filename = cur_exp['savename']
-        files = os.listdir(folder_path)
+        # filename = cur_exp['savename']
+        # files = os.listdir(folder_path)
 
-        def extract_date_time(str):
-            output = re.findall(r"(\d{8})_(\d{4})", str)
-            if output != []:
-                date = int(output[0][0])
-                start_time = int(output[0][1])
-                return date*10000 + start_time
-            else:
-                return 0
+        curexpname = self.workspace['currexpname']
+        # def extract_date_time(str):
+        #     output = re.findall(r"(\d{8})_(\d{4})", str)
+        #     if output != []:
+        #         date = int(output[0][0])
+        #         start_time = int(output[0][1])
+        #         return date*10000 + start_time
+        #     else:
+        #         return 0
         
-        newest = max([extract_date_time(file) for file in files])
-        date = newest // 10000
-        start_time = newest - date * 10000
-        path = folder_path + "\\" \
-            + f"{date:08d}_{start_time:04d}_{filename}.mat"
+        # newest = max([extract_date_time(file) for file in files])
+        # date = newest // 10000
+        # start_time = newest - date * 10000
+        # path = folder_path + "\\" \
+        #     + f"{date:08d}_{start_time:04d}_{filename}.mat"
         
-        
+        path = folder_path + "\\" + curexpname + ".mat"
         
         for i in range(0, 50):
             try:
+                e = 'None'
                 self.engine.dig_interface('savenow')
                 Matfile = loadmat(path, simplify_cells=True, squeeze_me=True)
                 # data = uwb_load(Matfile, options=options, verbosity=verbosity,sequence=self.cur_exp)
@@ -155,14 +157,15 @@ class ETH_awg_interface(Interface):
 
                 if np.all(data.data == 0+0j):
                     time.sleep(10)
+                    print("Data is all zeros")
                     continue
-            except OSError:
+            except OSError as e:
                 time.sleep(10)
-            except IndexError:
+            except IndexError as e:
                 time.sleep(10)
-            except ValueError:
+            except ValueError as e:
                 time.sleep(10)
-            except MatReadError:
+            except MatReadError as e:
                 time.sleep(10)
             else:
                 return data
@@ -198,13 +201,15 @@ class ETH_awg_interface(Interface):
                 unique_axIDs = list(set(axIDs))
                 unique_axIDs.sort()
                 if len(axIDs) == 1:
-                    print(False)
+                    return False
                 elif vars == unique_vars:
-                    print(False)
+                    return False
                 elif axIDs == unique_axIDs:
-                    print(True)
+                    return True
                 else:
                     raise ValueError('Pulse time is not unique for the same eventID')
+                
+            return False
 
 
         self.bg_thread=None
@@ -281,7 +286,7 @@ class ETH_awg_interface(Interface):
         Parameters
         ----------
         tp : float
-            Pulse length in ns
+            Pulse length of pi/2 pulse in ns
         LO : float
             Central frequency of this pulse in GHz
         B : float
@@ -311,14 +316,7 @@ class ETH_awg_interface(Interface):
 
         amp_tune.evolution([scale])
         
-        # amp_tune.addPulsesProg(
-        #     pulses=[0,1],
-        #     variables=['scale','scale'],
-        #     axis_id=0,
-        #     axis=np.arange(0,0.9,0.02),
-        # )
-
-        self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+        self.launch(amp_tune, "autoDEER_amptune", IFgain=0)
 
         while self.isrunning():
             time.sleep(10)
@@ -381,44 +379,13 @@ class ETH_awg_interface(Interface):
             c_frq = 0.5*(pulse.final_freq.value + pulse.final_freq.value) + LO
 
         # Find rect pulses
-
-        # all_rect_pulses = list(self.pulses.keys())
-        # pulse_matches = []
-        # for pulse_name in all_rect_pulses:
-        #     # if not re.match(r"^p180_",pulse_name):
-        #     #     continue
-        #     pulse_frq = self.pulses[pulse_name].LO.value + self.pulses[pulse_name].freq.value
-        #     if not np.abs(pulse_frq - c_frq) < 0.01: #Within 10MHz
-        #         continue
-        #     pulse_matches.append(pulse_name)
-        
-        # # Find best pi pulse
-        # pi_length_best = 1e6
-        # for pulse_name in pulse_matches:
-        #     if re.match(r"^p180_",pulse_name):
-        #         ps_length = int(re.search(r"p180_(\d+)",pulse_name).groups()[0])
-        #         if ps_length < pi_length_best:
-        #             pi_length_best = ps_length
-        
-        # if pi_length_best == 1e6:
-        #     _, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
-        # else:
-        #     pi_pulse = self.pulses[f"p180_{pi_length_best}"]
-
-        # pi2_length_best = 1e6
-        # for pulse_name in pulse_matches:
-        #     if re.match(r"^p90_",pulse_name):
-        #         ps_length = int(re.search(r"p90_(\d+)",pulse_name).groups()[0])
-        #         if ps_length < pi2_length_best:
-        #             pi2_length_best = ps_length
-        
-        # if pi2_length_best == 1e6:
-        #     pi2_pulse, _ = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
-        # else:
-        #     pi2_pulse = self.pulses[f"p90_{pi2_length_best}"]
-
-        pi2_pulse, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
         if mode == "amp_hahn":
+            if pulse.flipangle.value == np.pi:
+                tp = pulse.tp.value / 2
+            elif pulse.flipangle.value == np.pi/2:
+                tp = pulse.tp.value
+
+            pi2_pulse, pi_pulse = self.tune_rectpulse(tp=tp, B=B, LO=c_frq, reptime=reptime)
             amp_tune =HahnEchoSequence(
                 B=B, LO=LO, 
                 reptime=reptime, averages=1, shots=shots,
@@ -430,17 +397,26 @@ class ETH_awg_interface(Interface):
 
             amp_tune.evolution([scale])
 
-            self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+            self.launch(amp_tune, "autoDEER_amptune", IFgain=0)
 
             while self.isrunning():
                 time.sleep(10)
             dataset = self.acquire_dataset()
+            dataset = dataset.epr.correctphase
+            data = np.abs(dataset.data)
+
             new_amp = np.around(dataset.pulse0_scale[dataset.data.argmax()].data,2)
+            if new_amp > 0.9:
+                raise RuntimeError("Not enough power avaliable.")
+        
+            if new_amp == 0:
+                warnings.warn("Pulse tuned with a scale of zero!")
+
             pulse.scale = Parameter('scale',new_amp,unit=None,description='The amplitude of the pulse 0-1')
             return pulse
 
         elif mode == "amp_nut":
-
+            pi2_pulse, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
             nut_tune = Sequence(
                 name="nut_tune", B=(B/LO*c_frq), LO=LO, reptime=reptime,
                 averages=1,shots=shots
@@ -467,7 +443,7 @@ class ETH_awg_interface(Interface):
             #     axis_id = 0,
             #     axis= np.arange(0,0.9,0.02)
             # )
-            self.launch(nut_tune, "autoDEER_amptune", IFgain=1)
+            self.launch(nut_tune, "autoDEER_amptune", IFgain=0)
 
             while self.isrunning():
                 time.sleep(10)
@@ -517,7 +493,7 @@ class ETH_awg_interface(Interface):
                 axis=np.arange(0,0.9,0.02),
             )
 
-            self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+            self.launch(amp_tune, "autoDEER_amptune", IFgain=0)
 
             while self.isrunning():
                 time.sleep(10)
@@ -571,7 +547,7 @@ class ETH_awg_interface(Interface):
                     axis=np.arange(0,0.9,0.02),
                 )
 
-                self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+                self.launch(amp_tune, "autoDEER_amptune", IFgain=0)
 
                 while self.isrunning():
                     time.sleep(10)
@@ -670,6 +646,15 @@ class ETH_awg_interface(Interface):
         elif type(pulse) is Pulse:
             event["pulsedef"]["type"] = 'FMAM'
             raise RuntimeError("Not yet implemented")
+        
+        if self.resonator is not None:
+            resonator = {}
+            resonator['LO'] = self.resonator.dataset.pulse1_LO # Change to LO after shifting resonator profile definition
+            resonator['nu1'] = self.resonator.profile
+            resonator['range'] = self.resonator.freqs.values - resonator['LO'] + self.awg_freq
+            resonator['scale'] = self.resonator.dataset.pulse0_scale
+
+            event["pulsedef"]["resonator"] = resonator
 
         return event
 
@@ -758,13 +743,18 @@ class ETH_awg_interface(Interface):
                 if pulse_num is not None:
                     if var in ["freq", "init_freq"]:
                         vec += self.awg_freq
-                        var = "nu_init"
+                        if isinstance(sequence.pulses[pulse_num],Detection):
+                            var = 'det_frq'
+                        else:
+                            var = "nu_init"
                     elif var == "final_freq":
                         vec += self.awg_freq
                         var = "nu_final"
 
                     if var == "t":
                         pulse_str = f"events{{{pulse_num+1}}}.t"
+                    elif var =='det_frq':
+                        pulse_str = f"events{{{pulse_num+1}}}.det_frq"
                     else:
                         pulse_str = f"events{{{pulse_num+1}}}.pulsedef.{var}"
                     

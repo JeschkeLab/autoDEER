@@ -109,21 +109,28 @@ class CarrPurcellAnalysis():
     
     def check_decay(self,level=0.05):
         """
-        Checks that the data has decayed to 5% in the time lenght of the dataset.
+        Checks that the data has decayed by over 5% in the entire length and less than 5% in the first 30% of the data.
 
         Parameters
         ----------
         level : float, optional
             The level to check the decay, by default 0.05
+
+        Returns
+        -------
+        int
+            0 if both conditions are met, 1 if the decay is less than 5% in the first 30% of the data, and -1 if the decay is less than 5% in the entire length.
         
         """
-
+        n_points = len(self.axis)
         if hasattr(self,"fit_result"):
             decay = self.func(self.axis, *self.fit_result[0]).data
-            if decay.min() < level:
-                return True
-            else:
-                return False
+            if (decay.min() < level) and (decay[:int(n_points*0.3)].min() > level):
+                return 0
+            elif decay[:int(n_points*0.3)].min() < level:
+                return 1
+            elif decay.min() > level:
+                return -1
         else:
             raise ValueError("No fit result found")
 
