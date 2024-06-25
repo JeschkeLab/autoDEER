@@ -750,7 +750,7 @@ class DEERSequence(Sequence):
         self.dt = dt
         self.deadtime = 200
         self.ESEEM = False
-        self.add_ESEEM_avg(ESEEM_avg)
+        self.add_ESEEM_avg(None)
 
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
@@ -826,22 +826,6 @@ class DEERSequence(Sequence):
 
 
         self.evolution([t])
-
-        # if self.ESEEM_avg.lower() == "proton":
-        #     ESEEM_axis = np.arange(0,8) * 8
-        #     self.addPulsesProg(
-        #         [2, 3],
-        #         ["t"],
-        #         1,
-        #         [self.tau1+ ESEEM_axis, 2*(self.tau1+ ESEEM_axis)])
-        # elif self.ESEEM_avg.lower() == "deuteron":
-        #     ESEEM_axis = np.arange(0,8) * 16
-        #     self.addPulsesProg(
-        #         [2, 3],
-        #         ["t"],
-        #         1,
-        #         [self.tau1+ ESEEM_axis, 2*(self.tau1+ ESEEM_axis)])
-
         pass
 
     def four_pulse(self, tp=16, relaxation=False):
@@ -994,29 +978,6 @@ class DEERSequence(Sequence):
         else:
             self.evolution([self.t])
 
-        # self.addPulsesProg(
-        #     [3],
-        #     ["t"],
-        #     0,
-        #     axis)
-        
-        # if self.ESEEM_avg is not None:
-        #     # This is not quite a perfect ESEEM average. I am not sure if this
-        #     # is possible with a pulse based scripting. I think only following
-        #     # a delay based model can you easily describe two axes acting on 
-        #     # the same pulse. 
-        #     if self.ESEEM_avg.lower() == "proton":
-        #         ESEEM_axis = np.arange(0,8) * 8
-        #     elif self.ESEEM_avg.lower() == "deuteron":
-        #         ESEEM_axis = np.arange(0,8) * 16
-        #     self.addPulsesProg(
-        #         [1, 2, 4, 5],
-        #         ["t"],
-        #         1,
-        #         [p1 - ESEEM_axis, r1 + 1*ESEEM_axis, r2 + 2*ESEEM_axis,
-        #          d + 2*ESEEM_axis])
-
-        # pass
 
     def seven_pulse(self, tp=16, relaxation=False):
         """
