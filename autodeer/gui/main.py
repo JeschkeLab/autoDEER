@@ -217,6 +217,9 @@ class autoDEERUI(QMainWindow):
         self.Min_tp=12
 
         self.deer_settings = {'ESEEM':None, 'ExpType':'5pDEER'}
+        self.priorties = {'MNR':100, 'Auto': 50, 'Distance': 20}
+
+        self.priotityComboBox.addItems(list(self.priorties.keys()))
         self.correction_factor=1
 
     def set_spectrometer_connected_light(self, state):
@@ -422,11 +425,11 @@ class autoDEERUI(QMainWindow):
         # QDialog.about(self,'Warning!', message)
         main_log.warning(message)
 
-    def save_data(self,dataset,filename):
-        timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
-        fullname = timestamp + self.SampleName.text() + '_' +filename +'.h5'
-        dataset.to_netcdf(os.path.join(self.current_folder,fullname),engine='h5netcdf',invalid_netcdf=True)
-        main_log.debug(f"Saving dataset to {fullname}")
+    def save_data(self,dataset,experiment):
+        filename = create_save_name(self.userinput['sample'],experiment,True,self.userinput['project'],self.userinput['comment'])
+        filename += ".h5"
+        dataset.to_netcdf(os.path.join(self.current_folder,filename),engine='h5netcdf',invalid_netcdf=True)
+        main_log.debug(f"Saving dataset to {filename}")
 
     def fsweep_toolbar(self):
         upload_icon = QtGui.QIcon('icons:upload.png')
@@ -616,6 +619,7 @@ class autoDEERUI(QMainWindow):
         self.centreFrequencyCI.setText(f"({fitresult.results.fcUncert.ci(95)[0]:.2f},{fitresult.results.fcUncert.ci(95)[1]:.2f})")
         self.qDoubleSpinBox.setValue(fitresult.results.q)
         self.qCI.setText(f"({fitresult.results.qUncert.ci(95)[0]:.2f},{fitresult.results.qUncert.ci(95)[1]:.2f})")
+        self.nu1doubleSpinBox.setValue(fitresult.model.max()*1e3)
         self.Tab_widget.setCurrentIndex(2)
         main_log.info(f"Resonator centre frequency {fitresult.results.fc:.4f} GHz")
         self.optimise_pulses_button()
@@ -774,10 +778,11 @@ class autoDEERUI(QMainWindow):
         label_eff = self.userinput['label_eff'] / 100
         est_lambda = 0.4 
         self.aim_time = 2
-        self.aim_MNR = 20 / est_lambda
+        self.aim_MNR = (self.priorties[self.userinputp['priority']]/2) / est_lambda
+        
         tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/label_eff, target_time=self.aim_time, target_step=0.015)
         tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/label_eff, target_time=4, target_step=0.015)
-        max_tau = fitresult.find_optimal(SNR_target=45/(est_lambda*label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
+        max_tau = fitresult.find_optimal(SNR_target=self.priorties[self.userinputp['priority']]/(est_lambda*label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
     
         self.current_results['relax'].tau2hrs = tau2hrs
 
@@ -786,28 +791,6 @@ class autoDEERUI(QMainWindow):
         else:
             self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR/label_eff,self.waveform_precision)
         
-        
-        # if (tau2hrs < 1.5) and (tau4hrs > 1.5):
-        #     self.raise_warning(f"2hr dipolar evo too short. Using 4hr number")
-        #     self.deer_settings['tau1'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
-        #     self.deer_settings['tau2'] = ad.round_step(tau4hrs,self.waveform_precision/1e3)
-        #     self.deer_settings['ExpType'] = '5pDEER'
-        #     self.aim_time = 4
-        
-        # elif (tau2hrs < 1.5) and (tau4hrs < 1.5):
-        #     self.current_results['relax'].tau2hrs = 2.5
-        #     self.raise_warning(f"2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time")
-        #     self.deer_settings['tau1'] = ad.round_step(0.4,self.waveform_precision/1e3)
-        #     self.deer_settings['tau2'] = ad.round_step(2.5,self.waveform_precision/1e3)
-        #     self.deer_settings['ExpType'] = '4pDEER'
-        #     self.raise_warning(f"2hr dipolar evo {tau2hrs:.2f} us, using 4pDEER")
-
-        # else:  
-        #     self.deer_settings['tau1'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
-        #     self.deer_settings['tau2'] = ad.round_step(tau2hrs,self.waveform_precision/1e3)
-        #     self.deer_settings['ExpType'] = '5pDEER'
-            
-        # self.deer_settings['tau3'] = 0.3
         self.deer_settings['dt'] = 16
         self.worker.update_deersettings(
             self.deer_settings
@@ -948,7 +931,7 @@ class autoDEERUI(QMainWindow):
         self.Tab_widget.setCurrentIndex(4)
         self.q_DEER.current_data['quickdeer'] = dataset
         self.q_DEER.update_inputs_from_dataset()
-        self.q_DEER.update_figure()
+        # self.q_DEER.update_figure()
         def update_func(x):
             self.current_results['quickdeer'] = x
             rec_tau = self.current_results['quickdeer'].rec_tau_max
@@ -960,7 +943,8 @@ class autoDEERUI(QMainWindow):
 
             self.correction_factor = ad.calc_correction_factor(self.current_results['quickdeer'],self.aim_MNR,self.aim_time)
             main_log.info(f"Correction factor {self.correction_factor:.3f}")
-            max_tau = self.current_results['relax'].find_optimal(SNR_target=45/(mod_depth*np.sqrt(self.correction_factor)), target_time=remaining_time, target_step=dt/1e3)
+            snr_target = self.priorties[self.userinput['priority']]
+            max_tau = self.current_results['relax'].find_optimal(SNR_target=snr_target/(mod_depth*np.sqrt(self.correction_factor)), target_time=remaining_time, target_step=dt/1e3)
             main_log.info(f"Max tau {max_tau:.2f} us")
             tau = np.min([rec_tau/2,max_tau])
             self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
@@ -1019,7 +1003,32 @@ class autoDEERUI(QMainWindow):
         QMessageBox.about(self,'Warning!', msg)
         main_log.warning(msg)
 
+    def clear_all(self):
+        self.current_results = {}
+        self.current_data = {}
+        self.pulses = {}
+        self.userinput = {}
+        self.deer_settings = {'ESEEM':None, 'ExpType':'5pDEER'}
+        self.q_DEER.current_data = {}
+        self.longDEER.current_data = {}
+
+        # Clear the figures
+        self.fsweep_ax.cla()
+        self.fsweep_canvas.draw()
+        self.respro_ax.cla()
+        self.respro_canvas.draw()
+        if isinstance(self.relax_ax, (list,tuple,np.ndarray)):
+            for ax in self.relax_ax:
+                ax.cla()
+        else:
+            self.relax_ax.cla()
+        self.relax_canvas.draw()
+        self.q_DEER.clear_all()
+        self.longDEER.clear_all()
+
     def RunAutoDEER(self, advanced=False):
+
+        self.clear_all()
 
         if self.spectromterInterface is None or self.connected is False:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
@@ -1030,6 +1039,8 @@ class autoDEERUI(QMainWindow):
         userinput['MaxTime'] = self.MaxTime.value()
         userinput['project'] = self.ProjectName.text()
         userinput['sample'] = self.SampleName.text()
+        userinput['comment'] = self.commentLineEdit.text()
+        userinput['priority'] = self.priotityComboBox.currentText()
         userinput['label_eff'] = self.LabellingEffSpinBox.value()
         userinput['Temp'] = self.TempValue.value()
         userinput['DEER_update_func'] = self.q_DEER.refresh_deer
@@ -1045,6 +1056,8 @@ class autoDEERUI(QMainWindow):
             self.deer_settings['tau3'] = self.Tau3Value.value()
         else:
             self.deer_settings = {'ExpType':'5pDEER','tau1':0,'tau2':0,'tau3':0}
+        if not 'ESEEM' in self.deer_settings:
+            self.deer_settings['ESEEM'] = None
 
         # Block the autoDEER buttons
         self.FullyAutoButton.setEnabled(False)
@@ -1052,12 +1065,17 @@ class autoDEERUI(QMainWindow):
         self.resonatorComboBox.setEnabled(False)
         self.fcDoubleSpinBox.setEnabled(False)
 
+        try:
+            night_hours = self.config['autoDEER']['Night Hours']
+        except KeyError:
+            night_hours = None
+
         self.waitCondition = QtCore.QWaitCondition()
         mutex = QtCore.QMutex()
         self.worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
             pulses=self.pulses,results=self.current_results, AWG=self.AWG, LO=self.LO, gyro = self.gyro,
-            user_inputs=userinput, cores=self.cores,night_hours=self.config['autoDEER']['Night Hours'] )
+            user_inputs=userinput, cores=self.cores,night_hours=night_hours)
         
         self.starttime = time.time()
 
