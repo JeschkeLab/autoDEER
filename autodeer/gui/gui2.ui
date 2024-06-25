@@ -155,7 +155,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>2</number>
+         <number>0</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideRight</enum>
@@ -229,6 +229,9 @@
                </item>
                <item row="1" column="1">
                 <widget class="QLineEdit" name="SampleName">
+                 <property name="toolTip">
+                  <string extracomment="The sample name is insterted into the file name"/>
+                 </property>
                  <property name="readOnly">
                   <bool>false</bool>
                  </property>
@@ -246,19 +249,22 @@
                </item>
                <item row="2" column="1">
                 <widget class="QLineEdit" name="ProjectName">
+                 <property name="toolTip">
+                  <string extracomment="Optionally a project tag can be added to the filename"/>
+                 </property>
                  <property name="placeholderText">
                   <string>No Project</string>
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0">
+               <item row="4" column="0">
                 <widget class="QLabel" name="label_12">
                  <property name="text">
                   <string>Temperature:</string>
                  </property>
                 </widget>
                </item>
-               <item row="3" column="1">
+               <item row="4" column="1">
                 <widget class="QDoubleSpinBox" name="TempValue">
                  <property name="suffix">
                   <string> K</string>
@@ -268,14 +274,14 @@
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0">
+               <item row="5" column="0">
                 <widget class="QLabel" name="estLabellingEfficiencyLabel">
                  <property name="text">
                   <string>Est. Labelling Efficiency</string>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
+               <item row="5" column="1">
                 <widget class="QDoubleSpinBox" name="LabellingEffSpinBox">
                  <property name="suffix">
                   <string> %</string>
@@ -287,9 +293,39 @@
                   <double>100.000000000000000</double>
                  </property>
                  <property name="value">
-                  <double>100.000000000000000</double>
+                  <double>50.000000000000000</double>
                  </property>
                 </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="commentLabel">
+                 <property name="text">
+                  <string>Comment</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="commentLineEdit">
+                 <property name="toolTip">
+                  <string extracomment="A comment can also be appened to all file names"/>
+                 </property>
+                 <property name="whatsThis">
+                  <string/>
+                 </property>
+                 <property name="placeholderText">
+                  <string>No Comment</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="priotityLabel">
+                 <property name="text">
+                  <string>Priority</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="QComboBox" name="priotityComboBox"/>
                </item>
               </layout>
              </item>
@@ -1035,7 +1071,23 @@
                    </widget>
                   </item>
                   <item row="2" column="1">
-                   <widget class="QDoubleSpinBox" name="nu1doubleSpinBox"/>
+                   <widget class="QDoubleSpinBox" name="nu1doubleSpinBox">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="buttonSymbols">
+                     <enum>QAbstractSpinBox::NoButtons</enum>
+                    </property>
+                    <property name="suffix">
+                     <string> MHz</string>
+                    </property>
+                    <property name="decimals">
+                     <number>1</number>
+                    </property>
+                    <property name="maximum">
+                     <double>1000.000000000000000</double>
+                    </property>
+                   </widget>
                   </item>
                   <item row="2" column="2">
                    <widget class="QLabel" name="nu1CI">
@@ -1695,7 +1747,7 @@
      <x>0</x>
      <y>0</y>
      <width>967</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

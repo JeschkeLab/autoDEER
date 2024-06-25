@@ -310,6 +310,10 @@ class autoDEERWorker(QtCore.QRunnable):
             tau2 = tau
             tau3 = 0.3
 
+        if 'ESEEM' in self.deer_inputs:
+            ESEEM = self.deer_inputs['ESEEM']
+        else:
+            ESEEM = None
 
 
         deer = DEERSequence(
@@ -317,7 +321,7 @@ class autoDEERWorker(QtCore.QRunnable):
             tau1=tau1, tau2=tau2, tau3=tau3, dt=dt,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event'],
-            ESEEM_avg = self.deer_inputs['ESEEM']
+            ESEEM_avg = ESEEM
             )
         
         if deertype == '5pDEER':

@@ -799,12 +799,14 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
     """
 
 
-    gyro  = Fieldsweep.gyro
-    fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)
-
+    # gyro  = Fieldsweep.gyro
+    # if hasattr(Fieldsweep,'results'):
+    #     fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)
+    fieldsweep_fun = Fieldsweep.func_freq
     f = np.linspace(-0.3,0.3,100)
+    fieldsweep_profile = fieldsweep_fun(f)
 
-    fieldsweep_profile = np.flip(fieldsweep_fun(f))
+    # fieldsweep_profile = np.flip(fieldsweep_fun(f))
     
     pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[2].real)
     exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[2].real)
@@ -910,11 +912,10 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
 
 
     gyro  = Fieldsweep.gyro
-    fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)
-
+    fieldsweep_fun = Fieldsweep.func_freq
     f = np.linspace(-0.4,0.4,100)
 
-    fieldsweep_profile = np.flip(fieldsweep_fun(f))
+    fieldsweep_profile = fieldsweep_fun(f)
 
         
     pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[2].real)
