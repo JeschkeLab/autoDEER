@@ -14,7 +14,7 @@ Spectrometer:
     Det Res: 12  #bit
   
   Dummy:
-    speedup: 100 # Default: 100
+    speedup: 1000 # Default: 100
     SNR: 75
     ESEEM_depth: 0.15
 
