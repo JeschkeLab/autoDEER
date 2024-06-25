@@ -174,8 +174,10 @@ class FieldSweepAnalysis():
         np.ndarray
             The smoothed data.
         """
-        smooth_spl = UnivariateSpline(self.axis, self.data)
-        smooth_spl_freq = UnivariateSpline(self.fs_x, self.data)
+        smooth_spl = UnivariateSpline(self.axis, self.data,ext=1)
+        smooth_spl.set_smoothing_factor(0.01)
+        smooth_spl_freq = UnivariateSpline(np.flip(self.fs_x), np.flip(self.data),ext=1)
+        smooth_spl_freq.set_smoothing_factor(0.01)
         self.smooth_data = smooth_spl(self.axis)
         self.func = smooth_spl
         self.func_freq = smooth_spl_freq
@@ -199,6 +201,8 @@ class FieldSweepAnalysis():
         result = dl.fit(mymodel,Vexp,B,verbose=2,reg=False,  **kwargs)
         self.results = result
         self.model = mymodel
+        self.func = lambda x: result.evaluate(mymodel,x*0.1)
+        self.func_freq = lambda x: result.evaluate(mymodel,(-x+self.LO) /self.gyro*1e-1)
         return result
 
     def plot(self, norm: bool = True, axis: str = "field", axs=None, fig=None) -> Figure:
