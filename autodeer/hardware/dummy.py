@@ -158,7 +158,9 @@ class dummyInterface(Interface):
             
     def isrunning(self) -> bool:
         current_time = time.time()
-        if current_time - self.start_time > (self.cur_exp._estimate_time() / self.speedup):
+        runtime =  (self.cur_exp._estimate_time() / self.speedup)
+        runtime = np.min([runtime, 5])
+        if current_time - self.start_time > runtime:
             self.state = False
     
         return self.state

@@ -530,7 +530,7 @@ def uwb_load(matfile: np.ndarray, options: dict = dict(), verbosity=0,
 # uwb_eval rewritten to use a matched filter
 # ---------------------------------------------------------------------------
 
-def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=None,filter_type='match',filter_width=None,verbosity=0, **kwargs):
+def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=None,filter_type='match',filter_width=None,verbosity=0,corr_phase = False, **kwargs):
     """
     
     Parameters
@@ -601,6 +601,7 @@ def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=No
             dta = [dta_sum]
             
         else:
+            print('The file has no attached data.')
             raise ValueError('The file has no attached data.')
 
         return [dta, nAvgs]
@@ -864,16 +865,35 @@ def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=No
         dims = [len(dta_x[0])]
         
     dta_c=dta_c.reshape(echo_len,*dims,order='F')
+
     if isinstance(det_frqs_perc,np.ndarray) and (len(det_frq) > 1):
         n_det_frqs = len(det_frqs_perc)
         dta_filt_dc = np.array([np.apply_along_axis(filter_func, 0, np.take(dta_c,i,det_frq_dim+1), det_frqs_perc[i]) for i in range(n_det_frqs)])
         dta_filt_dc = np.moveaxis(dta_filt_dc,0,det_frq_dim+1)
     else:
         dta_filt_dc = np.apply_along_axis(filter_func, 0, dta_c,det_frqs_perc)
+
+    
+
     peak_echo_idx = np.unravel_index(np.argmax(np.abs(dta_filt_dc).max(axis=0)),dims)
-    echo_pos = np.argmax(np.abs(dta_filt_dc[tuple([slice(None)]) + peak_echo_idx]))
+    
+    echo_pos = np.argmax(np.abs(dta_filt_dc[tuple([slice(None)]) + peak_echo_idx]))    
     dta_ev = dta_filt_dc[echo_pos,:]
-    # dta_ev.reshape(30,40)
+    
+    if corr_phase is True:
+        dta_ang = np.angle(dta_ev)
+        if np.any(frq_change):
+            if exp_dim == 2:
+                corr_phase = dta_ang[..., peak_echo_idx[1]]
+            else:
+                corr_phase = dta_ang
+        else:
+            corr_phase = dta_ang[peak_echo_idx]
+
+        dta_ev = np.apply_along_axis(lambda x: x * np.exp(-1j * corr_phase), 0, dta_ev)
+
+
+
     if sequence is None:
         params = {'nAvgs': nAvgs, 'LO': estr['LO']+1.5, 'B': estr['B'], 
                   'reptime': estr['reptime'], 'shots': estr['shots']}

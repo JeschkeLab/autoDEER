@@ -251,6 +251,26 @@ class DEERplot(QWidget):
 
         self.static_canvas.draw()
 
+    def clear_all(self):
+        self._static_ax['Primary_time'].cla()
+        self._static_ax['Primary_dist'].cla()
+        self.static_canvas.draw()
+        self.Last_updated.setText(f"Last updated: never")
+        self.num_scans.setText(f"# of scans: 0")
+
+        self.MNRDoubleSpinBox.setValue(0)
+        self.Chi2DoubleSpinBox.setValue(0)
+        self.conc_value.setValue(0)
+        self.conc_uncert.setText('(-,-)')
+        self.regparamDoubleSpinBox.setValue(0)
+        self.Total_mod_value.setValue(0)
+        self.Total_mod_uncert.setText('(-,-)')
+        # clear all enteries in the Pathways_Box
+        while self.Pathways_Box.count() > 0:
+            self.Pathways_Box.removeWidget(self.Pathways_Box.itemAt(0).widget())
+        self.fitresult = None
+
+
         
 
     def process_deeranalysis(self,wait_condition=None, update_func=None):

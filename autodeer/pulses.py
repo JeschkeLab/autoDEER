@@ -230,7 +230,7 @@ class Pulse:
         return Parameter("amp_factor", amp_factor_value, "GHz", "Amplitude factor for the pulse")
 
     # @cached(thread_safe=False)
-    def exciteprofile(self, freqs=None):
+    def exciteprofile(self, freqs=None, resonator = None):
         """Excitation profile
 
         Generates the exciatation profiles for this pulse.
@@ -262,6 +262,8 @@ class Pulse:
         freqs: np.ndarray, optional
             The frequency axis. Caution: A larger number of points will linearly
             increase computation time.
+        resonator: ad.ResonatorProfile, optional
+
         
         Returns
         -------
@@ -292,23 +294,16 @@ class Pulse:
         t = self.ax 
         nOffsets = offsets.shape[0]
 
-        # if isinstance(self, RectPulse) or isinstance(self, GaussianPulse):
-        #     amp_factor = self.flipangle.value / (2 * np.pi * np.trapz(self.AM,t))
-        # else:
-        #     Qcrit = (2/np.pi)*np.log(2/(1+np.cos(self.flipangle.value)));
-        #     Qcrit = np.min([Qcrit,5])
-
-        #     if isinstance(self, ChirpPulse):
-        #         sweeprate = self.bandwidth.value / self.tp.value
-        #     elif isinstance(self, HSPulse):
-        #         sweeprate = self.beta.value * self.bandwidth.value / (2*self.tp.value)
-
-        #     amp_factor = np.sqrt(2*np.pi*Qcrit*sweeprate)/(2*np.pi);
-
-
-
         ISignal = np.real(self.complex) * self.amp_factor.value
         QSignal = np.imag(self.complex) * self.amp_factor.value
+
+        if resonator is not None:
+            FM = self.FM
+            amp_factor = np.interp(FM, resonator.freqs-resonator.LO_c, resonator.profile)
+            amp_factor = np.min([amp_factor,np.ones_like(amp_factor)*self.amp_factor.value],axis=0)
+            ISignal = np.real(self.complex) * amp_factor
+            QSignal = np.imag(self.complex) * amp_factor
+
         npoints = ISignal.shape[0]
         Sx = sop([1/2],"x")
         Sy = sop([1/2],"y")

@@ -57,7 +57,7 @@ class Criteria:
 class TimeCriteria(Criteria):
     def __init__(
             self, name: str, end_time: float, description: str = '',
-            **kwargs) -> None:
+            night_hours :tuple = None,**kwargs) -> None:
         """Criteria testing for a specific finishing time. The finishing time 
         is given as absolute time in the locale of the computer, it is *not* 
         how the long the measurment continues for. 
@@ -65,17 +65,25 @@ class TimeCriteria(Criteria):
         Parameters
         ----------
         name : str
-            _description_
+            Name of the criteria
         end_time : float
             Finishing time in seconds since epoch
         description : str, optional
-            _description_, by default None
+            A description of the criteria, by default None
+        night_hours : tuple, optional
+            A tuple of two integers specifying the start and end of night hours.
+            The criteria will always return False during these hours, by default None
         """
         log.debug(f"Creating TimeCriteria with end_time: {datetime.datetime.fromtimestamp(end_time).strftime('%Y-%m-%d %H:%M:%S')}")
 
 
         def test_func(Data, verbosity=0):
             now = time.time()
+            if night_hours is not None:
+                start, end = night_hours
+                now_struct = datetime.datetime.fromtimestamp(now)
+                if now_struct.hour >= start and now_struct.hour < end:
+                    return False
 
             return now > end_time
 
