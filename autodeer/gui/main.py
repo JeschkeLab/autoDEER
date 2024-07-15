@@ -217,7 +217,7 @@ class autoDEERUI(QMainWindow):
         self.Min_tp=12
 
         self.deer_settings = {'ESEEM':None, 'ExpType':'5pDEER'}
-        self.priorties = {'MNR':100, 'Auto': 50, 'Distance': 20}
+        self.priorties = {'Auto': 100, 'MNR':200, 'Distance': 40}
 
         self.priotityComboBox.addItems(list(self.priorties.keys()))
         self.correction_factor=1
@@ -778,11 +778,11 @@ class autoDEERUI(QMainWindow):
         label_eff = self.userinput['label_eff'] / 100
         est_lambda = 0.4 
         self.aim_time = 2
-        self.aim_MNR = (self.priorties[self.userinputp['priority']]/2) / est_lambda
+        self.aim_MNR = (self.priorties[self.userinput['priority']]/2) / est_lambda
         
         tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/label_eff, target_time=self.aim_time, target_step=0.015)
         tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/label_eff, target_time=4, target_step=0.015)
-        max_tau = fitresult.find_optimal(SNR_target=self.priorties[self.userinputp['priority']]/(est_lambda*label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
+        max_tau = fitresult.find_optimal(SNR_target=self.priorties[self.userinput['priority']]/(est_lambda*label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
     
         self.current_results['relax'].tau2hrs = tau2hrs
 

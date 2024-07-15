@@ -57,6 +57,8 @@ class ETH_awg_interface(Interface):
         self.cur_exp = None
         self.bg_data = None
         self.bg_thread = None
+        self.IFgain_options = np.array([1, 18.7, 36.14])
+        self.IFgain = 2
         
         pass
 
@@ -170,8 +172,44 @@ class ETH_awg_interface(Interface):
             else:
                 return data
         raise RuntimeError("Data was unable to be retrieved")
+    
+    def launch(self, sequence: Sequence , savename: str,*args,**kwargs):
         
-    def launch(self, sequence , savename: str, IFgain: int = 0):
+        test_IF = True
+        while test_IF:
+            self.launch_withIFGain(sequence,savename,self.IFgain)
+            scan_time = sequence._estimate_time() / sequence.averages.value
+            check_1stScan = True
+            while check_1stScan:
+                dataset = self.acquire_dataset_from_matlab()
+                time.sleep(np.min([scan_time//10,2]))
+
+                dig_level = dataset.attrs['diglevel'] / (2**11 *sequence.shots.value* sequence.pcyc_dets.shape[0])
+                pos_levels = dig_level * self.IFgain_options / self.IFgain_options[self.IFgain]
+                pos_levels[pos_levels > 0.75] = 0
+                if (pos_levels[self.IFgain] > 0.75) or  (pos_levels[self.IFgain] < 0.5):
+                    best_IFgain = np.argmax(pos_levels)
+                else:
+                    best_IFgain = self.IFgain
+                if np.all(pos_levels==0):
+                    log.critical('Stauration detected with IF gain 0. Please check the power levels.')
+                    raise RuntimeError('Stauration detected with IF gain 0. Please check the power levels.')
+                elif (best_IFgain < self.IFgain) and (dataset.nAvgs == 0):
+                    log.warning(f"IF gain changed from {self.IFgain} to {best_IFgain}")
+                    self.IFgain = best_IFgain
+                    check_1stScan = False
+                elif (best_IFgain != self.IFgain) and (dataset.nAvgs >= 1):
+                    log.warning(f"IF gain changed from {self.IFgain} to {best_IFgain}")
+                    self.IFgain = best_IFgain
+                    check_1stScan = False
+                elif dataset.nAvgs >=1:
+                    log.debug(f"IF gain {self.IFgain} is optimal")
+                    check_1stScan = False
+                    test_IF = False
+             
+
+
+    def launch_withIFGain(self, sequence , savename: str, IFgain: int = 0):
         """Launch a sequence on the spectrometer.
 
         Parameters
