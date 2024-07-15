@@ -66,13 +66,13 @@ class ModeTune(QDialog):
             "B",((center_freq)/gyro_ratio), start=-(scan_range/2)/gyro_ratio, step=scan_step/gyro_ratio, dim=n_points,
             unit="Guass",link=freq,description="B0 Field" )
         
-        seq = HahnEchoSequence(LO=center_freq, B = B, reptime=3e3, shots=100, averages = 1,pi2_pulse=pi2_pulse, pi_pulse=pi_pulse)
+        seq = HahnEchoSequence(LO=center_freq, B = B, tau=500, reptime=3e3, shots=100, averages = 1, pi2_pulse=pi2_pulse, pi_pulse=pi_pulse)
         seq.pulses[0].freq = freq
         seq.pulses[1].freq = freq
         seq.pulses[2].freq = freq
+        seq.pulses[2].tp.value = 512
         seq.evolution([freq])
 
-        print(seq)
         self.interface.launch(seq,savename="modetune",IFgain=1)
 
         # Start thread
@@ -172,6 +172,7 @@ class get_dataWorker(QtCore.QRunnable):
                 continue
             self.signals.result.emit(dataset)
             time.sleep(2)
+        dataset = self.interface.acquire_dataset()
         self.signals.result.emit(dataset)
         self.signals.finished.emit()
 

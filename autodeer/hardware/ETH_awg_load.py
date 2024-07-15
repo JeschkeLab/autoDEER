@@ -896,7 +896,7 @@ def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=No
 
     if sequence is None:
         params = {'nAvgs': nAvgs, 'LO': estr['LO']+1.5, 'B': estr['B'], 
-                  'reptime': estr['reptime'], 'shots': estr['shots']}
+                  'reptime': estr['reptime'], 'shots': estr['shots'], 'diglevel': dig_level}
         axis = [];
         for i in range(exp_dim):
             if (dta_x[i].ndim == 1) or (dta_x[i].shape[1] == 1):
@@ -905,7 +905,7 @@ def uwb_eval_match(matfile, sequence=None, scans=None, mask=None,filter_pulse=No
                 axis.append(dta_x[i][:, 0])
         output = create_dataset_from_axes(dta_ev, axis, params)
     else:
-        params = {'nAvgs': nAvgs}
+        params = {'nAvgs': nAvgs,'diglevel': dig_level}
         output = create_dataset_from_sequence(dta_ev, sequence,params)
 
     return output
