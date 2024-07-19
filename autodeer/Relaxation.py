@@ -239,14 +239,14 @@ class ReptimeAnalysis():
         axs.plot(self.axis, self.data, '.', label='data', color='0.6', ms=6)
 
         if hasattr(self,'fit_result'):
-            axs.plot(self.axis, self.func(self.axis,*self.fit_result[0]), label='fit', color='C1', lw=2)
-            axs.vlines(self.fit_result[0][1],0,1,linestyles='dashed',label='T1 = {:.3g} us'.format(self.fit_result[0][1]),colors='C0')
+            axs.plot(self.axis, self.func(self.axis,*self.fit_result[0]), label='Fit', color='C1', lw=2)
+            axs.vlines(self.fit_result[0][1],0,1,linestyles='dashed',label='T1 = {:.3g} ms'.format(self.fit_result[0][1]/1e3),colors='C0')
 
             if hasattr(self,'optimal'):
-                axs.vlines(self.optimal,0,1,linestyles='dashed',label='optimal = {:.3g} us'.format(self.optimal),colors='C2')
+                axs.vlines(self.optimal,0,1,linestyles='dashed',label='Optimal = {:.3g} ms'.format(self.optimal/1e3),colors='C2')
 
-        axs.set_xlabel('reptime (us)')
-        axs.set_ylabel('normalized signal')
+        axs.set_xlabel('Reptime $(\mu s)$')
+        axs.set_ylabel('Normalised signal')
         axs.legend()
         return fig
 

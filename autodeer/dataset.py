@@ -243,7 +243,7 @@ class EPRAccessor:
         pulses_obj = []
         for i in range(pulses):
             pulse_type = dataset_attrs[f"pulse{i}_name"]
-            param_types = ['t','tp','freq','flipangle','scale','order1','order2','inti_freq','BW','final_freq','beta']
+            param_types = ['t','tp','freq','flipangle','scale','order1','order2','init_freq','BW','final_freq','beta']
             params = {}
 
             for param_type in param_types:
