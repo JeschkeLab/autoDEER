@@ -270,7 +270,8 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     
     
     if ROI:
-        tau_max = lambda r: (r**3) *(2/4**3)
+        # tau_max = lambda r: (r**3) *(3/4**3)
+        tau_max = lambda r:  (r/3)**3 * 2
         fit.ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
         if fit.ROI[0] < 1:
             fit.ROI[0] = 1
@@ -751,7 +752,7 @@ def functional(f_axis,fieldsweep,A,B,filter=None,A_shift=0,B_shift=0):
 
 
 def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute',
-                    nDEER=False, num_ref_pulses=2, full_output=False):
+                    nDEER=False, num_ref_pulses=2, full_output=False, resonator=None, **kwargs):
     """Optimise the pulse positions to maximise the pump-exc overlap.
 
     Parameters
@@ -777,6 +778,8 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
         The total number of refocusing pulses, by default 2
     full_output : bool, optional
         Return the full output, by default False
+    resonator : ad.ResonatorProfile, optional
+        The resonator profile, by default None
     Returns
     -------
     ad.Pulse
@@ -796,12 +799,14 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
     """
 
 
-    gyro  = Fieldsweep.gyro
-    fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)
-
+    # gyro  = Fieldsweep.gyro
+    # if hasattr(Fieldsweep,'results'):
+    #     fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)
+    fieldsweep_fun = Fieldsweep.func_freq
     f = np.linspace(-0.3,0.3,100)
+    fieldsweep_profile = fieldsweep_fun(f)
 
-    fieldsweep_profile = np.flip(fieldsweep_fun(f))
+    # fieldsweep_profile = np.flip(fieldsweep_fun(f))
     
     pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[2].real)
     exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[2].real)
@@ -907,11 +912,10 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
 
 
     gyro  = Fieldsweep.gyro
-    fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)
-
+    fieldsweep_fun = Fieldsweep.func_freq
     f = np.linspace(-0.4,0.4,100)
 
-    fieldsweep_profile = np.flip(fieldsweep_fun(f))
+    fieldsweep_profile = fieldsweep_fun(f)
 
         
     pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[2].real)

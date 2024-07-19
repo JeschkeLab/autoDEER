@@ -24,8 +24,13 @@ class ResonatorProfileAnalysis:
         """
 
         self.dataset = dataset.epr.correctphase
-
-        self.freqs = self.dataset.LO
+        
+        if "LO" in self.dataset.coords:
+            self.freqs = self.dataset.LO
+            self.LO = np.mean(self.dataset.LO)
+        elif "freq" in self.dataset.coords:
+            self.freqs = self.dataset.freq
+            self.LO = self.dataset.LO
         self.n_files = self.freqs.shape[0]
         self.t = self.dataset.pulse0_tp
         self.f_lims = f_lims
@@ -335,7 +340,7 @@ class ResonatorProfileAnalysis:
             matplotlib figure object
         """
         if axs is None and fig is None:
-            fig, axs = plt.subplots(2,1,constrained_layout=True,height_ratios=[0.8,0.2])
+            fig, axs = plt.subplots(2,1,constrained_layout=True,height_ratios=[0.8,0.2],sharex=True)
 
         if isinstance(axs, list) or isinstance(axs, np.ndarray):
             axs1 = axs[0]
@@ -358,8 +363,8 @@ class ResonatorProfileAnalysis:
                 axs2.set_ylabel("Phase / rad")
         
 
-
-        axs1.set_xlabel("Frequency / GHz")
+        if axs2 is None:
+            axs1.set_xlabel("Frequency / GHz")
         axs1.set_ylabel("Nutation Frequency / MHz")
 
         def Hz2length(x):
