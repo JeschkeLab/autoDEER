@@ -276,12 +276,12 @@ def combo_figure(EDFS, respro, pulses:dict, relaxation:list, init_deer, long_dee
     
     figs[0,0].suptitle('a. EDFS',size=15)
     plot_overlap(EDFS, pulses['pump_pulse'], pulses['exc_pulse'],pulses['ref_pulse'],respro=respro,fig=figs[0,0]);
-    figs[0,0].axes[0].set_xlim(-0.3,0.1)
+    figs[0,0].axes[0].set_xlim(-300,100)
     figs[0,1].suptitle('b. Relaxation',size=15)
     plot_1Drelax(*relaxation,fig=figs[0,1])
     figs[1,0].suptitle('c. Intial DEER',size=15)
-    DEERanalysis_plot_pub(init_deer[0],figs[1,0]);
+    DEERanalysis_plot_pub(init_deer[0],ROI=init_deer[0].ROI,fig=figs[1,0]);
     figs[1,1].suptitle('d. Final DEER',size=15)
-    DEERanalysis_plot_pub(long_deer,figs[1,1]);
+    DEERanalysis_plot_pub(long_deer,fig=figs[1,1]);
 
     return figure
