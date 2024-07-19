@@ -1011,12 +1011,12 @@ def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_ti
         deer_settings['ExpType'] = '4pDEER'
 
         # Calculate tau1 and tau2
-        tau1,tau2 = Refocused2D.find_optimal(type='4pDEER',SNR_target=20, target_time=target_time, target_step=0.015)
+        tau1,tau2 = Refocused2D.find_optimal(type='4pDEER',SNR_target=target_MNR, target_time=target_time, target_step=0.015)
         
         if tau2 < 2.5:
             # 2hr dipolar evo too short for meaningful results. Using double the time instead
             target_time *= 2
-            tau1,tau2 = Refocused2D.find_optimal(type='4pDEER',SNR_target=20, target_time=target_time, target_step=0.015)
+            tau1,tau2 = Refocused2D.find_optimal(type='4pDEER',SNR_target=target_MNR, target_time=target_time, target_step=0.015)
         
         if tau2 < 2.5:
             # Dipolar evo time still too short. Hardcoding a 2.5us dipolar evo time
@@ -1052,7 +1052,7 @@ def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_ti
             # self.raise_warning(f"2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time")
             tau2 = 2.5
             if Refocused2D is not None:
-                tau1 = Refocused2D.optimal_tau1(type='4pDEER',tau2=tau2)
+                tau1 = Refocused2D.optimal_tau1(tau2=tau2)
             else:
                 tau1 = 0.4
 
