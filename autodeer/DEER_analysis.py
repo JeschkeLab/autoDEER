@@ -202,8 +202,8 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
     if remove_crossing:
         mask = None
-        if 'pcyc' in dataset.attrs:
-            pcyc = dataset.attrs['pcyc']
+        if 'pcyc_name' in dataset.attrs:
+            pcyc = dataset.attrs['pcyc_name']
         elif 'nPcyc' in dataset.attrs: # guess pcyc
             if dataset.attrs['nPcyc'] == 16:
                 pcyc = 'Full'
