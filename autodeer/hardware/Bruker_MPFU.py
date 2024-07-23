@@ -164,8 +164,8 @@ class BrukerMPFU(Interface):
 
         if reset_cur_exp:
             timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
-            # self.savename = timestamp+savename
-            self.savename = savename
+            self.savename = timestamp+savename
+            # self.savename = savename
             self.cur_exp = sequence
                     
         # First check if the sequence is pulsespel compatible

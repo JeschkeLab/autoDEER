@@ -246,12 +246,12 @@ class autoDEERWorker(QtCore.QRunnable):
         reptime = self.reptime
 
         seq = RefocusedEcho2DSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(50*self.noise_mode),
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(25*self.noise_mode),
             tau=self.max_tau, pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
 
         self.interface.launch(seq,savename=self.savename("2D_DEC"),IFgain=2)
-        self.interface.terminate_at(SNRCriteria(30),test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(15),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.Relax2D_result.emit(self.interface.acquire_dataset())
