@@ -849,7 +849,7 @@ class DEERSequence(Sequence):
             self.t = Parameter(name="t", value=0, unit="ns", description="The time axis", virtual=True)
         else:
             dim = np.floor((self.tau2.value)/self.dt)
-            self.t = Parameter(name="t", value = - self.deadtime, step=self.dt,
+            self.t = Parameter(name="t", value = self.tau1.value - self.deadtime, step=self.dt,
                        dim=dim, unit="ns", description="The time axis", virtual=True)
 
         
@@ -867,7 +867,7 @@ class DEERSequence(Sequence):
             self.addPulse(RectPulse(t=self.tau1, tp=tp, freq=0, flipangle=np.pi))
         
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=2*self.tau1 + self.t))
+            self.addPulse(self.pump_pulse.copy(t=self.tau1 + self.t))
         else:
             self.addPulse(RectPulse(t=2*self.tau1 + self.t,
                                     tp=tp, freq=0, flipangle=np.pi))
