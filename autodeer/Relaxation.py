@@ -517,13 +517,14 @@ class RefocusedEcho2DAnalysis():
         if not hasattr(self,'data_smooth'):
                 self._smooth()
         data = self.data_smooth
-        # data = np.abs(self.data)
+        raw_data = np.abs(self.data)
+        raw_data /= np.max(raw_data)
         data /= np.max(data)
 
         calc_data = data
 
         # averages = self.seq.shots.value * self.seq.averages.value
-        self.noise = noiselevel(data)
+        self.noise = noiselevel(raw_data)
         data_snr = calc_data / self.noise
         data_snr_avgs = data_snr / np.sqrt(averages)
 
