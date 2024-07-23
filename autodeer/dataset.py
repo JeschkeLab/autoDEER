@@ -14,7 +14,7 @@ from autodeer.utils import autoEPRDecoder
 from autodeer import __version__
 from autodeer.pulses import Pulse,Detection
 from autodeer.classes import Parameter, Interface
-from autodeer.sequences import Sequence
+from autodeer.sequences import Sequence, DEERSequence
 import autodeer.pulses as ad_pulses
 import autodeer.sequences as ad_seqs
 import xarray as xr
@@ -97,6 +97,8 @@ def get_all_fixed_param(sequence):
                     fixed_param[f"{type}{i}_{param_name}"] = param.value
 
     fixed_param['nPcyc'] = sequence.pcyc_dets.shape[0]
+    if isinstance(sequence,DEERSequence):
+        fixed_param['pcyc_name'] = sequence.pcyc_name
     return fixed_param
 
 def create_dataset_from_sequence(data, sequence: Sequence,extra_params={}):

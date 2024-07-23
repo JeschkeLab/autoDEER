@@ -24,7 +24,7 @@ class Interface:
 
     def __init__(self,log=None) -> None:
         self.pulses = {}
-        self._savefolder = str(Path.home())
+        self.savefolder = str(Path.home())
         self.savename = ""
         if log is None:
             self.log = logging.getLogger('interface')
@@ -108,8 +108,8 @@ class Interface:
             start_time = time.time()
             data = self.acquire_dataset()
             if autosave:
-                self.log.debug(f"Autosaving to {os.path.join(self._savefolder,self.savename)}")
-                data.to_netcdf(os.path.join(self._savefolder,self.savename),engine='h5netcdf',invalid_netcdf=True)
+                self.log.debug(f"Autosaving to {os.path.join(self.savefolder,self.savename)}")
+                data.to_netcdf(os.path.join(self.savefolder,self.savename),engine='h5netcdf',invalid_netcdf=True)
 
             try:
                 # nAvgs = data.num_scans.value

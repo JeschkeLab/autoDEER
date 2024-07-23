@@ -70,18 +70,21 @@ class PSPhaseCycle:
             dict = {}
             dict["Pulse"] = sequence.pcyc_vars[i]
             dict["Cycle"] = []
-            for j in range(0, num_cycles):
-                phase = sequence.pcyc_cycles[j, i]
-                norm_phase = (phase / np.pi) % 2
-                if norm_phase == 0:
-                    B_phase = "+x"
-                elif norm_phase == 1:
-                    B_phase = "-x"
-                elif norm_phase == 0.5:
-                    B_phase = "+y"
-                elif norm_phase == 1.5:
-                    B_phase = "-y"
-                dict["Cycle"].append(B_phase)
+            if sequence.pulses[i].pcyc["Channels"] == "ELDOR":
+                dict["Cycle"].append("ELDOR")
+            else:
+                for j in range(0, num_cycles):
+                    phase = sequence.pcyc_cycles[j, i]
+                    norm_phase = (phase / np.pi) % 2
+                    if norm_phase == 0:
+                        B_phase = "+x"
+                    elif norm_phase == 1:
+                        B_phase = "-x"
+                    elif norm_phase == 0.5:
+                        B_phase = "+y"
+                    elif norm_phase == 1.5:
+                        B_phase = "-y"
+                    dict["Cycle"].append(B_phase)
             BPhaseCycles.append(dict)
 
         return BPhaseCycles
@@ -1177,11 +1180,14 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
 
         pcyc = PSPhaseCycle(sequence, MPFU=None, OnlyDet=True)
         pcyc_str = pcyc.__str__() + "\n"*1 + pcyc_str
+    elif MPFU is not None:
+        pcyc = PSPhaseCycle(sequence, MPFU)
+        pcyc_hash = pcyc.pcyc_hash
+        pcyc_str = pcyc.__str__()
     else:
         pcyc = PSPhaseCycle(sequence, MPFU)
         pcyc_hash = pcyc.pcyc_hash
         pcyc_str = pcyc.__str__()
-
     # Add Pulse Sequence
     pulse_str = "d9\n"
     for id, pulse in enumerate(sequence.pulses):

@@ -166,7 +166,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
         RPseq = ResonatorProfileSequence(
             B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(50*self.noise_mode),
-            pi2_pulse=p90, pi_pulse=p180,
+            pi2_pulse=p90, pi_pulse=p180,fwidth=0.15
         )
 
         self.interface.launch(RPseq,savename=self.savename("ResPro"),IFgain=1)
@@ -207,6 +207,7 @@ class autoDEERWorker(QtCore.QRunnable):
             relax.select_pcyc("16step_5p")
         else:
             relax.select_pcyc("DC")
+            relax.shots.value *= 8 
         relax._estimate_time();
         relax.pulses[1].scale.value = 0
         relax.pulses[3].scale.value = 0
@@ -339,6 +340,7 @@ class autoDEERWorker(QtCore.QRunnable):
         
         if not self.AWG:
             deer.select_pcyc('DC')
+            deer.shots.value *= 8 
         elif deertype == '5pDEER':
             deer.select_pcyc("16step_5p")
         elif deertype == '4pDEER':

@@ -15,7 +15,7 @@ import scipy.signal as sig
 from scipy.optimize import minimize,brute
 from autodeer.colors import primary_colors, ReIm_colors
 from autodeer.utils import round_step
-
+import scipy.signal as signal
 
 log = logging.getLogger('autoDEER.DEER')
 
@@ -52,28 +52,74 @@ def find_longest_pulse(sequence):
     
     return longest_pulse/1e3
 
+def MNR_estimate(Vexp,t, mask=None):
+    """
+    Estimates the Modulation to Noise Ratio (MNR) of a DEER signal without fitting.
+    This is done by applying a low pass filter to remove noise and then finding the peaks in the signal.
+
+    Parameters
+    ----------
+    Vexp : np.ndarray
+        The experimental DEER signal, real part only.
+    t : np.ndarray
+        The time axis of the DEER signal, in microseconds.
+    mask : np.ndarray, optional
+        The mask to apply to the data, by default None
+    
+    Returns
+    -------
+    float
+        The estimated MNR of the dataset.
+    """
+    if mask is not None:
+        Vexp = Vexp[mask]
+        t = t[mask]
+    Vexp/=Vexp.max()
+
+    
+    # Vexp /= Vexp.max()
+    SNR = 1/dl.noiselevel(Vexp)
+    # Smoothing spline with a low-pass filter
+    b,a = signal.butter(3,0.1) # 3rd order Butterworth low-pass filter with cutoff at 0.1 MHz
+    Vexp_smooth = signal.filtfilt(b,a,Vexp)
+    min_point = np.min(Vexp_smooth)
+    N_points = len(Vexp_smooth)
+    peaks = signal.find_peaks(
+        Vexp_smooth, height=min_point,distance=N_points//4)
+    
+    est_lam = np.sum(peaks[1]['peak_heights']-min_point)
+    MNR = est_lam*SNR
+    return MNR
+
+def val_in_us(Param):
+    if len(Param.axis) == 0:
+        if Param.unit == "us":
+            return Param.value
+        elif Param.unit == "ns":
+            return Param.value / 1e3
+    elif len(Param.axis) == 1:
+        if Param.unit == "us":
+            return Param.value + Param.axis[0]['axis']
+        elif Param.unit == "ns":
+            return (Param.value + Param.axis[0]['axis']) / 1e3 
+
+
 # =============================================================================
-def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, **kwargs):
+def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0,
+                 remove_crossing=True, **kwargs):
 
 
     Vexp:np.ndarray = dataset.data 
 
     if np.iscomplexobj(Vexp):
-        Vexp = dl.correctphase(Vexp)
+        Vexp,Vexp_im,_ = dl.correctphase(Vexp,full_output=True)
+    elif remove_crossing:
+        Warning("Crossing removal only works with complex data. Skipping")
+        remove_crossing = False
 
     Vexp /= Vexp.max()
 
-    def val_in_us(Param):
-        if len(Param.axis) == 0:
-            if Param.unit == "us":
-                return Param.value
-            elif Param.unit == "ns":
-                return Param.value / 1e3
-        elif len(Param.axis) == 1:
-            if Param.unit == "us":
-                return sequence.tau1.value + Param.axis[0]['axis']
-            elif Param.unit == "ns":
-                return (Param.value + Param.axis[0]['axis']) / 1e3 
+    # Extract params from dataset
 
     if hasattr(dataset,"sequence"):
         sequence = dataset.sequence
@@ -149,28 +195,68 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
         # t = dataset.axes[0]
         t = dataset['X']
 
-    if exp_type == '4pDEER':
-        pathways = [1,2,3]
-    elif exp_type == '5pDEER':
-        pathways = [1,5]
-    elif exp_type == '3pDEER':
-        pathways = [1,2]
-    else:
-        pathways = None
-
     if t.max() > 500:
         t /= 1e3
 
-    if model is not None:
+    # Find mask if needed
+
+    if remove_crossing:
+        mask = None
+        if 'pcyc_name' in dataset.attrs:
+            pcyc = dataset.attrs['pcyc_name']
+        elif 'nPcyc' in dataset.attrs: # guess pcyc
+            if dataset.attrs['nPcyc'] == 16:
+                pcyc = 'Full'
+            elif dataset.attrs['nPcyc'] == 2:
+                pcyc = 'DC'
+        else:
+            pcyc = 'unknown'
+
+        if pcyc == 'DC' and exp_type == "5pDEER": # Remove crossing echoes
+            t_position = [tau1 + tau2 - tau3]
+            idx_position = [np.argmin(np.abs(cross - t)) for cross in t_position]
+            mask = np.ones_like(Vexp, bool)
+            for loc in idx_position:
+                mask &= remove_echo(Vexp, Vexp_im, loc, criteria=4, extent=3)
+
+    if "mask" in kwargs:
+        mask = kwargs["mask"]
+        noiselvl = dl.noiselevel(Vexp[mask])
+    elif remove_crossing and mask is not None:
+        noiselvl = dl.noiselevel(Vexp[mask])
+    else:
+        noiselvl = dl.noiselevel(Vexp)
+        mask=None
+
+    # Determine the pathways
+    est_MNR = MNR_estimate(Vexp,t,mask=mask)
+
+    if "pathways" in kwargs:
+        pathways = kwargs.pop("pathways")
+    else: 
+        if exp_type == '4pDEER':
+            if est_MNR < 40:
+                pathways = [1]
+            else:
+                pathways = [1,2,3]
+        elif exp_type == '5pDEER':
+            if est_MNR < 40:
+                pathways = [1,5]
+            else:
+                pathways = [1,2,3,4,5]
+
+        elif exp_type == '3pDEER':
+            pathways = [1,2]
+        else:
+            pathways = None
+
+    if model is not None: # Compactness is only needed with model-free fitting
         compactness = False
     
 
     if verbosity > 1:
         print(f"Experiment type: {exp_type}, pathways: {pathways}")
         print(f"Experimental Parameters set to: tau1 {tau1:.2f} us \t tau2 {tau2:.2f} us")
-
-    if "pathways" in kwargs:
-        pathways = kwargs.pop("pathways")
 
 
     if hasattr(dataset,"sequence"):
@@ -195,10 +281,10 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
   
     r_max = np.ceil(np.cbrt(t.max()*6**3/2))
-    r = np.linspace(1.2,r_max,100)
+    r = np.linspace(1.5,r_max,100)
 
 
-
+        
 
     # identify experiment
     if 'parametrization' in kwargs:
@@ -220,13 +306,6 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
     else:
         compactness_penalty = None
-
-    if "mask" in kwargs:
-        mask = kwargs["mask"]
-        noiselvl = dl.noiselevel(Vexp[mask])
-    else:
-        noiselvl = dl.noiselevel(Vexp)
-        mask=None
 
 
     # Cleanup extra args
@@ -614,7 +693,7 @@ def remove_echo(
     loc : int
         The approximate location of the crossing echo, +- 30 data points
     criteria : float, optional
-        The delation criteria, in multiples of the std deviation, by default 4
+        The detection criteria, in multiples of the std deviation, by default 4
     extent : int, optional
         How many data points either side to remove, by default 3.
 
