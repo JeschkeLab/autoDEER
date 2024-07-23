@@ -211,7 +211,7 @@ class autoDEERWorker(QtCore.QRunnable):
         relax.pulses[1].scale.value = 0
         relax.pulses[3].scale.value = 0
         self.interface.launch(relax,savename=self.savename("CP_Q"),IFgain=1)
-        self.interface.terminate_at(SNRCriteria(20),test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(50),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.relax_result.emit(self.interface.acquire_dataset())
@@ -231,7 +231,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
         self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=1)
-        self.interface.terminate_at(SNRCriteria(30),test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(50),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.T2_result.emit(self.interface.acquire_dataset())
