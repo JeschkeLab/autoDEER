@@ -827,6 +827,21 @@ class autoDEERUI(QMainWindow):
         else:
             self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR,self.waveform_precision)
         self.deer_settings['dt'] = 8
+        if self.deer_settings['ExpType'] == '4pDEER':
+            if self.deer_settings['tau2'] > 10:
+                self.deer_settings['dt'] = 12
+            elif self.deer_settings['tau2'] > 20:
+                self.deer_settings['dt'] = 16
+            else:
+                self.deer_settings['dt'] = 8
+        elif self.deer_settings['ExpType'] == '5pDEER':
+            if self.deer_settings['tau2']*2 > 10:
+                self.deer_settings['dt'] = 12
+            elif self.deer_settings['tau2']*2 > 20:
+                self.deer_settings['dt'] = 16
+            else:
+                self.deer_settings['dt'] = 8
+
         self.worker.update_deersettings(self.deer_settings)
         
         main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
@@ -859,6 +874,12 @@ class autoDEERUI(QMainWindow):
             max_tau = self.deer_settings['tau2']
             tau = np.min([rec_tau,max_tau])
             self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
+            if self.deer_settings['tau2'] > 10:
+                self.deer_settings['dt'] = 12
+            elif self.deer_settings['tau2'] > 20:
+                self.deer_settings['dt'] = 16
+            else:
+                self.deer_settings['dt'] = 8
 
         else:
             self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,remaining_time,SNR_target,self.waveform_precision)
@@ -866,8 +887,15 @@ class autoDEERUI(QMainWindow):
             tau = np.min([rec_tau/2,max_tau])
             self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
             self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
-    
-        self.deer_settings['dt'] = dt
+            if tau*2 > 10:
+                self.deer_settings['dt'] = 12
+            elif tau*2 > 20:
+                self.deer_settings['dt'] = 16
+            else:
+                self.deer_settings['dt'] = 8
+
+
+        # self.deer_settings['dt'] = dt
         
         self.worker.update_deersettings(self.deer_settings)
         
