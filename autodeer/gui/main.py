@@ -863,7 +863,7 @@ class autoDEERUI(QMainWindow):
         else:
             self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,remaining_time,SNR_target,self.waveform_precision)
             tau = self.deer_settings['tau1'] + self.deer_settings['tau2']
-            tau = np.min([rec_tau/2,tau])
+            tau = np.min([rec_tau/2,tau/2])
             self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
             self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
     
