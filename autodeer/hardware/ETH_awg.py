@@ -157,7 +157,7 @@ class ETH_awg_interface(Interface):
                 else:
                     data = uwb_eval_match(Matfile, exp,verbosity=verbosity)
 
-                if np.all(data.data == 0+0j):
+                if np.all(data.data == 0+0j) and not (hasattr(self,'stop_flag') and self.stop_flag.is_set()):
                     time.sleep(10)
                     print("Data is all zeros")
                     continue
@@ -177,23 +177,27 @@ class ETH_awg_interface(Interface):
         
         test_IF = True
         while test_IF:
+            self.terminate()
             self.launch_withIFGain(sequence,savename,self.IFgain)
             scan_time = sequence._estimate_time() / sequence.averages.value
             check_1stScan = True
             while check_1stScan:
-                dataset = self.acquire_dataset_from_matlab()
+                dataset = self.acquire_dataset()
                 time.sleep(np.min([scan_time//10,2]))
 
                 dig_level = dataset.attrs['diglevel'] / (2**11 *sequence.shots.value* sequence.pcyc_dets.shape[0])
                 pos_levels = dig_level * self.IFgain_options / self.IFgain_options[self.IFgain]
                 pos_levels[pos_levels > 0.75] = 0
+                if dig_level == 0:
+                    continue
                 if (pos_levels[self.IFgain] > 0.75) or  (pos_levels[self.IFgain] < 0.5):
                     best_IFgain = np.argmax(pos_levels)
                 else:
                     best_IFgain = self.IFgain
+
                 if np.all(pos_levels==0):
-                    log.critical('Stauration detected with IF gain 0. Please check the power levels.')
-                    raise RuntimeError('Stauration detected with IF gain 0. Please check the power levels.')
+                    log.critical('Saturation detected with IF gain 0. Please check the power levels.')
+                    raise RuntimeError('Saturation detected with IF gain 0. Please check the power levels.')
                 elif (best_IFgain < self.IFgain) and (dataset.nAvgs == 0):
                     log.warning(f"IF gain changed from {self.IFgain} to {best_IFgain}")
                     self.IFgain = best_IFgain
@@ -302,7 +306,7 @@ class ETH_awg_interface(Interface):
                     dim.append(item)
         self.cur_exp = sequence
         init_data = np.zeros(dim,dtype=np.complex128)
-        self.bg_data = create_dataset_from_sequence(init_data,self.cur_exp,extra_params={'nAvgs':0})
+        self.bg_data = create_dataset_from_sequence(init_data,self.cur_exp,extra_params={'nAvgs':0,'diglevel':0})
         
         self.stop_flag = threading.Event()
         self.bg_thread = threading.Thread(target=bg_thread,args=[self,sequence,savename,IFgain,axID,self.stop_flag])
@@ -842,6 +846,7 @@ class ETH_awg_interface(Interface):
         else:
             self.engine.dig_interface('terminate', nargout=0)
             self.stop_flag.set()
+            self.bg_thread.join()
             self.bg_thread = None
             
         pass
@@ -893,15 +898,17 @@ def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
                 param = getattr(new_seq.pulses[progTable['EventID'][i]], var)
                 new_value = param.value + axis[index]
             param.value = new_value
-
     
     nAvg=seq.averages.value
-    for iavg in range(nAvg):    
+    dig_level=0
+    for iavg in range(nAvg): 
+        if stop_flag.is_set():
+            break   
         single_scan_data = np.zeros(dim, dtype=np.complex128)
         
         for i in range(fixed_param.dim[0]):
             if stop_flag.is_set():
-                    break
+                break
             # droped_param.value = fixed_param.get_axis()[i]
             tmp_seq = new_seq.copy()
             set_params_by_uuid(tmp_seq, OG_seq_progTable, droped_param.uuid, i)
@@ -914,12 +921,18 @@ def bg_thread(interface,seq,savename,IFgain,axID,stop_flag):
                     break
                 time.sleep(10)
 
+            single_scan = interface.acquire_dataset_from_matlab(cur_exp=tmp_seq)
             if reduced:
-                single_scan_data = interface.acquire_dataset_from_matlab(cur_exp=tmp_seq).data
+                single_scan_data = single_scan.data
             else:
-                single_scan_data[:,i] = interface.acquire_dataset_from_matlab(cur_exp=tmp_seq).data
+                single_scan_data[:,i] = single_scan.data
         
         if stop_flag.is_set():
             break
         interface.bg_data.data += single_scan_data
+        if single_scan.attrs['diglevel'] > dig_level:
+            dig_level = single_scan.attrs['diglevel']
+        interface.bg_data.attrs['diglevel'] = dig_level
         interface.bg_data.attrs['nAvgs'] = iavg+1
+
+    print("Background thread finished")

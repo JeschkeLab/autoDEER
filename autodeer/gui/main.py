@@ -786,19 +786,7 @@ class autoDEERUI(QMainWindow):
     
         self.current_results['relax'].tau2hrs = tau2hrs
 
-        if 'relax2D' in self.current_results:
-            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR/label_eff,self.waveform_precision)
-        else:
-            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR/label_eff,self.waveform_precision)
-        
-        self.deer_settings['dt'] = 16
-        self.worker.update_deersettings(
-            self.deer_settings
-            )
-        
-        main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
-        main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
-        main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")
+        self.initialise_deer_settings()
 
         self.current_results['relax'].max_tau = max_tau
         self.DipolarEvoMax.setValue(max_tau)
@@ -824,26 +812,88 @@ class autoDEERUI(QMainWindow):
 
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
+
+    def initialise_deer_settings(self):
         
+
+        if (self.Exp_types.currentText() == '4pDEER') and ('relax2D' in self.current_results):
+            exp = '4pDEER'
+        else:
+            exp = 'auto'
+
+        
+        if exp == '4pDEER':
+            self.deer_settings = ad.calc_deer_settings('4pDEER',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR,self.waveform_precision)
+        else:
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR,self.waveform_precision)
+        self.deer_settings['dt'] = 8
+        self.worker.update_deersettings(self.deer_settings)
+        
+        main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
+        main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
+        main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")
+
+    def update_deer_settings(self):
+        
+        data = self.current_results['quickdeer']
+        rec_tau = self.current_results['quickdeer'].rec_tau_max
+        dt = self.current_results['quickdeer'].rec_dt * 1e3
+        dt = ad.round_step(dt,self.waveform_precision)
+        dt= 8
+        mod_depth = data.MNR * data.noiselvl
+        remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60))
+
+        self.correction_factor = ad.calc_correction_factor(self.current_results['quickdeer'],self.aim_MNR,self.aim_time)
+        main_log.info(f"Correction factor {self.correction_factor:.3f}")
+        SNR_target = self.priorties[self.userinput['priority']]
+        SNR_target/=(mod_depth*np.sqrt(self.correction_factor))
+
+        if (self.Exp_types.currentText() == '4pDEER') and ('relax2D' in self.current_results):
+            exp = '4pDEER'
+        else:
+            exp = 'auto'
+
+        
+        if exp == '4pDEER':
+            self.deer_settings = ad.calc_deer_settings('4pDEER',self.current_results['relax'],self.current_results['relax2D'],remaining_time,SNR_target,self.waveform_precision)
+            max_tau = self.deer_settings['tau2']
+            tau = np.min([rec_tau,max_tau])
+            self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
+
+        else:
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,remaining_time,SNR_target,self.waveform_precision)
+            max_tau = self.deer_settings['tau1'] + self.deer_settings['tau2']
+            tau = np.min([rec_tau/2,max_tau])
+            self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
+            self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
+    
+        self.deer_settings['dt'] = dt
+        
+        self.worker.update_deersettings(self.deer_settings)
+        
+        main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
+        main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
+        main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")
+
+
     def update_relax2D(self, dataset=None):
         if dataset is None:
             dataset = self.current_data['relax2D']
         else:
             self.current_data['relax2D'] = dataset
 
-        # Since there is no fitting in the 2D data analysis it can be run in the main thread
+        # Since there is no fitting in the 2D data analysis it can be run in the main threads
 
         relax2DAnalysis = ad.RefocusedEcho2DAnalysis(dataset)
         self.current_results['relax2D'] = relax2DAnalysis
 
         self.refresh_relax_figure()
 
-        self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR,self.waveform_precision)
-        self.deer_settings['dt'] = 16
-        self.worker.update_deersettings(self.deer_settings)
+        self.initialise_deer_settings()
 
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
+        
 
     
     def update_T2(self,dataset=None):
@@ -934,27 +984,9 @@ class autoDEERUI(QMainWindow):
         # self.q_DEER.update_figure()
         def update_func(x):
             self.current_results['quickdeer'] = x
-            rec_tau = self.current_results['quickdeer'].rec_tau_max
-            dt = self.current_results['quickdeer'].rec_dt * 1e3
-            dt = ad.round_step(dt,self.waveform_precision)
-            dt= 16
-            mod_depth = x.MNR * x.noiselvl
-            remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60))
 
-            self.correction_factor = ad.calc_correction_factor(self.current_results['quickdeer'],self.aim_MNR,self.aim_time)
-            main_log.info(f"Correction factor {self.correction_factor:.3f}")
-            snr_target = self.priorties[self.userinput['priority']]
-            max_tau = self.current_results['relax'].find_optimal(SNR_target=snr_target/(mod_depth*np.sqrt(self.correction_factor)), target_time=remaining_time, target_step=dt/1e3)
-            main_log.info(f"Max tau {max_tau:.2f} us")
-            tau = np.min([rec_tau/2,max_tau])
-            self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
-            self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
-            self.deer_settings['tau3'] = 0.3
-            self.deer_settings['ExpType'] = '5pDEER'
-            self.deer_settings['dt'] = dt
-            self.worker.update_deersettings(
-                self.deer_settings
-            )
+            self.update_deer_settings()
+
         self.q_DEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
 
     def update_longdeer(self, dataset=None):

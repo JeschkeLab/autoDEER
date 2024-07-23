@@ -1265,6 +1265,7 @@ class DEERSequence(Sequence):
             self.pulses[5]._addPhaseCycle([0, np.pi], [1, 1])       # Pump 3
             self.pulses[6]._addPhaseCycle([0],[1])                  # Ref 3
 
+        self.pcyc_name = option
         
         self._buildPhaseCycle()
 
