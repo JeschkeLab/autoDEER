@@ -775,14 +775,14 @@ class autoDEERUI(QMainWindow):
         # self.relax_canvas.draw()
 
         self.refresh_relax_figure()
-        label_eff = self.userinput['label_eff'] / 100
-        est_lambda = 0.4 
+        self.label_eff = self.userinput['label_eff'] / 100
+        self.est_lambda = 0.4 
         self.aim_time = 2
         self.aim_MNR = 20
         
-        tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(est_lambda*label_eff), target_time=self.aim_time, target_step=0.015)
-        tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(est_lambda*label_eff), target_time=4, target_step=0.015)
-        max_tau = fitresult.find_optimal(SNR_target=self.priorties[self.userinput['priority']]/(est_lambda*label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
+        tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(self.est_lambda*self.label_eff), target_time=self.aim_time, target_step=0.015)
+        tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(self.est_lambda*self.label_eff), target_time=4, target_step=0.015)
+        max_tau = fitresult.find_optimal(SNR_target=self.priorties[self.userinput['priority']]/(self.est_lambda*self.label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
     
         self.current_results['relax'].tau2hrs = tau2hrs
 
@@ -823,9 +823,9 @@ class autoDEERUI(QMainWindow):
 
         
         if exp == '4pDEER':
-            self.deer_settings = ad.calc_deer_settings('4pDEER',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR,self.waveform_precision)
+            self.deer_settings = ad.calc_deer_settings('4pDEER',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,self.aim_MNR/(self.est_lambda*self.label_eff),self.waveform_precision)
         else:
-            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR,self.waveform_precision)
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,self.aim_MNR/(self.est_lambda*self.label_eff),self.waveform_precision)
         self.deer_settings['dt'] = 8
         self.worker.update_deersettings(self.deer_settings)
         
