@@ -778,10 +778,10 @@ class autoDEERUI(QMainWindow):
         label_eff = self.userinput['label_eff'] / 100
         est_lambda = 0.4 
         self.aim_time = 2
-        self.aim_MNR = (self.priorties[self.userinput['priority']]/2) / est_lambda
+        self.aim_MNR = 20
         
-        tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/label_eff, target_time=self.aim_time, target_step=0.015)
-        tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/label_eff, target_time=4, target_step=0.015)
+        tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(est_lambda*label_eff), target_time=self.aim_time, target_step=0.015)
+        tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(est_lambda*label_eff), target_time=4, target_step=0.015)
         max_tau = fitresult.find_optimal(SNR_target=self.priorties[self.userinput['priority']]/(est_lambda*label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
     
         self.current_results['relax'].tau2hrs = tau2hrs
@@ -846,7 +846,7 @@ class autoDEERUI(QMainWindow):
         self.correction_factor = ad.calc_correction_factor(self.current_results['quickdeer'],self.aim_MNR,self.aim_time)
         main_log.info(f"Correction factor {self.correction_factor:.3f}")
         SNR_target = self.priorties[self.userinput['priority']]
-        SNR_target/=(mod_depth*np.sqrt(self.correction_factor))
+        SNR_target /= (mod_depth*np.sqrt(self.correction_factor))
 
         if (self.Exp_types.currentText() == '4pDEER') and ('relax2D' in self.current_results):
             exp = '4pDEER'
@@ -862,8 +862,8 @@ class autoDEERUI(QMainWindow):
 
         else:
             self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,remaining_time,SNR_target,self.waveform_precision)
-            max_tau = self.deer_settings['tau1'] + self.deer_settings['tau2']
-            tau = np.min([rec_tau/2,max_tau])
+            tau = self.deer_settings['tau1'] + self.deer_settings['tau2']
+            tau = np.min([rec_tau/2,tau])
             self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
             self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
     
