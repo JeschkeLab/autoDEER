@@ -105,9 +105,9 @@ def fieldsweep_fit(fsweep_analysis,fit):
     fsweep_analysis.smooth() # Always smooth anyway
     return fsweep_analysis
 
-def respro_process(dataset, fieldsweep=None,cores=1):
+def respro_process(dataset,f_lims, fieldsweep=None,cores=1):
     respro = ad.ResonatorProfileAnalysis(
-        dataset
+        dataset,f_lims=f_lims
     )
     fc_guess = dataset.LO.values[dataset.LO.values.shape[0]//2]
     with threadpool_limits(limits=cores, user_api='blas'):
@@ -560,9 +560,11 @@ class autoDEERUI(QMainWindow):
             dataset = self.current_data['respro']
         else:
             self.current_data['respro'] = dataset
+        
+        f_lims = (self.config['Spectrometer']['Bridge']['Min Freq'], self.config['Spectrometer']['Bridge']['Max Freq'])
 
         # worker = Worker(respro_process, dataset, f_axis,self.current_results['fieldsweep'], cores=self.cores)
-        worker = Worker(respro_process, dataset, self.current_results['fieldsweep'], cores=self.cores)
+        worker = Worker(respro_process, dataset,f_lims, self.current_results['fieldsweep'], cores=self.cores)
 
         worker.signals.result.connect(self.refresh_respro)
 
