@@ -122,7 +122,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.deer_inputs = {}
         
         self.EndTimeCriteria = TimeCriteria('End Time',time.time() + self.user_inputs['MaxTime']*3600, "Overall end time",end_signal=self.signals.timeout.emit,night_hours=night_hours)
-
+        self.test_interval = 0.5
         # # Add the callback to our kwargs
         # self.kwargs['progress_callback'] = self.signals.progress
     def pause_and_wait(self):
@@ -149,7 +149,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
         self.interface.launch(fsweep,savename=self.savename("EDFS_Q"),IFgain=1)
         self.signals.status.emit('Field-sweep running')
-        self.interface.terminate_at(SNRCriteria(30))
+        self.interface.terminate_at(SNRCriteria(30),test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.status.emit('Field-sweep complete')
@@ -172,7 +172,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.interface.launch(RPseq,savename=self.savename("ResPro"),IFgain=1)
         self.signals.status.emit('Resonator Profile running')
 
-        self.interface.terminate_at(SNRCriteria(5))
+        self.interface.terminate_at(SNRCriteria(5),test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.status.emit('Resonator Profile complete')
@@ -212,7 +212,7 @@ class autoDEERWorker(QtCore.QRunnable):
         relax.pulses[1].scale.value = 0
         relax.pulses[3].scale.value = 0
         self.interface.launch(relax,savename=self.savename("CP_Q"),IFgain=1)
-        self.interface.terminate_at(SNRCriteria(50),test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(50),test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.relax_result.emit(self.interface.acquire_dataset())
@@ -232,7 +232,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
         self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=1)
-        self.interface.terminate_at(SNRCriteria(50),test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(50),test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.T2_result.emit(self.interface.acquire_dataset())
@@ -251,7 +251,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
 
         self.interface.launch(seq,savename=self.savename("2D_DEC"),IFgain=2)
-        self.interface.terminate_at(SNRCriteria(15),test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(15),test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.Relax2D_result.emit(self.interface.acquire_dataset())
@@ -353,7 +353,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.interface.launch(deer,savename=self.savename(savename_type,savename_suffix),IFgain=2)
         time.sleep(30) # Always wait for the experiment to properly start
         with threadpool_limits(limits=self.cores, user_api='blas'):
-            self.interface.terminate_at(end_criteria,verbosity=2,test_interval=0.5) # Change criteria backagain
+            self.interface.terminate_at(end_criteria,verbosity=2,test_interval=self.test_interval) # Change criteria backagain
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         signal(self.interface.acquire_dataset())
@@ -368,7 +368,7 @@ class autoDEERWorker(QtCore.QRunnable):
         scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=12e3, averages=10, shots=n_shots,
                            pi2_pulse=p90, pi_pulse=p180)
         self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",IFgain=1)
-        self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.status.emit('Reptime scan complete')
