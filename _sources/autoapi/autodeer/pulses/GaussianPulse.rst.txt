@@ -36,6 +36,14 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: freq
+
+      
+
+   .. py:attribute:: FWHM
+
+      
+
    .. py:method:: func(ax)
 
 

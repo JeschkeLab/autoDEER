@@ -57,6 +57,15 @@ Attributes
 
    Bases: :py:obj:`autodeer.hardware.XeprAPI_link.XeprAPILink`
 
+   .. py:attribute:: _tmp_dir
+      :value: 'None'
+
+      
+
+   .. py:attribute:: meta
+
+      
+
    .. py:method:: find_Xepr()
 
 
@@ -241,6 +250,66 @@ Attributes
 .. py:class:: dummy_cur_exp
 
 
+   .. py:attribute:: ShotRepTime
+
+      
+
+   .. py:attribute:: NbScansToDo
+
+      
+
+   .. py:attribute:: SweepsPExp
+
+      
+
+   .. py:attribute:: ShotsPLoop
+
+      
+
+   .. py:attribute:: XSpecRes
+
+      
+
+   .. py:attribute:: NbScansDone
+
+      
+
+   .. py:attribute:: FTAcqModeSlct
+
+      
+
+   .. py:attribute:: PlsSPELPrgPaF
+
+      
+
+   .. py:attribute:: PlsSPELGlbPaF
+
+      
+
+   .. py:attribute:: PlsSPELLISTSlct
+
+      
+
+   .. py:attribute:: PlsSPELEXPSlct
+
+      
+
+   .. py:attribute:: ReplaceMode
+
+      
+
+   .. py:attribute:: CenterField
+
+      
+
+   .. py:attribute:: FrequencyMon
+
+      
+
+   .. py:attribute:: SweepWidth
+
+      
+
    .. py:method:: __getitem__(name)
 
       
@@ -305,6 +374,18 @@ Attributes
    .. py:property:: value
 
 
+   .. py:attribute:: aqGetParMaxValue
+
+      
+
+   .. py:attribute:: aqGetParMinValue
+
+      
+
+   .. py:attribute:: val
+
+      
+
 
 .. py:class:: dummy_xepr
 
@@ -337,6 +418,14 @@ Attributes
 
 
 
+   .. py:attribute:: cur_exp
+
+      
+
+   .. py:attribute:: hidden
+
+      
+
    .. py:method:: XeprExperiment(hidden=None)
 
 
@@ -346,6 +435,42 @@ Attributes
 
 .. py:class:: dummy_hidden
 
+
+   .. py:attribute:: SignalPhase
+
+      
+
+   .. py:attribute:: BrXPhase
+
+      
+
+   .. py:attribute:: BrYPhase
+
+      
+
+   .. py:attribute:: MinBrXPhase
+
+      
+
+   .. py:attribute:: MinBrYPhase
+
+      
+
+   .. py:attribute:: BrXAmp
+
+      
+
+   .. py:attribute:: BrYAmp
+
+      
+
+   .. py:attribute:: MinBrXAmp
+
+      
+
+   .. py:attribute:: MinBrYAmp
+
+      
 
    .. py:method:: __getitem__(name)
 
@@ -404,5 +529,13 @@ Attributes
 
 .. py:class:: dummy_dataset(t, V)
 
+
+   .. py:attribute:: O
+
+      
+
+   .. py:attribute:: size
+
+      
 
 

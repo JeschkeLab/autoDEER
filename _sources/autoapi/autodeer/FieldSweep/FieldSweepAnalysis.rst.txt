@@ -27,6 +27,10 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: data
+
+      
+
    .. py:method:: find_max()
 
       
@@ -88,7 +92,7 @@
    .. py:method:: calc_noise_level(SNR_target=30)
 
 
-   .. py:method:: smooth()
+   .. py:method:: smooth(*args, **kwargs)
 
       
       Generates a smoothed version of the data using a 1D smoothing spline.

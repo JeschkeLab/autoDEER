@@ -35,6 +35,23 @@ Attributes
 
    Bases: :py:obj:`PyQt6.QtWidgets.QDialog`
 
+   .. py:attribute:: log_levels
+
+      
+
+   .. py:attribute:: core_logger
+
+      
+
+   .. py:attribute:: hardware_logger
+
+      
+
+   .. py:attribute:: log
+      :value: '[]'
+
+      
+
    .. py:method:: add_new_entry(entry)
 
 

@@ -78,6 +78,42 @@ Attributes
    .. py:property:: savefolder
 
 
+   .. py:attribute:: awg_freq
+
+      
+
+   .. py:attribute:: dig_rate
+
+      
+
+   .. py:attribute:: pulses
+
+      
+
+   .. py:attribute:: cur_exp
+      :value: 'None'
+
+      
+
+   .. py:attribute:: bg_data
+      :value: 'None'
+
+      
+
+   .. py:attribute:: bg_thread
+      :value: 'None'
+
+      
+
+   .. py:attribute:: IFgain_options
+
+      
+
+   .. py:attribute:: IFgain
+      :value: '2'
+
+      
+
    .. py:method:: connect(session=None)
 
       
@@ -159,7 +195,37 @@ Attributes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: launch(sequence, savename, IFgain = 0)
+   .. py:method:: launch(sequence, savename, *args, **kwargs)
+
+      
+      Launches the experiment and initialises autosaving.
+
+
+      :Parameters:
+
+          **sequence** : Sequence
+              The sequence to be launched
+
+          **savename** : str
+              The savename for this measurement. A timestamp will be added to the value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: launch_withIFGain(sequence, savename, IFgain = 0)
 
       
       Launch a sequence on the spectrometer.
@@ -247,7 +313,7 @@ Attributes
       :Parameters:
 
           **tp** : float
-              Pulse length in ns
+              Pulse length of pi/2 pulse in ns
 
           **LO** : float
               Central frequency of this pulse in GHz

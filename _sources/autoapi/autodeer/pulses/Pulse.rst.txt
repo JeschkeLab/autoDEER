@@ -34,6 +34,41 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:property:: bandwidth
+
+
+   .. py:property:: amp_factor
+
+      
+      The B1 amplitude factor (nutation frequency) for the pulse in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: Progression
+      :value: 'False'
+
+      
+
    .. py:method:: _addPhaseCycle(phases, detections=None)
 
       
@@ -223,7 +258,7 @@
    .. py:method:: _calc_fft(pad=10000)
 
 
-   .. py:method:: exciteprofile(freqs=None)
+   .. py:method:: exciteprofile(freqs=None, resonator=None)
 
       
       Excitation profile
@@ -255,6 +290,9 @@
           **freqs: np.ndarray, optional**
               The frequency axis. Caution: A larger number of points will linearly
               increase computation time.
+
+          **resonator: ad.ResonatorProfile, optional**
+              ..
 
       :Returns:
 

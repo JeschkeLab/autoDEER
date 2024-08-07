@@ -18,6 +18,7 @@ Classes
    autodeer.pulses.Delay
    autodeer.pulses.RectPulse
    autodeer.pulses.GaussianPulse
+   autodeer.pulses.FrequencySweptPulse
    autodeer.pulses.HSPulse
    autodeer.pulses.ChirpPulse
    autodeer.pulses.SincPulse
@@ -68,6 +69,41 @@ Functions
 
    ..
        !! processed by numpydoc !!
+
+   .. py:property:: bandwidth
+
+
+   .. py:property:: amp_factor
+
+      
+      The B1 amplitude factor (nutation frequency) for the pulse in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: Progression
+      :value: 'False'
+
+      
 
    .. py:method:: _addPhaseCycle(phases, detections=None)
 
@@ -258,7 +294,7 @@ Functions
    .. py:method:: _calc_fft(pad=10000)
 
 
-   .. py:method:: exciteprofile(freqs=None)
+   .. py:method:: exciteprofile(freqs=None, resonator=None)
 
       
       Excitation profile
@@ -290,6 +326,9 @@ Functions
           **freqs: np.ndarray, optional**
               The frequency axis. Caution: A larger number of points will linearly
               increase computation time.
+
+          **resonator: ad.ResonatorProfile, optional**
+              ..
 
       :Returns:
 
@@ -502,6 +541,20 @@ Functions
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: scale
+      :value: 'None'
+
+      
+
+   .. py:attribute:: freq
+
+      
+
+   .. py:attribute:: pcyc
+      :value: 'None'
+
+      
+
 
 .. py:class:: Delay(*, tp, t=None)
 
@@ -542,6 +595,20 @@ Functions
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: tp
+
+      
+
+   .. py:attribute:: pcyc
+      :value: 'None'
+
+      
+
+   .. py:attribute:: scale
+      :value: 'None'
+
+      
 
 
 .. py:class:: RectPulse(tp=16, freq=0, t=None, flipangle=None, **kwargs)
@@ -585,6 +652,10 @@ Functions
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: freq
+
+      
+
    .. py:method:: func(ax)
 
 
@@ -627,14 +698,131 @@ Functions
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: freq
+
+      
+
+   .. py:attribute:: FWHM
+
+      
+
    .. py:method:: func(ax)
 
+
+
+.. py:class:: FrequencySweptPulse(*, tp, t=None, scale=None, flipangle=None, pcyc=[0], name=None, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   A general parent class for Frequency Swept Pulses.
+
+
+   The class for a general pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The pulse length in ns.
+
+       **scale** : float
+           The arbitary experimental pulse amplitude, 0-1.
+
+       **t** : float, optional
+           The pulse start time in ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:property:: Qcrit
+
+      
+      The critical Q factor for the pulse.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:property:: sweeprate
+      :abstractmethod:
+
+      
+      The sweep rate of the pulse in GHz/ns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:property:: amp_factor
+
+      
+      The B1 amplitude factor (nutation frequency) for the pulse in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
 .. py:class:: HSPulse(*, tp=128, order1=1, order2=6, beta=20, **kwargs)
 
 
-   Bases: :py:obj:`Pulse`
+   Bases: :py:obj:`FrequencySweptPulse`
 
    Represents a hyperboilc secant frequency-swept pulse.
 
@@ -669,6 +857,41 @@ Functions
    ..
        !! processed by numpydoc !!
 
+   .. py:property:: sweeprate
+
+      
+      The sweep rate of the pulse in GHz/ns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:attribute:: order1
+
+      
+
+   .. py:attribute:: order2
+
+      
+
+   .. py:attribute:: beta
+
+      
+
    .. py:method:: func(ax)
 
 
@@ -676,7 +899,7 @@ Functions
 .. py:class:: ChirpPulse(*, tp=128, **kwargs)
 
 
-   Bases: :py:obj:`Pulse`
+   Bases: :py:obj:`FrequencySweptPulse`
 
    Represents a linear frequency-swept pulse.
 
@@ -710,6 +933,29 @@ Functions
 
    ..
        !! processed by numpydoc !!
+
+   .. py:property:: sweeprate
+
+      
+      The sweep rate of the pulse in GHz/ns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
    .. py:method:: func(ax)
 
@@ -756,10 +1002,22 @@ Functions
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: freq
+
+      
+
+   .. py:attribute:: order
+
+      
+
+   .. py:attribute:: window
+
+      
+
    .. py:method:: func(ax)
 
 
 
-.. py:function:: build_default_pulses(AWG=True, tp=12)
+.. py:function:: build_default_pulses(AWG=True, SPFU=False, tp=12)
 
 

@@ -30,6 +30,19 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: axis
+      :value: '[]'
+
+      
+
+   .. py:attribute:: dataset
+
+      
+
+   .. py:attribute:: data
+
+      
+
    .. py:method:: _smooth(elements=3)
 
       

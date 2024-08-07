@@ -30,6 +30,22 @@
 
    ..
        !! processed by numpydoc !!
+   .. py:attribute:: fn
+
+      
+
+   .. py:attribute:: args
+
+      
+
+   .. py:attribute:: kwargs
+
+      
+
+   .. py:attribute:: signals
+
+      
+
    .. py:method:: run()
 
       

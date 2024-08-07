@@ -24,11 +24,13 @@ Functions
 
    autodeer.hardware.Bruker_MPFU.step_parameters
    autodeer.hardware.Bruker_MPFU._MPFU_channels
+   autodeer.hardware.Bruker_MPFU._SPFU_channels
    autodeer.hardware.Bruker_MPFU.get_specjet_data
    autodeer.hardware.Bruker_MPFU.tune_power
    autodeer.hardware.Bruker_MPFU.tune_phase
    autodeer.hardware.Bruker_MPFU.MPFUtune
    autodeer.hardware.Bruker_MPFU.ELDORtune
+   autodeer.hardware.Bruker_MPFU.SPFUtune
    autodeer.hardware.Bruker_MPFU.test_if_MPFU_compatability
 
 
@@ -82,6 +84,68 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: api
+
+      
+
+   .. py:attribute:: spec_config
+
+      
+
+   .. py:attribute:: bridge_config
+
+      
+
+   .. py:attribute:: MPFU
+
+      
+
+   .. py:attribute:: temp_dir
+
+      
+
+   .. py:attribute:: d0
+
+      
+
+   .. py:attribute:: bg_thread
+      :value: 'None'
+
+      
+
+   .. py:attribute:: bg_data
+      :value: 'None'
+
+      
+
+   .. py:attribute:: cur_exp
+      :value: 'None'
+
+      
+
+   .. py:attribute:: tuning
+      :value: 'False'
+
+      
+
+   .. py:attribute:: pool
+
+      
+
+   .. py:attribute:: savename
+      :value: "''"
+
+      
+
+   .. py:attribute:: savefolder
+
+      
+
+   .. py:attribute:: setup_flag
+      :value: 'False'
+
+      
 
    .. py:method:: connect(d0=None)
 
@@ -275,6 +339,30 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+.. py:function:: _SPFU_channels(sequence, ELDOR=True)
+
+   
+   Idenitifies how many unique MPFU channels are needed for a sequence and
+   applies the correct Channel infomation to each pulse.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
 .. py:function:: get_specjet_data(interface)
 
 
@@ -362,7 +450,10 @@ Attributes
 .. py:function:: MPFUtune(interface, sequence, channels, echo='Hahn', tol = 0.1, bounds=[0, 100], tau_value=550)
 
 
-.. py:function:: ELDORtune(interface, sequence, freq, tau_value=550, test_tp=16, plot=False, save=True)
+.. py:function:: ELDORtune(interface, sequence, freq, MPFU=True, tau_value=550, test_tp=16, plot=False, save=True)
+
+
+.. py:function:: SPFUtune(interface, sequence, flip_power, echo='Hahn', tol = 0.1, bounds=[0, 60], tau_value=550)
 
 
 .. py:function:: test_if_MPFU_compatability(seq)

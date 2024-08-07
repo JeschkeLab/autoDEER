@@ -23,6 +23,64 @@
 
    ..
        !! processed by numpydoc !!
+   .. py:attribute:: Dummy
+
+      
+
+   .. py:attribute:: Bridge
+
+      
+
+   .. py:attribute:: resonator_list
+
+      
+
+   .. py:attribute:: state
+      :value: 'False'
+
+      
+
+   .. py:attribute:: speedup
+
+      
+
+   .. py:attribute:: pulses
+
+      
+
+   .. py:attribute:: start_time
+      :value: '0'
+
+      
+
+   .. py:attribute:: SNR
+
+      
+
+   .. py:attribute:: key1
+
+      
+
+   .. py:attribute:: fc
+
+      
+
+   .. py:attribute:: Q
+
+      
+
+   .. py:attribute:: mode
+
+      
+
+   .. py:attribute:: x
+
+      
+
+   .. py:attribute:: scale
+
+      
+
    .. py:method:: launch(sequence, savename, **kwargs)
 
       

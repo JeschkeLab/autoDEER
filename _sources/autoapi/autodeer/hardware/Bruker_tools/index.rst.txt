@@ -32,6 +32,7 @@ Functions
    autodeer.hardware.Bruker_tools.get_arange
    autodeer.hardware.Bruker_tools.build_unique_progtable
    autodeer.hardware.Bruker_tools.check_variable
+   autodeer.hardware.Bruker_tools.determine_TWT_split
    autodeer.hardware.Bruker_tools.write_pulsespel_file
 
 
@@ -42,6 +43,7 @@ Attributes
 .. autoapisummary::
 
    autodeer.hardware.Bruker_tools.MODULE_DIR
+   autodeer.hardware.Bruker_tools.hw_log
    autodeer.hardware.Bruker_tools.header
    autodeer.hardware.Bruker_tools.possible_delays
    autodeer.hardware.Bruker_tools.possible_vars
@@ -52,12 +54,25 @@ Attributes
 
    
 
+.. py:data:: hw_log
+
+   
+
 .. py:data:: header
 
    
 
 .. py:class:: PSPhaseCycle(sequence, MPFU=None, OnlyDet=False)
 
+
+   .. py:attribute:: BPhaseCycles
+      :value: '[]'
+
+      
+
+   .. py:attribute:: detect_dicts
+
+      
 
    .. py:method:: _MPFU(sequence, MPFU)
 
@@ -94,6 +109,28 @@ Attributes
 
 .. py:class:: PSparvar(sequence, id)
 
+
+   .. py:attribute:: progTable
+
+      
+
+   .. py:attribute:: progTable_n
+
+      
+
+   .. py:attribute:: parvar
+
+      
+
+   .. py:attribute:: PulseSpel
+      :value: 'True'
+
+      
+
+   .. py:attribute:: events
+      :value: '[]'
+
+      
 
    .. py:method:: checkPulseSpel()
 
@@ -190,6 +227,75 @@ Attributes
 
 .. py:class:: PulseSpel(sequence, d0, MPFU=None, AWG=False)
 
+
+   .. py:attribute:: possible_delays
+
+      
+
+   .. py:attribute:: possible_pulses
+
+      
+
+   .. py:attribute:: possible_vars
+
+      
+
+   .. py:attribute:: sequence
+
+      
+
+   .. py:attribute:: var_hash
+
+      
+
+   .. py:attribute:: def_file_str
+      :value: "''"
+
+      
+
+   .. py:attribute:: exp_file_str
+      :value: "''"
+
+      
+
+   .. py:attribute:: dims
+      :value: '[]'
+
+      
+
+   .. py:attribute:: MPFU
+
+      
+
+   .. py:attribute:: AWG
+
+      
+
+   .. py:attribute:: pcyc_str
+      :value: "''"
+
+      
+
+   .. py:attribute:: rel_positions
+
+      
+
+   .. py:attribute:: unique_parvars
+
+      
+
+   .. py:attribute:: parvars
+      :value: '[]'
+
+      
+
+   .. py:attribute:: step_hash
+
+      
+
+   .. py:attribute:: place_hash
+
+      
 
    .. py:method:: _new_delay(key)
 
@@ -352,7 +458,10 @@ Attributes
 .. py:function:: check_variable(var, uprog)
 
 
-.. py:function:: write_pulsespel_file(sequence, d0, AWG=False, MPFU=False)
+.. py:function:: determine_TWT_split(sequence, MaxGate)
+
+
+.. py:function:: write_pulsespel_file(sequence, d0, AWG=False, MPFU=False, MaxGate=40)
 
    
    Write the pulsespel file for a given sequence. 
@@ -368,6 +477,9 @@ Attributes
 
        **MPFU** : list, optional
            A list of MPFU channels, by default False
+
+       **MaxGate** : float, optional
+           The maximum gate time for the TWT gate in microseconds, by default 40 us
 
    :Returns:
 

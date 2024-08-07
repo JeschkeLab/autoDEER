@@ -4,14 +4,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.hardware.Bruker_tools - </title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -90,19 +90,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -143,7 +130,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -282,17 +269,23 @@
           <h1>Source code for autodeer.hardware.Bruker_tools</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">autodeer.sequences</span> <span class="kn">import</span> <span class="n">Sequence</span>
 <span class="kn">from</span> <span class="nn">autodeer.pulses</span> <span class="kn">import</span> <span class="n">RectPulse</span><span class="p">,</span> <span class="n">Delay</span><span class="p">,</span> <span class="n">Detection</span>
-<span class="kn">from</span> <span class="nn">autodeer.utils</span> <span class="kn">import</span> <span class="n">gcd</span><span class="p">,</span> <span class="n">val_in_ns</span><span class="p">,</span> <span class="n">val_in_us</span>
+<span class="kn">from</span> <span class="nn">autodeer.utils</span> <span class="kn">import</span> <span class="n">gcd</span><span class="p">,</span> <span class="n">val_in_ns</span><span class="p">,</span> <span class="n">val_in_us</span><span class="p">,</span> <span class="n">transpose_list_of_dicts</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">importlib</span>
 <span class="kn">from</span> <span class="nn">autodeer</span> <span class="kn">import</span> <span class="n">__version__</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 
 <div class="viewcode-block" id="MODULE_DIR">
 <a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.MODULE_DIR">[docs]</a>
 <span class="n">MODULE_DIR</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s1">&#39;autodeer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">submodule_search_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="hw_log">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.hw_log">[docs]</a>
+<span class="n">hw_log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;interface.Xepr&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="header">
@@ -310,14 +303,20 @@
 <span class="k">class</span> <span class="nc">PSPhaseCycle</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">MPFU</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">OnlyDet</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">BPhaseCycles</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="viewcode-block" id="PSPhaseCycle.BPhaseCycles">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PSPhaseCycle.BPhaseCycles">[docs]</a>
+        <span class="n">BPhaseCycles</span> <span class="o">=</span> <span class="p">[]</span></div>
+
         
         <span class="k">if</span> <span class="n">MPFU</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">pulse_dicts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MPFU</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">MPFU</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">pulse_dicts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_main</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
         
-        <span class="n">detect_dicts</span> <span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_detect</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
+<div class="viewcode-block" id="PSPhaseCycle.detect_dicts">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PSPhaseCycle.detect_dicts">[docs]</a>
+        <span class="n">detect_dicts</span> <span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_detect</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span></div>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="n">OnlyDet</span><span class="p">:</span>
             <span class="n">BPhaseCycles</span> <span class="o">+=</span> <span class="n">pulse_dicts</span>
         <span class="n">BPhaseCycles</span> <span class="o">+=</span> <span class="n">detect_dicts</span>
@@ -362,18 +361,21 @@
             <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="nb">dict</span><span class="p">[</span><span class="s2">&quot;Pulse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">pcyc_vars</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="nb">dict</span><span class="p">[</span><span class="s2">&quot;Cycle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_cycles</span><span class="p">):</span>
-                <span class="n">phase</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">pcyc_cycles</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
-                <span class="n">norm_phase</span> <span class="o">=</span> <span class="p">(</span><span class="n">phase</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span>
-                <span class="k">if</span> <span class="n">norm_phase</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">B_phase</span> <span class="o">=</span> <span class="s2">&quot;+x&quot;</span>
-                <span class="k">elif</span> <span class="n">norm_phase</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">B_phase</span> <span class="o">=</span> <span class="s2">&quot;-x&quot;</span>
-                <span class="k">elif</span> <span class="n">norm_phase</span> <span class="o">==</span> <span class="mf">0.5</span><span class="p">:</span>
-                    <span class="n">B_phase</span> <span class="o">=</span> <span class="s2">&quot;+y&quot;</span>
-                <span class="k">elif</span> <span class="n">norm_phase</span> <span class="o">==</span> <span class="mf">1.5</span><span class="p">:</span>
-                    <span class="n">B_phase</span> <span class="o">=</span> <span class="s2">&quot;-y&quot;</span>
-                <span class="nb">dict</span><span class="p">[</span><span class="s2">&quot;Cycle&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">B_phase</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sequence</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">pcyc</span><span class="p">[</span><span class="s2">&quot;Channels&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ELDOR&quot;</span><span class="p">:</span>
+                <span class="nb">dict</span><span class="p">[</span><span class="s2">&quot;Cycle&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;ELDOR&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_cycles</span><span class="p">):</span>
+                    <span class="n">phase</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">pcyc_cycles</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+                    <span class="n">norm_phase</span> <span class="o">=</span> <span class="p">(</span><span class="n">phase</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span>
+                    <span class="k">if</span> <span class="n">norm_phase</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">B_phase</span> <span class="o">=</span> <span class="s2">&quot;+x&quot;</span>
+                    <span class="k">elif</span> <span class="n">norm_phase</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">B_phase</span> <span class="o">=</span> <span class="s2">&quot;-x&quot;</span>
+                    <span class="k">elif</span> <span class="n">norm_phase</span> <span class="o">==</span> <span class="mf">0.5</span><span class="p">:</span>
+                        <span class="n">B_phase</span> <span class="o">=</span> <span class="s2">&quot;+y&quot;</span>
+                    <span class="k">elif</span> <span class="n">norm_phase</span> <span class="o">==</span> <span class="mf">1.5</span><span class="p">:</span>
+                        <span class="n">B_phase</span> <span class="o">=</span> <span class="s2">&quot;-y&quot;</span>
+                    <span class="nb">dict</span><span class="p">[</span><span class="s2">&quot;Cycle&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">B_phase</span><span class="p">)</span>
             <span class="n">BPhaseCycles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">BPhaseCycles</span></div>
@@ -447,14 +449,29 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
-        <span class="n">progTable</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">progTable</span>
-        <span class="n">progTable_n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">progTable</span><span class="p">[</span><span class="s2">&quot;EventID&quot;</span><span class="p">])</span>
+<div class="viewcode-block" id="PSparvar.progTable">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PSparvar.progTable">[docs]</a>
+        <span class="n">progTable</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">progTable</span></div>
 
-        <span class="n">parvar</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">PulseSpel</span> <span class="o">=</span> <span class="kc">True</span>
+<div class="viewcode-block" id="PSparvar.progTable_n">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PSparvar.progTable_n">[docs]</a>
+        <span class="n">progTable_n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">progTable</span><span class="p">[</span><span class="s2">&quot;EventID&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="PSparvar.parvar">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PSparvar.parvar">[docs]</a>
+        <span class="n">parvar</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="PSparvar.PulseSpel">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PSparvar.PulseSpel">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PulseSpel</span> <span class="o">=</span> <span class="kc">True</span></div>
+
         <span class="n">parvar</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">parvar</span><span class="p">[</span><span class="s2">&quot;types&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="viewcode-block" id="PSparvar.events">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PSparvar.events">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="p">[]</span></div>
+
         <span class="n">parvar</span><span class="p">[</span><span class="s2">&quot;vec&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">parvar</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -601,23 +618,59 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_sequence</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">convert_progtable</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">progTable</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">possible_delays</span> <span class="o">=</span> <span class="n">possible_delays</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">possible_pulses</span> <span class="o">=</span> <span class="n">possible_pulses</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">possible_vars</span> <span class="o">=</span> <span class="n">possible_vars</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="n">sequence</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">var_hash</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">def_file_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">exp_file_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dims</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">MPFU</span> <span class="o">=</span> <span class="n">MPFU</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">AWG</span> <span class="o">=</span> <span class="n">AWG</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pcyc_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<div class="viewcode-block" id="PulseSpel.possible_delays">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.possible_delays">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">possible_delays</span> <span class="o">=</span> <span class="n">possible_delays</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PulseSpel.possible_pulses">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.possible_pulses">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">possible_pulses</span> <span class="o">=</span> <span class="n">possible_pulses</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PulseSpel.possible_vars">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.possible_vars">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">possible_vars</span> <span class="o">=</span> <span class="n">possible_vars</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PulseSpel.sequence">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.sequence">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="n">sequence</span></div>
+
+<div class="viewcode-block" id="PulseSpel.var_hash">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.var_hash">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_hash</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="PulseSpel.def_file_str">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.def_file_str">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">def_file_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="PulseSpel.exp_file_str">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.exp_file_str">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp_file_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="PulseSpel.dims">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.dims">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dims</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="PulseSpel.MPFU">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.MPFU">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MPFU</span> <span class="o">=</span> <span class="n">MPFU</span></div>
+
+<div class="viewcode-block" id="PulseSpel.AWG">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.AWG">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">AWG</span> <span class="o">=</span> <span class="n">AWG</span></div>
+
+<div class="viewcode-block" id="PulseSpel.pcyc_str">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.pcyc_str">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pcyc_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
 
         
         <span class="c1"># Build hash of initial pulses</span>
         <span class="c1"># For every event and delay is created immediately prior to the event</span>
 
-        <span class="n">rel_positions</span> <span class="o">=</span> <span class="n">calc_rel_positions</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
+<div class="viewcode-block" id="PulseSpel.rel_positions">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.rel_positions">[docs]</a>
+        <span class="n">rel_positions</span> <span class="o">=</span> <span class="n">calc_rel_positions</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span></div>
+
         <span class="k">for</span> <span class="nb">id</span><span class="p">,</span> <span class="n">pulse</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">pulses</span><span class="p">):</span>
             <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_delay</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">d&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_addDef</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">rel_positions</span><span class="p">[</span><span class="nb">id</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> 
@@ -636,8 +689,14 @@
 
 
         <span class="c1"># Build table of parvars</span>
-        <span class="n">unique_parvars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">progTable</span><span class="p">[</span><span class="s2">&quot;axID&quot;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parvars</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="viewcode-block" id="PulseSpel.unique_parvars">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.unique_parvars">[docs]</a>
+        <span class="n">unique_parvars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">progTable</span><span class="p">[</span><span class="s2">&quot;axID&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="PulseSpel.parvars">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.parvars">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parvars</span> <span class="o">=</span> <span class="p">[]</span></div>
+
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">unique_parvars</span><span class="p">:</span>
             <span class="n">parvar</span> <span class="o">=</span> <span class="n">PSparvar</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parvars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parvar</span><span class="p">)</span>
@@ -647,8 +706,14 @@
         <span class="c1"># compatible.</span>
 
         <span class="c1"># Incremented variables need both a placeholder variable and a stepper.</span>
-        <span class="n">step_hash</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">place_hash</span> <span class="o">=</span> <span class="p">{}</span>
+<div class="viewcode-block" id="PulseSpel.step_hash">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.step_hash">[docs]</a>
+        <span class="n">step_hash</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="PulseSpel.place_hash">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.PulseSpel.place_hash">[docs]</a>
+        <span class="n">place_hash</span> <span class="o">=</span> <span class="p">{}</span></div>
+
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">parvar</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parvars</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">event</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parvar</span><span class="o">.</span><span class="n">events</span><span class="p">):</span> 
                 <span class="k">if</span> <span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;srt&#39;</span><span class="p">:</span> <span class="c1">#srt loop</span>
@@ -1305,9 +1370,35 @@
         <span class="k">return</span> <span class="kc">False</span></div>
 
     
+<div class="viewcode-block" id="determine_TWT_split">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.determine_TWT_split">[docs]</a>
+<span class="k">def</span> <span class="nf">determine_TWT_split</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">MaxGate</span><span class="p">):</span>
+    <span class="n">n_pulses</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">pulses</span><span class="p">)</span>
+    <span class="n">uprogtable</span> <span class="o">=</span> <span class="n">build_unique_progtable</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
+    <span class="n">TWT_gate_max</span> <span class="o">=</span> <span class="n">MaxGate</span> <span class="o">*</span><span class="mf">1e3</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">transpose_list_of_dicts</span><span class="p">(</span><span class="n">uprogtable</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;variables&#39;</span><span class="p">])[</span><span class="s1">&#39;variable&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">((</span><span class="n">n_pulses</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">multiplier</span> <span class="o">=</span> <span class="n">uprogtable</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;variables&#39;</span><span class="p">][</span><span class="n">idx</span><span class="p">][</span><span class="s1">&#39;multiplier&#39;</span><span class="p">]</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">uprogtable</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;axis&#39;</span><span class="p">]</span>
+    <span class="n">max_time</span> <span class="o">=</span> <span class="n">axis</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">axis</span><span class="p">[</span><span class="s1">&#39;step&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">axis</span><span class="p">[</span><span class="s1">&#39;dim&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">multiplier</span>
+
+    <span class="k">if</span> <span class="n">max_time</span> <span class="o">&gt;</span> <span class="n">TWT_gate_max</span><span class="p">:</span>
+        <span class="n">hw_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Time too long for TWT gate, need to split the experiment&#39;</span><span class="p">)</span>
+        <span class="n">split_point</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.75</span> <span class="o">*</span> <span class="n">TWT_gate_max</span> <span class="o">/</span> <span class="n">max_time</span> <span class="o">*</span> <span class="n">axis</span><span class="p">[</span><span class="s1">&#39;dim&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">split_point</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    
+    
 <div class="viewcode-block" id="write_pulsespel_file">
 <a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_tools/index.html#autodeer.hardware.Bruker_tools.write_pulsespel_file">[docs]</a>
-<span class="k">def</span> <span class="nf">write_pulsespel_file</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span><span class="n">d0</span><span class="p">,</span> <span class="n">AWG</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">MPFU</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">write_pulsespel_file</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span><span class="n">d0</span><span class="p">,</span> <span class="n">AWG</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">MPFU</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">MaxGate</span><span class="o">=</span><span class="mi">40</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write the pulsespel file for a given sequence. </span>
 
 <span class="sd">    Parameters</span>
@@ -1318,6 +1409,8 @@
 <span class="sd">        Is this a pulse spel file for an AWG spectrometer, by default False</span>
 <span class="sd">    MPFU : list, optional</span>
 <span class="sd">        A list of MPFU channels, by default False</span>
+<span class="sd">    MaxGate : float, optional</span>
+<span class="sd">        The maximum gate time for the TWT gate in microseconds, by default 40 us</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1326,6 +1419,8 @@
 <span class="sd">    str</span>
 <span class="sd">        The string for the experiment file</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">split_point</span> <span class="o">=</span> <span class="n">determine_TWT_split</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span><span class="n">MaxGate</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
 
     <span class="n">uprogtable</span> <span class="o">=</span> <span class="n">build_unique_progtable</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span>
     <span class="n">possible_delays</span> <span class="o">=</span> <span class="p">[</span>
@@ -1356,7 +1451,7 @@
     <span class="n">axs_ids</span> <span class="o">=</span> <span class="p">[]</span>
 
 
-    <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;begin exp </span><span class="se">\&quot;</span><span class="s2">auto</span><span class="se">\&quot;</span><span class="s2"> [INTG QUAD] </span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">scanhead</span> <span class="o">=</span> <span class="s2">&quot;begin exp </span><span class="se">\&quot;</span><span class="s2">auto</span><span class="se">\&quot;</span><span class="s2"> [INTG QUAD] </span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="n">foot</span> <span class="o">=</span> <span class="s2">&quot;end exp&quot;</span>
     <span class="n">def_file</span> <span class="o">=</span> <span class="s2">&quot;begin defs </span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="n">dims</span> <span class="o">=</span> <span class="s2">&quot;begin defs </span><span class="se">\n</span><span class="s2"> dim s[&quot;</span>
@@ -1413,10 +1508,12 @@
 
 
     <span class="c1"># Setup averaging loop</span>
-    <span class="n">head</span> <span class="o">+=</span> <span class="s2">&quot;for k=1 to m </span><span class="se">\n</span><span class="s2">totscans(m) </span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="n">scanhead</span> <span class="o">+=</span> <span class="s2">&quot;for k=1 to m </span><span class="se">\n</span><span class="s2">totscans(m) </span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="n">def_file</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;m = </span><span class="si">{</span><span class="n">sequence</span><span class="o">.</span><span class="n">averages</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
 
-    <span class="n">foot</span> <span class="o">=</span> <span class="s2">&quot;scansdone(k) </span><span class="se">\n</span><span class="s2">next k </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">+</span><span class="n">foot</span>
+    <span class="n">scanfoot</span> <span class="o">=</span> <span class="s2">&quot;scansdone(k) </span><span class="se">\n</span><span class="s2">next k </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">+</span><span class="n">foot</span>
+    <span class="n">foot</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">head</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
     <span class="n">delay_build</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs_ids</span><span class="p">:</span>
@@ -1437,7 +1534,7 @@
         <span class="k">if</span> <span class="n">reduce</span><span class="p">:</span>
             <span class="n">param</span> <span class="o">=</span> <span class="n">loop_iterators</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">param</span><span class="o">=</span><span class="n">kept_axes_param</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">param</span> <span class="o">=</span> <span class="n">kept_axes_param</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
 
         <span class="n">foot</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;next </span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">foot</span>
 
@@ -1457,7 +1554,7 @@
                 <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mv_delay_hash</span><span class="p">:</span>
                     <span class="n">mv_delay_hash</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">possible_delays</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
                     <span class="c1"># delay_build = f&quot;{mv_delay_hash[i]} = {static_delay_hash[i]}\n&quot; + delay_build </span>
-                    <span class="n">head</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mv_delay_hash</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">static_delay_hash</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="n">scanhead</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mv_delay_hash</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">static_delay_hash</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">uprog</span><span class="p">[</span><span class="s2">&quot;delay_shifts&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]))):</span>
                     <span class="k">if</span> <span class="n">uprog</span><span class="p">[</span><span class="s2">&quot;delay_shifts&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> 
                         <span class="n">sign</span> <span class="o">=</span> <span class="s2">&quot;+&quot;</span>
@@ -1473,7 +1570,7 @@
                 <span class="n">pulse_id</span> <span class="o">=</span> <span class="n">var</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">mult</span> <span class="o">=</span> <span class="n">var</span><span class="p">[</span><span class="s2">&quot;multiplier&quot;</span><span class="p">]</span>
                 <span class="n">mv_pulse_hash</span><span class="p">[</span><span class="n">pulse_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">possible_pulses</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-                <span class="n">head</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mv_pulse_hash</span><span class="p">[</span><span class="n">pulse_id</span><span class="p">]</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">static_pulse_hash</span><span class="p">[</span><span class="n">pulse_id</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">scanhead</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mv_pulse_hash</span><span class="p">[</span><span class="n">pulse_id</span><span class="p">]</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">static_pulse_hash</span><span class="p">[</span><span class="n">pulse_id</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="k">if</span> <span class="n">mult</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">sign</span> <span class="o">=</span> <span class="s2">&quot;+&quot;</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -1485,7 +1582,7 @@
                 <span class="k">if</span> <span class="n">var</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;reptime&quot;</span><span class="p">:</span>
                     <span class="k">continue</span>
                 <span class="n">reptime0_var</span> <span class="o">=</span> <span class="n">letter_vars</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-                <span class="n">head</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;srt = </span><span class="si">{</span><span class="n">reptime0_var</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">scanhead</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;srt = </span><span class="si">{</span><span class="n">reptime0_var</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="n">axis</span> <span class="o">=</span> <span class="n">val_in_us</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">reptime</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
                 <span class="n">def_file</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reptime0_var</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> * srtu</span><span class="se">\n</span><span class="s2">&quot;</span>
                 <span class="n">srt_step_var</span> <span class="o">=</span> <span class="n">letter_vars</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
@@ -1498,7 +1595,7 @@
                 <span class="n">pulse_id</span> <span class="o">=</span> <span class="n">var</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">mult</span> <span class="o">=</span> <span class="n">var</span><span class="p">[</span><span class="s2">&quot;multiplier&quot;</span><span class="p">]</span>
                 <span class="n">mv_pulse_amp_hash</span><span class="p">[</span><span class="n">pulse_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">possible_amps</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-                <span class="n">head</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mv_pulse_amp_hash</span><span class="p">[</span><span class="n">pulse_id</span><span class="p">]</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">static_pulse_amp_hash</span><span class="p">[</span><span class="n">pulse_id</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">scanhead</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mv_pulse_amp_hash</span><span class="p">[</span><span class="n">pulse_id</span><span class="p">]</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">static_pulse_amp_hash</span><span class="p">[</span><span class="n">pulse_id</span><span class="p">]</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
                 
                 <span class="k">if</span> <span class="n">mult</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">sign</span> <span class="o">=</span> <span class="s2">&quot;+&quot;</span>
@@ -1534,11 +1631,14 @@
 
         <span class="n">pcyc</span> <span class="o">=</span> <span class="n">PSPhaseCycle</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">MPFU</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">OnlyDet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">pcyc_str</span> <span class="o">=</span> <span class="n">pcyc</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">*</span><span class="mi">1</span> <span class="o">+</span> <span class="n">pcyc_str</span>
+    <span class="k">elif</span> <span class="n">MPFU</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pcyc</span> <span class="o">=</span> <span class="n">PSPhaseCycle</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">MPFU</span><span class="p">)</span>
+        <span class="n">pcyc_hash</span> <span class="o">=</span> <span class="n">pcyc</span><span class="o">.</span><span class="n">pcyc_hash</span>
+        <span class="n">pcyc_str</span> <span class="o">=</span> <span class="n">pcyc</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">pcyc</span> <span class="o">=</span> <span class="n">PSPhaseCycle</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">MPFU</span><span class="p">)</span>
         <span class="n">pcyc_hash</span> <span class="o">=</span> <span class="n">pcyc</span><span class="o">.</span><span class="n">pcyc_hash</span>
         <span class="n">pcyc_str</span> <span class="o">=</span> <span class="n">pcyc</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
-
     <span class="c1"># Add Pulse Sequence</span>
     <span class="n">pulse_str</span> <span class="o">=</span> <span class="s2">&quot;d9</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="k">for</span> <span class="nb">id</span><span class="p">,</span> <span class="n">pulse</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">pulses</span><span class="p">):</span>
@@ -1559,8 +1659,16 @@
     <span class="n">dims</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">dims</span> <span class="o">+=</span> <span class="s2">&quot;] </span><span class="se">\n</span><span class="s2">end defs</span><span class="se">\n</span><span class="s2">&quot;</span> 
 
-    <span class="n">def_file</span> <span class="o">+=</span> <span class="s2">&quot;end defs&quot;</span>
-    <span class="n">exp_file</span> <span class="o">=</span> <span class="n">dims</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="n">pcyc_str</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span>  <span class="n">head</span> <span class="o">+</span> <span class="n">pulse_str</span> <span class="o">+</span> <span class="n">foot</span>
+    <span class="k">if</span> <span class="n">split_point</span><span class="p">:</span>
+        <span class="n">exp_file</span> <span class="o">=</span> <span class="n">dims</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="n">pcyc_str</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="n">scanhead</span>
+        <span class="n">exp_file</span> <span class="o">+=</span> <span class="n">head</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;sx&#39;</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">pulse_str</span> <span class="o">+</span> <span class="n">foot</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">exp_file</span> <span class="o">+=</span> <span class="n">head</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;x=1&#39;</span><span class="p">,</span><span class="s1">&#39;x=w&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">pulse_str</span> <span class="o">+</span> <span class="n">foot</span>  <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">exp_file</span> <span class="o">+=</span> <span class="n">scanfoot</span>
+        <span class="n">def_file</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;w = </span><span class="si">{</span><span class="n">split_point</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">def_file</span> <span class="o">+=</span> <span class="s2">&quot;end defs&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">exp_file</span> <span class="o">=</span> <span class="n">dims</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span> <span class="n">pcyc_str</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">*</span><span class="mi">2</span> <span class="o">+</span>  <span class="n">scanhead</span><span class="o">+</span> <span class="n">head</span> <span class="o">+</span> <span class="n">pulse_str</span> <span class="o">+</span> <span class="n">foot</span> <span class="o">+</span> <span class="n">scanfoot</span>
+        <span class="n">def_file</span> <span class="o">+=</span> <span class="s2">&quot;end defs&quot;</span>
 
     <span class="k">return</span> <span class="n">def_file</span><span class="p">,</span> <span class="n">exp_file</span></div>
 
@@ -1599,7 +1707,7 @@
 </div><script src="../../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     </body>

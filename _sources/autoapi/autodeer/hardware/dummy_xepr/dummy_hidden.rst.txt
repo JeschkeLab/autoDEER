@@ -1,6 +1,42 @@
 .. py:class:: dummy_hidden
 
 
+   .. py:attribute:: SignalPhase
+
+      
+
+   .. py:attribute:: BrXPhase
+
+      
+
+   .. py:attribute:: BrYPhase
+
+      
+
+   .. py:attribute:: MinBrXPhase
+
+      
+
+   .. py:attribute:: MinBrYPhase
+
+      
+
+   .. py:attribute:: BrXAmp
+
+      
+
+   .. py:attribute:: BrYAmp
+
+      
+
+   .. py:attribute:: MinBrXAmp
+
+      
+
+   .. py:attribute:: MinBrYAmp
+
+      
+
    .. py:method:: __getitem__(name)
 
       

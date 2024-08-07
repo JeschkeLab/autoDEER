@@ -38,6 +38,27 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: api
+
+      
+
+   .. py:attribute:: hardware_wait
+      :value: '5'
+
+      
+
+   .. py:attribute:: ps_length
+
+      
+
+   .. py:attribute:: d0
+
+      
+
+   .. py:attribute:: srt
+
+      
+
    .. py:method:: _setup_echo(echo, tau1=400, tau2=400)
 
 

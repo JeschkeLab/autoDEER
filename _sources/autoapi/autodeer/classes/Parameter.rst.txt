@@ -81,6 +81,32 @@
    .. py:property:: dim
 
 
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: unit
+
+      
+
+   .. py:attribute:: description
+
+      
+
+   .. py:attribute:: virtual
+
+      
+
+   .. py:attribute:: axis
+      :value: '[]'
+
+      
+
+   .. py:attribute:: ax_id
+      :value: '[]'
+
+      
+
    .. py:method:: add_axis(axis_id, axis)
 
 

@@ -29,6 +29,14 @@
 
 
 
+   .. py:attribute:: cur_exp
+
+      
+
+   .. py:attribute:: hidden
+
+      
+
    .. py:method:: XeprExperiment(hidden=None)
 
 

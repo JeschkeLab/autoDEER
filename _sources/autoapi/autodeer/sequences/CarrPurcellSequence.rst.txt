@@ -52,6 +52,23 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'CarrPurcellSequence'"
+
+      
+
+   .. py:attribute:: tau
+
+      
+
+   .. py:attribute:: n
+
+      
+
+   .. py:attribute:: dim
+
+      
+
    .. py:method:: _build_sequence()
 
 

@@ -5,14 +5,14 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.Relaxation - </title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -91,19 +91,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -144,7 +131,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -349,6 +336,16 @@
 <dd class="field-even"><p><strong>sequence</strong> (<a class="reference internal" href="../sequences/index.html#autodeer.sequences.Sequence" title="autodeer.sequences.Sequence"><em>autodeer.sequences.Sequence</em></a>)</p>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.Relaxation.CarrPurcellAnalysis.dataset">
+<span class="sig-name descname"><span class="pre">dataset</span></span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.dataset" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.Relaxation.CarrPurcellAnalysis.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.data" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.Relaxation.CarrPurcellAnalysis.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mono'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.fit" title="Link to this definition">¶</a></dt>
@@ -395,11 +392,17 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.Relaxation.CarrPurcellAnalysis.check_decay">
 <span class="sig-name descname"><span class="pre">check_decay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#CarrPurcellAnalysis.check_decay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.CarrPurcellAnalysis.check_decay" title="Link to this definition">¶</a></dt>
-<dd><p>Checks that the data has decayed to 5% in the time lenght of the dataset.</p>
+<dd><p>Checks that the data has decayed by over 5% in the entire length and less than 5% in the first 30% of the data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>level</strong><span class="classifier">float, optional</span></dt><dd><p>The level to check the decay, by default 0.05</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>int</dt><dd><p>0 if both conditions are met, 1 if the decay is less than 5% in the first 30% of the data, and -1 if the decay is less than 5% in the entire length.</p>
 </dd>
 </dl>
 </dd>
@@ -461,6 +464,16 @@ number of shots will be calculated from the dataset.</p>
 <dd class="field-even"><p><strong>sequence</strong> (<a class="reference internal" href="../sequences/index.html#autodeer.sequences.Sequence" title="autodeer.sequences.Sequence"><em>autodeer.sequences.Sequence</em></a>)</p>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.Relaxation.ReptimeAnalysis.axis">
+<span class="sig-name descname"><span class="pre">axis</span></span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#ReptimeAnalysis.axis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.ReptimeAnalysis.axis" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.Relaxation.ReptimeAnalysis.seq">
+<span class="sig-name descname"><span class="pre">seq</span></span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#ReptimeAnalysis.seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.ReptimeAnalysis.seq" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.Relaxation.ReptimeAnalysis.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#ReptimeAnalysis.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.ReptimeAnalysis.fit" title="Link to this definition">¶</a></dt>
@@ -544,6 +557,21 @@ number of shots will be calculated from the dataset.</p>
 <dd class="field-even"><p><strong>sequence</strong> (<a class="reference internal" href="../sequences/index.html#autodeer.sequences.Sequence" title="autodeer.sequences.Sequence"><em>autodeer.sequences.Sequence</em></a>)</p>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.Relaxation.RefocusedEcho2DAnalysis.axis">
+<span class="sig-name descname"><span class="pre">axis</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'[]'</span></em><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#RefocusedEcho2DAnalysis.axis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.axis" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.Relaxation.RefocusedEcho2DAnalysis.dataset">
+<span class="sig-name descname"><span class="pre">dataset</span></span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#RefocusedEcho2DAnalysis.dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.dataset" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.Relaxation.RefocusedEcho2DAnalysis.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#RefocusedEcho2DAnalysis.data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.data" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.Relaxation.RefocusedEcho2DAnalysis._smooth">
 <span class="sig-name descname"><span class="pre">_smooth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elements</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/Relaxation.html#RefocusedEcho2DAnalysis._smooth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis._smooth" title="Link to this definition">¶</a></dt>
@@ -694,6 +722,8 @@ number of shots will be calculated from the dataset.</p>
 <li><a class="reference internal" href="#functions">Functions</a></li>
 <li><a class="reference internal" href="#attributes">Attributes</a><ul>
 <li><a class="reference internal" href="#autodeer.Relaxation.CarrPurcellAnalysis"><code class="docutils literal notranslate"><span class="pre">CarrPurcellAnalysis</span></code></a><ul>
+<li><a class="reference internal" href="#autodeer.Relaxation.CarrPurcellAnalysis.dataset"><code class="docutils literal notranslate"><span class="pre">CarrPurcellAnalysis.dataset</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.Relaxation.CarrPurcellAnalysis.data"><code class="docutils literal notranslate"><span class="pre">CarrPurcellAnalysis.data</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.CarrPurcellAnalysis.fit"><code class="docutils literal notranslate"><span class="pre">CarrPurcellAnalysis.fit()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.CarrPurcellAnalysis.plot"><code class="docutils literal notranslate"><span class="pre">CarrPurcellAnalysis.plot()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.CarrPurcellAnalysis.check_decay"><code class="docutils literal notranslate"><span class="pre">CarrPurcellAnalysis.check_decay()</span></code></a></li>
@@ -701,6 +731,8 @@ number of shots will be calculated from the dataset.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#autodeer.Relaxation.ReptimeAnalysis"><code class="docutils literal notranslate"><span class="pre">ReptimeAnalysis</span></code></a><ul>
+<li><a class="reference internal" href="#autodeer.Relaxation.ReptimeAnalysis.axis"><code class="docutils literal notranslate"><span class="pre">ReptimeAnalysis.axis</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.Relaxation.ReptimeAnalysis.seq"><code class="docutils literal notranslate"><span class="pre">ReptimeAnalysis.seq</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.ReptimeAnalysis.fit"><code class="docutils literal notranslate"><span class="pre">ReptimeAnalysis.fit()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.ReptimeAnalysis.plot"><code class="docutils literal notranslate"><span class="pre">ReptimeAnalysis.plot()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.ReptimeAnalysis.calc_optimal_reptime"><code class="docutils literal notranslate"><span class="pre">ReptimeAnalysis.calc_optimal_reptime()</span></code></a></li>
@@ -710,6 +742,9 @@ number of shots will be calculated from the dataset.</p>
 <li><a class="reference internal" href="#autodeer.Relaxation.cmap"><code class="docutils literal notranslate"><span class="pre">cmap</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.plot_1Drelax"><code class="docutils literal notranslate"><span class="pre">plot_1Drelax()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis</span></code></a><ul>
+<li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.axis"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.axis</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.dataset"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.dataset</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.data"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.data</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis._smooth"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis._smooth()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.plot2D"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.plot2D()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.Relaxation.RefocusedEcho2DAnalysis.plot1D"><code class="docutils literal notranslate"><span class="pre">RefocusedEcho2DAnalysis.plot1D()</span></code></a></li>
@@ -735,7 +770,7 @@ number of shots will be calculated from the dataset.</p>
 </div><script src="../../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     </body>

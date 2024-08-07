@@ -23,6 +23,7 @@ Functions
 
 .. autoapisummary::
 
+   autodeer.gui.tools.create_save_name
    autodeer.gui.tools.getCIstring
    autodeer.gui.tools.load_epr_file
    autodeer.gui.tools.get_sequence_rows
@@ -35,6 +36,9 @@ Functions
    autodeer.gui.tools.param_in_MHz
    autodeer.gui.tools.test_SNR
 
+
+
+.. py:function:: create_save_name(SampleName, experiment, timestamp=True, ProjectName=None, Comment=None)
 
 
 .. py:function:: getCIstring(Uncert, precision=2)
@@ -177,6 +181,22 @@ Functions
 
    ..
        !! processed by numpydoc !!
+   .. py:attribute:: fn
+
+      
+
+   .. py:attribute:: args
+
+      
+
+   .. py:attribute:: kwargs
+
+      
+
+   .. py:attribute:: signals
+
+      
+
    .. py:method:: run()
 
       

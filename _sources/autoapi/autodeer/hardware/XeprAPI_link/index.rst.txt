@@ -38,6 +38,31 @@ Attributes
 .. py:class:: XeprAPILink(config_file = None)
 
 
+   .. py:attribute:: Xepr
+      :value: 'None'
+
+      
+
+   .. py:attribute:: cur_exp
+      :value: 'None'
+
+      
+
+   .. py:attribute:: hidden
+      :value: 'None'
+
+      
+
+   .. py:attribute:: _tmp_dir
+      :value: 'None'
+
+      
+
+   .. py:attribute:: XeprCmds
+      :value: 'None'
+
+      
+
    .. py:method:: connect()
 
       

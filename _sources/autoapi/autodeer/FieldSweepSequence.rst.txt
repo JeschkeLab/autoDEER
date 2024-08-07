@@ -46,3 +46,12 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'FieldSweepSequence'"
+
+      
+
+   .. py:attribute:: B
+
+      
+

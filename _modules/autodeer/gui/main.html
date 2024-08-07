@@ -4,14 +4,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.gui.main - </title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -90,19 +90,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -143,7 +130,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -280,7 +267,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for autodeer.gui.main</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">PyQt6.QtWidgets</span> <span class="kn">import</span> <span class="n">QApplication</span><span class="p">,</span> <span class="n">QMainWindow</span><span class="p">,</span> <span class="n">QFileDialog</span><span class="p">,</span><span class="n">QMessageBox</span><span class="p">,</span> <span class="n">QDialog</span>
+<span></span><span class="kn">from</span> <span class="nn">PyQt6.QtWidgets</span> <span class="kn">import</span> <span class="n">QApplication</span><span class="p">,</span> <span class="n">QMainWindow</span><span class="p">,</span> <span class="n">QFileDialog</span><span class="p">,</span><span class="n">QMessageBox</span><span class="p">,</span> <span class="n">QDialog</span><span class="p">,</span> <span class="n">QPushButton</span>
 <span class="kn">from</span> <span class="nn">PyQt6</span> <span class="kn">import</span> <span class="n">uic</span>
 <span class="kn">import</span> <span class="nn">PyQt6.QtCore</span> <span class="k">as</span> <span class="nn">QtCore</span>
 <span class="kn">import</span> <span class="nn">PyQt6.QtGui</span> <span class="k">as</span> <span class="nn">QtGui</span>
@@ -297,6 +284,7 @@
 <span class="kn">from</span> <span class="nn">autodeer.gui.autoDEER_worker</span> <span class="kn">import</span> <span class="n">autoDEERWorker</span>
 <span class="kn">from</span> <span class="nn">autodeer.gui.quickdeer</span> <span class="kn">import</span> <span class="n">DEERplot</span>
 <span class="kn">from</span> <span class="nn">autodeer.gui.log</span> <span class="kn">import</span> <span class="n">LogDialog</span>
+<span class="kn">from</span> <span class="nn">autodeer.gui.modetune</span> <span class="kn">import</span> <span class="n">ModeTune</span>
 <span class="kn">import</span> <span class="nn">yaml</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
@@ -377,10 +365,22 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">Worker</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="c1"># Store constructor arguments (re-used for processing)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span> <span class="o">=</span> <span class="n">WorkerSignals</span><span class="p">()</span>
+<div class="viewcode-block" id="Worker.fn">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.Worker.fn">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span></div>
+
+<div class="viewcode-block" id="Worker.args">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.Worker.args">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span></div>
+
+<div class="viewcode-block" id="Worker.kwargs">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.Worker.kwargs">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span></div>
+
+<div class="viewcode-block" id="Worker.signals">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.Worker.signals">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span> <span class="o">=</span> <span class="n">WorkerSignals</span><span class="p">()</span></div>
+
 
         <span class="c1"># # Add the callback to our kwargs</span>
         <span class="c1"># self.kwargs[&#39;progress_callback&#39;] = self.signals.progress</span>
@@ -409,17 +409,18 @@
 
 <div class="viewcode-block" id="fieldsweep_fit">
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.fieldsweep_fit">[docs]</a>
-<span class="k">def</span> <span class="nf">fieldsweep_fit</span><span class="p">(</span><span class="n">fsweep_analysis</span><span class="p">):</span>
-    <span class="n">fsweep_analysis</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">lin_maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-
+<span class="k">def</span> <span class="nf">fieldsweep_fit</span><span class="p">(</span><span class="n">fsweep_analysis</span><span class="p">,</span><span class="n">fit</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">fit</span><span class="p">:</span>
+        <span class="n">fsweep_analysis</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">xtol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">lin_maxiter</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">fsweep_analysis</span><span class="o">.</span><span class="n">smooth</span><span class="p">()</span> <span class="c1"># Always smooth anyway</span>
     <span class="k">return</span> <span class="n">fsweep_analysis</span></div>
 
 
 <div class="viewcode-block" id="respro_process">
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.respro_process">[docs]</a>
-<span class="k">def</span> <span class="nf">respro_process</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">fieldsweep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">cores</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">respro_process</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span><span class="n">f_lims</span><span class="p">,</span> <span class="n">fieldsweep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">cores</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="n">respro</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">ResonatorProfileAnalysis</span><span class="p">(</span>
-        <span class="n">dataset</span>
+        <span class="n">dataset</span><span class="p">,</span><span class="n">f_lims</span><span class="o">=</span><span class="n">f_lims</span>
     <span class="p">)</span>
     <span class="n">fc_guess</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">LO</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">dataset</span><span class="o">.</span><span class="n">LO</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">//</span><span class="mi">2</span><span class="p">]</span>
     <span class="k">with</span> <span class="n">threadpool_limits</span><span class="p">(</span><span class="n">limits</span><span class="o">=</span><span class="n">cores</span><span class="p">,</span> <span class="n">user_api</span><span class="o">=</span><span class="s1">&#39;blas&#39;</span><span class="p">):</span>
@@ -468,7 +469,10 @@
  
         <span class="c1"># loading the ui file with uic module</span>
         <span class="n">uic</span><span class="o">.</span><span class="n">loadUi</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">package_directory</span><span class="si">}</span><span class="s2">/gui2.ui&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-        <span class="n">logo_pixmap</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="s1">&#39;icons:logo.png&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="autoDEERUI.logo_pixmap">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.logo_pixmap">[docs]</a>
+        <span class="n">logo_pixmap</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="s1">&#39;icons:logo.png&#39;</span><span class="p">)</span></div>
+
         <span class="n">logo_pixmap</span> <span class="o">=</span> <span class="n">logo_pixmap</span><span class="o">.</span><span class="n">scaledToHeight</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logo</span><span class="o">.</span><span class="n">setPixmap</span><span class="p">(</span><span class="n">logo_pixmap</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_spectrometer_connected_light</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -477,9 +481,15 @@
 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">qDEER_tab</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">DEERplot</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">q_DEER</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qDEER_tab</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span>
+<div class="viewcode-block" id="autoDEERUI.q_DEER">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.q_DEER">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_DEER</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qDEER_tab</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span></div>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">lDEER_tab</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">DEERplot</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">longDEER</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lDEER_tab</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span>
+<div class="viewcode-block" id="autoDEERUI.longDEER">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.longDEER">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">longDEER</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lDEER_tab</span><span class="o">.</span><span class="n">layout</span><span class="p">()</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span></div>
+
 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">fsweep_toolbar</span><span class="p">()</span>
@@ -490,21 +500,54 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">create_fieldsweep_figure</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">advanced_mode_inputs</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">threadpool</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QThreadPool</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_data</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">spectromterInterface</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+<div class="viewcode-block" id="autoDEERUI.threadpool">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.threadpool">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threadpool</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QThreadPool</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.current_results">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.current_results">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.current_data">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.current_data">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_data</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.pulses">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.pulses">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.spectromterInterface">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.spectromterInterface">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spectromterInterface</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.waitCondition">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.waitCondition">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.queue">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.queue">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span></div>
+
 
         <span class="bp">self</span><span class="o">.</span><span class="n">FullyAutoButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RunFullyAutoDEER</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">AdvancedAutoButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RunAdvancedAutoDEER</span><span class="p">)</span>
 
-        <span class="n">docs_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://jeschkelab.github.io/autoDEER/&#39;</span><span class="p">)</span>
-        <span class="n">github_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/&#39;</span><span class="p">)</span>
-        <span class="n">issues_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/issues&#39;</span><span class="p">)</span>
-        <span class="n">discussion_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/discussions&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="autoDEERUI.docs_url">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.docs_url">[docs]</a>
+        <span class="n">docs_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://jeschkelab.github.io/autoDEER/&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.github_url">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.github_url">[docs]</a>
+        <span class="n">github_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.issues_url">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.issues_url">[docs]</a>
+        <span class="n">issues_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/issues&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.discussion_url">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.discussion_url">[docs]</a>
+        <span class="n">discussion_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/discussions&#39;</span><span class="p">)</span></div>
+
 
         <span class="bp">self</span><span class="o">.</span><span class="n">actionDocumentation</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QDesktopServices</span><span class="o">.</span><span class="n">openUrl</span><span class="p">(</span><span class="n">docs_url</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">actionGitHub</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QDesktopServices</span><span class="o">.</span><span class="n">openUrl</span><span class="p">(</span><span class="n">github_url</span><span class="p">))</span>
@@ -523,22 +566,70 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">Tab_widget</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="c1"># set current folder to home directory</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_folder</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">DL_params</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">starttime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Bruker</span><span class="o">=</span><span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">userinput</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;label_eff&#39;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span><span class="s1">&#39;MaxTime&#39;</span><span class="p">:</span><span class="mi">24</span><span class="p">}</span>
+<div class="viewcode-block" id="autoDEERUI.current_folder">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.current_folder">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_folder</span> <span class="o">=</span> <span class="kc">None</span></div>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">LO</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span> <span class="o">=</span> <span class="mf">0.002803632236095</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Min_tp</span><span class="o">=</span><span class="mi">12</span>
+<div class="viewcode-block" id="autoDEERUI.config">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.config">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="kc">None</span></div>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ESEEM&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;ExpType&#39;</span><span class="p">:</span><span class="s1">&#39;5pDEER&#39;</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">correction_factor</span><span class="o">=</span><span class="mi">1</span>
+<div class="viewcode-block" id="autoDEERUI.connected">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.connected">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.DL_params">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.DL_params">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DL_params</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.worker">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.worker">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.starttime">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.starttime">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">starttime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.Bruker">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.Bruker">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bruker</span><span class="o">=</span><span class="kc">False</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.userinput">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.userinput">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">userinput</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;label_eff&#39;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span><span class="s1">&#39;MaxTime&#39;</span><span class="p">:</span><span class="mi">24</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="autoDEERUI.LO">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.LO">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LO</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.gyro">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.gyro">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span> <span class="o">=</span> <span class="mf">0.002803632236095</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.cores">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.cores">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="o">=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.Min_tp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.Min_tp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Min_tp</span><span class="o">=</span><span class="mi">12</span></div>
+
+
+<div class="viewcode-block" id="autoDEERUI.deer_settings">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.deer_settings">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ESEEM&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;ExpType&#39;</span><span class="p">:</span><span class="s1">&#39;5pDEER&#39;</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="autoDEERUI.priorties">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.priorties">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">priorties</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Auto&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;MNR&#39;</span><span class="p">:</span><span class="mi">200</span><span class="p">,</span> <span class="s1">&#39;Distance&#39;</span><span class="p">:</span> <span class="mi">40</span><span class="p">}</span></div>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">priotityComboBox</span><span class="o">.</span><span class="n">addItems</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">priorties</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<div class="viewcode-block" id="autoDEERUI.correction_factor">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.correction_factor">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">correction_factor</span><span class="o">=</span><span class="mi">1</span></div>
+
 
 <div class="viewcode-block" id="autoDEERUI.set_spectrometer_connected_light">
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.set_spectrometer_connected_light">[docs]</a>
@@ -602,6 +693,13 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
         
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spectromterInterface</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spectromterInterface</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;modeTuneButton&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">modeTuneDialog</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Resonator_layout</span><span class="o">.</span><span class="n">removeWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modeTuneButton</span><span class="p">)</span>
+
+        
 
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename_edit</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -643,6 +741,12 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">spectromterInterface</span> <span class="o">=</span> <span class="n">ETH_awg_interface</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">spectromterInterface</span><span class="o">.</span><span class="n">savefolder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_folder</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">Bruker</span><span class="o">=</span><span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">modeTuneDialog</span> <span class="o">=</span> <span class="n">ModeTune</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spectromterInterface</span><span class="p">,</span> <span class="n">gyro</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gyro</span><span class="p">,</span> <span class="n">threadpool</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">threadpool</span><span class="p">,</span> <span class="n">current_folder</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_folder</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">modeTuneButton</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s1">&#39;Mode Tune&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Resonator_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modeTuneButton</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">modeTuneButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modeTuneDialog</span><span class="o">.</span><span class="n">show</span><span class="p">)</span>
+                
+
             <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;Bruker_MPFU&#39;</span><span class="p">:</span>
                 <span class="kn">from</span> <span class="nn">autodeer.hardware.Bruker_MPFU</span> <span class="kn">import</span> <span class="n">BrukerMPFU</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">spectromterInterface</span> <span class="o">=</span> <span class="n">BrukerMPFU</span><span class="p">(</span><span class="n">filename_edit</span><span class="p">)</span>
@@ -756,11 +860,11 @@
 
 <div class="viewcode-block" id="autoDEERUI.save_data">
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.save_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dataset</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
-        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M_&#39;</span><span class="p">)</span>
-        <span class="n">fullname</span> <span class="o">=</span> <span class="n">timestamp</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">SampleName</span><span class="o">.</span><span class="n">text</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span><span class="n">filename</span> <span class="o">+</span><span class="s1">&#39;.h5&#39;</span>
-        <span class="n">dataset</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_folder</span><span class="p">,</span><span class="n">fullname</span><span class="p">),</span><span class="n">engine</span><span class="o">=</span><span class="s1">&#39;h5netcdf&#39;</span><span class="p">,</span><span class="n">invalid_netcdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">main_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving dataset to </span><span class="si">{</span><span class="n">fullname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dataset</span><span class="p">,</span><span class="n">experiment</span><span class="p">):</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">create_save_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">],</span><span class="n">experiment</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;comment&#39;</span><span class="p">])</span>
+        <span class="n">filename</span> <span class="o">+=</span> <span class="s2">&quot;.h5&quot;</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_folder</span><span class="p">,</span><span class="n">filename</span><span class="p">),</span><span class="n">engine</span><span class="o">=</span><span class="s1">&#39;h5netcdf&#39;</span><span class="p">,</span><span class="n">invalid_netcdf</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">main_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving dataset to </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="autoDEERUI.fsweep_toolbar">
@@ -827,7 +931,12 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">update_gyro</span><span class="p">(</span><span class="n">fsweep_analysis</span><span class="o">.</span><span class="n">gyro</span><span class="p">)</span>
-        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">fieldsweep_fit</span><span class="p">,</span> <span class="n">fsweep_analysis</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;autoDEER&#39;</span><span class="p">][</span><span class="s1">&#39;FieldSweep&#39;</span><span class="p">][</span><span class="s1">&#39;Fit&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">fit</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">fieldsweep_fit</span><span class="p">,</span> <span class="n">fsweep_analysis</span><span class="p">,</span><span class="n">fit</span><span class="p">)</span>
         <span class="n">worker</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh_fieldsweep_after_fit</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">threadpool</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">worker</span><span class="p">)</span></div>
@@ -861,20 +970,36 @@
 
         <span class="c1"># Add fit resultss</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">gyroSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">gyro</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gxSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="o">-</span><span class="mf">0.0025</span> <span class="o">*</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">az</span> <span class="o">+</span> <span class="mf">2.0175</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gySpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">gy</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gzSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">gz</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">AxSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">axy</span><span class="o">*</span><span class="mf">28.0328</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">AySpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">axy</span><span class="o">*</span><span class="mf">28.0328</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">AzSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">az</span><span class="o">*</span><span class="mf">28.0328</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">GBSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">GB</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">BoffsetSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">Boffset</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">fitresult</span><span class="p">,</span><span class="s1">&#39;results&#39;</span><span class="p">):</span> <span class="c1"># Has been fit</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gyroSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">gyro</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gxSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="o">-</span><span class="mf">0.0025</span> <span class="o">*</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">az</span> <span class="o">+</span> <span class="mf">2.0175</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gySpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">gy</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gzSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">gz</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">AxSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">axy</span><span class="o">*</span><span class="mf">28.0328</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">AySpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">axy</span><span class="o">*</span><span class="mf">28.0328</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">AzSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">az</span><span class="o">*</span><span class="mf">28.0328</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GBSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">GB</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">BoffsetSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">Boffset</span><span class="p">)</span>
 
-        <span class="n">gxCI</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.0025</span> <span class="o">*</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">azUncert</span><span class="o">.</span><span class="n">ci</span><span class="p">(</span><span class="mi">95</span><span class="p">)</span><span class="o">+</span> <span class="mf">2.0175</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gxCI</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">gxCI</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">gxCI</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gyCI</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">getCIstring</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">gyUncert</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gzCI</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">getCIstring</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">gzUncert</span><span class="p">))</span>
+            <span class="n">gxCI</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.0025</span> <span class="o">*</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">azUncert</span><span class="o">.</span><span class="n">ci</span><span class="p">(</span><span class="mi">95</span><span class="p">)</span><span class="o">+</span> <span class="mf">2.0175</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gxCI</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">gxCI</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">gxCI</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gyCI</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">getCIstring</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">gyUncert</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gzCI</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">getCIstring</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">gzUncert</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gyroSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">gyro</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gxSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gySpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gzSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">AxSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">AySpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">AzSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">GBSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">BoffsetSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">gxCI</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;(-,-)&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gyCI</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;(-,-)&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gzCI</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s1">&#39;(-,-)&#39;</span><span class="p">)</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">Tab_widget</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">==</span> <span class="p">{})):</span>
@@ -891,9 +1016,11 @@
             <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_data</span><span class="p">[</span><span class="s1">&#39;respro&#39;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_data</span><span class="p">[</span><span class="s1">&#39;respro&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span>
+        
+        <span class="n">f_lims</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;Spectrometer&#39;</span><span class="p">][</span><span class="s1">&#39;Bridge&#39;</span><span class="p">][</span><span class="s1">&#39;Min Freq&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;Spectrometer&#39;</span><span class="p">][</span><span class="s1">&#39;Bridge&#39;</span><span class="p">][</span><span class="s1">&#39;Max Freq&#39;</span><span class="p">])</span>
 
         <span class="c1"># worker = Worker(respro_process, dataset, f_axis,self.current_results[&#39;fieldsweep&#39;], cores=self.cores)</span>
-        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">respro_process</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;fieldsweep&#39;</span><span class="p">],</span> <span class="n">cores</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">)</span>
+        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">respro_process</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span><span class="n">f_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;fieldsweep&#39;</span><span class="p">],</span> <span class="n">cores</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">)</span>
 
         <span class="n">worker</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh_respro</span><span class="p">)</span>
 
@@ -938,6 +1065,7 @@
             <span class="n">fitresult</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;respro&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fitresult</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spectromterInterface</span><span class="o">.</span><span class="n">resonator</span> <span class="o">=</span> <span class="n">fitresult</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># Wake up the runner thread</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span><span class="o">.</span><span class="n">wakeAll</span><span class="p">()</span>
             
@@ -955,6 +1083,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">centreFrequencyCI</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">fcUncert</span><span class="o">.</span><span class="n">ci</span><span class="p">(</span><span class="mi">95</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">fcUncert</span><span class="o">.</span><span class="n">ci</span><span class="p">(</span><span class="mi">95</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qDoubleSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qCI</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qUncert</span><span class="o">.</span><span class="n">ci</span><span class="p">(</span><span class="mi">95</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">qUncert</span><span class="o">.</span><span class="n">ci</span><span class="p">(</span><span class="mi">95</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nu1doubleSpinBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">fitresult</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">*</span><span class="mf">1e3</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Tab_widget</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
         <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resonator centre frequency </span><span class="si">{</span><span class="n">fitresult</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">fc</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> GHz&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimise_pulses_button</span><span class="p">()</span></div>
@@ -1026,7 +1155,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">center_freq</span> <span class="o">=</span> <span class="p">(</span><span class="n">param_in_MHz</span><span class="p">(</span><span class="n">exc_pulse</span><span class="o">.</span><span class="n">final_freq</span><span class="p">)</span> <span class="o">+</span> <span class="n">param_in_MHz</span><span class="p">(</span><span class="n">exc_pulse</span><span class="o">.</span><span class="n">init_freq</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ExcFreqBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">center_freq</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ExcBWBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">param_in_MHz</span><span class="p">(</span><span class="n">exc_pulse</span><span class="o">.</span><span class="n">BW</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ExcBWBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">param_in_MHz</span><span class="p">(</span><span class="n">exc_pulse</span><span class="o">.</span><span class="n">bandwidth</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ExcBWBox</span><span class="o">.</span><span class="n">setSuffix</span><span class="p">(</span><span class="s1">&#39; MHz&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ExcTypeLine</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">type_to_pulse_hash</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">exc_pulse</span><span class="p">)])</span>
         
@@ -1038,7 +1167,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">center_freq</span> <span class="o">=</span> <span class="p">(</span><span class="n">param_in_MHz</span><span class="p">(</span><span class="n">ref_pulse</span><span class="o">.</span><span class="n">final_freq</span><span class="p">)</span> <span class="o">+</span> <span class="n">param_in_MHz</span><span class="p">(</span><span class="n">ref_pulse</span><span class="o">.</span><span class="n">init_freq</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">RefFreqBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">center_freq</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">RefBWBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">param_in_MHz</span><span class="p">(</span><span class="n">ref_pulse</span><span class="o">.</span><span class="n">BW</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RefBWBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">param_in_MHz</span><span class="p">(</span><span class="n">ref_pulse</span><span class="o">.</span><span class="n">bandwidth</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">RefBWBox</span><span class="o">.</span><span class="n">setSuffix</span><span class="p">(</span><span class="s1">&#39; MHz&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">RefTypeLine</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">type_to_pulse_hash</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">ref_pulse</span><span class="p">)])</span>
         
@@ -1050,7 +1179,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">center_freq</span> <span class="o">=</span> <span class="p">(</span><span class="n">param_in_MHz</span><span class="p">(</span><span class="n">pump_pulse</span><span class="o">.</span><span class="n">final_freq</span><span class="p">)</span> <span class="o">+</span> <span class="n">param_in_MHz</span><span class="p">(</span><span class="n">pump_pulse</span><span class="o">.</span><span class="n">init_freq</span><span class="p">))</span><span class="o">/</span><span class="mi">2</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">PumpFreqBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">center_freq</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">PumpBWBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">param_in_MHz</span><span class="p">(</span><span class="n">pump_pulse</span><span class="o">.</span><span class="n">BW</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PumpBWBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">param_in_MHz</span><span class="p">(</span><span class="n">pump_pulse</span><span class="o">.</span><span class="n">bandwidth</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">PumpBWBox</span><span class="o">.</span><span class="n">setSuffix</span><span class="p">(</span><span class="s1">&#39; MHz&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">PumpTypeLine</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">type_to_pulse_hash</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">pump_pulse</span><span class="p">)])</span></div>
 
@@ -1105,7 +1234,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax2D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot1D</span><span class="p">(</span><span class="n">axs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">relax_ax</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">fig</span><span class="o">=</span><span class="n">fig</span><span class="p">)</span>        
         <span class="k">else</span><span class="p">:</span>
             <span class="n">fig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relax_canvas</span><span class="o">.</span><span class="n">figure</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
             <span class="n">axs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relax_ax</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
             <span class="n">relax1D_results</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="s1">&#39;relax&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">:</span>
                 <span class="n">relax1D_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax&#39;</span><span class="p">])</span>
@@ -1129,50 +1260,18 @@
         <span class="c1"># self.relax_canvas.draw()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">refresh_relax_figure</span><span class="p">()</span>
-        <span class="n">est_lambda</span> <span class="o">=</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;label_eff&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_eff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;label_eff&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">est_lambda</span> <span class="o">=</span> <span class="mf">0.4</span> 
         <span class="bp">self</span><span class="o">.</span><span class="n">aim_time</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">/</span> <span class="n">est_lambda</span>
-        <span class="n">tau2hrs</span> <span class="o">=</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="n">SNR_target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_time</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
-        <span class="n">tau4hrs</span> <span class="o">=</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="n">SNR_target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
-        <span class="n">max_tau</span> <span class="o">=</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="n">SNR_target</span><span class="o">=</span><span class="mi">45</span><span class="o">/</span><span class="n">est_lambda</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;MaxTime&#39;</span><span class="p">],</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span> <span class="o">=</span> <span class="mi">20</span>
+        
+        <span class="n">tau2hrs</span> <span class="o">=</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="n">SNR_target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">est_lambda</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">label_eff</span><span class="p">),</span> <span class="n">target_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_time</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
+        <span class="n">tau4hrs</span> <span class="o">=</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="n">SNR_target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">est_lambda</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">label_eff</span><span class="p">),</span> <span class="n">target_time</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
+        <span class="n">max_tau</span> <span class="o">=</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="n">SNR_target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">priorties</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;priority&#39;</span><span class="p">]]</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">est_lambda</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">label_eff</span><span class="p">),</span> <span class="n">target_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;MaxTime&#39;</span><span class="p">],</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
     
         <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tau2hrs</span> <span class="o">=</span> <span class="n">tau2hrs</span>
 
-        <span class="k">if</span> <span class="s1">&#39;relax2D&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">calc_deer_settings</span><span class="p">(</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax2D&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">calc_deer_settings</span><span class="p">(</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax&#39;</span><span class="p">],</span><span class="kc">None</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="p">)</span>
-        
-        
-        <span class="c1"># if (tau2hrs &lt; 1.5) and (tau4hrs &gt; 1.5):</span>
-        <span class="c1">#     self.raise_warning(f&quot;2hr dipolar evo too short. Using 4hr number&quot;)</span>
-        <span class="c1">#     self.deer_settings[&#39;tau1&#39;] = ad.round_step(tau4hrs,self.waveform_precision/1e3)</span>
-        <span class="c1">#     self.deer_settings[&#39;tau2&#39;] = ad.round_step(tau4hrs,self.waveform_precision/1e3)</span>
-        <span class="c1">#     self.deer_settings[&#39;ExpType&#39;] = &#39;5pDEER&#39;</span>
-        <span class="c1">#     self.aim_time = 4</span>
-        
-        <span class="c1"># elif (tau2hrs &lt; 1.5) and (tau4hrs &lt; 1.5):</span>
-        <span class="c1">#     self.current_results[&#39;relax&#39;].tau2hrs = 2.5</span>
-        <span class="c1">#     self.raise_warning(f&quot;2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time&quot;)</span>
-        <span class="c1">#     self.deer_settings[&#39;tau1&#39;] = ad.round_step(0.4,self.waveform_precision/1e3)</span>
-        <span class="c1">#     self.deer_settings[&#39;tau2&#39;] = ad.round_step(2.5,self.waveform_precision/1e3)</span>
-        <span class="c1">#     self.deer_settings[&#39;ExpType&#39;] = &#39;4pDEER&#39;</span>
-        <span class="c1">#     self.raise_warning(f&quot;2hr dipolar evo {tau2hrs:.2f} us, using 4pDEER&quot;)</span>
-
-        <span class="c1"># else:  </span>
-        <span class="c1">#     self.deer_settings[&#39;tau1&#39;] = ad.round_step(tau2hrs,self.waveform_precision/1e3)</span>
-        <span class="c1">#     self.deer_settings[&#39;tau2&#39;] = ad.round_step(tau2hrs,self.waveform_precision/1e3)</span>
-        <span class="c1">#     self.deer_settings[&#39;ExpType&#39;] = &#39;5pDEER&#39;</span>
-            
-        <span class="c1"># self.deer_settings[&#39;tau3&#39;] = 0.3</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">16</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">update_deersettings</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span>
-            <span class="p">)</span>
-        
-        <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tau1 set to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> us&quot;</span><span class="p">)</span>
-        <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tau2 set to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> us&quot;</span><span class="p">)</span>
-        <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEER Sequence set to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialise_deer_settings</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max_tau</span> <span class="o">=</span> <span class="n">max_tau</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">DipolarEvoMax</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">max_tau</span><span class="p">)</span>
@@ -1199,7 +1298,104 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># Wake up the runner thread</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span><span class="o">.</span><span class="n">wakeAll</span><span class="p">()</span></div>
 
+
+<div class="viewcode-block" id="autoDEERUI.initialise_deer_settings">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.initialise_deer_settings">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialise_deer_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Exp_types</span><span class="o">.</span><span class="n">currentText</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;4pDEER&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;relax2D&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">):</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="s1">&#39;4pDEER&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span>
+
+        
+        <span class="k">if</span> <span class="n">exp</span> <span class="o">==</span> <span class="s1">&#39;4pDEER&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">calc_deer_settings</span><span class="p">(</span><span class="s1">&#39;4pDEER&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax2D&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">est_lambda</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">label_eff</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">calc_deer_settings</span><span class="p">(</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax&#39;</span><span class="p">],</span><span class="kc">None</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">est_lambda</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">label_eff</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;4pDEER&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">12</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">16</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;5pDEER&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">12</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">16</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">update_deersettings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">)</span>
+        
+        <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tau1 set to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> us&quot;</span><span class="p">)</span>
+        <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tau2 set to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> us&quot;</span><span class="p">)</span>
+        <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEER Sequence set to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="autoDEERUI.update_deer_settings">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.update_deer_settings">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_deer_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;quickdeer&#39;</span><span class="p">]</span>
+        <span class="n">rec_tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;quickdeer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rec_tau_max</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;quickdeer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rec_dt</span> <span class="o">*</span> <span class="mf">1e3</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">round_step</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="p">)</span>
+        <span class="n">dt</span><span class="o">=</span> <span class="mi">8</span>
+        <span class="n">mod_depth</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">MNR</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">noiselvl</span>
+        <span class="n">remaining_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">MaxTime</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">-</span> <span class="p">((</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">correction_factor</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">calc_correction_factor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;quickdeer&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_time</span><span class="p">)</span>
+        <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Correction factor </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">correction_factor</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">SNR_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">priorties</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;priority&#39;</span><span class="p">]]</span>
+        <span class="n">SNR_target</span> <span class="o">/=</span> <span class="p">(</span><span class="n">mod_depth</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">correction_factor</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Exp_types</span><span class="o">.</span><span class="n">currentText</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;4pDEER&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;relax2D&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">):</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="s1">&#39;4pDEER&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span>
+
+        
+        <span class="k">if</span> <span class="n">exp</span> <span class="o">==</span> <span class="s1">&#39;4pDEER&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">calc_deer_settings</span><span class="p">(</span><span class="s1">&#39;4pDEER&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax2D&#39;</span><span class="p">],</span><span class="n">remaining_time</span><span class="p">,</span><span class="n">SNR_target</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="p">)</span>
+            <span class="n">max_tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">rec_tau</span><span class="p">,</span><span class="n">max_tau</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">round_step</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">12</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">16</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">calc_deer_settings</span><span class="p">(</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax&#39;</span><span class="p">],</span><span class="kc">None</span><span class="p">,</span><span class="n">remaining_time</span><span class="p">,</span><span class="n">SNR_target</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="p">)</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">rec_tau</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">tau</span><span class="o">/</span><span class="mi">2</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">round_step</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">round_step</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tau</span><span class="o">*</span><span class="mi">2</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">12</span>
+            <span class="k">elif</span> <span class="n">tau</span><span class="o">*</span><span class="mi">2</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">16</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">8</span>
+
+
+        <span class="c1"># self.deer_settings[&#39;dt&#39;] = dt</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">update_deersettings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">)</span>
+        
+        <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tau1 set to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> us&quot;</span><span class="p">)</span>
+        <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tau2 set to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> us&quot;</span><span class="p">)</span>
+        <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEER Sequence set to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="autoDEERUI.update_relax2D">
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.update_relax2D">[docs]</a>
     <span class="k">def</span> <span class="nf">update_relax2D</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1208,20 +1404,19 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_data</span><span class="p">[</span><span class="s1">&#39;relax2D&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span>
 
-        <span class="c1"># Since there is no fitting in the 2D data analysis it can be run in the main thread</span>
+        <span class="c1"># Since there is no fitting in the 2D data analysis it can be run in the main threads</span>
 
         <span class="n">relax2DAnalysis</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">RefocusedEcho2DAnalysis</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax2D&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">relax2DAnalysis</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">refresh_relax_figure</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">calc_deer_settings</span><span class="p">(</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax2D&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">16</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">update_deersettings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialise_deer_settings</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># Wake up the runner thread</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span><span class="o">.</span><span class="n">wakeAll</span><span class="p">()</span></div>
 
+        
 
     
 <div class="viewcode-block" id="autoDEERUI.update_T2">
@@ -1280,15 +1475,21 @@
 
         <span class="n">test_result</span> <span class="o">=</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">check_decay</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">test_result</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">test_result</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># Wake up the runner thread</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span><span class="o">.</span><span class="n">wakeAll</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">test_result</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span> <span class="c1"># The trace needs to be longer</span>
             <span class="n">test_dt</span> <span class="o">=</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">test_dt</span> <span class="o">*=</span> <span class="mf">1e3</span>
             <span class="n">new_dt</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">round_step</span><span class="p">(</span><span class="n">test_dt</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">run_CP_relax</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="n">new_dt</span><span class="p">)</span></div>
+        <span class="k">elif</span> <span class="n">test_result</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="c1"># The trace needs to be shorter</span>
+            <span class="n">test_dt</span> <span class="o">=</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">fitresult</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">test_dt</span> <span class="o">*=</span> <span class="mf">1e3</span>
+            <span class="n">new_dt</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">round_step</span><span class="p">(</span><span class="n">test_dt</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">run_CP_relax</span><span class="p">(</span><span class="n">dt</span><span class="o">=</span><span class="n">new_dt</span><span class="p">)</span></div>
 
 
 
@@ -1320,29 +1521,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">Tab_widget</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">q_DEER</span><span class="o">.</span><span class="n">current_data</span><span class="p">[</span><span class="s1">&#39;quickdeer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">q_DEER</span><span class="o">.</span><span class="n">update_inputs_from_dataset</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">q_DEER</span><span class="o">.</span><span class="n">update_figure</span><span class="p">()</span>
+        <span class="c1"># self.q_DEER.update_figure()</span>
         <span class="k">def</span> <span class="nf">update_func</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;quickdeer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
-            <span class="n">rec_tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;quickdeer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rec_tau_max</span>
-            <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;quickdeer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">rec_dt</span> <span class="o">*</span> <span class="mf">1e3</span>
-            <span class="n">dt</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">round_step</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="p">)</span>
-            <span class="n">dt</span><span class="o">=</span> <span class="mi">16</span>
-            <span class="n">mod_depth</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">MNR</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">noiselvl</span>
-            <span class="n">remaining_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">MaxTime</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">-</span> <span class="p">((</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">))</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">correction_factor</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">calc_correction_factor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;quickdeer&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_MNR</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">aim_time</span><span class="p">)</span>
-            <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Correction factor </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">correction_factor</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">max_tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">[</span><span class="s1">&#39;relax&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="n">SNR_target</span><span class="o">=</span><span class="mi">45</span><span class="o">/</span><span class="p">(</span><span class="n">mod_depth</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">correction_factor</span><span class="p">),</span> <span class="n">target_time</span><span class="o">=</span><span class="n">remaining_time</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="n">dt</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
-            <span class="n">main_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max tau </span><span class="si">{</span><span class="n">max_tau</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> us&quot;</span><span class="p">)</span>
-            <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">rec_tau</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="n">max_tau</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">round_step</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ad</span><span class="o">.</span><span class="n">round_step</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">waveform_precision</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau3&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;5pDEER&#39;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dt</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">update_deersettings</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_deer_settings</span><span class="p">()</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">q_DEER</span><span class="o">.</span><span class="n">process_deeranalysis</span><span class="p">(</span><span class="n">wait_condition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span><span class="p">,</span><span class="n">update_func</span><span class="o">=</span><span class="n">update_func</span><span class="p">)</span></div>
 
 
@@ -1401,9 +1585,37 @@
         <span class="n">main_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="autoDEERUI.clear_all">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.clear_all">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">userinput</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ESEEM&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;ExpType&#39;</span><span class="p">:</span><span class="s1">&#39;5pDEER&#39;</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_DEER</span><span class="o">.</span><span class="n">current_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">longDEER</span><span class="o">.</span><span class="n">current_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Clear the figures</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsweep_ax</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsweep_canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">respro_ax</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">respro_canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">relax_ax</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span><span class="nb">tuple</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">relax_ax</span><span class="p">:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">relax_ax</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relax_canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_DEER</span><span class="o">.</span><span class="n">clear_all</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">longDEER</span><span class="o">.</span><span class="n">clear_all</span><span class="p">()</span></div>
+
+
 <div class="viewcode-block" id="autoDEERUI.RunAutoDEER">
 <a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.RunAutoDEER">[docs]</a>
     <span class="k">def</span> <span class="nf">RunAutoDEER</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">advanced</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_all</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spectromterInterface</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="n">QMessageBox</span><span class="o">.</span><span class="n">about</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;ERORR!&#39;</span><span class="p">,</span> <span class="s1">&#39;A interface needs to be connected first!&#39;</span><span class="p">)</span>
@@ -1414,6 +1626,8 @@
         <span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;MaxTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">MaxTime</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
         <span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ProjectName</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
         <span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SampleName</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+        <span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;comment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">commentLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+        <span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;priority&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">priotityComboBox</span><span class="o">.</span><span class="n">currentText</span><span class="p">()</span>
         <span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;label_eff&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LabellingEffSpinBox</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
         <span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;Temp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TempValue</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
         <span class="n">userinput</span><span class="p">[</span><span class="s1">&#39;DEER_update_func&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_DEER</span><span class="o">.</span><span class="n">refresh_deer</span>
@@ -1429,6 +1643,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;tau3&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Tau3Value</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ExpType&#39;</span><span class="p">:</span><span class="s1">&#39;5pDEER&#39;</span><span class="p">,</span><span class="s1">&#39;tau1&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;tau2&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s1">&#39;tau3&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;ESEEM&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ESEEM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Block the autoDEER buttons</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">FullyAutoButton</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
@@ -1436,12 +1652,17 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">resonatorComboBox</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fcDoubleSpinBox</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">night_hours</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;autoDEER&#39;</span><span class="p">][</span><span class="s1">&#39;Night Hours&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">night_hours</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QWaitCondition</span><span class="p">()</span>
         <span class="n">mutex</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QMutex</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="o">=</span> <span class="n">autoDEERWorker</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">spectromterInterface</span><span class="p">,</span><span class="n">wait</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">waitCondition</span><span class="p">,</span><span class="n">mutex</span><span class="o">=</span><span class="n">mutex</span><span class="p">,</span>
             <span class="n">pulses</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">,</span><span class="n">results</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_results</span><span class="p">,</span> <span class="n">AWG</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">AWG</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LO</span><span class="p">,</span> <span class="n">gyro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span><span class="p">,</span>
-            <span class="n">user_inputs</span><span class="o">=</span><span class="n">userinput</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores</span> <span class="p">)</span>
+            <span class="n">user_inputs</span><span class="o">=</span><span class="n">userinput</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span><span class="n">night_hours</span><span class="o">=</span><span class="n">night_hours</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">starttime</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
@@ -1637,7 +1858,7 @@
 </div><script src="../../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     </body>

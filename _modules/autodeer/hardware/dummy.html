@@ -4,14 +4,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.hardware.dummy - </title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -90,19 +90,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -143,7 +130,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -364,30 +351,72 @@
             <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
         
-        <span class="n">Dummy</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;Spectrometer&#39;</span><span class="p">][</span><span class="s1">&#39;Dummy&#39;</span><span class="p">]</span>
-        <span class="n">Bridge</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;Spectrometer&#39;</span><span class="p">][</span><span class="s1">&#39;Bridge&#39;</span><span class="p">]</span>
-        <span class="n">resonator_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;Resonators&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">speedup</span> <span class="o">=</span> <span class="n">Dummy</span><span class="p">[</span><span class="s1">&#39;speedup&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">SNR</span> <span class="o">=</span> <span class="n">Dummy</span><span class="p">[</span><span class="s1">&#39;SNR&#39;</span><span class="p">]</span>
+<div class="viewcode-block" id="dummyInterface.Dummy">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.Dummy">[docs]</a>
+        <span class="n">Dummy</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;Spectrometer&#39;</span><span class="p">][</span><span class="s1">&#39;Dummy&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="dummyInterface.Bridge">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.Bridge">[docs]</a>
+        <span class="n">Bridge</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;Spectrometer&#39;</span><span class="p">][</span><span class="s1">&#39;Bridge&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="dummyInterface.resonator_list">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.resonator_list">[docs]</a>
+        <span class="n">resonator_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;Resonators&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="dummyInterface.state">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.state">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="dummyInterface.speedup">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.speedup">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speedup</span> <span class="o">=</span> <span class="n">Dummy</span><span class="p">[</span><span class="s1">&#39;speedup&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="dummyInterface.pulses">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.pulses">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="dummyInterface.start_time">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.start_time">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="dummyInterface.SNR">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.SNR">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SNR</span> <span class="o">=</span> <span class="n">Dummy</span><span class="p">[</span><span class="s1">&#39;SNR&#39;</span><span class="p">]</span></div>
+
         <span class="k">if</span> <span class="s1">&#39;ESEEM_depth&#39;</span> <span class="ow">in</span> <span class="n">Dummy</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ESEEM</span> <span class="o">=</span> <span class="n">Dummy</span><span class="p">[</span><span class="s1">&#39;ESEEM_depth&#39;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ESEEM</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># Create virtual mode</span>
-        <span class="n">key1</span> <span class="o">=</span> <span class="n">resonator_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">fc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;Resonators&#39;</span><span class="p">][</span><span class="n">key1</span><span class="p">][</span><span class="s1">&#39;Center Freq&#39;</span><span class="p">]</span>
-        <span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;Resonators&#39;</span><span class="p">][</span><span class="n">key1</span><span class="p">][</span><span class="s1">&#39;Q&#39;</span><span class="p">]</span>
+<div class="viewcode-block" id="dummyInterface.key1">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.key1">[docs]</a>
+        <span class="n">key1</span> <span class="o">=</span> <span class="n">resonator_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="dummyInterface.fc">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.fc">[docs]</a>
+        <span class="n">fc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;Resonators&#39;</span><span class="p">][</span><span class="n">key1</span><span class="p">][</span><span class="s1">&#39;Center Freq&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="dummyInterface.Q">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.Q">[docs]</a>
+        <span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;Resonators&#39;</span><span class="p">][</span><span class="n">key1</span><span class="p">][</span><span class="s1">&#39;Q&#39;</span><span class="p">]</span></div>
+
         <span class="k">def</span> <span class="nf">lorenz_fcn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">centre</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
             <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">sigma</span><span class="p">)</span><span class="o">/</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">centre</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">y</span>
 
-        <span class="n">mode</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">lorenz_fcn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fc</span><span class="p">,</span> <span class="n">fc</span><span class="o">/</span><span class="n">Q</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">33</span><span class="p">,</span><span class="mi">35</span><span class="p">)</span>
-        <span class="n">scale</span> <span class="o">=</span> <span class="mi">75</span><span class="o">/</span><span class="n">mode</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<div class="viewcode-block" id="dummyInterface.mode">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.mode">[docs]</a>
+        <span class="n">mode</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">lorenz_fcn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fc</span><span class="p">,</span> <span class="n">fc</span><span class="o">/</span><span class="n">Q</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="dummyInterface.x">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.x">[docs]</a>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">Bridge</span><span class="p">[</span><span class="s1">&#39;Min Freq&#39;</span><span class="p">],</span><span class="n">Bridge</span><span class="p">[</span><span class="s1">&#39;Max Freq&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="dummyInterface.scale">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.scale">[docs]</a>
+        <span class="n">scale</span> <span class="o">=</span> <span class="mi">75</span><span class="o">/</span><span class="n">mode</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span></div>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">lorenz_fcn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">fc</span><span class="p">,</span> <span class="n">fc</span><span class="o">/</span><span class="n">Q</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">log</span><span class="o">=</span><span class="n">hw_log</span><span class="p">)</span>
 
@@ -474,7 +503,9 @@
 <a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy/index.html#autodeer.hardware.dummy.dummyInterface.isrunning">[docs]</a>
     <span class="k">def</span> <span class="nf">isrunning</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="n">current_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">current_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">&gt;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="o">.</span><span class="n">_estimate_time</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">speedup</span><span class="p">):</span>
+        <span class="n">runtime</span> <span class="o">=</span>  <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span><span class="o">.</span><span class="n">_estimate_time</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">speedup</span><span class="p">)</span>
+        <span class="n">runtime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">runtime</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">current_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">runtime</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="kc">False</span>
     
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span></div>
@@ -681,7 +712,7 @@
 </div><script src="../../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     </body>

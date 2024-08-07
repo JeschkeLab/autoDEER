@@ -21,6 +21,26 @@
 
    ..
        !! processed by numpydoc !!
+   .. py:attribute:: snr_target
+      :value: '20'
+
+      
+
+   .. py:attribute:: time_target
+      :value: '2'
+
+      
+
+   .. py:attribute:: trace_length
+      :value: '512'
+
+      
+
+   .. py:attribute:: noise_frac
+      :value: '0.75'
+
+      
+
    .. py:method:: load(file)
 
       

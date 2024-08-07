@@ -47,6 +47,45 @@
    .. py:property:: seqtable_steps
 
 
+   .. py:attribute:: pulses
+      :value: '[]'
+
+      
+
+   .. py:attribute:: num_pulses
+
+      
+
+   .. py:attribute:: axes_uuid
+      :value: '[]'
+
+      
+
+   .. py:attribute:: reduce_uuid
+      :value: '[]'
+
+      
+
+   .. py:attribute:: LO
+
+      
+
+   .. py:attribute:: averages
+
+      
+
+   .. py:attribute:: shots
+
+      
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: progTable
+
+      
+
    .. py:method:: plot()
 
 

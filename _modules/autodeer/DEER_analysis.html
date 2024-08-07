@@ -4,14 +4,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.DEER_analysis - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -90,19 +90,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -143,7 +130,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -297,7 +284,7 @@
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span><span class="p">,</span><span class="n">brute</span>
 <span class="kn">from</span> <span class="nn">autodeer.colors</span> <span class="kn">import</span> <span class="n">primary_colors</span><span class="p">,</span> <span class="n">ReIm_colors</span>
 <span class="kn">from</span> <span class="nn">autodeer.utils</span> <span class="kn">import</span> <span class="n">round_step</span>
-
+<span class="kn">import</span> <span class="nn">scipy.signal</span> <span class="k">as</span> <span class="nn">signal</span>
 
 <div class="viewcode-block" id="log">
 <a class="viewcode-back" href="../../autoapi/autodeer/DEER_analysis/index.html#autodeer.DEER_analysis.log">[docs]</a>
@@ -346,30 +333,82 @@
     <span class="k">return</span> <span class="n">longest_pulse</span><span class="o">/</span><span class="mf">1e3</span></div>
 
 
+<div class="viewcode-block" id="MNR_estimate">
+<a class="viewcode-back" href="../../autoapi/autodeer/DEER_analysis/index.html#autodeer.DEER_analysis.MNR_estimate">[docs]</a>
+<span class="k">def</span> <span class="nf">MNR_estimate</span><span class="p">(</span><span class="n">Vexp</span><span class="p">,</span><span class="n">t</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Estimates the Modulation to Noise Ratio (MNR) of a DEER signal without fitting.</span>
+<span class="sd">    This is done by applying a low pass filter to remove noise and then finding the peaks in the signal.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Vexp : np.ndarray</span>
+<span class="sd">        The experimental DEER signal, real part only.</span>
+<span class="sd">    t : np.ndarray</span>
+<span class="sd">        The time axis of the DEER signal, in microseconds.</span>
+<span class="sd">    mask : np.ndarray, optional</span>
+<span class="sd">        The mask to apply to the data, by default None</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The estimated MNR of the dataset.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Vexp</span> <span class="o">=</span> <span class="n">Vexp</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">Vexp</span><span class="o">/=</span><span class="n">Vexp</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    
+    <span class="c1"># Vexp /= Vexp.max()</span>
+    <span class="n">SNR</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">dl</span><span class="o">.</span><span class="n">noiselevel</span><span class="p">(</span><span class="n">Vexp</span><span class="p">)</span>
+    <span class="c1"># Smoothing spline with a low-pass filter</span>
+    <span class="n">b</span><span class="p">,</span><span class="n">a</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mf">0.1</span><span class="p">)</span> <span class="c1"># 3rd order Butterworth low-pass filter with cutoff at 0.1 MHz</span>
+    <span class="n">Vexp_smooth</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">Vexp</span><span class="p">)</span>
+    <span class="n">min_point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">Vexp_smooth</span><span class="p">)</span>
+    <span class="n">N_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">Vexp_smooth</span><span class="p">)</span>
+    <span class="n">peaks</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span>
+        <span class="n">Vexp_smooth</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">min_point</span><span class="p">,</span><span class="n">distance</span><span class="o">=</span><span class="n">N_points</span><span class="o">//</span><span class="mi">4</span><span class="p">)</span>
+    
+    <span class="n">est_lam</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">peaks</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;peak_heights&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">min_point</span><span class="p">)</span>
+    <span class="n">MNR</span> <span class="o">=</span> <span class="n">est_lam</span><span class="o">*</span><span class="n">SNR</span>
+    <span class="k">return</span> <span class="n">MNR</span></div>
+
+
+<div class="viewcode-block" id="val_in_us">
+<a class="viewcode-back" href="../../autoapi/autodeer/DEER_analysis/index.html#autodeer.DEER_analysis.val_in_us">[docs]</a>
+<span class="k">def</span> <span class="nf">val_in_us</span><span class="p">(</span><span class="n">Param</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">axis</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">Param</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;us&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Param</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">elif</span> <span class="n">Param</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;ns&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Param</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mf">1e3</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">axis</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">Param</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;us&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Param</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">Param</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;axis&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">Param</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;ns&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">Param</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;axis&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="mf">1e3</span> </div>
+
+
+
 <span class="c1"># =============================================================================</span>
 <div class="viewcode-block" id="DEERanalysis">
 <a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.DEER_analysis.DEERanalysis">[docs]</a>
-<span class="k">def</span> <span class="nf">DEERanalysis</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">compactness</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ROI</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="s1">&#39;5pDEER&#39;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">DEERanalysis</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">compactness</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ROI</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">exp_type</span><span class="o">=</span><span class="s1">&#39;5pDEER&#39;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">remove_crossing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
 
     <span class="n">Vexp</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span> 
 
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">iscomplexobj</span><span class="p">(</span><span class="n">Vexp</span><span class="p">):</span>
-        <span class="n">Vexp</span> <span class="o">=</span> <span class="n">dl</span><span class="o">.</span><span class="n">correctphase</span><span class="p">(</span><span class="n">Vexp</span><span class="p">)</span>
+        <span class="n">Vexp</span><span class="p">,</span><span class="n">Vexp_im</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">dl</span><span class="o">.</span><span class="n">correctphase</span><span class="p">(</span><span class="n">Vexp</span><span class="p">,</span><span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">remove_crossing</span><span class="p">:</span>
+        <span class="ne">Warning</span><span class="p">(</span><span class="s2">&quot;Crossing removal only works with complex data. Skipping&quot;</span><span class="p">)</span>
+        <span class="n">remove_crossing</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="n">Vexp</span> <span class="o">/=</span> <span class="n">Vexp</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">val_in_us</span><span class="p">(</span><span class="n">Param</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">axis</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">Param</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;us&quot;</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">Param</span><span class="o">.</span><span class="n">value</span>
-            <span class="k">elif</span> <span class="n">Param</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;ns&quot;</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">Param</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="mf">1e3</span>
-        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">axis</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">Param</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;us&quot;</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">sequence</span><span class="o">.</span><span class="n">tau1</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">Param</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;axis&#39;</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">Param</span><span class="o">.</span><span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;ns&quot;</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">Param</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;axis&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="mf">1e3</span> 
+    <span class="c1"># Extract params from dataset</span>
 
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span><span class="s2">&quot;sequence&quot;</span><span class="p">):</span>
         <span class="n">sequence</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">sequence</span>
@@ -445,28 +484,68 @@
         <span class="c1"># t = dataset.axes[0]</span>
         <span class="n">t</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="n">exp_type</span> <span class="o">==</span> <span class="s1">&#39;4pDEER&#39;</span><span class="p">:</span>
-        <span class="n">pathways</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="n">exp_type</span> <span class="o">==</span> <span class="s1">&#39;5pDEER&#39;</span><span class="p">:</span>
-        <span class="n">pathways</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="n">exp_type</span> <span class="o">==</span> <span class="s1">&#39;3pDEER&#39;</span><span class="p">:</span>
-        <span class="n">pathways</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">pathways</span> <span class="o">=</span> <span class="kc">None</span>
-
     <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">500</span><span class="p">:</span>
         <span class="n">t</span> <span class="o">/=</span> <span class="mf">1e3</span>
 
-    <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># Find mask if needed</span>
+
+    <span class="k">if</span> <span class="n">remove_crossing</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s1">&#39;pcyc_name&#39;</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+            <span class="n">pcyc</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;pcyc_name&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="s1">&#39;nPcyc&#39;</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span> <span class="c1"># guess pcyc</span>
+            <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;nPcyc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">16</span><span class="p">:</span>
+                <span class="n">pcyc</span> <span class="o">=</span> <span class="s1">&#39;Full&#39;</span>
+            <span class="k">elif</span> <span class="n">dataset</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;nPcyc&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">pcyc</span> <span class="o">=</span> <span class="s1">&#39;DC&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pcyc</span> <span class="o">=</span> <span class="s1">&#39;unknown&#39;</span>
+
+        <span class="k">if</span> <span class="n">pcyc</span> <span class="o">==</span> <span class="s1">&#39;DC&#39;</span> <span class="ow">and</span> <span class="n">exp_type</span> <span class="o">==</span> <span class="s2">&quot;5pDEER&quot;</span><span class="p">:</span> <span class="c1"># Remove crossing echoes</span>
+            <span class="n">t_position</span> <span class="o">=</span> <span class="p">[</span><span class="n">tau1</span> <span class="o">+</span> <span class="n">tau2</span> <span class="o">-</span> <span class="n">tau3</span><span class="p">]</span>
+            <span class="n">idx_position</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cross</span> <span class="o">-</span> <span class="n">t</span><span class="p">))</span> <span class="k">for</span> <span class="n">cross</span> <span class="ow">in</span> <span class="n">t_position</span><span class="p">]</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">Vexp</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="n">idx_position</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">&amp;=</span> <span class="n">remove_echo</span><span class="p">(</span><span class="n">Vexp</span><span class="p">,</span> <span class="n">Vexp_im</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">criteria</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;mask&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;mask&quot;</span><span class="p">]</span>
+        <span class="n">noiselvl</span> <span class="o">=</span> <span class="n">dl</span><span class="o">.</span><span class="n">noiselevel</span><span class="p">(</span><span class="n">Vexp</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">remove_crossing</span> <span class="ow">and</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">noiselvl</span> <span class="o">=</span> <span class="n">dl</span><span class="o">.</span><span class="n">noiselevel</span><span class="p">(</span><span class="n">Vexp</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">noiselvl</span> <span class="o">=</span> <span class="n">dl</span><span class="o">.</span><span class="n">noiselevel</span><span class="p">(</span><span class="n">Vexp</span><span class="p">)</span>
+        <span class="n">mask</span><span class="o">=</span><span class="kc">None</span>
+
+    <span class="c1"># Determine the pathways</span>
+    <span class="n">est_MNR</span> <span class="o">=</span> <span class="n">MNR_estimate</span><span class="p">(</span><span class="n">Vexp</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;pathways&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">pathways</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;pathways&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="k">if</span> <span class="n">exp_type</span> <span class="o">==</span> <span class="s1">&#39;4pDEER&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">est_MNR</span> <span class="o">&lt;</span> <span class="mi">40</span><span class="p">:</span>
+                <span class="n">pathways</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pathways</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">exp_type</span> <span class="o">==</span> <span class="s1">&#39;5pDEER&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">est_MNR</span> <span class="o">&lt;</span> <span class="mi">40</span><span class="p">:</span>
+                <span class="n">pathways</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pathways</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">exp_type</span> <span class="o">==</span> <span class="s1">&#39;3pDEER&#39;</span><span class="p">:</span>
+            <span class="n">pathways</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pathways</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># Compactness is only needed with model-free fitting</span>
         <span class="n">compactness</span> <span class="o">=</span> <span class="kc">False</span>
     
 
     <span class="k">if</span> <span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Experiment type: </span><span class="si">{</span><span class="n">exp_type</span><span class="si">}</span><span class="s2">, pathways: </span><span class="si">{</span><span class="n">pathways</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Experimental Parameters set to: tau1 </span><span class="si">{</span><span class="n">tau1</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> us </span><span class="se">\t</span><span class="s2"> tau2 </span><span class="si">{</span><span class="n">tau2</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> us&quot;</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="s2">&quot;pathways&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">pathways</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;pathways&quot;</span><span class="p">)</span>
 
 
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span><span class="s2">&quot;sequence&quot;</span><span class="p">):</span>
@@ -491,10 +570,10 @@
 
   
     <span class="n">r_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cbrt</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">*</span><span class="mi">6</span><span class="o">**</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span><span class="n">r_max</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span><span class="n">r_max</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
 
 
-
+        
 
     <span class="c1"># identify experiment</span>
     <span class="k">if</span> <span class="s1">&#39;parametrization&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
@@ -516,13 +595,6 @@
 
     <span class="k">else</span><span class="p">:</span>
         <span class="n">compactness_penalty</span> <span class="o">=</span> <span class="kc">None</span>
-
-    <span class="k">if</span> <span class="s2">&quot;mask&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;mask&quot;</span><span class="p">]</span>
-        <span class="n">noiselvl</span> <span class="o">=</span> <span class="n">dl</span><span class="o">.</span><span class="n">noiselevel</span><span class="p">(</span><span class="n">Vexp</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">noiselvl</span> <span class="o">=</span> <span class="n">dl</span><span class="o">.</span><span class="n">noiselevel</span><span class="p">(</span><span class="n">Vexp</span><span class="p">)</span>
-        <span class="n">mask</span><span class="o">=</span><span class="kc">None</span>
 
 
     <span class="c1"># Cleanup extra args</span>
@@ -566,7 +638,8 @@
     
     
     <span class="k">if</span> <span class="n">ROI</span><span class="p">:</span>
-        <span class="n">tau_max</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">4</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+        <span class="c1"># tau_max = lambda r: (r**3) *(3/4**3)</span>
+        <span class="n">tau_max</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span>  <span class="p">(</span><span class="n">r</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span> <span class="o">*</span> <span class="mi">2</span>
         <span class="n">fit</span><span class="o">.</span><span class="n">ROI</span> <span class="o">=</span> <span class="n">IdentifyROI</span><span class="p">(</span><span class="n">fit</span><span class="o">.</span><span class="n">P</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="mf">0.90</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;gauss&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">fit</span><span class="o">.</span><span class="n">ROI</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">fit</span><span class="o">.</span><span class="n">ROI</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
@@ -927,7 +1000,7 @@
 <span class="sd">    loc : int</span>
 <span class="sd">        The approximate location of the crossing echo, +- 30 data points</span>
 <span class="sd">    criteria : float, optional</span>
-<span class="sd">        The delation criteria, in multiples of the std deviation, by default 4</span>
+<span class="sd">        The detection criteria, in multiples of the std deviation, by default 4</span>
 <span class="sd">    extent : int, optional</span>
 <span class="sd">        How many data points either side to remove, by default 3.</span>
 
@@ -977,11 +1050,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="s1">&#39;freq&#39;</span><span class="p">):</span>
         <span class="n">pulse</span><span class="o">.</span><span class="n">freq</span><span class="o">.</span><span class="n">value</span> <span class="o">+=</span> <span class="n">shift</span>
-    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="s1">&#39;BW&#39;</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="s1">&#39;init_freq&#39;</span><span class="p">):</span>
-            <span class="n">pulse</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span> <span class="o">+=</span> <span class="n">shift</span>
-        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="s1">&#39;final_freq&#39;</span><span class="p">):</span>
-            <span class="n">pulse</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span> <span class="o">+=</span> <span class="n">shift</span>
     <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="s1">&#39;init_freq&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="s1">&#39;final_freq&#39;</span><span class="p">):</span>
         <span class="n">pulse</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span> <span class="o">+=</span> <span class="n">shift</span>
         <span class="n">pulse</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span> <span class="o">+=</span> <span class="n">shift</span>
@@ -1088,7 +1156,7 @@
 <div class="viewcode-block" id="optimise_pulses">
 <a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.DEER_analysis.optimise_pulses">[docs]</a>
 <span class="k">def</span> <span class="nf">optimise_pulses</span><span class="p">(</span><span class="n">Fieldsweep</span><span class="p">,</span> <span class="n">pump_pulse</span><span class="p">,</span> <span class="n">exc_pulse</span><span class="p">,</span> <span class="n">ref_pulse</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;brute&#39;</span><span class="p">,</span>
-                    <span class="n">nDEER</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_ref_pulses</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                    <span class="n">nDEER</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_ref_pulses</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">resonator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Optimise the pulse positions to maximise the pump-exc overlap.</span>
 
 <span class="sd">    Parameters</span>
@@ -1114,6 +1182,8 @@
 <span class="sd">        The total number of refocusing pulses, by default 2</span>
 <span class="sd">    full_output : bool, optional</span>
 <span class="sd">        Return the full output, by default False</span>
+<span class="sd">    resonator : ad.ResonatorProfile, optional</span>
+<span class="sd">        The resonator profile, by default None</span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    ad.Pulse</span>
@@ -1133,12 +1203,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 
-    <span class="n">gyro</span>  <span class="o">=</span> <span class="n">Fieldsweep</span><span class="o">.</span><span class="n">gyro</span>
-    <span class="n">fieldsweep_fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">Fieldsweep</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">Fieldsweep</span><span class="o">.</span><span class="n">model</span><span class="p">,(</span><span class="n">x</span><span class="o">+</span><span class="n">Fieldsweep</span><span class="o">.</span><span class="n">LO</span><span class="p">)</span> <span class="o">/</span><span class="n">gyro</span><span class="o">*</span><span class="mf">1e-1</span><span class="p">)</span>
-
+    <span class="c1"># gyro  = Fieldsweep.gyro</span>
+    <span class="c1"># if hasattr(Fieldsweep,&#39;results&#39;):</span>
+    <span class="c1">#     fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)</span>
+    <span class="n">fieldsweep_fun</span> <span class="o">=</span> <span class="n">Fieldsweep</span><span class="o">.</span><span class="n">func_freq</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span><span class="mf">0.3</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">fieldsweep_profile</span> <span class="o">=</span> <span class="n">fieldsweep_fun</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
-    <span class="n">fieldsweep_profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">fieldsweep_fun</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+    <span class="c1"># fieldsweep_profile = np.flip(fieldsweep_fun(f))</span>
     
     <span class="n">pump_Mz</span> <span class="o">=</span> <span class="n">normalise_01</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">pump_pulse</span><span class="o">.</span><span class="n">exciteprofile</span><span class="p">(</span><span class="n">freqs</span><span class="o">=</span><span class="n">f</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
     <span class="n">exc_Mz</span> <span class="o">=</span> <span class="n">normalise_01</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">exc_pulse</span><span class="o">.</span><span class="n">exciteprofile</span><span class="p">(</span><span class="n">freqs</span><span class="o">=</span><span class="n">f</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
@@ -1247,11 +1319,10 @@
 
 
     <span class="n">gyro</span>  <span class="o">=</span> <span class="n">Fieldsweep</span><span class="o">.</span><span class="n">gyro</span>
-    <span class="n">fieldsweep_fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">Fieldsweep</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">Fieldsweep</span><span class="o">.</span><span class="n">model</span><span class="p">,(</span><span class="n">x</span><span class="o">+</span><span class="n">Fieldsweep</span><span class="o">.</span><span class="n">LO</span><span class="p">)</span> <span class="o">/</span><span class="n">gyro</span><span class="o">*</span><span class="mf">1e-1</span><span class="p">)</span>
-
+    <span class="n">fieldsweep_fun</span> <span class="o">=</span> <span class="n">Fieldsweep</span><span class="o">.</span><span class="n">func_freq</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span><span class="mf">0.4</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
 
-    <span class="n">fieldsweep_profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">fieldsweep_fun</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+    <span class="n">fieldsweep_profile</span> <span class="o">=</span> <span class="n">fieldsweep_fun</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 
         
     <span class="n">pump_Mz</span> <span class="o">=</span> <span class="n">normalise_01</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">pump_pulse</span><span class="o">.</span><span class="n">exciteprofile</span><span class="p">(</span><span class="n">freqs</span><span class="o">=</span><span class="n">f</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
@@ -1350,12 +1421,12 @@
         <span class="n">deer_settings</span><span class="p">[</span><span class="s1">&#39;ExpType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;4pDEER&#39;</span>
 
         <span class="c1"># Calculate tau1 and tau2</span>
-        <span class="n">tau1</span><span class="p">,</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;4pDEER&#39;</span><span class="p">,</span><span class="n">SNR_target</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="n">target_time</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
+        <span class="n">tau1</span><span class="p">,</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;4pDEER&#39;</span><span class="p">,</span><span class="n">SNR_target</span><span class="o">=</span><span class="n">target_MNR</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="n">target_time</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="n">tau2</span> <span class="o">&lt;</span> <span class="mf">2.5</span><span class="p">:</span>
             <span class="c1"># 2hr dipolar evo too short for meaningful results. Using double the time instead</span>
             <span class="n">target_time</span> <span class="o">*=</span> <span class="mi">2</span>
-            <span class="n">tau1</span><span class="p">,</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;4pDEER&#39;</span><span class="p">,</span><span class="n">SNR_target</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="n">target_time</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
+            <span class="n">tau1</span><span class="p">,</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">find_optimal</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;4pDEER&#39;</span><span class="p">,</span><span class="n">SNR_target</span><span class="o">=</span><span class="n">target_MNR</span><span class="p">,</span> <span class="n">target_time</span><span class="o">=</span><span class="n">target_time</span><span class="p">,</span> <span class="n">target_step</span><span class="o">=</span><span class="mf">0.015</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="n">tau2</span> <span class="o">&lt;</span> <span class="mf">2.5</span><span class="p">:</span>
             <span class="c1"># Dipolar evo time still too short. Hardcoding a 2.5us dipolar evo time</span>
@@ -1391,7 +1462,7 @@
             <span class="c1"># self.raise_warning(f&quot;2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time&quot;)</span>
             <span class="n">tau2</span> <span class="o">=</span> <span class="mf">2.5</span>
             <span class="k">if</span> <span class="n">Refocused2D</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">tau1</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">optimal_tau1</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;4pDEER&#39;</span><span class="p">,</span><span class="n">tau2</span><span class="o">=</span><span class="n">tau2</span><span class="p">)</span>
+                <span class="n">tau1</span> <span class="o">=</span> <span class="n">Refocused2D</span><span class="o">.</span><span class="n">optimal_tau1</span><span class="p">(</span><span class="n">tau2</span><span class="o">=</span><span class="n">tau2</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">tau1</span> <span class="o">=</span> <span class="mf">0.4</span>
 
@@ -1447,7 +1518,7 @@
 </div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     </body>

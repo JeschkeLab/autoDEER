@@ -38,3 +38,17 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: scale
+      :value: 'None'
+
+      
+
+   .. py:attribute:: freq
+
+      
+
+   .. py:attribute:: pcyc
+      :value: 'None'
+
+      
+

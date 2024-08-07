@@ -1,0 +1,99 @@
+:py:mod:`autodeer.gui.modetune`
+===============================
+
+.. py:module:: autodeer.gui.modetune
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.modetune.ModeTune
+   autodeer.gui.modetune.get_dataWorker
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.modetune.save_data
+   autodeer.gui.modetune.phasecorrect_all_points
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   autodeer.gui.modetune.package_directory
+
+
+.. py:data:: package_directory
+
+   
+
+.. py:function:: save_data(dataset, filename, folder='')
+
+
+.. py:function:: phasecorrect_all_points(dataset)
+
+
+.. py:class:: ModeTune(interface, gyro = 0.002803632236095, threadpool=None, current_folder='')
+
+
+   Bases: :py:obj:`PyQt6.QtWidgets.QDialog`
+
+   .. py:attribute:: interface
+
+      
+
+   .. py:attribute:: ui
+
+      
+
+   .. py:method:: start_mode_tune()
+
+
+   .. py:method:: create_figure()
+
+
+   .. py:method:: update_figure(dataset, done=False)
+
+
+   .. py:method:: update_dip()
+
+
+
+.. py:class:: get_dataWorker(interface)
+
+
+   Bases: :py:obj:`PyQt6.QtCore.QRunnable`
+
+   .. py:attribute:: result_signal
+
+      
+
+   .. py:attribute:: finished_signal
+
+      
+
+   .. py:attribute:: interface
+
+      
+
+   .. py:attribute:: signals
+
+      
+
+   .. py:method:: run()
+
+
+

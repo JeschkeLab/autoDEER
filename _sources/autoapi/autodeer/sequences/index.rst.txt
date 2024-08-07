@@ -76,6 +76,45 @@ Classes
    .. py:property:: seqtable_steps
 
 
+   .. py:attribute:: pulses
+      :value: '[]'
+
+      
+
+   .. py:attribute:: num_pulses
+
+      
+
+   .. py:attribute:: axes_uuid
+      :value: '[]'
+
+      
+
+   .. py:attribute:: reduce_uuid
+      :value: '[]'
+
+      
+
+   .. py:attribute:: LO
+
+      
+
+   .. py:attribute:: averages
+
+      
+
+   .. py:attribute:: shots
+
+      
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: progTable
+
+      
+
    .. py:method:: plot()
 
 
@@ -422,6 +461,37 @@ Classes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'DEERSequence'"
+
+      
+
+   .. py:attribute:: tau1us
+
+      
+
+   .. py:attribute:: tau1
+
+      
+
+   .. py:attribute:: tau2
+
+      
+
+   .. py:attribute:: dt
+
+      
+
+   .. py:attribute:: deadtime
+      :value: '200'
+
+      
+
+   .. py:attribute:: ESEEM
+      :value: 'False'
+
+      
+
    .. py:method:: add_ESEEM_avg(type=None)
 
 
@@ -668,6 +738,11 @@ Classes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'HahnEchoSequence'"
+
+      
+
 
 .. py:class:: T2RelaxationSequence(*, B, LO, reptime, averages, shots, step=40, dim=200, **kwargs)
 
@@ -713,6 +788,15 @@ Classes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: tau
+
+      
+
+   .. py:attribute:: name
+      :value: "'T2RelaxationSequence'"
+
+      
 
 
 .. py:class:: FieldSweepSequence(*, B, LO, Bwidth, reptime, averages, shots, **kwargs)
@@ -763,6 +847,15 @@ Classes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'FieldSweepSequence'"
+
+      
+
+   .. py:attribute:: B
+
+      
+
 
 .. py:class:: ReptimeScan(*, B, LO, reptime, reptime_max, averages, shots, **kwargs)
 
@@ -810,6 +903,29 @@ Classes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: min_reptime
+      :value: '20'
+
+      
+
+   .. py:attribute:: dim
+      :value: '100'
+
+      
+
+   .. py:attribute:: step
+
+      
+
+   .. py:attribute:: reptime
+
+      
+
+   .. py:attribute:: name
+      :value: "'ReptimeScan'"
+
+      
 
 
 .. py:class:: CarrPurcellSequence(*, B, LO, reptime, averages, shots, tau, n, dim=100, **kwargs)
@@ -866,6 +982,23 @@ Classes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'CarrPurcellSequence'"
+
+      
+
+   .. py:attribute:: tau
+
+      
+
+   .. py:attribute:: n
+
+      
+
+   .. py:attribute:: dim
+
+      
+
    .. py:method:: _build_sequence()
 
 
@@ -920,6 +1053,28 @@ Classes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: name
+      :value: "'RefocusedEcho2D'"
+
+      
+
+   .. py:attribute:: tau_init
+      :value: '400'
+
+      
+
+   .. py:attribute:: dt
+
+      
+
+   .. py:attribute:: tau1
+
+      
+
+   .. py:attribute:: tau2
+
+      
 
    .. py:method:: _build_sequence()
 
@@ -985,6 +1140,19 @@ Classes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'ResonatorProfileSequence'"
+
+      
+
+   .. py:attribute:: gyro
+
+      
+
+   .. py:attribute:: fwidth
+
+      
+
    .. py:method:: _build_sequence()
 
 
@@ -1036,6 +1204,11 @@ Classes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: name
+      :value: "'TWTProfileSequence'"
+
+      
 
    .. py:method:: _build_sequence()
 

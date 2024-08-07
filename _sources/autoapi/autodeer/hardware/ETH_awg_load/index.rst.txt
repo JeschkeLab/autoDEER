@@ -59,7 +59,7 @@ Functions
    ..
        !! processed by numpydoc !!
 
-.. py:function:: uwb_eval_match(matfile, sequence=None, scans=None, mask=None, filter_pulse=None, filter_type='match', filter_width=None, verbosity=0, **kwargs)
+.. py:function:: uwb_eval_match(matfile, sequence=None, scans=None, mask=None, filter_pulse=None, filter_type='match', filter_width=None, verbosity=0, corr_phase=False, **kwargs)
 
    
 

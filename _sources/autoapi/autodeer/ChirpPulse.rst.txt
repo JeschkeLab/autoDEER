@@ -1,7 +1,7 @@
 .. py:class:: ChirpPulse(*, tp=128, **kwargs)
 
 
-   Bases: :py:obj:`Pulse`
+   Bases: :py:obj:`FrequencySweptPulse`
 
    Represents a linear frequency-swept pulse.
 
@@ -35,6 +35,29 @@
 
    ..
        !! processed by numpydoc !!
+
+   .. py:property:: sweeprate
+
+      
+      The sweep rate of the pulse in GHz/ns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
    .. py:method:: func(ax)
 

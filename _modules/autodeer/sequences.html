@@ -4,14 +4,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.sequences - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -90,19 +90,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -143,7 +130,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -324,10 +311,22 @@
 <span class="sd">            The number of shots per point.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">num_pulses</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">axes_uuid</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reduce_uuid</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="viewcode-block" id="Sequence.pulses">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.pulses">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="Sequence.num_pulses">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.num_pulses">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_pulses</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sequence.axes_uuid">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.axes_uuid">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axes_uuid</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="Sequence.reduce_uuid">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.reduce_uuid">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduce_uuid</span> <span class="o">=</span> <span class="p">[]</span></div>
+
 
 
 
@@ -338,9 +337,12 @@
                 <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="s2">&quot;Gauss&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;The static B0 field for the experiment&quot;</span><span class="p">)</span>
         
+<div class="viewcode-block" id="Sequence.LO">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.LO">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">LO</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
             <span class="s2">&quot;LO&quot;</span><span class="p">,</span> <span class="n">LO</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;The local oscillator frequency.&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;The local oscillator frequency.&quot;</span><span class="p">)</span></div>
+
         
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reptime</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reptime</span> <span class="o">=</span> <span class="n">reptime</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -349,13 +351,19 @@
                 <span class="s2">&quot;reptime&quot;</span><span class="p">,</span> <span class="n">reptime</span><span class="p">,</span> <span class="s2">&quot;us&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;The shot repetition time&quot;</span><span class="p">)</span>
         
+<div class="viewcode-block" id="Sequence.averages">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.averages">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">averages</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
             <span class="s2">&quot;averages&quot;</span><span class="p">,</span> <span class="n">averages</span><span class="p">,</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;The number of averages to perform.&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;The number of averages to perform.&quot;</span><span class="p">)</span></div>
+
         
+<div class="viewcode-block" id="Sequence.shots">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.shots">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">shots</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
             <span class="s2">&quot;shots&quot;</span><span class="p">,</span> <span class="n">shots</span><span class="p">,</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;The number of shots per scan.&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;The number of shots per scan.&quot;</span><span class="p">)</span></div>
+
 
         <span class="k">if</span> <span class="s2">&quot;det_window&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">det_window</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
@@ -369,9 +377,15 @@
             <span class="p">)</span>
 
             
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<div class="viewcode-block" id="Sequence.name">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.name">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span></div>
+
+<div class="viewcode-block" id="Sequence.progTable">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.progTable">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">progTable</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;EventID&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;axis&quot;</span><span class="p">:</span> <span class="p">[],</span>
-                     <span class="s2">&quot;axID&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;reduce&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+                     <span class="s2">&quot;axID&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;reduce&quot;</span><span class="p">:</span> <span class="p">[]}</span></div>
+
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="Sequence.plot">
@@ -1091,19 +1105,40 @@
 <span class="sd">            with an offset frequency of 0MHz. </span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;DEERSequence&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tau1us</span> <span class="o">=</span> <span class="n">tau1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tau1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau1&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau1</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The first interpulse delays&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau2&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau2</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The second interpulse delays&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="DEERSequence.name">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.DEERSequence.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;DEERSequence&quot;</span></div>
+
+<div class="viewcode-block" id="DEERSequence.tau1us">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.DEERSequence.tau1us">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau1us</span> <span class="o">=</span> <span class="n">tau1</span></div>
+
+<div class="viewcode-block" id="DEERSequence.tau1">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.DEERSequence.tau1">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau1&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau1</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The first interpulse delays&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DEERSequence.tau2">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.DEERSequence.tau2">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau2&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau2</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The second interpulse delays&quot;</span><span class="p">)</span></div>
+
         <span class="k">if</span> <span class="n">tau3</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">tau3</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau3&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau3</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The delay between static pump and the fisrt refocusing pulse.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">tau4</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">tau4</span> <span class="o">=</span> <span class="n">tau4</span> <span class="o">*</span> <span class="mf">1e3</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">deadtime</span> <span class="o">=</span> <span class="mi">200</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ESEEM</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_ESEEM_avg</span><span class="p">(</span><span class="n">ESEEM_avg</span><span class="p">)</span>
+<div class="viewcode-block" id="DEERSequence.dt">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.DEERSequence.dt">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span></div>
+
+<div class="viewcode-block" id="DEERSequence.deadtime">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.DEERSequence.deadtime">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deadtime</span> <span class="o">=</span> <span class="mi">200</span></div>
+
+<div class="viewcode-block" id="DEERSequence.ESEEM">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.DEERSequence.ESEEM">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ESEEM</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_ESEEM_avg</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="n">averages</span><span class="p">,</span>
@@ -1184,22 +1219,6 @@
 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">evolution</span><span class="p">([</span><span class="n">t</span><span class="p">])</span>
-
-        <span class="c1"># if self.ESEEM_avg.lower() == &quot;proton&quot;:</span>
-        <span class="c1">#     ESEEM_axis = np.arange(0,8) * 8</span>
-        <span class="c1">#     self.addPulsesProg(</span>
-        <span class="c1">#         [2, 3],</span>
-        <span class="c1">#         [&quot;t&quot;],</span>
-        <span class="c1">#         1,</span>
-        <span class="c1">#         [self.tau1+ ESEEM_axis, 2*(self.tau1+ ESEEM_axis)])</span>
-        <span class="c1"># elif self.ESEEM_avg.lower() == &quot;deuteron&quot;:</span>
-        <span class="c1">#     ESEEM_axis = np.arange(0,8) * 16</span>
-        <span class="c1">#     self.addPulsesProg(</span>
-        <span class="c1">#         [2, 3],</span>
-        <span class="c1">#         [&quot;t&quot;],</span>
-        <span class="c1">#         1,</span>
-        <span class="c1">#         [self.tau1+ ESEEM_axis, 2*(self.tau1+ ESEEM_axis)])</span>
-
         <span class="k">pass</span></div>
 
 
@@ -1226,7 +1245,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The time axis&quot;</span><span class="p">,</span> <span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">dim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">tau2</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">deadtime</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau1</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">deadtime</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
                        <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The time axis&quot;</span><span class="p">,</span> <span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         
@@ -1244,7 +1263,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tau1</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
         
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s2">&quot;pump_pulse&quot;</span><span class="p">):</span> <span class="c1"># Pump 1 pulse</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pump_pulse</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">tau1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pump_pulse</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tau1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">tau1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span>
                                     <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
@@ -1359,29 +1378,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">evolution</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">])</span></div>
 
 
-        <span class="c1"># self.addPulsesProg(</span>
-        <span class="c1">#     [3],</span>
-        <span class="c1">#     [&quot;t&quot;],</span>
-        <span class="c1">#     0,</span>
-        <span class="c1">#     axis)</span>
-        
-        <span class="c1"># if self.ESEEM_avg is not None:</span>
-        <span class="c1">#     # This is not quite a perfect ESEEM average. I am not sure if this</span>
-        <span class="c1">#     # is possible with a pulse based scripting. I think only following</span>
-        <span class="c1">#     # a delay based model can you easily describe two axes acting on </span>
-        <span class="c1">#     # the same pulse. </span>
-        <span class="c1">#     if self.ESEEM_avg.lower() == &quot;proton&quot;:</span>
-        <span class="c1">#         ESEEM_axis = np.arange(0,8) * 8</span>
-        <span class="c1">#     elif self.ESEEM_avg.lower() == &quot;deuteron&quot;:</span>
-        <span class="c1">#         ESEEM_axis = np.arange(0,8) * 16</span>
-        <span class="c1">#     self.addPulsesProg(</span>
-        <span class="c1">#         [1, 2, 4, 5],</span>
-        <span class="c1">#         [&quot;t&quot;],</span>
-        <span class="c1">#         1,</span>
-        <span class="c1">#         [p1 - ESEEM_axis, r1 + 1*ESEEM_axis, r2 + 2*ESEEM_axis,</span>
-        <span class="c1">#          d + 2*ESEEM_axis])</span>
-
-        <span class="c1"># pass</span>
 
 <div class="viewcode-block" id="DEERSequence.seven_pulse">
 <a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.DEERSequence.seven_pulse">[docs]</a>
@@ -1677,6 +1673,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">_addPhaseCycle</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>       <span class="c1"># Pump 3</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">_addPhaseCycle</span><span class="p">([</span><span class="mi">0</span><span class="p">],[</span><span class="mi">1</span><span class="p">])</span>                  <span class="c1"># Ref 3</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">pcyc_name</span> <span class="o">=</span> <span class="n">option</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">_buildPhaseCycle</span><span class="p">()</span></div>
 
@@ -1731,7 +1728,10 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         
-        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;HahnEchoSequence&quot;</span>
+<div class="viewcode-block" id="HahnEchoSequence.name">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.HahnEchoSequence.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;HahnEchoSequence&quot;</span></div>
+
         
         <span class="k">if</span> <span class="s2">&quot;pi_pulse&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pi_pulse</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pi_pulse&quot;</span><span class="p">]</span>
@@ -1788,10 +1788,16 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="p">,</span> <span class="n">averages</span><span class="p">,</span> <span class="n">shots</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The interpulse delay&quot;</span><span class="p">,</span><span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="T2RelaxationSequence.tau">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.T2RelaxationSequence.tau">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The interpulse delay&quot;</span><span class="p">,</span><span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="n">averages</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="n">shots</span><span class="p">,</span><span class="n">tau</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;T2RelaxationSequence&quot;</span>
+<div class="viewcode-block" id="T2RelaxationSequence.name">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.T2RelaxationSequence.name">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;T2RelaxationSequence&quot;</span></div>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">evolution</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">])</span></div>
 
 
@@ -1834,12 +1840,18 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="n">averages</span><span class="p">,</span>
             <span class="n">shots</span><span class="o">=</span><span class="n">shots</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;FieldSweepSequence&quot;</span>
+<div class="viewcode-block" id="FieldSweepSequence.name">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.FieldSweepSequence.name">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;FieldSweepSequence&quot;</span></div>
 
 
+
+<div class="viewcode-block" id="FieldSweepSequence.B">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.FieldSweepSequence.B">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
             <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="o">-</span><span class="n">Bwidth</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">Bwidth</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;Gauss&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Field sweep width&quot;</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
+
         
         <span class="bp">self</span><span class="o">.</span><span class="n">evolution</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">])</span></div>
 
@@ -1879,19 +1891,34 @@
 <span class="sd">            An autoEPR Pulse object describing the refocusing pi pulses. If</span>
 <span class="sd">            not specified a RectPulse will be created instead. </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">min_reptime</span> <span class="o">=</span> <span class="mi">20</span>
-        <span class="n">dim</span> <span class="o">=</span> <span class="mi">100</span>
-        <span class="n">step</span>  <span class="o">=</span> <span class="p">(</span><span class="n">reptime_max</span><span class="o">-</span><span class="n">min_reptime</span><span class="p">)</span><span class="o">/</span><span class="n">dim</span>
+<div class="viewcode-block" id="ReptimeScan.min_reptime">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.ReptimeScan.min_reptime">[docs]</a>
+        <span class="n">min_reptime</span> <span class="o">=</span> <span class="mi">20</span></div>
+
+<div class="viewcode-block" id="ReptimeScan.dim">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.ReptimeScan.dim">[docs]</a>
+        <span class="n">dim</span> <span class="o">=</span> <span class="mi">100</span></div>
+
+<div class="viewcode-block" id="ReptimeScan.step">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.ReptimeScan.step">[docs]</a>
+        <span class="n">step</span>  <span class="o">=</span> <span class="p">(</span><span class="n">reptime_max</span><span class="o">-</span><span class="n">min_reptime</span><span class="p">)</span><span class="o">/</span><span class="n">dim</span></div>
+
         <span class="n">step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">step</span><span class="p">,</span><span class="n">decimals</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">step</span><span class="p">,</span><span class="n">decimals</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<div class="viewcode-block" id="ReptimeScan.reptime">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.ReptimeScan.reptime">[docs]</a>
         <span class="n">reptime</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
             <span class="s2">&quot;reptime&quot;</span><span class="p">,</span> <span class="n">reptime</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="n">min_reptime</span><span class="o">-</span><span class="n">reptime</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;us&quot;</span><span class="p">,</span>
-            <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;The shot repetition time&quot;</span><span class="p">)</span>
+            <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;The shot repetition time&quot;</span><span class="p">)</span></div>
+
         
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="n">averages</span><span class="p">,</span>
             <span class="n">shots</span><span class="o">=</span><span class="n">shots</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;ReptimeScan&quot;</span>
+<div class="viewcode-block" id="ReptimeScan.name">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.ReptimeScan.name">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;ReptimeScan&quot;</span></div>
+
 
         <span class="bp">self</span><span class="o">.</span><span class="n">evolution</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">reptime</span><span class="p">])</span></div>
 
@@ -1938,16 +1965,28 @@
 <span class="sd">            not specified a RectPulse will be created instead. </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;CarrPurcellSequence&quot;</span>
+<div class="viewcode-block" id="CarrPurcellSequence.name">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.CarrPurcellSequence.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;CarrPurcellSequence&quot;</span></div>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="n">averages</span><span class="p">,</span>
             <span class="n">shots</span><span class="o">=</span><span class="n">shots</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="viewcode-block" id="CarrPurcellSequence.tau">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.CarrPurcellSequence.tau">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau</span><span class="o">*</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Total sequence length&quot;</span><span class="p">,</span> <span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Total sequence length&quot;</span><span class="p">,</span> <span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CarrPurcellSequence.n">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.CarrPurcellSequence.n">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The number of pi pulses&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The number of pi pulses&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CarrPurcellSequence.dim">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.CarrPurcellSequence.dim">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;dim&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The number of points in the X axis&quot;</span><span class="p">,</span> <span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The number of points in the X axis&quot;</span><span class="p">,</span> <span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
 
         <span class="k">if</span> <span class="s2">&quot;pi_pulse&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pi_pulse</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pi_pulse&quot;</span><span class="p">]</span>
@@ -2054,18 +2093,33 @@
 <span class="sd">            not specified a RectPulse will be created instead. </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;RefocusedEcho2D&quot;</span>
+<div class="viewcode-block" id="RefocusedEcho2DSequence.name">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.RefocusedEcho2DSequence.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;RefocusedEcho2D&quot;</span></div>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="n">averages</span><span class="p">,</span>
             <span class="n">shots</span><span class="o">=</span><span class="n">shots</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         
-        <span class="n">tau_init</span> <span class="o">=</span> <span class="mi">400</span>
-        <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span> <span class="o">/</span> <span class="n">dim</span>
+<div class="viewcode-block" id="RefocusedEcho2DSequence.tau_init">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.RefocusedEcho2DSequence.tau_init">[docs]</a>
+        <span class="n">tau_init</span> <span class="o">=</span> <span class="mi">400</span></div>
 
+<div class="viewcode-block" id="RefocusedEcho2DSequence.dt">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.RefocusedEcho2DSequence.dt">[docs]</a>
+        <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">tau</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span> <span class="o">/</span> <span class="n">dim</span></div>
+
+
+<div class="viewcode-block" id="RefocusedEcho2DSequence.tau1">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.RefocusedEcho2DSequence.tau1">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">tau1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau1&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau_init</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;1st interpulse delay&quot;</span><span class="p">,</span><span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;1st interpulse delay&quot;</span><span class="p">,</span><span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RefocusedEcho2DSequence.tau2">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.RefocusedEcho2DSequence.tau2">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">tau2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;tau2&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">tau_init</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;2nd interpulse delay&quot;</span><span class="p">,</span><span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;2nd interpulse delay&quot;</span><span class="p">,</span><span class="n">virtual</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
 
 
         <span class="k">if</span> <span class="s2">&quot;pi_pulse&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
@@ -2165,11 +2219,21 @@
 <span class="sd">            not specified a RectPulse will be created instead. </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;ResonatorProfileSequence&quot;</span>
+<div class="viewcode-block" id="ResonatorProfileSequence.name">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.ResonatorProfileSequence.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;ResonatorProfileSequence&quot;</span></div>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="n">averages</span><span class="p">,</span>
             <span class="n">shots</span><span class="o">=</span><span class="n">shots</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span> <span class="o">=</span> <span class="n">LO</span><span class="o">/</span><span class="n">B</span>
+<div class="viewcode-block" id="ResonatorProfileSequence.gyro">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.ResonatorProfileSequence.gyro">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span> <span class="o">=</span> <span class="n">LO</span><span class="o">/</span><span class="n">B</span></div>
+
+<div class="viewcode-block" id="ResonatorProfileSequence.fwidth">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.ResonatorProfileSequence.fwidth">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fwidth</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s1">&#39;fwidth&#39;</span><span class="p">,</span><span class="n">fwidth</span><span class="p">,</span><span class="s1">&#39;GHz&#39;</span><span class="p">,</span><span class="s1">&#39;Half the frequency sw&#39;</span><span class="p">)</span></div>
+
 
         <span class="k">if</span> <span class="s2">&quot;pi_pulse&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pi_pulse</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pi_pulse&quot;</span><span class="p">]</span>
@@ -2186,7 +2250,7 @@
         <span class="n">tau2</span><span class="o">=</span><span class="mi">500</span>
 
         <span class="n">tp</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;tp&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Test Pulse length&quot;</span><span class="p">)</span>
-        <span class="n">fwidth</span><span class="o">=</span> <span class="mf">0.3</span>
+        <span class="n">fwidth</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fwidth</span><span class="o">.</span><span class="n">value</span>
         <span class="n">fstep</span> <span class="o">=</span> <span class="mf">0.02</span>
         <span class="n">dim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">fwidth</span><span class="o">*</span><span class="mi">2</span><span class="o">/</span><span class="mf">0.02</span><span class="p">)</span>
         <span class="n">center_LO</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LO</span><span class="o">.</span><span class="n">value</span>
@@ -2216,7 +2280,7 @@
             <span class="n">t</span><span class="o">=</span><span class="n">tau1</span><span class="o">+</span><span class="n">tau2</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
             <span class="p">))</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Detection</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">tau1</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">tau2</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">512</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">Detection</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">tau1</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">tau2</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">64</span><span class="p">))</span>
 
 
         <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">1</span>
@@ -2252,7 +2316,10 @@
     
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
-        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;TWTProfileSequence&quot;</span>
+<div class="viewcode-block" id="TWTProfileSequence.name">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.TWTProfileSequence.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;TWTProfileSequence&quot;</span></div>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="n">averages</span><span class="p">,</span>
             <span class="n">shots</span><span class="o">=</span><span class="n">shots</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -2335,7 +2402,7 @@
 </div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     </body>

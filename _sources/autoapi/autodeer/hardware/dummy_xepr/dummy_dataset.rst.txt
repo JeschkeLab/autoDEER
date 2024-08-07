@@ -1,3 +1,11 @@
 .. py:class:: dummy_dataset(t, V)
 
 
+   .. py:attribute:: O
+
+      
+
+   .. py:attribute:: size
+
+      
+

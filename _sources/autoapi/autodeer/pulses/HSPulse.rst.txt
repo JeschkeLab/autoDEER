@@ -1,7 +1,7 @@
 .. py:class:: HSPulse(*, tp=128, order1=1, order2=6, beta=20, **kwargs)
 
 
-   Bases: :py:obj:`Pulse`
+   Bases: :py:obj:`FrequencySweptPulse`
 
    Represents a hyperboilc secant frequency-swept pulse.
 
@@ -35,6 +35,41 @@
 
    ..
        !! processed by numpydoc !!
+
+   .. py:property:: sweeprate
+
+      
+      The sweep rate of the pulse in GHz/ns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:attribute:: order1
+
+      
+
+   .. py:attribute:: order2
+
+      
+
+   .. py:attribute:: beta
+
+      
 
    .. py:method:: func(ax)
 

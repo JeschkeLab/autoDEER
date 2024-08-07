@@ -16,6 +16,8 @@ Functions
 
    autodeer.DEER_analysis.calc_identifiability
    autodeer.DEER_analysis.find_longest_pulse
+   autodeer.DEER_analysis.MNR_estimate
+   autodeer.DEER_analysis.val_in_us
    autodeer.DEER_analysis.DEERanalysis
    autodeer.DEER_analysis.background_func
    autodeer.DEER_analysis.calc_correction_factor
@@ -82,7 +84,48 @@ Attributes
    ..
        !! processed by numpydoc !!
 
-.. py:function:: DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, **kwargs)
+.. py:function:: MNR_estimate(Vexp, t, mask=None)
+
+   
+   Estimates the Modulation to Noise Ratio (MNR) of a DEER signal without fitting.
+   This is done by applying a low pass filter to remove noise and then finding the peaks in the signal.
+
+
+   :Parameters:
+
+       **Vexp** : np.ndarray
+           The experimental DEER signal, real part only.
+
+       **t** : np.ndarray
+           The time axis of the DEER signal, in microseconds.
+
+       **mask** : np.ndarray, optional
+           The mask to apply to the data, by default None
+
+   :Returns:
+
+       float
+           The estimated MNR of the dataset.
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: val_in_us(Param)
+
+
+.. py:function:: DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, remove_crossing=True, **kwargs)
 
 
 .. py:function:: background_func(t, fit)
@@ -258,7 +301,7 @@ Attributes
    loc : int
        The approximate location of the crossing echo, +- 30 data points
    criteria : float, optional
-       The delation criteria, in multiples of the std deviation, by default 4
+       The detection criteria, in multiples of the std deviation, by default 4
    extent : int, optional
        How many data points either side to remove, by default 3.
 
@@ -445,7 +488,7 @@ Attributes
    ..
        !! processed by numpydoc !!
 
-.. py:function:: optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute', nDEER=False, num_ref_pulses=2, full_output=False)
+.. py:function:: optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute', nDEER=False, num_ref_pulses=2, full_output=False, resonator=None, **kwargs)
 
    
    Optimise the pulse positions to maximise the pump-exc overlap.
@@ -483,6 +526,9 @@ Attributes
 
        **full_output** : bool, optional
            Return the full output, by default False
+
+       **resonator** : ad.ResonatorProfile, optional
+           The resonator profile, by default None
 
        **Returns**
            ..

@@ -3,6 +3,134 @@
 
    Bases: :py:obj:`autodeer.gui.tools.QMainWindow`
 
+   .. py:attribute:: logo_pixmap
+
+      
+
+   .. py:attribute:: q_DEER
+
+      
+
+   .. py:attribute:: longDEER
+
+      
+
+   .. py:attribute:: threadpool
+
+      
+
+   .. py:attribute:: current_results
+
+      
+
+   .. py:attribute:: current_data
+
+      
+
+   .. py:attribute:: pulses
+
+      
+
+   .. py:attribute:: spectromterInterface
+      :value: 'None'
+
+      
+
+   .. py:attribute:: waitCondition
+      :value: 'None'
+
+      
+
+   .. py:attribute:: queue
+
+      
+
+   .. py:attribute:: docs_url
+
+      
+
+   .. py:attribute:: github_url
+
+      
+
+   .. py:attribute:: issues_url
+
+      
+
+   .. py:attribute:: discussion_url
+
+      
+
+   .. py:attribute:: current_folder
+      :value: 'None'
+
+      
+
+   .. py:attribute:: config
+      :value: 'None'
+
+      
+
+   .. py:attribute:: connected
+      :value: 'False'
+
+      
+
+   .. py:attribute:: DL_params
+
+      
+
+   .. py:attribute:: worker
+      :value: 'None'
+
+      
+
+   .. py:attribute:: starttime
+
+      
+
+   .. py:attribute:: Bruker
+      :value: 'False'
+
+      
+
+   .. py:attribute:: userinput
+
+      
+
+   .. py:attribute:: LO
+      :value: '0'
+
+      
+
+   .. py:attribute:: gyro
+      :value: '0.002803632236095'
+
+      
+
+   .. py:attribute:: cores
+      :value: '1'
+
+      
+
+   .. py:attribute:: Min_tp
+      :value: '12'
+
+      
+
+   .. py:attribute:: deer_settings
+
+      
+
+   .. py:attribute:: priorties
+
+      
+
+   .. py:attribute:: correction_factor
+      :value: '1'
+
+      
+
    .. py:method:: set_spectrometer_connected_light(state)
 
 
@@ -27,7 +155,7 @@
    .. py:method:: raise_warning(message)
 
 
-   .. py:method:: save_data(dataset, filename)
+   .. py:method:: save_data(dataset, experiment)
 
 
    .. py:method:: fsweep_toolbar()
@@ -76,6 +204,12 @@
 
 
    .. py:method:: refresh_relax(fitresult)
+
+
+   .. py:method:: initialise_deer_settings()
+
+
+   .. py:method:: update_deer_settings()
 
 
    .. py:method:: update_relax2D(dataset=None)
@@ -127,6 +261,9 @@
 
       ..
           !! processed by numpydoc !!
+
+   .. py:method:: clear_all()
+
 
    .. py:method:: RunAutoDEER(advanced=False)
 

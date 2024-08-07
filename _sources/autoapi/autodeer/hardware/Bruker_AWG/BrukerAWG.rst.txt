@@ -36,6 +36,64 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: api
+
+      
+
+   .. py:attribute:: spec_config
+
+      
+
+   .. py:attribute:: bridge_config
+
+      
+
+   .. py:attribute:: temp_dir
+
+      
+
+   .. py:attribute:: d0
+
+      
+
+   .. py:attribute:: bg_thread
+      :value: 'None'
+
+      
+
+   .. py:attribute:: bg_data
+      :value: 'None'
+
+      
+
+   .. py:attribute:: cur_exp
+      :value: 'None'
+
+      
+
+   .. py:attribute:: tuning
+      :value: 'False'
+
+      
+
+   .. py:attribute:: pool
+
+      
+
+   .. py:attribute:: savename
+      :value: "''"
+
+      
+
+   .. py:attribute:: savefolder
+
+      
+
+   .. py:attribute:: setup_flag
+      :value: 'False'
+
+      
+
    .. py:method:: connect(d0=None)
 
 

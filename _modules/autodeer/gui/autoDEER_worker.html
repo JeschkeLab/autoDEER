@@ -4,14 +4,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.gui.autoDEER_worker - </title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -90,19 +90,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -143,7 +130,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -397,25 +384,79 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">autoDEERWorker</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="c1"># Store constructor arguments (re-used for processing)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">interface</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span> <span class="o">=</span> <span class="n">autoDEERSignals</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">updaterate</span> <span class="o">=</span> <span class="mi">30</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">wait</span> <span class="o">=</span> <span class="n">wait</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span> <span class="o">=</span> <span class="n">mutex</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="n">pulses</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">samplename</span> <span class="o">=</span> <span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">LO</span> <span class="o">=</span> <span class="n">LO</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span> <span class="o">=</span> <span class="n">gyro</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">AWG</span> <span class="o">=</span> <span class="n">AWG</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span> <span class="o">=</span> <span class="n">user_inputs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stop_flag</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">quick_deer_state</span> <span class="o">=</span> <span class="kc">True</span>
+<div class="viewcode-block" id="autoDEERWorker.interface">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.interface">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">interface</span></div>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_tau</span> <span class="o">=</span> <span class="mf">3.5</span>
+<div class="viewcode-block" id="autoDEERWorker.args">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.args">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.kwargs">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.kwargs">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.signals">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.signals">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signals</span> <span class="o">=</span> <span class="n">autoDEERSignals</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.updaterate">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.updaterate">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updaterate</span> <span class="o">=</span> <span class="mi">30</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.wait">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.wait">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wait</span> <span class="o">=</span> <span class="n">wait</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.mutex">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.mutex">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutex</span> <span class="o">=</span> <span class="n">mutex</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.results">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.results">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.pulses">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.pulses">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="n">pulses</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.samplename">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.samplename">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samplename</span> <span class="o">=</span> <span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.project">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.project">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.LO">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.LO">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LO</span> <span class="o">=</span> <span class="n">LO</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.gyro">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.gyro">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span> <span class="o">=</span> <span class="n">gyro</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.AWG">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.AWG">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">AWG</span> <span class="o">=</span> <span class="n">AWG</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.user_inputs">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.user_inputs">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span> <span class="o">=</span> <span class="n">user_inputs</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.stop_flag">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.stop_flag">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_flag</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.quick_deer_state">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.quick_deer_state">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quick_deer_state</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="autoDEERWorker.max_tau">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.max_tau">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_tau</span> <span class="o">=</span> <span class="mf">3.5</span></div>
+
 
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
             <span class="k">def</span> <span class="nf">savename</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
@@ -429,7 +470,10 @@
                     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="si">}</span><span class="s2">)_(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">samplename</span><span class="si">}</span><span class="s2">)_(</span><span class="si">{</span><span class="n">exp</span><span class="si">}</span><span class="s2">)_(</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">)&quot;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project</span><span class="si">}</span><span class="s2">)_(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">samplename</span><span class="si">}</span><span class="s2">)_(</span><span class="si">{</span><span class="n">exp</span><span class="si">}</span><span class="s2">)&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">savename</span> <span class="o">=</span> <span class="n">savename</span>
+<div class="viewcode-block" id="autoDEERWorker.savename">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.savename">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">savename</span> <span class="o">=</span> <span class="n">savename</span></div>
+
         
 
         <span class="k">if</span> <span class="s1">&#39;SampleConc&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span><span class="p">:</span>
@@ -451,9 +495,21 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">tp</span><span class="o">=</span><span class="mi">12</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">&quot;night_hours&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">night_hours</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;night_hours&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="autoDEERWorker.deer_inputs">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.deer_inputs">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span> <span class="o">=</span> <span class="p">{}</span></div>
+
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">EndTimeCriteria</span> <span class="o">=</span> <span class="n">TimeCriteria</span><span class="p">(</span><span class="s1">&#39;End Time&#39;</span><span class="p">,</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;MaxTime&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">3600</span><span class="p">,</span> <span class="s2">&quot;Overall end time&quot;</span><span class="p">,</span><span class="n">end_signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">emit</span><span class="p">)</span>
+<div class="viewcode-block" id="autoDEERWorker.EndTimeCriteria">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.EndTimeCriteria">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">EndTimeCriteria</span> <span class="o">=</span> <span class="n">TimeCriteria</span><span class="p">(</span><span class="s1">&#39;End Time&#39;</span><span class="p">,</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_inputs</span><span class="p">[</span><span class="s1">&#39;MaxTime&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">3600</span><span class="p">,</span> <span class="s2">&quot;Overall end time&quot;</span><span class="p">,</span><span class="n">end_signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">emit</span><span class="p">,</span><span class="n">night_hours</span><span class="o">=</span><span class="n">night_hours</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="autoDEERWorker.test_interval">
+<a class="viewcode-back" href="../../../autoapi/autodeer/gui/autoDEER_worker/index.html#autodeer.gui.autoDEER_worker.autoDEERWorker.test_interval">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_interval</span> <span class="o">=</span> <span class="mf">0.5</span></div>
 
         <span class="c1"># # Add the callback to our kwargs</span>
         <span class="c1"># self.kwargs[&#39;progress_callback&#39;] = self.signals.progress</span>
@@ -476,15 +532,17 @@
         <span class="n">gyro_N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span>
         <span class="n">reptime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reptime</span>
         <span class="n">p90</span><span class="p">,</span> <span class="n">p180</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">tune_rectpulse</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tp</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro_N</span><span class="p">,</span> <span class="n">reptime</span> <span class="o">=</span> <span class="n">reptime</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">))</span>
+        <span class="n">shots</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">50</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">)</span>
+        <span class="n">shots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">shots</span><span class="p">,</span><span class="mi">20</span><span class="p">])</span>
         <span class="n">fsweep</span> <span class="o">=</span> <span class="n">FieldSweepSequence</span><span class="p">(</span>
             <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro_N</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">50</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">),</span>
             <span class="n">Bwidth</span> <span class="o">=</span> <span class="mi">250</span><span class="p">,</span> 
             <span class="n">pi2_pulse</span><span class="o">=</span><span class="n">p90</span><span class="p">,</span> <span class="n">pi_pulse</span><span class="o">=</span><span class="n">p180</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">fsweep</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">savename</span><span class="p">(</span><span class="s2">&quot;EDFS_Q&quot;</span><span class="p">),</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">fsweep</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">savename</span><span class="p">(</span><span class="s2">&quot;EDFS_Q&quot;</span><span class="p">),</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;Field-sweep running&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">20</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">30</span><span class="p">),</span><span class="n">test_interval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_interval</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">isrunning</span><span class="p">():</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updaterate</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;Field-sweep complete&#39;</span><span class="p">)</span>
@@ -504,13 +562,13 @@
 
         <span class="n">RPseq</span> <span class="o">=</span> <span class="n">ResonatorProfileSequence</span><span class="p">(</span>
             <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">50</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">),</span>
-            <span class="n">pi2_pulse</span><span class="o">=</span><span class="n">p90</span><span class="p">,</span> <span class="n">pi_pulse</span><span class="o">=</span><span class="n">p180</span><span class="p">,</span>
+            <span class="n">pi2_pulse</span><span class="o">=</span><span class="n">p90</span><span class="p">,</span> <span class="n">pi_pulse</span><span class="o">=</span><span class="n">p180</span><span class="p">,</span><span class="n">fwidth</span><span class="o">=</span><span class="mf">0.15</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">RPseq</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">savename</span><span class="p">(</span><span class="s2">&quot;ResPro&quot;</span><span class="p">),</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">RPseq</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">savename</span><span class="p">(</span><span class="s2">&quot;ResPro&quot;</span><span class="p">),</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;Resonator Profile running&#39;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span><span class="n">test_interval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_interval</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">isrunning</span><span class="p">():</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updaterate</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;Resonator Profile complete&#39;</span><span class="p">)</span>
@@ -535,8 +593,10 @@
         <span class="n">LO</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LO</span>
         <span class="n">gyro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span>
         <span class="n">reptime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reptime</span>
+        <span class="n">shots</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">40</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">)</span>
+        <span class="n">shots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">shots</span><span class="p">,</span><span class="mi">10</span><span class="p">])</span>
         <span class="n">relax</span> <span class="o">=</span> <span class="n">DEERSequence</span><span class="p">(</span>
-            <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">20</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">),</span>
+            <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="n">shots</span><span class="p">,</span>
             <span class="n">tau1</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">tau2</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">tau3</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
             <span class="n">exc_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;exc_pulse&#39;</span><span class="p">],</span> <span class="n">ref_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;ref_pulse&#39;</span><span class="p">],</span>
             <span class="n">pump_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;pump_pulse&#39;</span><span class="p">],</span> <span class="n">det_event</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;det_event&#39;</span><span class="p">]</span>
@@ -546,11 +606,12 @@
             <span class="n">relax</span><span class="o">.</span><span class="n">select_pcyc</span><span class="p">(</span><span class="s2">&quot;16step_5p&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">relax</span><span class="o">.</span><span class="n">select_pcyc</span><span class="p">(</span><span class="s2">&quot;DC&quot;</span><span class="p">)</span>
+            <span class="n">relax</span><span class="o">.</span><span class="n">shots</span><span class="o">.</span><span class="n">value</span> <span class="o">*=</span> <span class="mi">8</span> 
         <span class="n">relax</span><span class="o">.</span><span class="n">_estimate_time</span><span class="p">();</span>
         <span class="n">relax</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">relax</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">relax</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">savename</span><span class="p">(</span><span class="s2">&quot;CP_Q&quot;</span><span class="p">),</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span><span class="n">test_interval</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">relax</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">savename</span><span class="p">(</span><span class="s2">&quot;CP_Q&quot;</span><span class="p">),</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span><span class="n">test_interval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_interval</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">isrunning</span><span class="p">():</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updaterate</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">relax_result</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">acquire_dataset</span><span class="p">())</span>
@@ -564,14 +625,16 @@
         <span class="n">LO</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LO</span>
         <span class="n">gyro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gyro</span>
         <span class="n">reptime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reptime</span>
+        <span class="n">shots</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">40</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">)</span>
+        <span class="n">shots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">shots</span><span class="p">,</span><span class="mi">10</span><span class="p">])</span>
 
         <span class="n">seq</span> <span class="o">=</span> <span class="n">T2RelaxationSequence</span><span class="p">(</span>
-            <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">40</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">),</span>
+            <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="n">shots</span><span class="p">,</span>
             <span class="n">step</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span><span class="n">dim</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span><span class="n">pi2_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;exc_pulse&#39;</span><span class="p">],</span>
             <span class="n">pi_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;ref_pulse&#39;</span><span class="p">],</span> <span class="n">det_event</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;det_event&#39;</span><span class="p">])</span>
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">savename</span><span class="p">(</span><span class="s2">&quot;T2_Q&quot;</span><span class="p">),</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">30</span><span class="p">),</span><span class="n">test_interval</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">savename</span><span class="p">(</span><span class="s2">&quot;T2_Q&quot;</span><span class="p">),</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span><span class="n">test_interval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_interval</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">isrunning</span><span class="p">():</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updaterate</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">T2_result</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">acquire_dataset</span><span class="p">())</span>
@@ -588,12 +651,12 @@
         <span class="n">reptime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reptime</span>
 
         <span class="n">seq</span> <span class="o">=</span> <span class="n">RefocusedEcho2DSequence</span><span class="p">(</span>
-            <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">50</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">),</span>
+            <span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="n">gyro</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="n">reptime</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">shots</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mi">25</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">),</span>
             <span class="n">tau</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_tau</span><span class="p">,</span> <span class="n">pi2_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;exc_pulse&#39;</span><span class="p">],</span>
             <span class="n">pi_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;ref_pulse&#39;</span><span class="p">],</span> <span class="n">det_event</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;det_event&#39;</span><span class="p">])</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">savename</span><span class="p">(</span><span class="s2">&quot;2D_DEC&quot;</span><span class="p">),</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">30</span><span class="p">),</span><span class="n">test_interval</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span><span class="n">test_interval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_interval</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">isrunning</span><span class="p">():</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updaterate</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">Relax2D_result</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">acquire_dataset</span><span class="p">())</span>
@@ -610,7 +673,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;Running QuickDEER&#39;</span><span class="p">)</span>
         <span class="n">DEER_crit</span> <span class="o">=</span> <span class="n">DEERCriteria</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;speed&quot;</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">update_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">quickdeer_update</span><span class="o">.</span><span class="n">emit</span><span class="p">)</span>
         <span class="n">time_crit</span> <span class="o">=</span> <span class="n">TimeCriteria</span><span class="p">(</span><span class="s1">&#39;Max time criteria&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="mi">4</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span> <span class="p">,</span><span class="s1">&#39;Max time criteria&#39;</span><span class="p">)</span>
-        <span class="n">total_crit</span> <span class="o">=</span> <span class="n">DEER_crit</span> <span class="o">+</span> <span class="n">time_crit</span>
+        <span class="n">total_crit</span> <span class="o">=</span> <span class="p">[</span><span class="n">DEER_crit</span><span class="p">,</span> <span class="n">time_crit</span><span class="p">]</span>
         <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">quickdeer_result</span><span class="o">.</span><span class="n">emit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_deer</span><span class="p">(</span><span class="n">total_crit</span><span class="p">,</span><span class="n">signal</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span><span class="n">shot</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mi">150</span> <span class="p">)</span></div>
 
@@ -620,7 +683,7 @@
     <span class="k">def</span> <span class="nf">run_long_deer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;Running LongDEER&#39;</span><span class="p">)</span>
         <span class="n">DEER_crit</span> <span class="o">=</span> <span class="n">DEERCriteria</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">update_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">longdeer_update</span><span class="o">.</span><span class="n">emit</span><span class="p">)</span>
-        <span class="n">total_crit</span> <span class="o">=</span> <span class="n">DEER_crit</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">EndTimeCriteria</span>
+        <span class="n">total_crit</span> <span class="o">=</span> <span class="p">[</span><span class="n">DEER_crit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">EndTimeCriteria</span><span class="p">]</span>
         <span class="n">signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">longdeer_result</span><span class="o">.</span><span class="n">emit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_deer</span><span class="p">(</span><span class="n">total_crit</span><span class="p">,</span><span class="n">signal</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span><span class="n">shot</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span><span class="n">averages</span><span class="o">=</span><span class="mf">1e4</span><span class="p">)</span></div>
 
@@ -662,6 +725,10 @@
             <span class="n">tau2</span> <span class="o">=</span> <span class="n">tau</span>
             <span class="n">tau3</span> <span class="o">=</span> <span class="mf">0.3</span>
 
+        <span class="k">if</span> <span class="s1">&#39;ESEEM&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">:</span>
+            <span class="n">ESEEM</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">[</span><span class="s1">&#39;ESEEM&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ESEEM</span> <span class="o">=</span> <span class="kc">None</span>
 
 
         <span class="n">deer</span> <span class="o">=</span> <span class="n">DEERSequence</span><span class="p">(</span>
@@ -669,7 +736,7 @@
             <span class="n">tau1</span><span class="o">=</span><span class="n">tau1</span><span class="p">,</span> <span class="n">tau2</span><span class="o">=</span><span class="n">tau2</span><span class="p">,</span> <span class="n">tau3</span><span class="o">=</span><span class="n">tau3</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span>
             <span class="n">exc_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;exc_pulse&#39;</span><span class="p">],</span> <span class="n">ref_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;ref_pulse&#39;</span><span class="p">],</span>
             <span class="n">pump_pulse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;pump_pulse&#39;</span><span class="p">],</span> <span class="n">det_event</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;det_event&#39;</span><span class="p">],</span>
-            <span class="n">ESEEM_avg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deer_inputs</span><span class="p">[</span><span class="s1">&#39;ESEEM&#39;</span><span class="p">]</span>
+            <span class="n">ESEEM_avg</span> <span class="o">=</span> <span class="n">ESEEM</span>
             <span class="p">)</span>
         
         <span class="k">if</span> <span class="n">deertype</span> <span class="o">==</span> <span class="s1">&#39;5pDEER&#39;</span><span class="p">:</span>
@@ -687,6 +754,7 @@
         
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">AWG</span><span class="p">:</span>
             <span class="n">deer</span><span class="o">.</span><span class="n">select_pcyc</span><span class="p">(</span><span class="s1">&#39;DC&#39;</span><span class="p">)</span>
+            <span class="n">deer</span><span class="o">.</span><span class="n">shots</span><span class="o">.</span><span class="n">value</span> <span class="o">*=</span> <span class="mi">8</span> 
         <span class="k">elif</span> <span class="n">deertype</span> <span class="o">==</span> <span class="s1">&#39;5pDEER&#39;</span><span class="p">:</span>
             <span class="n">deer</span><span class="o">.</span><span class="n">select_pcyc</span><span class="p">(</span><span class="s2">&quot;16step_5p&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">deertype</span> <span class="o">==</span> <span class="s1">&#39;4pDEER&#39;</span><span class="p">:</span>
@@ -699,7 +767,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">deer</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">savename</span><span class="p">(</span><span class="n">savename_type</span><span class="p">,</span><span class="n">savename_suffix</span><span class="p">),</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="c1"># Always wait for the experiment to properly start</span>
         <span class="k">with</span> <span class="n">threadpool_limits</span><span class="p">(</span><span class="n">limits</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span> <span class="n">user_api</span><span class="o">=</span><span class="s1">&#39;blas&#39;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">end_criteria</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">test_interval</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span> <span class="c1"># Change criteria backagain</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">end_criteria</span><span class="p">,</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">test_interval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_interval</span><span class="p">)</span> <span class="c1"># Change criteria backagain</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">isrunning</span><span class="p">():</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updaterate</span><span class="p">)</span>
         <span class="n">signal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">acquire_dataset</span><span class="p">())</span>
@@ -716,8 +784,8 @@
         <span class="n">n_shots</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="mi">50</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">noise_mode</span><span class="p">),</span><span class="mi">50</span><span class="p">]))</span>
         <span class="n">scan</span> <span class="o">=</span> <span class="n">ReptimeScan</span><span class="p">(</span><span class="n">B</span><span class="o">=</span><span class="n">LO</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">gyro</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="n">LO</span><span class="p">,</span><span class="n">reptime</span><span class="o">=</span><span class="n">reptime_guess</span><span class="p">,</span> <span class="n">reptime_max</span><span class="o">=</span><span class="mf">12e3</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="n">n_shots</span><span class="p">,</span>
                            <span class="n">pi2_pulse</span><span class="o">=</span><span class="n">p90</span><span class="p">,</span> <span class="n">pi_pulse</span><span class="o">=</span><span class="n">p180</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">samplename</span><span class="si">}</span><span class="s2">_reptimescan&quot;</span><span class="p">,</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">test_interval</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span><span class="n">savename</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">samplename</span><span class="si">}</span><span class="s2">_reptimescan&quot;</span><span class="p">,</span><span class="n">IFgain</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">terminate_at</span><span class="p">(</span><span class="n">SNRCriteria</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">test_interval</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_interval</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">isrunning</span><span class="p">():</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updaterate</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;Reptime scan complete&#39;</span><span class="p">)</span>
@@ -899,7 +967,7 @@
 </div><script src="../../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     </body>

@@ -39,6 +39,18 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: freq
+
+      
+
+   .. py:attribute:: order
+
+      
+
+   .. py:attribute:: window
+
+      
+
    .. py:method:: func(ax)
 
 

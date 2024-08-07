@@ -4,14 +4,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.pulses - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -90,19 +90,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -143,7 +130,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -337,8 +324,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Amplitude of pulse&quot;</span><span class="p">)</span>
 
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Progression</span> <span class="o">=</span> <span class="kc">False</span>
+<div class="viewcode-block" id="Pulse.name">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.name">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span></div>
+
+<div class="viewcode-block" id="Pulse.Progression">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.Progression">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Progression</span> <span class="o">=</span> <span class="kc">False</span></div>
+
 
         <span class="k">if</span> <span class="n">flipangle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">flipangle</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
@@ -352,6 +345,20 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_addPhaseCycle</span><span class="p">(</span><span class="n">pcyc</span><span class="p">,</span> <span class="n">detections</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         <span class="k">pass</span>
 
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Pulse.bandwidth">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.bandwidth">[docs]</a>
+    <span class="k">def</span> <span class="nf">bandwidth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">BW</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;Bandwidth&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Bandwidth of pulse&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;freq&quot;</span><span class="p">):</span>
+            <span class="n">BW</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span><span class="mi">0</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;init_freq&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;final_freq&quot;</span><span class="p">):</span>
+            <span class="n">BW</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">BW</span></div>
+
+    
 <div class="viewcode-block" id="Pulse._addPhaseCycle">
 <a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse._addPhaseCycle">[docs]</a>
     <span class="k">def</span> <span class="nf">_addPhaseCycle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phases</span><span class="p">,</span> <span class="n">detections</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -392,6 +399,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">AM</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">AM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">FM</span></div>
 
+    
     
 <div class="viewcode-block" id="Pulse.build_shape">
 <a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.build_shape">[docs]</a>
@@ -521,11 +529,20 @@
 
         <span class="k">return</span> <span class="n">axis_fft</span><span class="p">,</span> <span class="n">pulse_fft</span></div>
 
+    
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Pulse.amp_factor">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.amp_factor">[docs]</a>
+    <span class="k">def</span> <span class="nf">amp_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The B1 amplitude factor (nutation frequency) for the pulse in GHz&quot;&quot;&quot;</span>
+        <span class="n">amp_factor_value</span><span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">flipangle</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">AM</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;amp_factor&quot;</span><span class="p">,</span> <span class="n">amp_factor_value</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Amplitude factor for the pulse&quot;</span><span class="p">)</span></div>
 
-    <span class="nd">@cached</span><span class="p">(</span><span class="n">thread_safe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># @cached(thread_safe=False)</span>
 <div class="viewcode-block" id="Pulse.exciteprofile">
 <a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Pulse.exciteprofile">[docs]</a>
-    <span class="k">def</span> <span class="nf">exciteprofile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freqs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">exciteprofile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freqs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resonator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Excitation profile</span>
 
 <span class="sd">        Generates the exciatation profiles for this pulse.</span>
@@ -557,6 +574,8 @@
 <span class="sd">        freqs: np.ndarray, optional</span>
 <span class="sd">            The frequency axis. Caution: A larger number of points will linearly</span>
 <span class="sd">            increase computation time.</span>
+<span class="sd">        resonator: ad.ResonatorProfile, optional</span>
+
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -587,23 +606,16 @@
         <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> 
         <span class="n">nOffsets</span> <span class="o">=</span> <span class="n">offsets</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">RectPulse</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">GaussianPulse</span><span class="p">):</span>
-            <span class="n">amp_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flipangle</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">trapz</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">AM</span><span class="p">,</span><span class="n">t</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">Qcrit</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flipangle</span><span class="o">.</span><span class="n">value</span><span class="p">)));</span>
-            <span class="n">Qcrit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">Qcrit</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+        <span class="n">ISignal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complex</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp_factor</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">QSignal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complex</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">amp_factor</span><span class="o">.</span><span class="n">value</span>
 
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ChirpPulse</span><span class="p">):</span>
-                <span class="n">sweeprate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">value</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">HSPulse</span><span class="p">):</span>
-                <span class="n">sweeprate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="n">resonator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">FM</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FM</span>
+            <span class="n">amp_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">FM</span><span class="p">,</span> <span class="n">resonator</span><span class="o">.</span><span class="n">freqs</span><span class="o">-</span><span class="n">resonator</span><span class="o">.</span><span class="n">LO_c</span><span class="p">,</span> <span class="n">resonator</span><span class="o">.</span><span class="n">profile</span><span class="p">)</span>
+            <span class="n">amp_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">amp_factor</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">amp_factor</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">amp_factor</span><span class="o">.</span><span class="n">value</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">ISignal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complex</span><span class="p">)</span> <span class="o">*</span> <span class="n">amp_factor</span>
+            <span class="n">QSignal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complex</span><span class="p">)</span> <span class="o">*</span> <span class="n">amp_factor</span>
 
-            <span class="n">amp_factor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">Qcrit</span><span class="o">*</span><span class="n">sweeprate</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">);</span>
-
-
-
-        <span class="n">ISignal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complex</span><span class="p">)</span> <span class="o">*</span> <span class="n">amp_factor</span>
-        <span class="n">QSignal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complex</span><span class="p">)</span> <span class="o">*</span> <span class="n">amp_factor</span>
         <span class="n">npoints</span> <span class="o">=</span> <span class="n">ISignal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">Sx</span> <span class="o">=</span> <span class="n">sop</span><span class="p">([</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">],</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
         <span class="n">Sy</span> <span class="o">=</span> <span class="n">sop</span><span class="p">([</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">],</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
@@ -718,25 +730,31 @@
                     <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;#&quot;</span> <span class="o">*</span> <span class="mi">79</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
 
         <span class="c1"># Build Pulse Parameter Table</span>
-        <span class="n">param_table</span> <span class="o">=</span> <span class="s2">&quot;Name </span><span class="se">\t\t</span><span class="s2"> Value </span><span class="se">\t</span><span class="s2"> Unit </span><span class="se">\t</span><span class="s2"> Description</span><span class="se">\n</span><span class="s2">&quot;</span>
-        <span class="n">param_table</span> <span class="o">+=</span> <span class="s2">&quot;---- </span><span class="se">\t\t</span><span class="s2"> ----- </span><span class="se">\t</span><span class="s2"> ---- </span><span class="se">\t</span><span class="s2"> -----------</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">param_table</span> <span class="o">=</span>  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;Name&#39;</span><span class="si">:</span><span class="s2">^12</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Value&#39;</span><span class="si">:</span><span class="s2">^12</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Unit&#39;</span><span class="si">:</span><span class="s2">^7</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> Description</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">param_table</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;----&#39;</span><span class="si">:</span><span class="s2">^12</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;-----&#39;</span><span class="si">:</span><span class="s2">^12</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;----&#39;</span><span class="si">:</span><span class="s2">^7</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> -----------</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Parameter</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;flipangle&quot;</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
-                        <span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;π&quot;</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;π&#39;</span><span class="si">:</span><span class="s2">&gt;12</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="k">elif</span> <span class="n">attr</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">:</span>
-                        <span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;π/2&quot;</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;π/2&#39;</span><span class="si">:</span><span class="s2">&gt;12</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">elif</span> <span class="n">attr</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;Hard&#39;</span><span class="p">:</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;Hard&#39;</span><span class="si">:</span><span class="s2">&gt;12</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">value</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attr</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">&gt;5.5g</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="k">elif</span> <span class="n">attr</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;N/A&quot;</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;N/A&#39;</span><span class="si">:</span><span class="s2">&gt;12</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">value</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attr</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">&gt;5.5g</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">unit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">attr</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+                <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">description</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">attr</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
-                <span class="n">param_table</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attr</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span>\
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attr</span><span class="o">.</span><span class="n">unit</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">attr</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="n">param_table</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attr</span><span class="o">.</span><span class="n">name</span><span class="si">:</span><span class="s2">&gt;12</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">&gt;12</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2">&quot;</span> <span class="o">+</span>\
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attr</span><span class="o">.</span><span class="n">unit</span><span class="si">:</span><span class="s2">&gt;7</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">attr</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
 
         <span class="c1"># Build Pulse Progression Table</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Progression</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
@@ -996,9 +1014,18 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Pulse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;freq&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;The detection frequency, if supported&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pcyc</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="viewcode-block" id="Detection.scale">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Detection.scale">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Detection.freq">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Detection.freq">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;freq&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;The detection frequency, if supported&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Detection.pcyc">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Detection.pcyc">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pcyc</span> <span class="o">=</span> <span class="kc">None</span></div>
+
         <span class="k">pass</span></div>
 
 
@@ -1021,9 +1048,18 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="s2">&quot;Start time of pulse&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tp</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;Length&quot;</span><span class="p">,</span> <span class="n">tp</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="s2">&quot;Length of the pulse&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pcyc</span> <span class="o">=</span> <span class="kc">None</span>
+<div class="viewcode-block" id="Delay.tp">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Delay.tp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tp</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;Length&quot;</span><span class="p">,</span> <span class="n">tp</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="s2">&quot;Length of the pulse&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Delay.pcyc">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Delay.pcyc">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pcyc</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Delay.scale">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.Delay.scale">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="kc">None</span></div>
+</div>
 
 
 <span class="c1"># =============================================================================</span>
@@ -1053,7 +1089,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Pulse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">flipangle</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;RectPulse&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;freq&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Frequency of the Pulse&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="RectPulse.freq">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.RectPulse.freq">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;freq&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Frequency of the Pulse&quot;</span><span class="p">)</span></div>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_buildFMAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
         <span class="k">pass</span>
 
@@ -1087,8 +1126,14 @@
 <span class="sd">            The frequency of the pulse, by default 0</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Pulse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GaussianPulse&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;Freq&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Frequency of the Pulse&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">FWHM</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;FWHM&quot;</span><span class="p">,</span> <span class="n">FWHM</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="s2">&quot;Full Width at Half Maximum of the Pulse&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="GaussianPulse.freq">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.GaussianPulse.freq">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;Freq&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Frequency of the Pulse&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GaussianPulse.FWHM">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.GaussianPulse.FWHM">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FWHM</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;FWHM&quot;</span><span class="p">,</span> <span class="n">FWHM</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="s2">&quot;Full Width at Half Maximum of the Pulse&quot;</span><span class="p">)</span></div>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_buildFMAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
         <span class="k">pass</span>
 
@@ -1103,58 +1148,89 @@
 </div>
 
 <span class="c1"># =============================================================================</span>
+<div class="viewcode-block" id="FrequencySweptPulse">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.FrequencySweptPulse">[docs]</a>
+<span class="k">class</span> <span class="nc">FrequencySweptPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A general parent class for Frequency Swept Pulses.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tp</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pcyc</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">flipangle</span><span class="p">,</span> <span class="n">pcyc</span><span class="o">=</span><span class="n">pcyc</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Extract frequency infomation, can be either specified with an initial and final frequency or a bandwidth combined with one of the two or the central frequency</span>
+
+        <span class="k">if</span> <span class="s2">&quot;BW&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">BW</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;BW&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;init_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;init_freq&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;init_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Initial frequency of pulse&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;final_freq&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">BW</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Final frequency of pulse&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;final_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;final_freq&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;final_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Final frequency of pulse&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;init_freq&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="n">BW</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Initial frequency of pulse&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Bandwidth must be combined with either an initial or final frequency&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="s2">&quot;init_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="s2">&quot;final_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;init_freq&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;init_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Initial frequency of pulse&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;final_freq&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;final_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Final frequency of pulse&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Frequency information must be provided&quot;</span><span class="p">)</span>
+        
+        
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="FrequencySweptPulse.Qcrit">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.FrequencySweptPulse.Qcrit">[docs]</a>
+    <span class="k">def</span> <span class="nf">Qcrit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The critical Q factor for the pulse.&quot;&quot;&quot;</span>
+        <span class="n">Qcrit</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flipangle</span><span class="o">.</span><span class="n">value</span><span class="p">)))</span>
+        <span class="n">Qcrit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">Qcrit</span><span class="p">,</span><span class="mi">5</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;Qcrit&quot;</span><span class="p">,</span> <span class="n">Qcrit</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Critical Q factor for the pulse&quot;</span><span class="p">)</span></div>
+
+    
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="FrequencySweptPulse.sweeprate">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.FrequencySweptPulse.sweeprate">[docs]</a>
+    <span class="k">def</span> <span class="nf">sweeprate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The sweep rate of the pulse in GHz/ns&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This property must be implemented in the subclass&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="FrequencySweptPulse.amp_factor">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.FrequencySweptPulse.amp_factor">[docs]</a>
+    <span class="k">def</span> <span class="nf">amp_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The B1 amplitude factor (nutation frequency) for the pulse in GHz&quot;&quot;&quot;</span>
+        <span class="n">amp_factor_value</span><span class="o">=</span>  <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">Qcrit</span><span class="o">.</span><span class="n">value</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sweeprate</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;amp_factor&quot;</span><span class="p">,</span> <span class="n">amp_factor_value</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Amplitude factor for the pulse&quot;</span><span class="p">)</span></div>
+</div>
+
+    
 
 <div class="viewcode-block" id="HSPulse">
 <a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.HSPulse">[docs]</a>
-<span class="k">class</span> <span class="nc">HSPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">HSPulse</span><span class="p">(</span><span class="n">FrequencySweptPulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a hyperboilc secant frequency-swept pulse.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">order1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">order2</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">Pulse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;HSPulse&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">FrequencySweptPulse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;HSPulse&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="viewcode-block" id="HSPulse.order1">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.HSPulse.order1">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">order1</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="s2">&quot;order1&quot;</span><span class="p">,</span> <span class="n">order1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Order 1 of the HS Pulse&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;order1&quot;</span><span class="p">,</span> <span class="n">order1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Order 1 of the HS Pulse&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HSPulse.order2">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.HSPulse.order2">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">order2</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="s2">&quot;order2&quot;</span><span class="p">,</span> <span class="n">order2</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Order 2 of the HS Pulse&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Beta of the HS Pulse&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;order2&quot;</span><span class="p">,</span> <span class="n">order2</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Order 2 of the HS Pulse&quot;</span><span class="p">)</span></div>
 
-        <span class="c1"># Frequency Infomation</span>
-        <span class="k">if</span> <span class="s2">&quot;BW&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="c1"># Bandwidth + one other</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">BW</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                <span class="s2">&quot;Bandwidth&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;BW&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Bandwidth of pulse&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s2">&quot;init_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                    <span class="s2">&quot;init_freq&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;init_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;Initial frequency of pulse&quot;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                    <span class="s2">&quot;final_final&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">BW</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;init_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;Final frequency of pulse&quot;</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="s2">&quot;final_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                    <span class="s2">&quot;final_final&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;final_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;Final frequency of pulse&quot;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                    <span class="s2">&quot;init_freq&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;final_freq&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">BW</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;Initial frequency of pulse&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
-        
-        <span class="k">elif</span> <span class="p">(</span><span class="s2">&quot;init_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="s2">&quot;final_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="HSPulse.beta">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.HSPulse.beta">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Beta of the HS Pulse&quot;</span><span class="p">)</span></div>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                <span class="s2">&quot;f_init&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;init_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;Initial frequency of pulse&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                <span class="s2">&quot;f_final&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;final_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;Final frequency of pulse&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">BW</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                <span class="s2">&quot;Bandwidth&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;final_freq&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;init_freq&quot;</span><span class="p">]),</span>
-                 <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Bandwidth of pulse&quot;</span><span class="p">)</span>
-        
-        <span class="k">else</span><span class="p">:</span>   
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_buildFMAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
         <span class="k">pass</span>
 
@@ -1165,7 +1241,6 @@
         <span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">value</span>
         <span class="n">order1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order1</span><span class="o">.</span><span class="n">value</span>
         <span class="n">order2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order2</span><span class="o">.</span><span class="n">value</span>
-        <span class="n">BW</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">BW</span><span class="o">.</span><span class="n">value</span>
         <span class="n">tp</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">ax</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
         <span class="n">tcent</span> <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="mi">2</span>
         <span class="n">ti</span> <span class="o">=</span> <span class="n">ax</span>
@@ -1188,14 +1263,23 @@
         <span class="n">AM</span><span class="p">[</span><span class="n">cut</span><span class="p">:]</span> <span class="o">=</span> <span class="n">sech</span><span class="p">(</span><span class="n">beta</span><span class="o">*</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">ti</span><span class="p">[</span><span class="n">cut</span><span class="p">:]</span><span class="o">/</span><span class="n">tp</span><span class="p">)</span><span class="o">**</span><span class="n">order2</span><span class="p">)</span>
 
 
-        <span class="n">BWinf</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">beta</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">BWinf</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">beta</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
 
-        <span class="n">freq</span> <span class="o">=</span> <span class="p">(</span><span class="n">BWinf</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">((</span><span class="n">beta</span><span class="o">/</span><span class="n">tp</span><span class="o">*</span><span class="n">ti</span><span class="p">))</span>
+        <span class="n">freq</span> <span class="o">=</span> <span class="p">(</span><span class="n">BWinf</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">((</span><span class="n">beta</span><span class="o">/</span><span class="n">tp</span><span class="o">*</span><span class="n">ti</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span><span class="p">])</span>
         <span class="c1"># phase = 2*np.pi*(BWinf/2) * (tp/beta) * np.log(np.cosh((beta/tp)*ti))</span>
 
         <span class="c1"># total_phase = phase * 2* np.pi * np.mean([self.init_freq.value,self.final_freq.value])</span>
         
         <span class="k">return</span> <span class="n">AM</span><span class="p">,</span> <span class="n">freq</span></div>
+
+    
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="HSPulse.sweeprate">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.HSPulse.sweeprate">[docs]</a>
+    <span class="k">def</span> <span class="nf">sweeprate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The sweep rate of the pulse in GHz/ns&quot;&quot;&quot;</span>
+        <span class="n">sweeprate_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;sweeprate&quot;</span><span class="p">,</span> <span class="n">sweeprate_value</span><span class="p">,</span> <span class="s2">&quot;GHz/ns&quot;</span><span class="p">,</span> <span class="s2">&quot;Sweep rate of the pulse&quot;</span><span class="p">)</span></div>
 </div>
 
 
@@ -1203,41 +1287,13 @@
 
 <div class="viewcode-block" id="ChirpPulse">
 <a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.ChirpPulse">[docs]</a>
-<span class="k">class</span> <span class="nc">ChirpPulse</span><span class="p">(</span><span class="n">Pulse</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">ChirpPulse</span><span class="p">(</span><span class="n">FrequencySweptPulse</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a linear frequency-swept pulse.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">Pulse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ChirpPulse&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-        <span class="c1"># Frequency Infomation</span>
-        <span class="k">if</span> <span class="s2">&quot;BW&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="c1"># Bandwidth + one other</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">BW</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                <span class="s2">&quot;Bandwidth&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;BW&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Bandwidth of pulse&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s2">&quot;init_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                    <span class="s2">&quot;init_freq&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;init_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;Initial frequency of pulse&quot;</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="s2">&quot;final_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                    <span class="s2">&quot;final_final&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;final_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;Final frequency of pulse&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
-        
-        <span class="k">elif</span> <span class="p">(</span><span class="s2">&quot;init_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="s2">&quot;final_freq&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                <span class="s2">&quot;f_init&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;init_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;Initial frequency of pulse&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-                <span class="s2">&quot;f_final&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;final_freq&quot;</span><span class="p">],</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;Final frequency of pulse&quot;</span><span class="p">)</span>
-        
-        <span class="k">else</span><span class="p">:</span>   
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
+        <span class="n">FrequencySweptPulse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ChirpPulse&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_buildFMAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
         <span class="k">pass</span>
@@ -1248,21 +1304,21 @@
         <span class="n">nx</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">AM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;BW&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;init_freq&quot;</span><span class="p">):</span>
-            <span class="n">FM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">BW</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;BW&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;final_freq&quot;</span><span class="p">):</span>
-            <span class="n">FM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">BW</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                <span class="n">nx</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;init_freq&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;final_freq&quot;</span><span class="p">):</span>
-            <span class="n">FM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+        <span class="n">FM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_freq</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_freq</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">AM</span><span class="p">,</span> <span class="n">FM</span></div>
+
+    
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ChirpPulse.sweeprate">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.ChirpPulse.sweeprate">[docs]</a>
+    <span class="k">def</span> <span class="nf">sweeprate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The sweep rate of the pulse in GHz/ns&quot;&quot;&quot;</span>
+        <span class="n">sweeprate_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;sweeprate&quot;</span><span class="p">,</span> <span class="n">sweeprate_value</span><span class="p">,</span> <span class="s2">&quot;GHz/ns&quot;</span><span class="p">,</span> <span class="s2">&quot;Sweep rate of the pulse&quot;</span><span class="p">)</span></div>
 </div>
 
-        
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="SincPulse">
@@ -1287,11 +1343,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">Pulse</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SincPulse&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;Freq&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Frequency of the Pulse&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="SincPulse.freq">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.SincPulse.freq">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freq</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;Freq&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="p">,</span> <span class="s2">&quot;GHz&quot;</span><span class="p">,</span> <span class="s2">&quot;Frequency of the Pulse&quot;</span><span class="p">)</span></div>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;Order&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;The sinc pulse order&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SincPulse.order">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.SincPulse.order">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;Order&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;The sinc pulse order&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SincPulse.window">
+<a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.SincPulse.window">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">window</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span>
-            <span class="s2">&quot;Window&quot;</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;The type of window function&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;Window&quot;</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;The type of window function&quot;</span><span class="p">)</span></div>
+
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_buildFMAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
         <span class="k">pass</span>
@@ -1343,14 +1408,18 @@
 
 <div class="viewcode-block" id="build_default_pulses">
 <a class="viewcode-back" href="../../autoapi/autodeer/pulses/index.html#autodeer.build_default_pulses">[docs]</a>
-<span class="k">def</span> <span class="nf">build_default_pulses</span><span class="p">(</span><span class="n">AWG</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">tp</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">build_default_pulses</span><span class="p">(</span><span class="n">AWG</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">SPFU</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">tp</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">SPFU</span><span class="p">:</span>
+        <span class="n">tp_pi</span> <span class="o">=</span> <span class="n">tp</span><span class="o">*</span><span class="mi">2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tp_pi</span> <span class="o">=</span> <span class="n">tp</span>
 
     <span class="n">exc_pulse</span> <span class="o">=</span> <span class="n">RectPulse</span><span class="p">(</span>  
                     <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">0</span>
                 <span class="p">)</span>
     
     <span class="n">ref_pulse</span> <span class="o">=</span> <span class="n">RectPulse</span><span class="p">(</span>  
-                    <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">0</span>
+                    <span class="n">tp</span><span class="o">=</span><span class="n">tp_pi</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">0</span>
                         <span class="p">)</span>
     
     <span class="k">if</span> <span class="n">AWG</span><span class="p">:</span>
@@ -1361,7 +1430,7 @@
         <span class="n">det_event</span> <span class="o">=</span> <span class="n">Detection</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">pump_pulse</span> <span class="o">=</span> <span class="n">RectPulse</span><span class="p">(</span>
-                    <span class="n">tp</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span> <span class="n">freq</span><span class="o">=-</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">tp</span><span class="o">=</span><span class="n">tp_pi</span><span class="p">,</span> <span class="n">freq</span><span class="o">=-</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         
         <span class="c1"># det_event = Detection(tp=exc_pulse.tp * 2, freq=0)</span>
         <span class="n">det_event</span> <span class="o">=</span> <span class="n">Detection</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -1405,7 +1474,7 @@
 </div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     </body>

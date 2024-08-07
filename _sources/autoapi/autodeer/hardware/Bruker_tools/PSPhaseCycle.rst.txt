@@ -1,6 +1,15 @@
 .. py:class:: PSPhaseCycle(sequence, MPFU=None, OnlyDet=False)
 
 
+   .. py:attribute:: BPhaseCycles
+      :value: '[]'
+
+      
+
+   .. py:attribute:: detect_dicts
+
+      
+
    .. py:method:: _MPFU(sequence, MPFU)
 
 

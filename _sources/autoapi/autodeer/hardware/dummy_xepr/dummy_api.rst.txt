@@ -3,6 +3,15 @@
 
    Bases: :py:obj:`autodeer.hardware.XeprAPI_link.XeprAPILink`
 
+   .. py:attribute:: _tmp_dir
+      :value: 'None'
+
+      
+
+   .. py:attribute:: meta
+
+      
+
    .. py:method:: find_Xepr()
 
 

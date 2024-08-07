@@ -51,6 +51,32 @@ Attributes
 
    Bases: :py:obj:`PyQt6.QtWidgets.QWidget`
 
+   .. py:attribute:: threadpool
+
+      
+
+   .. py:attribute:: current_results
+
+      
+
+   .. py:attribute:: current_data
+
+      
+
+   .. py:attribute:: DL_params
+
+      
+
+   .. py:attribute:: current_folder
+      :value: "''"
+
+      
+
+   .. py:attribute:: cores
+      :value: '1'
+
+      
+
    .. py:method:: toolbar()
 
 
@@ -73,6 +99,9 @@ Attributes
 
 
    .. py:method:: update_figure()
+
+
+   .. py:method:: clear_all()
 
 
    .. py:method:: process_deeranalysis(wait_condition=None, update_func=None)

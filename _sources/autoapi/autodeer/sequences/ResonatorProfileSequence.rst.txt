@@ -58,6 +58,19 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'ResonatorProfileSequence'"
+
+      
+
+   .. py:attribute:: gyro
+
+      
+
+   .. py:attribute:: fwidth
+
+      
+
    .. py:method:: _build_sequence()
 
 

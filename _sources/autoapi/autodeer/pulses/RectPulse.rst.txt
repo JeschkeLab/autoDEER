@@ -39,6 +39,10 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: freq
+
+      
+
    .. py:method:: func(ax)
 
 

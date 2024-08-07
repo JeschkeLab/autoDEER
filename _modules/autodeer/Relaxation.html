@@ -4,14 +4,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.Relaxation - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -90,19 +90,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -143,7 +130,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -317,8 +304,14 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">axis</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span>
         
-        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">epr</span><span class="o">.</span><span class="n">correctphasefull</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span>
+<div class="viewcode-block" id="CarrPurcellAnalysis.dataset">
+<a class="viewcode-back" href="../../autoapi/autodeer/Relaxation/index.html#autodeer.Relaxation.CarrPurcellAnalysis.dataset">[docs]</a>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">epr</span><span class="o">.</span><span class="n">correctphasefull</span></div>
+
+<div class="viewcode-block" id="CarrPurcellAnalysis.data">
+<a class="viewcode-back" href="../../autoapi/autodeer/Relaxation/index.html#autodeer.Relaxation.CarrPurcellAnalysis.data">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span></div>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
         <span class="c1"># if sequence is None and hasattr(dataset,&#39;sequence&#39;):</span>
         <span class="c1">#     self.seq = dataset.sequence</span>
@@ -401,21 +394,28 @@
 <a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.Relaxation.CarrPurcellAnalysis.check_decay">[docs]</a>
     <span class="k">def</span> <span class="nf">check_decay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks that the data has decayed to 5% in the time lenght of the dataset.</span>
+<span class="sd">        Checks that the data has decayed by over 5% in the entire length and less than 5% in the first 30% of the data.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        level : float, optional</span>
 <span class="sd">            The level to check the decay, by default 0.05</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            0 if both conditions are met, 1 if the decay is less than 5% in the first 30% of the data, and -1 if the decay is less than 5% in the entire length.</span>
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
+        <span class="n">n_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s2">&quot;fit_result&quot;</span><span class="p">):</span>
             <span class="n">decay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">data</span>
-            <span class="k">if</span> <span class="n">decay</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">level</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">True</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">decay</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">level</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">decay</span><span class="p">[:</span><span class="nb">int</span><span class="p">(</span><span class="n">n_points</span><span class="o">*</span><span class="mf">0.3</span><span class="p">)]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">level</span><span class="p">):</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">elif</span> <span class="n">decay</span><span class="p">[:</span><span class="nb">int</span><span class="p">(</span><span class="n">n_points</span><span class="o">*</span><span class="mf">0.3</span><span class="p">)]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">level</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">decay</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">level</span><span class="p">:</span>
+                <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No fit result found&quot;</span><span class="p">)</span></div>
 
@@ -492,7 +492,10 @@
 <span class="sd">            The sequence object describing the experiment. (not currently used)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># self.axis = dataset.axes[0]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">axis</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;reptime&#39;</span><span class="p">]</span>
+<div class="viewcode-block" id="ReptimeAnalysis.axis">
+<a class="viewcode-back" href="../../autoapi/autodeer/Relaxation/index.html#autodeer.Relaxation.ReptimeAnalysis.axis">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;reptime&#39;</span><span class="p">]</span></div>
+
         <span class="c1"># if self.axis.max() &gt; 1e4:</span>
         <span class="c1">#     self.axis /= 1e3 # ns -&gt; us</span>
         <span class="c1"># self.data = dataset.data/np.max(dataset.data)</span>
@@ -503,7 +506,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">seq</span> <span class="o">=</span> <span class="n">sequence</span>
+<div class="viewcode-block" id="ReptimeAnalysis.seq">
+<a class="viewcode-back" href="../../autoapi/autodeer/Relaxation/index.html#autodeer.Relaxation.ReptimeAnalysis.seq">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seq</span> <span class="o">=</span> <span class="n">sequence</span></div>
+
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="ReptimeAnalysis.fit">
@@ -533,17 +539,23 @@
         <span class="k">if</span> <span class="n">axs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 
-        <span class="n">axs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;0.6&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;fit_result&#39;</span><span class="p">):</span>
+            <span class="c1"># renormalise data to fit amplitude</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="n">axs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;0.6&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;fit_result&#39;</span><span class="p">):</span>
-            <span class="n">axs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_result</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;fit&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">axs</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;T1 = </span><span class="si">{:.3g}</span><span class="s1"> us&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]),</span><span class="n">colors</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">)</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_result</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Fit&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">axs</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;T1 = </span><span class="si">{:.3g}</span><span class="s1"> ms&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mf">1e3</span><span class="p">),</span><span class="n">colors</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;optimal&#39;</span><span class="p">):</span>
-                <span class="n">axs</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimal</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;optimal = </span><span class="si">{:.3g}</span><span class="s1"> us&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimal</span><span class="p">),</span><span class="n">colors</span><span class="o">=</span><span class="s1">&#39;C2&#39;</span><span class="p">)</span>
+                <span class="n">axs</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimal</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Optimal = </span><span class="si">{:.3g}</span><span class="s1"> ms&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimal</span><span class="o">/</span><span class="mf">1e3</span><span class="p">),</span><span class="n">colors</span><span class="o">=</span><span class="s1">&#39;C2&#39;</span><span class="p">)</span>
 
-        <span class="n">axs</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;reptime (us)&#39;</span><span class="p">)</span>
-        <span class="n">axs</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;normalized signal&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Reptime $(\mu s)$&#39;</span><span class="p">)</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Normalised signal&#39;</span><span class="p">)</span>
         <span class="n">axs</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">fig</span></div>
 
@@ -643,9 +655,10 @@
         <span class="k">elif</span> <span class="n">arg</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">seq_name</span> <span class="o">==</span> <span class="s1">&#39;CarrPurcellSequence&#39;</span><span class="p">:</span>
             <span class="n">xscale</span> <span class="o">=</span> <span class="mi">4</span>
             <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CP-2&#39;</span>
-        <span class="k">elif</span> <span class="n">arg</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">seq_name</span> <span class="o">==</span> <span class="s1">&#39;DEERSequence&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">seq_name</span> <span class="o">==</span> <span class="s1">&#39;DEERSequence&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">seq_name</span> <span class="o">==</span> <span class="s1">&#39;5pDEER&#39;</span><span class="p">):</span>
             <span class="n">xscale</span> <span class="o">=</span> <span class="mi">4</span>
             <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CP-2&#39;</span>
+
         <span class="k">else</span><span class="p">:</span>
             <span class="n">xscale</span> <span class="o">=</span> <span class="mi">4</span>
             <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CP-2&#39;</span>
@@ -675,7 +688,10 @@
 <span class="sd">        sequence : Sequence, optional</span>
 <span class="sd">            The sequence object describing the experiment. (not currently used)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">axis</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="viewcode-block" id="RefocusedEcho2DAnalysis.axis">
+<a class="viewcode-back" href="../../autoapi/autodeer/Relaxation/index.html#autodeer.Relaxation.RefocusedEcho2DAnalysis.axis">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis</span> <span class="o">=</span> <span class="p">[]</span></div>
+
         <span class="k">if</span> <span class="s1">&#39;tau1&#39;</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">coords</span> <span class="ow">and</span> <span class="s1">&#39;tau2&#39;</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;tau1&#39;</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;tau2&#39;</span><span class="p">])</span>
@@ -683,8 +699,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Xt&#39;</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Yt&#39;</span><span class="p">])</span>
         
-        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">epr</span><span class="o">.</span><span class="n">correctphasefull</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span>
+<div class="viewcode-block" id="RefocusedEcho2DAnalysis.dataset">
+<a class="viewcode-back" href="../../autoapi/autodeer/Relaxation/index.html#autodeer.Relaxation.RefocusedEcho2DAnalysis.dataset">[docs]</a>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">epr</span><span class="o">.</span><span class="n">correctphasefull</span></div>
+
+<div class="viewcode-block" id="RefocusedEcho2DAnalysis.data">
+<a class="viewcode-back" href="../../autoapi/autodeer/Relaxation/index.html#autodeer.Relaxation.RefocusedEcho2DAnalysis.data">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span></div>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
         
 
@@ -749,8 +771,8 @@
         <span class="k">elif</span> <span class="n">axs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="n">cmap</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;Purples&#39;</span><span class="p">,</span><span class="n">lut</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-        <span class="n">cmap_contour</span> <span class="o">=</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;Greys_r&#39;</span><span class="p">,</span><span class="n">lut</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;Purples&#39;</span><span class="p">,</span><span class="n">lut</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">cmap_contour</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;Greys_r&#39;</span><span class="p">,</span><span class="n">lut</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
 
         <span class="n">axs</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">data</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">)</span>
@@ -841,13 +863,14 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;data_smooth&#39;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_smooth</span><span class="p">()</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_smooth</span>
-        <span class="c1"># data = np.abs(self.data)</span>
+        <span class="n">raw_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">raw_data</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
         <span class="n">calc_data</span> <span class="o">=</span> <span class="n">data</span>
 
         <span class="c1"># averages = self.seq.shots.value * self.seq.averages.value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">noiselevel</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">noiselevel</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span>
         <span class="n">data_snr</span> <span class="o">=</span> <span class="n">calc_data</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise</span>
         <span class="n">data_snr_avgs</span> <span class="o">=</span> <span class="n">data_snr</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">averages</span><span class="p">)</span>
 
@@ -926,7 +949,7 @@
 </div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     </body>

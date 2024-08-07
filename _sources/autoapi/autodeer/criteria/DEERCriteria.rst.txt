@@ -44,3 +44,13 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'DEERCriteria'"
+
+      
+
+   .. py:attribute:: description
+      :value: "'Criteria for terminating DEER experiments.'"
+
+      
+

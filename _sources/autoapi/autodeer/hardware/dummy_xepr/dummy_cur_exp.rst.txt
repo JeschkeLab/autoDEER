@@ -1,6 +1,66 @@
 .. py:class:: dummy_cur_exp
 
 
+   .. py:attribute:: ShotRepTime
+
+      
+
+   .. py:attribute:: NbScansToDo
+
+      
+
+   .. py:attribute:: SweepsPExp
+
+      
+
+   .. py:attribute:: ShotsPLoop
+
+      
+
+   .. py:attribute:: XSpecRes
+
+      
+
+   .. py:attribute:: NbScansDone
+
+      
+
+   .. py:attribute:: FTAcqModeSlct
+
+      
+
+   .. py:attribute:: PlsSPELPrgPaF
+
+      
+
+   .. py:attribute:: PlsSPELGlbPaF
+
+      
+
+   .. py:attribute:: PlsSPELLISTSlct
+
+      
+
+   .. py:attribute:: PlsSPELEXPSlct
+
+      
+
+   .. py:attribute:: ReplaceMode
+
+      
+
+   .. py:attribute:: CenterField
+
+      
+
+   .. py:attribute:: FrequencyMon
+
+      
+
+   .. py:attribute:: SweepWidth
+
+      
+
    .. py:method:: __getitem__(name)
 
       

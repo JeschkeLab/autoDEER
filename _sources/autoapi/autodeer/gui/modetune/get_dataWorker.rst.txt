@@ -1,0 +1,24 @@
+.. py:class:: get_dataWorker(interface)
+
+
+   Bases: :py:obj:`PyQt6.QtCore.QRunnable`
+
+   .. py:attribute:: result_signal
+
+      
+
+   .. py:attribute:: finished_signal
+
+      
+
+   .. py:attribute:: interface
+
+      
+
+   .. py:attribute:: signals
+
+      
+
+   .. py:method:: run()
+
+

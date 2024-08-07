@@ -1,6 +1,22 @@
 .. py:class:: Reporter(filepath, pagesize='A4')
 
 
+   .. py:attribute:: pdf
+
+      
+
+   .. py:attribute:: story
+
+      
+
+   .. py:attribute:: frame
+
+      
+
+   .. py:attribute:: template
+
+      
+
    .. py:method:: header(canvas, doc)
 
 

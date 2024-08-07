@@ -154,6 +154,99 @@ Classes
 
    ..
        !! processed by numpydoc !!
+   .. py:attribute:: interface
+
+      
+
+   .. py:attribute:: args
+
+      
+
+   .. py:attribute:: kwargs
+
+      
+
+   .. py:attribute:: signals
+
+      
+
+   .. py:attribute:: updaterate
+      :value: '30'
+
+      
+
+   .. py:attribute:: wait
+
+      
+
+   .. py:attribute:: mutex
+
+      
+
+   .. py:attribute:: results
+
+      
+
+   .. py:attribute:: pulses
+
+      
+
+   .. py:attribute:: samplename
+
+      
+
+   .. py:attribute:: project
+
+      
+
+   .. py:attribute:: LO
+
+      
+
+   .. py:attribute:: gyro
+
+      
+
+   .. py:attribute:: AWG
+
+      
+
+   .. py:attribute:: user_inputs
+
+      
+
+   .. py:attribute:: stop_flag
+      :value: 'False'
+
+      
+
+   .. py:attribute:: quick_deer_state
+      :value: 'True'
+
+      
+
+   .. py:attribute:: max_tau
+      :value: '3.5'
+
+      
+
+   .. py:attribute:: savename
+
+      
+
+   .. py:attribute:: deer_inputs
+
+      
+
+   .. py:attribute:: EndTimeCriteria
+
+      
+
+   .. py:attribute:: test_interval
+      :value: '0.5'
+
+      
+
    .. py:method:: pause_and_wait()
 
 

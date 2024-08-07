@@ -49,6 +49,28 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'RefocusedEcho2D'"
+
+      
+
+   .. py:attribute:: tau_init
+      :value: '400'
+
+      
+
+   .. py:attribute:: dt
+
+      
+
+   .. py:attribute:: tau1
+
+      
+
+   .. py:attribute:: tau2
+
+      
+
    .. py:method:: _build_sequence()
 
 

@@ -4,3 +4,15 @@
    .. py:property:: value
 
 
+   .. py:attribute:: aqGetParMaxValue
+
+      
+
+   .. py:attribute:: aqGetParMinValue
+
+      
+
+   .. py:attribute:: val
+
+      
+

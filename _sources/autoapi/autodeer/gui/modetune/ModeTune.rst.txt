@@ -1,0 +1,25 @@
+.. py:class:: ModeTune(interface, gyro = 0.002803632236095, threadpool=None, current_folder='')
+
+
+   Bases: :py:obj:`PyQt6.QtWidgets.QDialog`
+
+   .. py:attribute:: interface
+
+      
+
+   .. py:attribute:: ui
+
+      
+
+   .. py:method:: start_mode_tune()
+
+
+   .. py:method:: create_figure()
+
+
+   .. py:method:: update_figure(dataset, done=False)
+
+
+   .. py:method:: update_dip()
+
+

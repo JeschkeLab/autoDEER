@@ -76,6 +76,7 @@ Classes
    autodeer.Delay
    autodeer.RectPulse
    autodeer.GaussianPulse
+   autodeer.FrequencySweptPulse
    autodeer.HSPulse
    autodeer.ChirpPulse
    autodeer.SincPulse
@@ -83,12 +84,6 @@ Classes
    autodeer.TimeCriteria
    autodeer.SNRCriteria
    autodeer.DEERCriteria
-   autodeer.Pulse
-   autodeer.Detection
-   autodeer.Parameter
-   autodeer.Interface
-   autodeer.Sequence
-   autodeer.EPRAccessor
    autodeer.Reporter
 
 
@@ -128,12 +123,6 @@ Functions
    autodeer.autoEPRDecoder
    autodeer.build_default_pulses
    autodeer.DEERanalysis
-   autodeer.autoEPRDecoder
-   autodeer.get_all_axes
-   autodeer.get_all_fixed_param
-   autodeer.create_dataset_from_sequence
-   autodeer.create_dataset_from_axes
-   autodeer.create_dataset_from_bruker
    autodeer.combo_figure
 
 
@@ -150,7 +139,7 @@ Attributes
 
 
 .. py:data:: __version__
-   :value: "'0.7'"
+   :value: "'0.8'"
 
    
 
@@ -415,6 +404,10 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: data
+
+      
+
    .. py:method:: find_max()
 
       
@@ -476,7 +469,7 @@ Attributes
    .. py:method:: calc_noise_level(SNR_target=30)
 
 
-   .. py:method:: smooth()
+   .. py:method:: smooth(*args, **kwargs)
 
       
       Generates a smoothed version of the data using a 1D smoothing spline.
@@ -574,6 +567,22 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: dataset
+
+      
+
+   .. py:attribute:: n_files
+
+      
+
+   .. py:attribute:: t
+
+      
+
+   .. py:attribute:: f_lims
+
+      
+
    .. py:method:: process_nutations(noisedensity = None, threshold = 2, nfft = 1000)
 
       
@@ -620,7 +629,7 @@ Attributes
    .. py:method:: _process_fit(R_limit=0.5)
 
 
-   .. py:method:: fit(f_diff_threshold=2, cores=1, multi_mode=False, fc_guess=34.05)
+   .. py:method:: fit(f_diff_threshold=2, cores=1, multi_mode=False, fc_guess=None)
 
       
       Fit the resonator profile with a sum of lorentzians.
@@ -688,7 +697,7 @@ Attributes
 .. py:function:: optimise_spectra_position(resonator_profile, fieldsweep, verbosity=0)
 
 
-.. py:function:: DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, **kwargs)
+.. py:function:: DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, remove_crossing=True, **kwargs)
 
 
 .. py:function:: DEERanalysis_plot(fit, background, ROI=None, axs=None, fig=None, text=True)
@@ -813,7 +822,7 @@ Attributes
    ..
        !! processed by numpydoc !!
 
-.. py:function:: optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute', nDEER=False, num_ref_pulses=2, full_output=False)
+.. py:function:: optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute', nDEER=False, num_ref_pulses=2, full_output=False, resonator=None, **kwargs)
 
    
    Optimise the pulse positions to maximise the pump-exc overlap.
@@ -851,6 +860,9 @@ Attributes
 
        **full_output** : bool, optional
            Return the full output, by default False
+
+       **resonator** : ad.ResonatorProfile, optional
+           The resonator profile, by default None
 
        **Returns**
            ..
@@ -1114,6 +1126,45 @@ Attributes
 
    .. py:property:: seqtable_steps
 
+
+   .. py:attribute:: pulses
+      :value: '[]'
+
+      
+
+   .. py:attribute:: num_pulses
+
+      
+
+   .. py:attribute:: axes_uuid
+      :value: '[]'
+
+      
+
+   .. py:attribute:: reduce_uuid
+      :value: '[]'
+
+      
+
+   .. py:attribute:: LO
+
+      
+
+   .. py:attribute:: averages
+
+      
+
+   .. py:attribute:: shots
+
+      
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: progTable
+
+      
 
    .. py:method:: plot()
 
@@ -1424,6 +1475,14 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: dataset
+
+      
+
+   .. py:attribute:: data
+
+      
+
    .. py:method:: fit(type = 'mono')
 
       
@@ -1485,7 +1544,7 @@ Attributes
    .. py:method:: check_decay(level=0.05)
 
       
-      Checks that the data has decayed to 5% in the time lenght of the dataset.
+      Checks that the data has decayed by over 5% in the entire length and less than 5% in the first 30% of the data.
 
 
       :Parameters:
@@ -1493,6 +1552,10 @@ Attributes
           **level** : float, optional
               The level to check the decay, by default 0.05
 
+      :Returns:
+
+          int
+              0 if both conditions are met, 1 if the decay is less than 5% in the first 30% of the data, and -1 if the decay is less than 5% in the entire length.
 
 
 
@@ -1586,6 +1649,14 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: axis
+
+      
+
+   .. py:attribute:: seq
+
+      
 
    .. py:method:: fit(**kwargs)
 
@@ -1706,6 +1777,19 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: axis
+      :value: '[]'
+
+      
+
+   .. py:attribute:: dataset
+
+      
+
+   .. py:attribute:: data
+
+      
 
    .. py:method:: _smooth(elements=3)
 
@@ -1938,6 +2022,32 @@ Attributes
    .. py:property:: dim
 
 
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: unit
+
+      
+
+   .. py:attribute:: description
+
+      
+
+   .. py:attribute:: virtual
+
+      
+
+   .. py:attribute:: axis
+      :value: '[]'
+
+      
+
+   .. py:attribute:: ax_id
+      :value: '[]'
+
+      
+
    .. py:method:: add_axis(axis_id, axis)
 
 
@@ -2097,6 +2207,24 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+   .. py:attribute:: pulses
+
+      
+
+   .. py:attribute:: savefolder
+
+      
+
+   .. py:attribute:: savename
+      :value: "''"
+
+      
+
+   .. py:attribute:: resonator
+      :value: 'None'
+
+      
+
    .. py:method:: connect()
 
 
@@ -2303,6 +2431,32 @@ Attributes
    .. py:property:: dim
 
 
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: unit
+
+      
+
+   .. py:attribute:: description
+
+      
+
+   .. py:attribute:: virtual
+
+      
+
+   .. py:attribute:: axis
+      :value: '[]'
+
+      
+
+   .. py:attribute:: ax_id
+      :value: '[]'
+
+      
+
    .. py:method:: add_axis(axis_id, axis)
 
 
@@ -2474,6 +2628,41 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:property:: bandwidth
+
+
+   .. py:property:: amp_factor
+
+      
+      The B1 amplitude factor (nutation frequency) for the pulse in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: Progression
+      :value: 'False'
+
+      
 
    .. py:method:: _addPhaseCycle(phases, detections=None)
 
@@ -2664,7 +2853,7 @@ Attributes
    .. py:method:: _calc_fft(pad=10000)
 
 
-   .. py:method:: exciteprofile(freqs=None)
+   .. py:method:: exciteprofile(freqs=None, resonator=None)
 
       
       Excitation profile
@@ -2696,6 +2885,9 @@ Attributes
           **freqs: np.ndarray, optional**
               The frequency axis. Caution: A larger number of points will linearly
               increase computation time.
+
+          **resonator: ad.ResonatorProfile, optional**
+              ..
 
       :Returns:
 
@@ -2908,6 +3100,20 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: scale
+      :value: 'None'
+
+      
+
+   .. py:attribute:: freq
+
+      
+
+   .. py:attribute:: pcyc
+      :value: 'None'
+
+      
+
 
 .. py:class:: Delay(*, tp, t=None)
 
@@ -2948,6 +3154,20 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: tp
+
+      
+
+   .. py:attribute:: pcyc
+      :value: 'None'
+
+      
+
+   .. py:attribute:: scale
+      :value: 'None'
+
+      
 
 
 .. py:class:: RectPulse(tp=16, freq=0, t=None, flipangle=None, **kwargs)
@@ -2990,6 +3210,10 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: freq
+
+      
 
    .. py:method:: func(ax)
 
@@ -3049,6 +3273,45 @@ Attributes
 
    .. py:property:: seqtable_steps
 
+
+   .. py:attribute:: pulses
+      :value: '[]'
+
+      
+
+   .. py:attribute:: num_pulses
+
+      
+
+   .. py:attribute:: axes_uuid
+      :value: '[]'
+
+      
+
+   .. py:attribute:: reduce_uuid
+      :value: '[]'
+
+      
+
+   .. py:attribute:: LO
+
+      
+
+   .. py:attribute:: averages
+
+      
+
+   .. py:attribute:: shots
+
+      
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: progTable
+
+      
 
    .. py:method:: plot()
 
@@ -3396,6 +3659,37 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'DEERSequence'"
+
+      
+
+   .. py:attribute:: tau1us
+
+      
+
+   .. py:attribute:: tau1
+
+      
+
+   .. py:attribute:: tau2
+
+      
+
+   .. py:attribute:: dt
+
+      
+
+   .. py:attribute:: deadtime
+      :value: '200'
+
+      
+
+   .. py:attribute:: ESEEM
+      :value: 'False'
+
+      
+
    .. py:method:: add_ESEEM_avg(type=None)
 
 
@@ -3642,6 +3936,11 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'HahnEchoSequence'"
+
+      
+
 
 .. py:class:: T2RelaxationSequence(*, B, LO, reptime, averages, shots, step=40, dim=200, **kwargs)
 
@@ -3687,6 +3986,15 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: tau
+
+      
+
+   .. py:attribute:: name
+      :value: "'T2RelaxationSequence'"
+
+      
 
 
 .. py:class:: FieldSweepSequence(*, B, LO, Bwidth, reptime, averages, shots, **kwargs)
@@ -3737,6 +4045,15 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'FieldSweepSequence'"
+
+      
+
+   .. py:attribute:: B
+
+      
+
 
 .. py:class:: ReptimeScan(*, B, LO, reptime, reptime_max, averages, shots, **kwargs)
 
@@ -3784,6 +4101,29 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: min_reptime
+      :value: '20'
+
+      
+
+   .. py:attribute:: dim
+      :value: '100'
+
+      
+
+   .. py:attribute:: step
+
+      
+
+   .. py:attribute:: reptime
+
+      
+
+   .. py:attribute:: name
+      :value: "'ReptimeScan'"
+
+      
 
 
 .. py:class:: CarrPurcellSequence(*, B, LO, reptime, averages, shots, tau, n, dim=100, **kwargs)
@@ -3840,6 +4180,23 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'CarrPurcellSequence'"
+
+      
+
+   .. py:attribute:: tau
+
+      
+
+   .. py:attribute:: n
+
+      
+
+   .. py:attribute:: dim
+
+      
+
    .. py:method:: _build_sequence()
 
 
@@ -3894,6 +4251,28 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: name
+      :value: "'RefocusedEcho2D'"
+
+      
+
+   .. py:attribute:: tau_init
+      :value: '400'
+
+      
+
+   .. py:attribute:: dt
+
+      
+
+   .. py:attribute:: tau1
+
+      
+
+   .. py:attribute:: tau2
+
+      
 
    .. py:method:: _build_sequence()
 
@@ -3959,6 +4338,19 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'ResonatorProfileSequence'"
+
+      
+
+   .. py:attribute:: gyro
+
+      
+
+   .. py:attribute:: fwidth
+
+      
+
    .. py:method:: _build_sequence()
 
 
@@ -4010,6 +4402,11 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: name
+      :value: "'TWTProfileSequence'"
+
+      
 
    .. py:method:: _build_sequence()
 
@@ -4097,6 +4494,32 @@ Attributes
 
    .. py:property:: dim
 
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: unit
+
+      
+
+   .. py:attribute:: description
+
+      
+
+   .. py:attribute:: virtual
+
+      
+
+   .. py:attribute:: axis
+      :value: '[]'
+
+      
+
+   .. py:attribute:: ax_id
+      :value: '[]'
+
+      
 
    .. py:method:: add_axis(axis_id, axis)
 
@@ -4317,6 +4740,41 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:property:: bandwidth
+
+
+   .. py:property:: amp_factor
+
+      
+      The B1 amplitude factor (nutation frequency) for the pulse in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: Progression
+      :value: 'False'
+
+      
+
    .. py:method:: _addPhaseCycle(phases, detections=None)
 
       
@@ -4506,7 +4964,7 @@ Attributes
    .. py:method:: _calc_fft(pad=10000)
 
 
-   .. py:method:: exciteprofile(freqs=None)
+   .. py:method:: exciteprofile(freqs=None, resonator=None)
 
       
       Excitation profile
@@ -4538,6 +4996,9 @@ Attributes
           **freqs: np.ndarray, optional**
               The frequency axis. Caution: A larger number of points will linearly
               increase computation time.
+
+          **resonator: ad.ResonatorProfile, optional**
+              ..
 
       :Returns:
 
@@ -4750,6 +5211,20 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: scale
+      :value: 'None'
+
+      
+
+   .. py:attribute:: freq
+
+      
+
+   .. py:attribute:: pcyc
+      :value: 'None'
+
+      
+
 
 .. py:class:: Delay(*, tp, t=None)
 
@@ -4790,6 +5265,20 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:attribute:: tp
+
+      
+
+   .. py:attribute:: pcyc
+      :value: 'None'
+
+      
+
+   .. py:attribute:: scale
+      :value: 'None'
+
+      
 
 
 .. py:class:: RectPulse(tp=16, freq=0, t=None, flipangle=None, **kwargs)
@@ -4833,6 +5322,10 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: freq
+
+      
+
    .. py:method:: func(ax)
 
 
@@ -4875,14 +5368,131 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: freq
+
+      
+
+   .. py:attribute:: FWHM
+
+      
+
    .. py:method:: func(ax)
 
+
+
+.. py:class:: FrequencySweptPulse(*, tp, t=None, scale=None, flipangle=None, pcyc=[0], name=None, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   A general parent class for Frequency Swept Pulses.
+
+
+   The class for a general pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The pulse length in ns.
+
+       **scale** : float
+           The arbitary experimental pulse amplitude, 0-1.
+
+       **t** : float, optional
+           The pulse start time in ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:property:: Qcrit
+
+      
+      The critical Q factor for the pulse.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:property:: sweeprate
+      :abstractmethod:
+
+      
+      The sweep rate of the pulse in GHz/ns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:property:: amp_factor
+
+      
+      The B1 amplitude factor (nutation frequency) for the pulse in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
 .. py:class:: HSPulse(*, tp=128, order1=1, order2=6, beta=20, **kwargs)
 
 
-   Bases: :py:obj:`Pulse`
+   Bases: :py:obj:`FrequencySweptPulse`
 
    Represents a hyperboilc secant frequency-swept pulse.
 
@@ -4917,6 +5527,41 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:property:: sweeprate
+
+      
+      The sweep rate of the pulse in GHz/ns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:attribute:: order1
+
+      
+
+   .. py:attribute:: order2
+
+      
+
+   .. py:attribute:: beta
+
+      
+
    .. py:method:: func(ax)
 
 
@@ -4924,7 +5569,7 @@ Attributes
 .. py:class:: ChirpPulse(*, tp=128, **kwargs)
 
 
-   Bases: :py:obj:`Pulse`
+   Bases: :py:obj:`FrequencySweptPulse`
 
    Represents a linear frequency-swept pulse.
 
@@ -4958,6 +5603,29 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:property:: sweeprate
+
+      
+      The sweep rate of the pulse in GHz/ns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
    .. py:method:: func(ax)
 
@@ -5004,14 +5672,26 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: freq
+
+      
+
+   .. py:attribute:: order
+
+      
+
+   .. py:attribute:: window
+
+      
+
    .. py:method:: func(ax)
 
 
 
-.. py:function:: build_default_pulses(AWG=True, tp=12)
+.. py:function:: build_default_pulses(AWG=True, SPFU=False, tp=12)
 
 
-.. py:function:: DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, **kwargs)
+.. py:function:: DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, remove_crossing=True, **kwargs)
 
 
 .. py:data:: log
@@ -5042,11 +5722,27 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: description
+
+      
+
+   .. py:attribute:: test
+
+      
+
+   .. py:attribute:: end_signal
+
+      
+
    .. py:method:: __add__(__o)
 
 
 
-.. py:class:: TimeCriteria(name, end_time, description = '', **kwargs)
+.. py:class:: TimeCriteria(name, end_time, description = '', night_hours = None, **kwargs)
 
 
    Bases: :py:obj:`Criteria`
@@ -5063,13 +5759,17 @@ Attributes
    :Parameters:
 
        **name** : str
-           _description_
+           Name of the criteria
 
        **end_time** : float
            Finishing time in seconds since epoch
 
        **description** : str, optional
-           _description_, by default None
+           A description of the criteria, by default None
+
+       **night_hours** : tuple, optional
+           A tuple of two integers specifying the start and end of night hours.
+           The criteria will always return False during these hours, by default None
 
 
 
@@ -5188,1216 +5888,35 @@ Attributes
    ..
        !! processed by numpydoc !!
 
-
-.. py:function:: autoEPRDecoder(dct)
-
-
-.. py:class:: Pulse(*, tp, t=None, scale=None, flipangle=None, pcyc=[0], name=None, **kwargs)
-
-
-   Represents a general experimental pulse.
-
-
-   The class for a general pulse.
-
-
-   :Parameters:
-
-       **tp** : float
-           The pulse length in ns.
-
-       **scale** : float
-           The arbitary experimental pulse amplitude, 0-1.
-
-       **t** : float, optional
-           The pulse start time in ns.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-   .. py:method:: _addPhaseCycle(phases, detections=None)
+   .. py:attribute:: name
+      :value: "'DEERCriteria'"
 
       
-      Adds a phase cycle to the pulse sequence.
 
-      Args:
-          phases (list): List of phases to add to the phase cycle.
-          detections (list, optional): List of detection signs. Defaults to None. If None then all cycles are summed.
-
-      Returns:
-          None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _buildFMAM(func, ax=None)
+   .. py:attribute:: description
+      :value: "'Criteria for terminating DEER experiments.'"
 
       
-      Builds the amplitude modulation (AM) and frequency modulation (FM) of a given function.
-
-      Args:
-          func: A function that takes in an array of values and returns two arrays, representing the AM and FM of the function.
-
-      Returns:
-          Two arrays representing the AM and FM of the function.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: build_shape(ax=None)
-
-
-   .. py:method:: build_table()
-
-      
-      Builds a table of variables, axes, and UUIDs for all non-static Parameters in the object.
-
-      Returns:
-          dict: A dictionary containing the following keys: "Variable", "axis", and "uuid".
-          The values for each key are lists of the corresponding values for each non-static Parameter.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: is_static()
-
-      
-      Check if all parameters in the pulse object are static.
-
-      Returns:
-          bool: True if all parameters are static, False otherwise.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: isDelayFocused()
-
-      
-      Does the pulse contain a specified time, `t`?
-
-      If so then it is not delay focused.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: isPulseFocused()
-
-      
-      Does the pulse contain a specified time, `t`?
-
-      If so then it is delay focused.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: plot(pad=1000)
-
-      
-      Plots the time domain representation of this pulse.
-
-
-      :Parameters:
-
-          **pad** : int, optional
-              The number of zeros to pad the data with, by default 1000
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _calc_fft(pad=10000)
-
-
-   .. py:method:: exciteprofile(freqs=None)
-
-      
-      Excitation profile
-
-      Generates the exciatation profiles for this pulse.
-
-      This function is ported from EasySpin 
-      (https://easyspin.org/easyspin/documentation/sop.html) [1-2],
-      and based upon the method from Gunnar Jeschke, Stefan Pribitzer and
-      Andrin Doll[3].
-
-      References:
-      +++++++++++
-      [1] Stefan Stoll, Arthur Schweiger
-      EasySpin, a comprehensive software package for spectral simulation and analysis in EPR
-      J. Magn. Reson. 178(1), 42-55 (2006)
-
-      [2] Stefan Stoll, R. David Britt
-      General and efficient simulation of pulse EPR spectra
-      Phys. Chem. Chem. Phys. 11, 6614-6625 (2009)
-
-      [3] Jeschke, G., Pribitzer, S. & DollA. 
-      Coherence Transfer by Passage Pulses in Electron Paramagnetic 
-      Resonance Spectroscopy. 
-      J. Phys. Chem. B 119, 13570-13582 (2015)
-
-      :Parameters:
-
-          **freqs: np.ndarray, optional**
-              The frequency axis. Caution: A larger number of points will linearly
-              increase computation time.
-
-      :Returns:
-
-          Mx: np.ndarray
-              The magentisation in the X direction.
-
-          My: np.ndarray
-              The magentisation in the Y direction.
-
-          Mz: np.ndarray
-              The magentisation in the Z direction.
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: plot_fft()
-
-
-   .. py:method:: _pcyc_str()
-
-
-   .. py:method:: __str__()
-
-      
-      Return str(self).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: copy(clear=False, **kwargs)
-
-      
-      Creates a deep-copy of the pulse. I.e. Every parameter object is
-      re-created at another memory space.
-
-      Parameter can be chaged at this stage by adding them as keyword-
-      arguments (kwargs).
-
-
-      :Returns:
-
-          Pulse
-              A deep copy of the pulse
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _to_dict()
-
-
-   .. py:method:: _to_json()
-
-
-   .. py:method:: save(filename)
-
-      
-      Save the Pulse to a JSON file.
-
-
-      :Parameters:
-
-          **filename** : str
-              Path to the JSON file.
-
-      :Returns:
-
-          None
-              ..
-
-
-
-
-      :Raises:
-
-          TypeError
-              If the object cannot be serialized to JSON.
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _from_dict(dct)
-      :classmethod:
-
-
-   .. py:method:: _from_json(JSONstring)
-      :classmethod:
-
-
-   .. py:method:: load(filename)
-      :classmethod:
-
-      
-      Load a Pulse object from a JSON file.
-
-
-      :Parameters:
-
-          **filename** : str
-              Path to the JSON file.
-
-      :Returns:
-
-          **obj** : Pulse
-              The Pulse loaded from the JSON file.
-
-
-
-
-      :Raises:
-
-          FileNotFoundError
-              If the file does not exist.
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-
-.. py:class:: Detection(*, tp, t=None, freq=0, **kwargs)
-
-
-   Bases: :py:obj:`Pulse`
-
-   Represents a detection pulse.
-
-
-   A general detection pulse.
-
-
-   :Parameters:
-
-       **tp** : float
-           The **total** time of the detection event. The detection event will
-           be symetrical about the centre time. 
-
-       **t** : float, optional
-           The **centre** time of the detection event
-
-       **freq: float, optional**
-           The detection frequency, not all spectrometer support this 
-           functionality, by default 0 MHz
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-
-.. py:class:: Parameter(name, value, unit='', description='', virtual=False, **kwargs)
-
-
-   Represents a sequence or pulse parameter.
-
-
-   A general parameter.
-
-
-   :Parameters:
-
-       **name** : str
-           The parameter name
-
-       **value** : float or int
-           The parameter value, eithe initial or static
-
-       **unit** : str, optional
-           The unit of parameter, by default None. Leave as None if unitless.
-
-       **description** : str, optional
-           A brief description of the parameter, by default None    
-
-       **axis** : np.ndarray, optional
-           The difference from the intial value for each position in a 
-           dynamic axis. Can be n-dimensional, by default None.
-
-       **ax_id** : list, optional
-           ..
-
-       **virtual: bool, optional**
-           A virtual paramter is only used to vary other parameters, it is not 
-           varied itself and will not be directly passed to a spectrometer.
-           This parameter is **never** inherited.
-           By default, False
-
-
-
-
-
-
-
-
-
-
-
-   .. rubric:: Examples
-
-   Creating a static parameter
-   ```
-   Par1 = Parameter(
-       name="Par1", value=10, unit="us", description="The first parameter")
-   ```
-   Creating a dynamic parameter
-   ```
-   Par1 = Parameter(
-       name="Par1", value=10, unit="us", description="The first parameter",
-       axis=np.arange(0,10,1), axis_id=0)
-   ```
-
-   Adding a parameter and a number:
-   ```
-   Par1 = Parameter(
-       name="Par1", value=10, unit="us", description="The first parameter")
-   Par2 = Par1 + 2
-
-   :Attributes:
-
-       **progressive** : bool
-           Is the parameter used in any progression or is it constant
-
-       **prog** : dict
-           A dict containing progressive programs for this parameter. This 
-           list has two elements. 1) The axis_id"s and 2) the "axis" of 
-           values.
-
-
-   ..
-       !! processed by numpydoc !!
-
-   .. py:property:: dim
-
-
-   .. py:method:: add_axis(axis_id, axis)
-
-
-   .. py:method:: get_axis()
-
-
-   .. py:method:: remove_dynamic()
-
-
-   .. py:method:: is_static()
-
-
-   .. py:method:: __eq__(__o)
-
-      
-      Return self==value.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: __add__(__o)
-
-
-   .. py:method:: __sub__(__o)
-
-
-   .. py:method:: __mul__(__o)
-
-
-   .. py:method:: __rmul__(__o)
-
-
-   .. py:method:: copy()
-
-
-   .. py:method:: _to_dict()
-
-
-   .. py:method:: _to_json()
-
-
-   .. py:method:: save(filename)
-
-      
-      Save the parameter to a JSON file.
-
-
-      :Parameters:
-
-          **filename** : str
-              Path to the JSON file.
-
-      :Returns:
-
-          None
-              ..
-
-
-
-
-      :Raises:
-
-          TypeError
-              If the object cannot be serialized to JSON.
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _from_dict(dict)
-      :staticmethod:
-
-
-   .. py:method:: _from_json(JSONstring)
-      :classmethod:
-
-
-   .. py:method:: load(filename)
-      :classmethod:
-
-      
-      Load a Parameter object from a JSON file.
-
-
-      :Parameters:
-
-          **filename** : str
-              Path to the JSON file.
-
-      :Returns:
-
-          **obj** : Parameter
-              The Pulse loaded from the JSON file.
-
-
-
-
-      :Raises:
-
-          FileNotFoundError
-              If the file does not exist.
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-
-.. py:class:: Interface(log=None)
-
-
-   
-   Represents the interface connection from autoEPR to the spectrometer.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-   .. py:method:: connect()
-
-
-   .. py:method:: acquire_dataset(data)
-
-      
-      Acquires the dataset.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: launch(sequence, savename)
-
-      
-      Launches the experiment and initialises autosaving.
-
-
-      :Parameters:
-
-          **sequence** : Sequence
-              The sequence to be launched
-
-          **savename** : str
-              The savename for this measurement. A timestamp will be added to the value.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: isrunning()
-
-
-   .. py:method:: terminate()
-
-      
-      Terminates the experiment immediately. 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: terminate_at(criterion, test_interval=2, keep_running=True, verbosity=0, autosave=True)
-
-      
-      Terminates the experiment upon a specific condition being
-      satisified. 
-
-
-      :Parameters:
-
-          **criterion** : _type_
-              The criteria to be tested.
-
-          **test_interval** : int, optional
-              How often should the criteria be tested in minutes, by default 10.
-
-          **keep_running** : bool, optional
-              If True, an error will not be raised if the experiment finishes before the criteria is met, by default True.
-
-          **verbosity** : int, optional
-              The verbosity level, by default 0. 
-
-          **autosave** : bool, optional
-              If True, the data will be autosaved, by default True.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-
-.. py:class:: Sequence(*, name, B, LO, reptime, averages, shots, **kwargs)
-
-
-   Represents an experimental pulse sequence.
-
-
-   Represents an experimental pulse sequence.
-
-
-   :Parameters:
-
-       **name** : str
-           The name of this pulse sequence
-
-       **B** : float
-           The magnetic field for this sequence in Gauss.
-
-       **LO** : float
-           The central frequency of this sequence. I.e. The frequnecy at which
-           a zero offset pulse is at. 
-
-       **reptime** : float
-           The shot repetition time in us.
-
-       **averages** : int
-           The number of scans to be accumulated.
-
-       **shots** : itn
-           The number of shots per point.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-   .. py:property:: seqtable_steps
-
-
-   .. py:method:: plot()
-
-
-   .. py:method:: plot_pulse_exc(FieldSweep=None, ResonatorProfile=None)
-
-
-   .. py:method:: addPulse(pulse)
-
-      
-      Adds a pulse to the next position in the sequence.
-
-
-      :Parameters:
-
-          **pulse** : Pulse
-              The object describing the pulse.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _estimate_time()
-
-      
-      Calculates the estimated experiment time in seconds.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _buildPhaseCycle()
-
-
-   .. py:method:: evolution(params, reduce=[])
-
-
-   .. py:method:: shift_detfreq_to_zero()
-
-
-   .. py:method:: isPulseFocused()
-
-      
-      Is the sequence expressed to contain only pulses and no delays?
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: isDelayFocused()
-
-      
-      Is the sequence expressed to contain both pulses and delays?
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: convert(*, reduce=True)
-
-      
-      Converts the current sequence to either pulse focused or delay
-      focused depending on the current state
-
-
-      :Parameters:
-
-          **reduce** : bool, optional
-              Reduce to the smallest number of objects, by default True
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _convert_to_delay()
-
-
-   .. py:method:: _convert_to_pulses()
-
-
-   .. py:method:: _checkRect()
-
-      
-      Checks if all the pulses in the sequence are rectangular.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: __str__()
-
-      
-      Return str(self).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: copy()
-
-
-   .. py:method:: _to_dict()
-
-
-   .. py:method:: _to_json()
-
-
-   .. py:method:: save(filename)
-
-      
-      Save the sequence to a JSON file.
-
-
-      :Parameters:
-
-          **filename** : str
-              Path to the JSON file.
-
-      :Returns:
-
-          None
-              ..
-
-
-
-
-      :Raises:
-
-          TypeError
-              If the object cannot be serialized to JSON.
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: _from_dict(dct)
-      :classmethod:
-
-
-   .. py:method:: _from_json(JSONstring)
-      :classmethod:
-
-
-   .. py:method:: load(filename)
-      :classmethod:
-
-      
-      Load an object from a JSON file.
-
-
-      :Parameters:
-
-          **filename** : str
-              Path to the JSON file.
-
-      :Returns:
-
-          **obj** : Sequence
-              The Sequence loaded from the JSON file.
-
-
-
-
-      :Raises:
-
-          FileNotFoundError
-              If the file does not exist.
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-
-.. py:function:: get_all_axes(sequence)
-
-
-.. py:function:: get_all_fixed_param(sequence)
-
-
-.. py:function:: create_dataset_from_sequence(data, sequence, extra_params={})
-
-
-.. py:function:: create_dataset_from_axes(data, axes, params = None, axes_labels=None)
-
-
-.. py:function:: create_dataset_from_bruker(filepath)
-
-
-.. py:class:: EPRAccessor(xarray_obj)
-
-
-   .. py:property:: correctphase
-
-
-   .. py:property:: normalise
-
-
-   .. py:property:: correctphasefull
-
-
-   .. py:property:: SNR
-
-
-   .. py:property:: fft
-
-
-   .. py:property:: sequence
-
-
-   .. py:method:: save(filename, type='netCDF')
-
 
 
 .. py:class:: Reporter(filepath, pagesize='A4')
 
+
+   .. py:attribute:: pdf
+
+      
+
+   .. py:attribute:: story
+
+      
+
+   .. py:attribute:: frame
+
+      
+
+   .. py:attribute:: template
+
+      
 
    .. py:method:: header(canvas, doc)
 

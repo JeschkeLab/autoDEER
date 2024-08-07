@@ -43,3 +43,12 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: tau
+
+      
+
+   .. py:attribute:: name
+      :value: "'T2RelaxationSequence'"
+
+      
+

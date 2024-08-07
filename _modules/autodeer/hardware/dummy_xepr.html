@@ -4,14 +4,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.hardware.dummy_xepr - </title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -90,19 +90,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -143,7 +130,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -327,8 +314,14 @@
 <span class="k">class</span> <span class="nc">dummy_api</span><span class="p">(</span><span class="n">XeprAPILink</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_dir</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">hardware_meta</span> <span class="c1"># This will become more neuanced eventually. Currentlty this is sufficent.</span>
+<div class="viewcode-block" id="dummy_api._tmp_dir">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_api._tmp_dir">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_dir</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="dummy_api.meta">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_api.meta">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="n">hardware_meta</span> <span class="c1"># This will become more neuanced eventually. Currentlty this is sufficent.</span></div>
+
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="dummy_api.find_Xepr">
@@ -430,21 +423,66 @@
         <span class="c1"># elif experiment == &quot;2D_DEC&quot;:#TODO</span>
         <span class="c1">#     print(&quot;Experiment set to 2D Dec&quot;)   </span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">ShotRepTime</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">6000</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">NbScansToDo</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">112</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">SweepsPExp</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">112</span><span class="p">)</span>                      <span class="c1"># This is the same as scans in a 1D experiment</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ShotsPLoop</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>                        <span class="c1"># This is the same as shots per point</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">XSpecRes</span>   <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">256</span><span class="p">)</span>                      <span class="c1"># This is the length of the X direction</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">NbScansDone</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">NbScansToDo</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>            <span class="c1"># Intially zero scans have been done </span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">FTAcqModeSlct</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="s1">&#39;Run from PulseSPEL&#39;</span><span class="p">)</span><span class="c1"># Setting teh acquistion mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">PlsSPELPrgPaF</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="s1">&#39;rand_path&#39;</span><span class="p">)</span>         <span class="c1"># Pulse Spel Experiment Path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">PlsSPELGlbPaF</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="s1">&#39;rand_path&#39;</span><span class="p">)</span>         <span class="c1"># Pulse Spel Definitions Path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">PlsSPELLISTSlct</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="s1">&#39;Phase Cycle&#39;</span><span class="p">)</span>     <span class="c1"># Selecting the phase cycling</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">PlsSPELEXPSlct</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="s1">&#39;Experiment&#39;</span><span class="p">)</span>       <span class="c1"># Selecting the Experiment</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ReplaceMode</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">bool</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>                <span class="c1"># Setting the replace mode state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">CenterField</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">15000</span><span class="p">,</span><span class="nb">int</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">FrequencyMon</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">33</span><span class="p">,</span><span class="mi">35</span><span class="p">,</span><span class="nb">float</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">SweepWidth</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">300</span><span class="p">)</span>
+<div class="viewcode-block" id="dummy_cur_exp.ShotRepTime">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.ShotRepTime">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ShotRepTime</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">6000</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.NbScansToDo">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.NbScansToDo">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NbScansToDo</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">112</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.SweepsPExp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.SweepsPExp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SweepsPExp</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">112</span><span class="p">)</span>                      <span class="c1"># This is the same as scans in a 1D experiment</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.ShotsPLoop">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.ShotsPLoop">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ShotsPLoop</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>                        <span class="c1"># This is the same as shots per point</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.XSpecRes">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.XSpecRes">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">XSpecRes</span>   <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">256</span><span class="p">)</span>                      <span class="c1"># This is the length of the X direction</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.NbScansDone">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.NbScansDone">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NbScansDone</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">NbScansToDo</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>            <span class="c1"># Intially zero scans have been done </span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.FTAcqModeSlct">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.FTAcqModeSlct">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FTAcqModeSlct</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="s1">&#39;Run from PulseSPEL&#39;</span><span class="p">)</span><span class="c1"># Setting teh acquistion mode</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.PlsSPELPrgPaF">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.PlsSPELPrgPaF">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PlsSPELPrgPaF</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="s1">&#39;rand_path&#39;</span><span class="p">)</span>         <span class="c1"># Pulse Spel Experiment Path</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.PlsSPELGlbPaF">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.PlsSPELGlbPaF">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PlsSPELGlbPaF</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="s1">&#39;rand_path&#39;</span><span class="p">)</span>         <span class="c1"># Pulse Spel Definitions Path</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.PlsSPELLISTSlct">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.PlsSPELLISTSlct">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PlsSPELLISTSlct</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="s1">&#39;Phase Cycle&#39;</span><span class="p">)</span>     <span class="c1"># Selecting the phase cycling</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.PlsSPELEXPSlct">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.PlsSPELEXPSlct">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PlsSPELEXPSlct</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">str</span><span class="p">,</span><span class="s1">&#39;Experiment&#39;</span><span class="p">)</span>       <span class="c1"># Selecting the Experiment</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.ReplaceMode">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.ReplaceMode">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ReplaceMode</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="nb">bool</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>                <span class="c1"># Setting the replace mode state</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.CenterField">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.CenterField">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CenterField</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">15000</span><span class="p">,</span><span class="nb">int</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.FrequencyMon">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.FrequencyMon">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FrequencyMon</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">33</span><span class="p">,</span><span class="mi">35</span><span class="p">,</span><span class="nb">float</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="dummy_cur_exp.SweepWidth">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_cur_exp.SweepWidth">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SweepWidth</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10000</span><span class="p">,</span><span class="nb">int</span><span class="p">,</span><span class="mi">300</span><span class="p">)</span></div>
+
     
 
 <div class="viewcode-block" id="dummy_cur_exp.__getitem__">
@@ -491,9 +529,18 @@
 <span class="k">class</span> <span class="nc">dummy_param</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="nb">min</span><span class="p">,</span><span class="nb">max</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">aqGetParMaxValue</span> <span class="o">=</span> <span class="nb">max</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">aqGetParMinValue</span> <span class="o">=</span> <span class="nb">min</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">par</span> 
+<div class="viewcode-block" id="dummy_param.aqGetParMaxValue">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_param.aqGetParMaxValue">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aqGetParMaxValue</span> <span class="o">=</span> <span class="nb">max</span></div>
+
+<div class="viewcode-block" id="dummy_param.aqGetParMinValue">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_param.aqGetParMinValue">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aqGetParMinValue</span> <span class="o">=</span> <span class="nb">min</span></div>
+
+<div class="viewcode-block" id="dummy_param.val">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_param.val">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">par</span> </div>
+
         <span class="k">if</span> <span class="p">(</span><span class="n">par</span> <span class="o">==</span> <span class="kc">None</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="nb">type</span> <span class="o">==</span> <span class="nb">int</span><span class="p">):</span> <span class="c1"># If no value is given a random one is picked</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">rand</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aqGetParMinValue</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">aqGetParMaxValue</span><span class="p">)</span>
 
@@ -514,8 +561,14 @@
 <span class="k">class</span> <span class="nc">dummy_xepr</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span> <span class="o">=</span> <span class="n">dummy_cur_exp</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="n">dummy_hidden</span><span class="p">()</span>
+<div class="viewcode-block" id="dummy_xepr.cur_exp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_xepr.cur_exp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cur_exp</span> <span class="o">=</span> <span class="n">dummy_cur_exp</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="dummy_xepr.hidden">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_xepr.hidden">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="n">dummy_hidden</span><span class="p">()</span></div>
+
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="dummy_xepr.XeprExperiment">
@@ -686,16 +739,43 @@
     <span class="c1"># This is a dummy version of the hidden class containing the extra current experiment features</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">SignalPhase</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4095</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4096</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">BrXPhase</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">BrYPhase</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">MinBrXPhase</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">MinBrYPhase</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
+<div class="viewcode-block" id="dummy_hidden.SignalPhase">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_hidden.SignalPhase">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SignalPhase</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4095</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4096</span><span class="p">))</span></div>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">BrXAmp</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">BrYAmp</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">MinBrXAmp</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">MinBrYAmp</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
+<div class="viewcode-block" id="dummy_hidden.BrXPhase">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_hidden.BrXPhase">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">BrXPhase</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="dummy_hidden.BrYPhase">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_hidden.BrYPhase">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">BrYPhase</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="dummy_hidden.MinBrXPhase">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_hidden.MinBrXPhase">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MinBrXPhase</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="dummy_hidden.MinBrYPhase">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_hidden.MinBrYPhase">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MinBrYPhase</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="dummy_hidden.BrXAmp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_hidden.BrXAmp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">BrXAmp</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="dummy_hidden.BrYAmp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_hidden.BrYAmp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">BrYAmp</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="dummy_hidden.MinBrXAmp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_hidden.MinBrXAmp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MinBrXAmp</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="dummy_hidden.MinBrYAmp">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_hidden.MinBrYAmp">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MinBrYAmp</span> <span class="o">=</span> <span class="n">dummy_param</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span><span class="n">par</span><span class="o">=</span><span class="n">rand</span><span class="o">.</span><span class="n">random</span><span class="p">())</span></div>
+
        
         <span class="k">pass</span>
 
@@ -735,8 +815,14 @@
 <span class="k">class</span> <span class="nc">dummy_dataset</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">V</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">O</span> <span class="o">=</span> <span class="n">V</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<div class="viewcode-block" id="dummy_dataset.O">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_dataset.O">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">O</span> <span class="o">=</span> <span class="n">V</span></div>
+
+<div class="viewcode-block" id="dummy_dataset.size">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/dummy_xepr/index.html#autodeer.hardware.dummy_xepr.dummy_dataset.size">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">V</span><span class="p">)</span></div>
+
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">t</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
@@ -779,7 +865,7 @@
 </div><script src="../../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     </body>

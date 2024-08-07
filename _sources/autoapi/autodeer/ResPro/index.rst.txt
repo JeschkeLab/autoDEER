@@ -63,6 +63,22 @@ Functions
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: dataset
+
+      
+
+   .. py:attribute:: n_files
+
+      
+
+   .. py:attribute:: t
+
+      
+
+   .. py:attribute:: f_lims
+
+      
+
    .. py:method:: process_nutations(noisedensity = None, threshold = 2, nfft = 1000)
 
       
@@ -109,7 +125,7 @@ Functions
    .. py:method:: _process_fit(R_limit=0.5)
 
 
-   .. py:method:: fit(f_diff_threshold=2, cores=1, multi_mode=False, fc_guess=34.05)
+   .. py:method:: fit(f_diff_threshold=2, cores=1, multi_mode=False, fc_guess=None)
 
       
       Fit the resonator profile with a sum of lorentzians.

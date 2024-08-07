@@ -1,0 +1,108 @@
+.. py:class:: FrequencySweptPulse(*, tp, t=None, scale=None, flipangle=None, pcyc=[0], name=None, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   A general parent class for Frequency Swept Pulses.
+
+
+   The class for a general pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The pulse length in ns.
+
+       **scale** : float
+           The arbitary experimental pulse amplitude, 0-1.
+
+       **t** : float, optional
+           The pulse start time in ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:property:: Qcrit
+
+      
+      The critical Q factor for the pulse.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:property:: sweeprate
+      :abstractmethod:
+
+      
+      The sweep rate of the pulse in GHz/ns
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:property:: amp_factor
+
+      
+      The B1 amplitude factor (nutation frequency) for the pulse in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+

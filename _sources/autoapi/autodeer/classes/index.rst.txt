@@ -42,6 +42,24 @@ Classes
 
    ..
        !! processed by numpydoc !!
+   .. py:attribute:: pulses
+
+      
+
+   .. py:attribute:: savefolder
+
+      
+
+   .. py:attribute:: savename
+      :value: "''"
+
+      
+
+   .. py:attribute:: resonator
+      :value: 'None'
+
+      
+
    .. py:method:: connect()
 
 
@@ -247,6 +265,32 @@ Classes
 
    .. py:property:: dim
 
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: unit
+
+      
+
+   .. py:attribute:: description
+
+      
+
+   .. py:attribute:: virtual
+
+      
+
+   .. py:attribute:: axis
+      :value: '[]'
+
+      
+
+   .. py:attribute:: ax_id
+      :value: '[]'
+
+      
 
    .. py:method:: add_axis(axis_id, axis)
 

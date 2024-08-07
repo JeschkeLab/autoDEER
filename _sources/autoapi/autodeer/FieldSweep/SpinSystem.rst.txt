@@ -1,3 +1,40 @@
 .. py:class:: SpinSystem(espins, nspin, g, A)
 
 
+   .. py:attribute:: g
+
+      
+
+   .. py:attribute:: A
+
+      
+
+   .. py:attribute:: I
+
+      
+
+   .. py:attribute:: S
+
+      
+
+   .. py:attribute:: nElectrons
+
+      
+
+   .. py:attribute:: nNuclei
+
+      
+
+   .. py:attribute:: Spins
+
+      
+
+   .. py:attribute:: nStates
+
+      
+
+   .. py:attribute:: gnscale
+      :value: '1'
+
+      
+

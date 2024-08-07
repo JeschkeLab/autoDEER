@@ -26,6 +26,21 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: drawing
+      :type: reportlab.graphics.shapes.Drawing
+
+      
+
+   .. py:attribute:: width
+      :type: int
+
+      
+
+   .. py:attribute:: height
+      :type: int
+
+      
+
    .. py:method:: wrap(*_args)
 
       

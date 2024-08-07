@@ -64,6 +64,37 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: name
+      :value: "'DEERSequence'"
+
+      
+
+   .. py:attribute:: tau1us
+
+      
+
+   .. py:attribute:: tau1
+
+      
+
+   .. py:attribute:: tau2
+
+      
+
+   .. py:attribute:: dt
+
+      
+
+   .. py:attribute:: deadtime
+      :value: '200'
+
+      
+
+   .. py:attribute:: ESEEM
+      :value: 'False'
+
+      
+
    .. py:method:: add_ESEEM_avg(type=None)
 
 

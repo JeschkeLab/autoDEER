@@ -4,14 +4,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.dataset - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -90,19 +90,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -143,7 +130,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -296,7 +283,7 @@
 <span class="kn">from</span> <span class="nn">autodeer</span> <span class="kn">import</span> <span class="n">__version__</span>
 <span class="kn">from</span> <span class="nn">autodeer.pulses</span> <span class="kn">import</span> <span class="n">Pulse</span><span class="p">,</span><span class="n">Detection</span>
 <span class="kn">from</span> <span class="nn">autodeer.classes</span> <span class="kn">import</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">Interface</span>
-<span class="kn">from</span> <span class="nn">autodeer.sequences</span> <span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">autodeer.sequences</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">DEERSequence</span>
 <span class="kn">import</span> <span class="nn">autodeer.pulses</span> <span class="k">as</span> <span class="nn">ad_pulses</span>
 <span class="kn">import</span> <span class="nn">autodeer.sequences</span> <span class="k">as</span> <span class="nn">ad_seqs</span>
 <span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
@@ -307,7 +294,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="get_all_axes">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.get_all_axes">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.get_all_axes">[docs]</a>
 <span class="k">def</span> <span class="nf">get_all_axes</span><span class="p">(</span><span class="n">sequence</span><span class="p">):</span>
     <span class="c1"># loop over all parameters and get the axis</span>
     <span class="n">axes</span> <span class="o">=</span> <span class="p">{}</span>
@@ -347,7 +334,7 @@
 
 
 <div class="viewcode-block" id="get_all_fixed_param">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.get_all_fixed_param">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.get_all_fixed_param">[docs]</a>
 <span class="k">def</span> <span class="nf">get_all_fixed_param</span><span class="p">(</span><span class="n">sequence</span><span class="p">):</span>
 
     <span class="n">fixed_param</span> <span class="o">=</span> <span class="p">{}</span>
@@ -384,11 +371,13 @@
                     <span class="n">fixed_param</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">param_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">value</span>
 
     <span class="n">fixed_param</span><span class="p">[</span><span class="s1">&#39;nPcyc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">pcyc_dets</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span><span class="n">DEERSequence</span><span class="p">):</span>
+        <span class="n">fixed_param</span><span class="p">[</span><span class="s1">&#39;pcyc_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">pcyc_name</span>
     <span class="k">return</span> <span class="n">fixed_param</span></div>
 
 
 <div class="viewcode-block" id="create_dataset_from_sequence">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.create_dataset_from_sequence">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.create_dataset_from_sequence">[docs]</a>
 <span class="k">def</span> <span class="nf">create_dataset_from_sequence</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sequence</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">,</span><span class="n">extra_params</span><span class="o">=</span><span class="p">{}):</span>
     <span class="n">ndims</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span>
     <span class="n">default_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
@@ -402,7 +391,7 @@
 
 
 <div class="viewcode-block" id="create_dataset_from_axes">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.create_dataset_from_axes">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.create_dataset_from_axes">[docs]</a>
 <span class="k">def</span> <span class="nf">create_dataset_from_axes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">axes_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">ndims</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span>
     <span class="k">if</span> <span class="n">axes_labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -420,7 +409,7 @@
 
 
 <div class="viewcode-block" id="create_dataset_from_bruker">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.create_dataset_from_bruker">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.create_dataset_from_bruker">[docs]</a>
 <span class="k">def</span> <span class="nf">create_dataset_from_bruker</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
     <span class="n">axes</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">deerload</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -453,20 +442,25 @@
     <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;LO&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;SPL&#39;</span><span class="p">][</span><span class="s1">&#39;MWFQ&#39;</span><span class="p">])</span>  <span class="o">/</span> <span class="mf">1e9</span>
     <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;SPL&#39;</span><span class="p">][</span><span class="s1">&#39;B0VL&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e4</span>
     <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;reptime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;DSL&#39;</span><span class="p">][</span><span class="s1">&#39;ftEpr&#39;</span><span class="p">][</span><span class="s1">&#39;ShotRepTime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;us&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">))</span>
+    <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;nAvgs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;DSL&#39;</span><span class="p">][</span><span class="s1">&#39;recorder&#39;</span><span class="p">][</span><span class="s1">&#39;NbScansAcc&#39;</span><span class="p">])</span>
+    <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;shots&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;DSL&#39;</span><span class="p">][</span><span class="s1">&#39;ftEpr&#39;</span><span class="p">][</span><span class="s1">&#39;ShotsPLoop&#39;</span><span class="p">])</span>
     
     <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="n">attr</span><span class="p">)</span></div>
 
 
 <span class="nd">@xr</span><span class="o">.</span><span class="n">register_dataarray_accessor</span><span class="p">(</span><span class="s2">&quot;epr&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="EPRAccessor">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.EPRAccessor">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.EPRAccessor">[docs]</a>
 <span class="k">class</span> <span class="nc">EPRAccessor</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xarray_obj</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span> <span class="o">=</span> <span class="n">xarray_obj</span>
+<div class="viewcode-block" id="EPRAccessor._obj">
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.EPRAccessor._obj">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_obj</span> <span class="o">=</span> <span class="n">xarray_obj</span></div>
+
 
 <div class="viewcode-block" id="EPRAccessor.save">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.EPRAccessor.save">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.EPRAccessor.save">[docs]</a>
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;netCDF&#39;</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;netCDF&#39;</span><span class="p">:</span>
@@ -560,7 +554,7 @@
         <span class="n">pulses_obj</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pulses</span><span class="p">):</span>
             <span class="n">pulse_type</span> <span class="o">=</span> <span class="n">dataset_attrs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;pulse</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">_name&quot;</span><span class="p">]</span>
-            <span class="n">param_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">,</span><span class="s1">&#39;tp&#39;</span><span class="p">,</span><span class="s1">&#39;freq&#39;</span><span class="p">,</span><span class="s1">&#39;flipangle&#39;</span><span class="p">,</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span><span class="s1">&#39;order1&#39;</span><span class="p">,</span><span class="s1">&#39;order2&#39;</span><span class="p">,</span><span class="s1">&#39;inti_freq&#39;</span><span class="p">,</span><span class="s1">&#39;BW&#39;</span><span class="p">,</span><span class="s1">&#39;final_freq&#39;</span><span class="p">,</span><span class="s1">&#39;beta&#39;</span><span class="p">]</span>
+            <span class="n">param_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;t&#39;</span><span class="p">,</span><span class="s1">&#39;tp&#39;</span><span class="p">,</span><span class="s1">&#39;freq&#39;</span><span class="p">,</span><span class="s1">&#39;flipangle&#39;</span><span class="p">,</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span><span class="s1">&#39;order1&#39;</span><span class="p">,</span><span class="s1">&#39;order2&#39;</span><span class="p">,</span><span class="s1">&#39;init_freq&#39;</span><span class="p">,</span><span class="s1">&#39;BW&#39;</span><span class="p">,</span><span class="s1">&#39;final_freq&#39;</span><span class="p">,</span><span class="s1">&#39;beta&#39;</span><span class="p">]</span>
             <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
 
             <span class="k">for</span> <span class="n">param_type</span> <span class="ow">in</span> <span class="n">param_types</span><span class="p">:</span>
@@ -630,7 +624,7 @@
 </div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     </body>

@@ -21,6 +21,24 @@
 
    ..
        !! processed by numpydoc !!
+   .. py:attribute:: pulses
+
+      
+
+   .. py:attribute:: savefolder
+
+      
+
+   .. py:attribute:: savename
+      :value: "''"
+
+      
+
+   .. py:attribute:: resonator
+      :value: 'None'
+
+      
+
    .. py:method:: connect()
 
 

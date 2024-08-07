@@ -1,6 +1,75 @@
 .. py:class:: PulseSpel(sequence, d0, MPFU=None, AWG=False)
 
 
+   .. py:attribute:: possible_delays
+
+      
+
+   .. py:attribute:: possible_pulses
+
+      
+
+   .. py:attribute:: possible_vars
+
+      
+
+   .. py:attribute:: sequence
+
+      
+
+   .. py:attribute:: var_hash
+
+      
+
+   .. py:attribute:: def_file_str
+      :value: "''"
+
+      
+
+   .. py:attribute:: exp_file_str
+      :value: "''"
+
+      
+
+   .. py:attribute:: dims
+      :value: '[]'
+
+      
+
+   .. py:attribute:: MPFU
+
+      
+
+   .. py:attribute:: AWG
+
+      
+
+   .. py:attribute:: pcyc_str
+      :value: "''"
+
+      
+
+   .. py:attribute:: rel_positions
+
+      
+
+   .. py:attribute:: unique_parvars
+
+      
+
+   .. py:attribute:: parvars
+      :value: '[]'
+
+      
+
+   .. py:attribute:: step_hash
+
+      
+
+   .. py:attribute:: place_hash
+
+      
+
    .. py:method:: _new_delay(key)
 
 

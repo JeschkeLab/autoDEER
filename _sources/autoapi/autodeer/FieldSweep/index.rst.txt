@@ -91,6 +91,10 @@ Functions
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: data
+
+      
+
    .. py:method:: find_max()
 
       
@@ -152,7 +156,7 @@ Functions
    .. py:method:: calc_noise_level(SNR_target=30)
 
 
-   .. py:method:: smooth()
+   .. py:method:: smooth(*args, **kwargs)
 
       
       Generates a smoothed version of the data using a 1D smoothing spline.
@@ -219,6 +223,43 @@ Functions
 
 .. py:class:: SpinSystem(espins, nspin, g, A)
 
+
+   .. py:attribute:: g
+
+      
+
+   .. py:attribute:: A
+
+      
+
+   .. py:attribute:: I
+
+      
+
+   .. py:attribute:: S
+
+      
+
+   .. py:attribute:: nElectrons
+
+      
+
+   .. py:attribute:: nNuclei
+
+      
+
+   .. py:attribute:: Spins
+
+      
+
+   .. py:attribute:: nStates
+
+      
+
+   .. py:attribute:: gnscale
+      :value: '1'
+
+      
 
 
 .. py:function:: erot(*args)

@@ -27,6 +27,14 @@
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: dataset
+
+      
+
+   .. py:attribute:: data
+
+      
+
    .. py:method:: fit(type = 'mono')
 
       
@@ -88,7 +96,7 @@
    .. py:method:: check_decay(level=0.05)
 
       
-      Checks that the data has decayed to 5% in the time lenght of the dataset.
+      Checks that the data has decayed by over 5% in the entire length and less than 5% in the first 30% of the data.
 
 
       :Parameters:
@@ -96,6 +104,10 @@
           **level** : float, optional
               The level to check the decay, by default 0.05
 
+      :Returns:
+
+          int
+              0 if both conditions are met, 1 if the decay is less than 5% in the first 30% of the data, and -1 if the decay is less than 5% in the entire length.
 
 
 

@@ -5,14 +5,14 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../../../../genindex.html" /><link rel="search" title="Search" href="../../../../search.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>autodeer.hardware.Bruker_MPFU - </title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -91,19 +91,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -144,7 +131,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -313,19 +300,25 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU._MPFU_channels" title="autodeer.hardware.Bruker_MPFU._MPFU_channels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_MPFU_channels</span></code></a>(sequence)</p></td>
 <td><p>Idenitifies how many unique MPFU channels are needed for a sequence and</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.get_specjet_data" title="autodeer.hardware.Bruker_MPFU.get_specjet_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_specjet_data</span></code></a>(interface)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU._SPFU_channels" title="autodeer.hardware.Bruker_MPFU._SPFU_channels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_SPFU_channels</span></code></a>(sequence[, ELDOR])</p></td>
+<td><p>Idenitifies how many unique MPFU channels are needed for a sequence and</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.get_specjet_data" title="autodeer.hardware.Bruker_MPFU.get_specjet_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_specjet_data</span></code></a>(interface)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.tune_power" title="autodeer.hardware.Bruker_MPFU.tune_power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tune_power</span></code></a>(interface, channel[, tol, maxiter, bounds, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.tune_power" title="autodeer.hardware.Bruker_MPFU.tune_power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tune_power</span></code></a>(interface, channel[, tol, maxiter, bounds, ...])</p></td>
 <td><p>Tunes the attenuator of a given channel to a given target using the</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.tune_phase" title="autodeer.hardware.Bruker_MPFU.tune_phase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tune_phase</span></code></a>(interface, channel, target[, tol, maxiter, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.tune_phase" title="autodeer.hardware.Bruker_MPFU.tune_phase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tune_phase</span></code></a>(interface, channel, target[, tol, maxiter, ...])</p></td>
 <td><p>Tunes the phase of a given channel to a given target using the</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.MPFUtune" title="autodeer.hardware.Bruker_MPFU.MPFUtune"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MPFUtune</span></code></a>(interface, sequence, channels[, echo, tol, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.MPFUtune" title="autodeer.hardware.Bruker_MPFU.MPFUtune"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MPFUtune</span></code></a>(interface, sequence, channels[, echo, tol, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.ELDORtune" title="autodeer.hardware.Bruker_MPFU.ELDORtune"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ELDORtune</span></code></a>(interface, sequence, freq[, tau_value, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.ELDORtune" title="autodeer.hardware.Bruker_MPFU.ELDORtune"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ELDORtune</span></code></a>(interface, sequence, freq[, MPFU, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.SPFUtune" title="autodeer.hardware.Bruker_MPFU.SPFUtune"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SPFUtune</span></code></a>(interface, sequence, flip_power[, echo, tol, ...])</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.test_if_MPFU_compatability" title="autodeer.hardware.Bruker_MPFU.test_if_MPFU_compatability"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_if_MPFU_compatability</span></code></a>(seq)</p></td>
@@ -376,6 +369,76 @@ Spectrometers.</p>
 <dd class="field-odd"><p><strong>config_file</strong> (<em>str</em>)</p>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.api">
+<span class="sig-name descname"><span class="pre">api</span></span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.api"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.api" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.spec_config">
+<span class="sig-name descname"><span class="pre">spec_config</span></span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.spec_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.spec_config" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.bridge_config">
+<span class="sig-name descname"><span class="pre">bridge_config</span></span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.bridge_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.bridge_config" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.MPFU">
+<span class="sig-name descname"><span class="pre">MPFU</span></span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.MPFU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.MPFU" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.temp_dir">
+<span class="sig-name descname"><span class="pre">temp_dir</span></span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.temp_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.temp_dir" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.d0">
+<span class="sig-name descname"><span class="pre">d0</span></span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.d0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.d0" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.bg_thread">
+<span class="sig-name descname"><span class="pre">bg_thread</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'None'</span></em><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.bg_thread"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.bg_thread" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.bg_data">
+<span class="sig-name descname"><span class="pre">bg_data</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'None'</span></em><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.bg_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.bg_data" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.cur_exp">
+<span class="sig-name descname"><span class="pre">cur_exp</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'None'</span></em><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.cur_exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.cur_exp" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.tuning">
+<span class="sig-name descname"><span class="pre">tuning</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'False'</span></em><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.tuning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.tuning" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.pool">
+<span class="sig-name descname"><span class="pre">pool</span></span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.pool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.pool" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.savename">
+<span class="sig-name descname"><span class="pre">savename</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&quot;''&quot;</span></em><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.savename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.savename" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.savefolder">
+<span class="sig-name descname"><span class="pre">savefolder</span></span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.savefolder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.savefolder" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.setup_flag">
+<span class="sig-name descname"><span class="pre">setup_flag</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'False'</span></em><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.setup_flag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.setup_flag" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.BrukerMPFU.connect">
 <span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#BrukerMPFU.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.connect" title="Link to this definition">¶</a></dt>
@@ -494,6 +557,13 @@ applies the correct Channel infomation to each pulse.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU._SPFU_channels">
+<span class="sig-prename descclassname"><span class="pre">autodeer.hardware.Bruker_MPFU.</span></span><span class="sig-name descname"><span class="pre">_SPFU_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ELDOR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#_SPFU_channels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU._SPFU_channels" title="Link to this definition">¶</a></dt>
+<dd><p>Idenitifies how many unique MPFU channels are needed for a sequence and
+applies the correct Channel infomation to each pulse.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.get_specjet_data">
 <span class="sig-prename descclassname"><span class="pre">autodeer.hardware.Bruker_MPFU.</span></span><span class="sig-name descname"><span class="pre">get_specjet_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interface</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#get_specjet_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.get_specjet_data" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -579,8 +649,18 @@ Options: [‘R+’, ‘R-’, ‘I+’, ‘I-‘]</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.ELDORtune">
-<span class="sig-prename descclassname"><span class="pre">autodeer.hardware.Bruker_MPFU.</span></span><span class="sig-name descname"><span class="pre">ELDORtune</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interface</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">550</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_tp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#ELDORtune"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.ELDORtune" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">autodeer.hardware.Bruker_MPFU.</span></span><span class="sig-name descname"><span class="pre">ELDORtune</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interface</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MPFU</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">550</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_tp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#ELDORtune"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.ELDORtune" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.SPFUtune">
+<span class="sig-prename descclassname"><span class="pre">autodeer.hardware.Bruker_MPFU.</span></span><span class="sig-name descname"><span class="pre">SPFUtune</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interface</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flip_power</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">echo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Hahn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">60]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">550</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/autodeer/hardware/Bruker_MPFU.html#SPFUtune"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.hardware.Bruker_MPFU.SPFUtune" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tol</strong> (<em>float</em>)</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="autodeer.hardware.Bruker_MPFU.test_if_MPFU_compatability">
@@ -635,6 +715,20 @@ Options: [‘R+’, ‘R-’, ‘I+’, ‘I-‘]</p>
 <li><a class="reference internal" href="#attributes">Attributes</a><ul>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.hw_log"><code class="docutils literal notranslate"><span class="pre">hw_log</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU</span></code></a><ul>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.api"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.api</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.spec_config"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.spec_config</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.bridge_config"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.bridge_config</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.MPFU"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.MPFU</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.temp_dir"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.temp_dir</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.d0"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.d0</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.bg_thread"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.bg_thread</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.bg_data"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.bg_data</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.cur_exp"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.cur_exp</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.tuning"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.tuning</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.pool"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.pool</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.savename"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.savename</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.savefolder"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.savefolder</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.setup_flag"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.setup_flag</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.connect"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.connect()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.setup"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.setup()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.BrukerMPFU.acquire_dataset"><code class="docutils literal notranslate"><span class="pre">BrukerMPFU.acquire_dataset()</span></code></a></li>
@@ -651,11 +745,13 @@ Options: [‘R+’, ‘R-’, ‘I+’, ‘I-‘]</p>
 </li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.step_parameters"><code class="docutils literal notranslate"><span class="pre">step_parameters()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU._MPFU_channels"><code class="docutils literal notranslate"><span class="pre">_MPFU_channels()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU._SPFU_channels"><code class="docutils literal notranslate"><span class="pre">_SPFU_channels()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.get_specjet_data"><code class="docutils literal notranslate"><span class="pre">get_specjet_data()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.tune_power"><code class="docutils literal notranslate"><span class="pre">tune_power()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.tune_phase"><code class="docutils literal notranslate"><span class="pre">tune_phase()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.MPFUtune"><code class="docutils literal notranslate"><span class="pre">MPFUtune()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.ELDORtune"><code class="docutils literal notranslate"><span class="pre">ELDORtune()</span></code></a></li>
+<li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.SPFUtune"><code class="docutils literal notranslate"><span class="pre">SPFUtune()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.hardware.Bruker_MPFU.test_if_MPFU_compatability"><code class="docutils literal notranslate"><span class="pre">test_if_MPFU_compatability()</span></code></a></li>
 </ul>
 </li>
@@ -675,7 +771,7 @@ Options: [‘R+’, ‘R-’, ‘I+’, ‘I-‘]</p>
 </div><script src="../../../../_static/documentation_options.js?v=48f8e935"></script>
     <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     </body>

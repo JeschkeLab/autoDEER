@@ -66,6 +66,10 @@ Functions
    .. py:property:: sequence
 
 
+   .. py:attribute:: _obj
+
+      
+
    .. py:method:: save(filename, type='netCDF')
 
 

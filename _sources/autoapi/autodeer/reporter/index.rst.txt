@@ -73,6 +73,21 @@ Attributes
    ..
        !! processed by numpydoc !!
 
+   .. py:attribute:: drawing
+      :type: reportlab.graphics.shapes.Drawing
+
+      
+
+   .. py:attribute:: width
+      :type: int
+
+      
+
+   .. py:attribute:: height
+      :type: int
+
+      
+
    .. py:method:: wrap(*_args)
 
       
@@ -122,6 +137,22 @@ Attributes
 
 .. py:class:: Reporter(filepath, pagesize='A4')
 
+
+   .. py:attribute:: pdf
+
+      
+
+   .. py:attribute:: story
+
+      
+
+   .. py:attribute:: frame
+
+      
+
+   .. py:attribute:: template
+
+      
 
    .. py:method:: header(canvas, doc)
 
