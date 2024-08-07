@@ -1,14 +1,17 @@
 from autodeer.sequences import Sequence
 from autodeer.pulses import RectPulse, Delay, Detection
-from autodeer.utils import gcd, val_in_ns, val_in_us
+from autodeer.utils import gcd, val_in_ns, val_in_us, transpose_list_of_dicts
 import numpy as np
 import re
 import time
 import importlib
 from autodeer import __version__
 import os
+import logging
 
 MODULE_DIR = importlib.util.find_spec('autodeer').submodule_search_locations[0]
+
+hw_log = logging.getLogger('interface.Xepr')
 
 header = "; " + "-" * 79 + "\n"
 header += "; " + \
@@ -67,18 +70,21 @@ class PSPhaseCycle:
             dict = {}
             dict["Pulse"] = sequence.pcyc_vars[i]
             dict["Cycle"] = []
-            for j in range(0, num_cycles):
-                phase = sequence.pcyc_cycles[j, i]
-                norm_phase = (phase / np.pi) % 2
-                if norm_phase == 0:
-                    B_phase = "+x"
-                elif norm_phase == 1:
-                    B_phase = "-x"
-                elif norm_phase == 0.5:
-                    B_phase = "+y"
-                elif norm_phase == 1.5:
-                    B_phase = "-y"
-                dict["Cycle"].append(B_phase)
+            if sequence.pulses[i].pcyc["Channels"] == "ELDOR":
+                dict["Cycle"].append("ELDOR")
+            else:
+                for j in range(0, num_cycles):
+                    phase = sequence.pcyc_cycles[j, i]
+                    norm_phase = (phase / np.pi) % 2
+                    if norm_phase == 0:
+                        B_phase = "+x"
+                    elif norm_phase == 1:
+                        B_phase = "-x"
+                    elif norm_phase == 0.5:
+                        B_phase = "+y"
+                    elif norm_phase == 1.5:
+                        B_phase = "-y"
+                    dict["Cycle"].append(B_phase)
             BPhaseCycles.append(dict)
 
         return BPhaseCycles
@@ -918,7 +924,30 @@ def check_variable(var:str, uprog):
                 return True
         return False
     
-def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
+def determine_TWT_split(sequence, MaxGate):
+    n_pulses = len(sequence.pulses)
+    uprogtable = build_unique_progtable(sequence)
+    TWT_gate_max = MaxGate *1e3
+
+    try:
+        idx = transpose_list_of_dicts(uprogtable[0]['variables'])['variable'].index((n_pulses-1, 't'))
+    except ValueError:
+        return False
+
+    multiplier = uprogtable[0]['variables'][idx]['multiplier']
+    axis = uprogtable[0]['axis']
+    max_time = axis['start'] + axis['step'] * axis['dim'] * multiplier
+
+    if max_time > TWT_gate_max:
+        hw_log.info('Time too long for TWT gate, need to split the experiment')
+        split_point = int(0.75 * TWT_gate_max / max_time * axis['dim'])
+        return split_point
+    else:
+        return False
+
+    
+    
+def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
     """Write the pulsespel file for a given sequence. 
 
     Parameters
@@ -929,6 +958,8 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
         Is this a pulse spel file for an AWG spectrometer, by default False
     MPFU : list, optional
         A list of MPFU channels, by default False
+    MaxGate : float, optional
+        The maximum gate time for the TWT gate in microseconds, by default 40 us
 
     Returns
     -------
@@ -937,6 +968,8 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
     str
         The string for the experiment file
     """
+    
+    split_point = determine_TWT_split(sequence,MaxGate=40)
 
     uprogtable = build_unique_progtable(sequence)
     possible_delays = [
@@ -967,7 +1000,7 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
     axs_ids = []
 
 
-    head = "begin exp \"auto\" [INTG QUAD] \n"
+    scanhead = "begin exp \"auto\" [INTG QUAD] \n"
     foot = "end exp"
     def_file = "begin defs \n"
     dims = "begin defs \n dim s["
@@ -1024,10 +1057,12 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
 
 
     # Setup averaging loop
-    head += "for k=1 to m \ntotscans(m) \n"
+    scanhead += "for k=1 to m \ntotscans(m) \n"
     def_file += f"m = {sequence.averages.value}\n"
 
-    foot = "scansdone(k) \nnext k \n"+foot
+    scanfoot = "scansdone(k) \nnext k \n"+foot
+    foot = ""
+    head = ""
 
     delay_build = ""
     for ax in axs_ids:
@@ -1048,7 +1083,7 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
         if reduce:
             param = loop_iterators.pop()
         else:
-            param=kept_axes_param.pop()
+            param = kept_axes_param.pop()
 
         foot = f"next {param} \n" + foot
 
@@ -1068,7 +1103,7 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
                 if i not in mv_delay_hash:
                     mv_delay_hash[i] = possible_delays.pop()
                     # delay_build = f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n" + delay_build 
-                    head += f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n"
+                    scanhead += f"{mv_delay_hash[i]} = {static_delay_hash[i]}\n"
                 for k in range(int(np.abs(uprog["delay_shifts"][i]))):
                     if uprog["delay_shifts"][i] > 0: 
                         sign = "+"
@@ -1084,7 +1119,7 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
                 pulse_id = var["variable"][0]
                 mult = var["multiplier"]
                 mv_pulse_hash[pulse_id] = possible_pulses.pop()
-                head += f"{mv_pulse_hash[pulse_id]} = {static_pulse_hash[pulse_id]}\n"
+                scanhead += f"{mv_pulse_hash[pulse_id]} = {static_pulse_hash[pulse_id]}\n"
                 if mult > 0:
                     sign = "+"
                 else:
@@ -1096,7 +1131,7 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
                 if var["variable"][1] != "reptime":
                     continue
                 reptime0_var = letter_vars.pop()
-                head += f"srt = {reptime0_var}\n"
+                scanhead += f"srt = {reptime0_var}\n"
                 axis = val_in_us(sequence.reptime, True)
                 def_file += f"{reptime0_var} = {axis[0]:.0f} * srtu\n"
                 srt_step_var = letter_vars.pop()
@@ -1109,7 +1144,7 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
                 pulse_id = var["variable"][0]
                 mult = var["multiplier"]
                 mv_pulse_amp_hash[pulse_id] = possible_amps.pop()
-                head += f"{mv_pulse_amp_hash[pulse_id]} = {static_pulse_amp_hash[pulse_id]}\n"
+                scanhead += f"{mv_pulse_amp_hash[pulse_id]} = {static_pulse_amp_hash[pulse_id]}\n"
                 
                 if mult > 0:
                     sign = "+"
@@ -1145,11 +1180,14 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
 
         pcyc = PSPhaseCycle(sequence, MPFU=None, OnlyDet=True)
         pcyc_str = pcyc.__str__() + "\n"*1 + pcyc_str
+    elif MPFU is not None:
+        pcyc = PSPhaseCycle(sequence, MPFU)
+        pcyc_hash = pcyc.pcyc_hash
+        pcyc_str = pcyc.__str__()
     else:
         pcyc = PSPhaseCycle(sequence, MPFU)
         pcyc_hash = pcyc.pcyc_hash
         pcyc_str = pcyc.__str__()
-
     # Add Pulse Sequence
     pulse_str = "d9\n"
     for id, pulse in enumerate(sequence.pulses):
@@ -1170,7 +1208,15 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False):
     dims = dims[:-1]
     dims += "] \nend defs\n" 
 
-    def_file += "end defs"
-    exp_file = dims + "\n"*2 + pcyc_str + "\n"*2 +  head + pulse_str + foot
+    if split_point:
+        exp_file = dims + "\n"*2 + pcyc_str + "\n"*2 + scanhead
+        exp_file += head.replace('sx','w') + pulse_str + foot + "\n"
+        exp_file += head.replace('x=1','x=w') + pulse_str + foot  + "\n"
+        exp_file += scanfoot
+        def_file += f"w = {split_point}\n"
+        def_file += "end defs"
+    else:
+        exp_file = dims + "\n"*2 + pcyc_str + "\n"*2 +  scanhead+ head + pulse_str + foot + scanfoot
+        def_file += "end defs"
 
     return def_file, exp_file

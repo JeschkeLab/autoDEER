@@ -59,6 +59,8 @@ class BrukerMPFU(Interface):
         self.bridge_config = self.api.spec_config["Bridge"]
 
         self.MPFU = self.bridge_config["MPFU Channels"]
+        if self.MPFU == 'None':
+            self.MPFU = None
         
         self.temp_dir = tempfile.mkdtemp("autoDEER")
 
@@ -163,6 +165,7 @@ class BrukerMPFU(Interface):
         if reset_cur_exp:
             timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
             self.savename = timestamp+savename
+            # self.savename = savename
             self.cur_exp = sequence
                     
         # First check if the sequence is pulsespel compatible
@@ -172,38 +175,66 @@ class BrukerMPFU(Interface):
             self._launch_complex_thread(sequence,1,tune)
             return None
         
-        
+        if self.MPFU is None:
+            SPFU_flip_power,ELDOR_flip_angle = _SPFU_channels(sequence)
 
-        channels = _MPFU_channels(sequence)
-        # pcyc = PSPhaseCycle(sequence,self.MPFU)
+            if tune:
+                self.tuning = True
+                if ELDOR_flip_angle is not None:
+                    dif_freq=None
+                    for pulse in sequence.pulses:
+                        if isinstance(pulse,Detection) or isinstance(pulse,Delay):
+                            continue
+                        if pulse.pcyc["Channels"] != "ELDOR":
+                            continue
+                        elif dif_freq is None:
+                            dif_freq = pulse.freq.value
+                        elif pulse.freq.value != dif_freq:
+                            raise ValueError('Only one ELDOR frequency is possible')
 
-        N_channels = len(channels)
+                    if ELDOR_flip_angle == np.inf:
+                        self.api.set_attenuator('ELDOR',0)
+                        self.api.set_ELDOR_freq(sequence.LO.value + dif_freq)
+                    else:
+                        ELDORtune(self,sequence,freq=dif_freq, MPFU=False)
+                SPFUtune(self,sequence,SPFU_flip_power)
+                self.tuning = False
+            
+            MPFU_chans=None
 
-        if N_channels > len(self.MPFU):
-            raise RuntimeError(
-                f"This sequence requires {N_channels} MPFU" "Channels." 
-                "Only {len(self.MPFU)} are avaliable on this spectrometer.")
-        
-        if tune:
-            self.tuning = True
-            if 'ELDOR' in channels:
-                dif_freq=None
-                for pulse in sequence.pulses:
-                    if pulse.freq.value == 0:
-                        continue
-                    elif dif_freq is None:
-                        dif_freq = pulse.freq.value
-                    elif pulse.freq.value != dif_freq:
-                        raise ValueError('Only one ELDOR frequency is possible')
-
-                ELDORtune(self,sequence,freq=dif_freq)
-            MPFUtune(self,sequence, channels)
-            self.tuning = False
-
-        if MPFU_overwrite is None:
-            MPFU_chans = self.MPFU
         else:
-            MPFU_chans = MPFU_overwrite
+
+            channels = _MPFU_channels(sequence)
+            # pcyc = PSPhaseCycle(sequence,self.MPFU)
+
+            N_channels = len(channels)
+
+
+            if N_channels > len(self.MPFU):
+                raise RuntimeError(
+                    f"This sequence requires {N_channels} MPFU" "Channels." 
+                    "Only {len(self.MPFU)} are avaliable on this spectrometer.")
+            
+            if tune:
+                self.tuning = True
+                if 'ELDOR' in channels:
+                    dif_freq=None
+                    for pulse in sequence.pulses:
+                        if pulse.freq.value == 0:
+                            continue
+                        elif dif_freq is None:
+                            dif_freq = pulse.freq.value
+                        elif pulse.freq.value != dif_freq:
+                            raise ValueError('Only one ELDOR frequency is possible')
+
+                    ELDORtune(self,sequence,freq=dif_freq)
+                MPFUtune(self,sequence, channels)
+                self.tuning = False
+
+            if MPFU_overwrite is None:
+                MPFU_chans = self.MPFU
+            else:
+                MPFU_chans = MPFU_overwrite
 
         PSpel_file = self.temp_dir + "/autoDEER_PulseSpel"
         if update_pulsespel:
@@ -334,7 +365,7 @@ class BrukerMPFU(Interface):
 
         seq = Sequence(name='single_pulse',B=B,LO=LO,reptime=3e3,averages=1,shots=4)
         det_tp = Parameter('tp',value=16,dim=4,step=0)
-        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi))
+        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi,pcyc={'phases':[0],'dets':[1]}))
         seq.addPulse(Detection(tp=16,t=d0))
 
         seq.evolution([det_tp])
@@ -521,6 +552,51 @@ def _MPFU_channels(sequence):
     
     return channels
 
+def _SPFU_channels(sequence,ELDOR=True):
+    """Idenitifies how many unique MPFU channels are needed for a sequence and
+    applies the correct Channel infomation to each pulse.
+    """
+    channels = []
+
+    SPFU_flip_power = None
+    ELDOR_flip_power = None
+
+    for iD, pulse in enumerate(sequence.pulses):
+        if type(pulse) is Delay:
+            continue
+        if type(pulse) is Detection:
+            continue
+        if ('Channels' in pulse.pcyc) and (pulse.pcyc['Channels'] == 'ELDOR'):
+            continue
+
+        if (pulse.tp.value == 0) or (pulse.freq.value != 0):
+            if pulse.flipangle.value == 'Hard':
+                flip_power = np.inf
+            else:
+                flip_power = pulse.flipangle.value / pulse.tp.value
+
+            if ELDOR:
+                if ELDOR_flip_power is None:
+                    ELDOR_flip_power = flip_power
+                if ELDOR_flip_power != flip_power:
+                    raise RuntimeError("All pulses on the ELDOR channel must have equal flip power.")
+                pulse.pcyc["Channels"] = "ELDOR"
+            else:
+                raise ValueError("An ELDOR Channel is needed for this sequence")
+            
+            continue
+        else:
+            flip_power = pulse.flipangle.value / pulse.tp.value
+
+            if SPFU_flip_power is None:
+                SPFU_flip_power = flip_power
+
+            if SPFU_flip_power != flip_power:
+                raise RuntimeError("In SPFU mode all pulses must have equal filp power")
+            pulse.pcyc["Channels"] = "SPFU"
+        
+    return SPFU_flip_power, ELDOR_flip_power
+
 
 # =============================================================================
 
@@ -554,23 +630,31 @@ def tune_power(
                 The optimal value of the attenuator parameter
 
             """
-            channel_opts = ['+<x>', '-<x>', '+<y>', '-<y>','ELDOR']
+            channel_opts = ['+<x>', '-<x>', '+<y>', '-<y>','ELDOR','Main']
             if channel not in channel_opts:
                 raise ValueError(f'Channel must be one of: {channel_opts}')
-            
-            if channel == '+<x>':
-                atten_channel = 'BrXAmp'
-            elif channel == '-<x>':
-                atten_channel = 'BrMinXAmp'
-            elif channel == '+<y>':
-                atten_channel = 'BrYAmp'
-            elif channel == '-<y>':
-                atten_channel = 'BrMinYAmp'
-            elif channel == 'ELDOR':
-                atten_channel = 'ELDORAtt'
-
             lb = bounds[0]
             ub = bounds[1]
+            if channel == '+<x>':
+                atten_channel = 'BrXAmp'
+                dx=51
+            elif channel == '-<x>':
+                atten_channel = 'BrMinXAmp'
+                dx=51
+            elif channel == '+<y>':
+                atten_channel = 'BrYAmp'
+                dx=51
+            elif channel == '-<y>':
+                atten_channel = 'BrMinYAmp'
+                dx=51
+            elif channel == 'ELDOR':
+                atten_channel = 'ELDORAtt'
+                dx=31
+            elif channel == 'Main':
+                atten_channel = 'PowerAtten'
+                dx=ub+1
+
+            
 
             if echo=='abs':
                 tran_sum = lambda x: -1 * np.sum(np.abs(x))
@@ -600,7 +684,7 @@ def tune_power(
             limit = np.abs(interface.api.hidden['specjet.DataRange'][0])
             while start_point ==0:
                 overflow_flag = False
-                x = np.linspace(0,100,51,endpoint=True)
+                x = np.linspace(lb,ub,dx,endpoint=True)
                 y = np.zeros_like(x)
                 vg = interface.api.get_video_gain()
                 interface.api.hidden[atten_channel].value = x[0]
@@ -629,7 +713,7 @@ def tune_power(
                     interface.api.set_video_gain(vg + 6)
                     overflow_flag= True
                     print('underflow')
-                    break                  
+                    continue                  
                 loops += 1
                 if loops > 10:
                     raise RuntimeError('Failed to optimise videogain')
@@ -804,7 +888,7 @@ def MPFUtune(interface, sequence, channels, echo='Hahn',tol: float = 0.1,
         tune_phase(interface, MPFU_chanel, phase_to_echo(channel[1]), tol=tol)
 
 
-def ELDORtune(interface, sequence, freq,
+def ELDORtune(interface, sequence, freq, MPFU=True,
              tau_value=550,test_tp = 16,plot=False,save=True):
 
     sequence_gyro = sequence.B.value / sequence.LO.value
@@ -816,8 +900,14 @@ def ELDORtune(interface, sequence, freq,
 
 
     # tune a pair of 90/180 pulses at the eldor frequency
-    channels = [(np.pi/2 / test_tp,0),(np.pi / test_tp,0)]
-    MPFUtune(interface, ref_echoseq, channels,echo='Hahn')
+    if MPFU:
+        channels = [(np.pi/2 / test_tp,0),(np.pi / test_tp,0)]
+        MPFUtune(interface, ref_echoseq, channels,echo='Hahn')
+        test_tp_pi=test_tp
+    else:
+        test_tp_pi=test_tp*2
+        flip_angle = np.pi/2 / test_tp
+        SPFUtune(interface,ref_echoseq,flip_angle)
 
 
     tp = Parameter("tp",test_tp)
@@ -825,7 +915,7 @@ def ELDORtune(interface, sequence, freq,
     tau = Parameter("tau",tau_value,dim=4,step=0)
     ref_echoseq.addPulse(RectPulse(freq=0, t=0, tp=tp, flipangle=np.pi))
     ref_echoseq.addPulse(RectPulse(freq=0, t=long_delay,tp=tp, flipangle=np.pi/2))
-    ref_echoseq.addPulse(RectPulse(freq=0, t=long_delay+tau,tp=tp, flipangle=np.pi))
+    ref_echoseq.addPulse(RectPulse(freq=0, t=long_delay+tau,tp=test_tp_pi, flipangle=np.pi))
     ref_echoseq.addPulse(Detection(t=long_delay+2*tau, tp=512))
     ref_echoseq.evolution([tau])
     ref_echoseq.pulses[0].pcyc["Channels"] = "ELDOR"
@@ -870,6 +960,40 @@ def ELDORtune(interface, sequence, freq,
     interface.api.set_attenuator('ELDOR',new_value)
 
     # tune_power(interface, 'ELDOR', tol=1, bounds=[0,30],echo='R-')
+
+def SPFUtune(interface, sequence, flip_power, echo='Hahn',tol: float = 0.1,
+             bounds=[0, 60],tau_value=550):
+    
+    hardware_wait=1
+
+    tau = Parameter("tau",tau_value,dim=4,step=0)
+
+    exc_pulse = RectPulse(freq=0, tp = np.around(np.pi/2 /flip_power), scale=1, flipangle = np.pi/2)
+    ref_pulse = RectPulse(freq=0, tp = np.around(np.pi / flip_power ), scale=1, flipangle = np.pi)
+    
+    seq = HahnEchoSequence(
+        B=sequence.B,LO=sequence.LO,reptime=sequence.reptime,averages=1,
+        shots=10, tau=tau, pi2_pulse=exc_pulse, pi_pulse=ref_pulse)
+    seq.pulses[0].pcyc = {'Phases': [0], 'DetSigns': [1.0]}
+    seq._buildPhaseCycle()
+    seq.evolution([tau])
+
+    interface.launch(seq, savename="autoTUNE", start=True, tune=False,reset_bg_data=False,reset_cur_exp=False)
+
+    time.sleep(3)
+    interface.terminate()
+    interface.api.cur_exp['ftEPR.StartPlsPrg'].value = True
+    interface.api.hidden['specJet.NoOfPoints'].value = 512
+    interface.api.hidden['specJet.NoOfAverages'].value = 20
+    interface.api.hidden['specJet.NOnBoardAvgs'].value = 20
+    if not interface.api.hidden['specJet.AverageStart'].value:
+        interface.api.hidden['specJet.AverageStart'].value = True
+    
+
+    # interface.api.set_PulseSpel_phase_cycling('auto')
+    print(f"Tuning SPFU channels:")
+    tune_power(interface, 'Main', tol=tol, bounds=bounds,hardware_wait=hardware_wait)
+
 
 def test_if_MPFU_compatability(seq):
     table = seq.progTable

@@ -124,7 +124,7 @@ class ResonatorProfileAnalysis:
 
 
 
-    def fit(self,f_diff_threshold=2,cores=1,multi_mode=False,fc_guess=34.05):
+    def fit(self,f_diff_threshold=2,cores=1,multi_mode=False,fc_guess=None):
         """Fit the resonator profile with a sum of lorentzians.
 
         Parameters
@@ -135,10 +135,12 @@ class ResonatorProfileAnalysis:
         """
 
         frq_limits = {'lb': self.f_lims[0]-1, 'ub': self.f_lims[1]+1}
+        if fc_guess is None:
+            fc_guess = np.mean([self.f_lims[0],self.f_lims[1]])
         def fit_gauss1():
             gauss_model = dl.dd_gauss
             gauss_model.mean.set(par0=fc_guess, **frq_limits)
-            gauss_model.std.set(par0=0.2, lb=0.01, ub=10)
+            gauss_model.std.set(par0=0.2, lb=0.01, ub=1)
 
             result_gauss1 = dl.fit(gauss_model, self.profile, self.freqs,reg=False)
             return result_gauss1
@@ -173,7 +175,7 @@ class ResonatorProfileAnalysis:
             lorenz = dl.Model(lorenz_fcn, constants='x')
             lorenz.fc.par0 = uni_means[0]
             lorenz.fc.set(**frq_limits)
-            lorenz.q.set(lb=0, ub=np.inf)
+            lorenz.q.set(lb=30, ub=np.inf)
             lorenz.q.par0 = uni_means[0]/uni_stds[0]
             lorenz.fc.set(par0=uni_means[0],lb=uni_means[0]-0.1,ub=uni_means[0]+0.1)
             result_lorenz1 = dl.fit(lorenz, self.profile, self.freqs,reg=False, **fit_kwargs)

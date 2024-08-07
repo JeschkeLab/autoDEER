@@ -750,7 +750,7 @@ class DEERSequence(Sequence):
         self.dt = dt
         self.deadtime = 200
         self.ESEEM = False
-        self.add_ESEEM_avg(ESEEM_avg)
+        self.add_ESEEM_avg(None)
 
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
@@ -826,22 +826,6 @@ class DEERSequence(Sequence):
 
 
         self.evolution([t])
-
-        # if self.ESEEM_avg.lower() == "proton":
-        #     ESEEM_axis = np.arange(0,8) * 8
-        #     self.addPulsesProg(
-        #         [2, 3],
-        #         ["t"],
-        #         1,
-        #         [self.tau1+ ESEEM_axis, 2*(self.tau1+ ESEEM_axis)])
-        # elif self.ESEEM_avg.lower() == "deuteron":
-        #     ESEEM_axis = np.arange(0,8) * 16
-        #     self.addPulsesProg(
-        #         [2, 3],
-        #         ["t"],
-        #         1,
-        #         [self.tau1+ ESEEM_axis, 2*(self.tau1+ ESEEM_axis)])
-
         pass
 
     def four_pulse(self, tp=16, relaxation=False):
@@ -865,7 +849,7 @@ class DEERSequence(Sequence):
             self.t = Parameter(name="t", value=0, unit="ns", description="The time axis", virtual=True)
         else:
             dim = np.floor((self.tau2.value)/self.dt)
-            self.t = Parameter(name="t", value = - self.deadtime, step=self.dt,
+            self.t = Parameter(name="t", value = self.tau1.value - self.deadtime, step=self.dt,
                        dim=dim, unit="ns", description="The time axis", virtual=True)
 
         
@@ -883,7 +867,7 @@ class DEERSequence(Sequence):
             self.addPulse(RectPulse(t=self.tau1, tp=tp, freq=0, flipangle=np.pi))
         
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=2*self.tau1 + self.t))
+            self.addPulse(self.pump_pulse.copy(t=self.tau1 + self.t))
         else:
             self.addPulse(RectPulse(t=2*self.tau1 + self.t,
                                     tp=tp, freq=0, flipangle=np.pi))
@@ -994,29 +978,6 @@ class DEERSequence(Sequence):
         else:
             self.evolution([self.t])
 
-        # self.addPulsesProg(
-        #     [3],
-        #     ["t"],
-        #     0,
-        #     axis)
-        
-        # if self.ESEEM_avg is not None:
-        #     # This is not quite a perfect ESEEM average. I am not sure if this
-        #     # is possible with a pulse based scripting. I think only following
-        #     # a delay based model can you easily describe two axes acting on 
-        #     # the same pulse. 
-        #     if self.ESEEM_avg.lower() == "proton":
-        #         ESEEM_axis = np.arange(0,8) * 8
-        #     elif self.ESEEM_avg.lower() == "deuteron":
-        #         ESEEM_axis = np.arange(0,8) * 16
-        #     self.addPulsesProg(
-        #         [1, 2, 4, 5],
-        #         ["t"],
-        #         1,
-        #         [p1 - ESEEM_axis, r1 + 1*ESEEM_axis, r2 + 2*ESEEM_axis,
-        #          d + 2*ESEEM_axis])
-
-        # pass
 
     def seven_pulse(self, tp=16, relaxation=False):
         """
@@ -1304,6 +1265,7 @@ class DEERSequence(Sequence):
             self.pulses[5]._addPhaseCycle([0, np.pi], [1, 1])       # Pump 3
             self.pulses[6]._addPhaseCycle([0],[1])                  # Ref 3
 
+        self.pcyc_name = option
         
         self._buildPhaseCycle()
 
@@ -1766,6 +1728,7 @@ class ResonatorProfileSequence(Sequence):
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
         self.gyro = LO/B
+        self.fwidth = Parameter('fwidth',fwidth,'GHz','Half the frequency sw')
 
         if "pi_pulse" in kwargs:
             self.pi_pulse = kwargs["pi_pulse"]
@@ -1780,7 +1743,7 @@ class ResonatorProfileSequence(Sequence):
         tau2=500
 
         tp = Parameter("tp", 0, step=2, dim=40, unit="ns", description="Test Pulse length")
-        fwidth= 0.3
+        fwidth= self.fwidth.value
         fstep = 0.02
         dim = np.floor(fwidth*2/0.02)
         center_LO = self.LO.value
@@ -1810,7 +1773,7 @@ class ResonatorProfileSequence(Sequence):
             t=tau1+tau2, tp=32, freq=0, flipangle=np.pi
             ))
 
-        self.addPulse(Detection(t=tau1+2*tau2, tp=512))
+        self.addPulse(Detection(t=tau1+2*tau2, tp=64))
 
 
         self.pulses[0].scale.value = 1

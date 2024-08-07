@@ -109,21 +109,28 @@ class CarrPurcellAnalysis():
     
     def check_decay(self,level=0.05):
         """
-        Checks that the data has decayed to 5% in the time lenght of the dataset.
+        Checks that the data has decayed by over 5% in the entire length and less than 5% in the first 30% of the data.
 
         Parameters
         ----------
         level : float, optional
             The level to check the decay, by default 0.05
+
+        Returns
+        -------
+        int
+            0 if both conditions are met, 1 if the decay is less than 5% in the first 30% of the data, and -1 if the decay is less than 5% in the entire length.
         
         """
-
+        n_points = len(self.axis)
         if hasattr(self,"fit_result"):
             decay = self.func(self.axis, *self.fit_result[0]).data
-            if decay.min() < level:
-                return True
-            else:
-                return False
+            if (decay.min() < level) and (decay[:int(n_points*0.3)].min() > level):
+                return 0
+            elif decay[:int(n_points*0.3)].min() < level:
+                return 1
+            elif decay.min() > level:
+                return -1
         else:
             raise ValueError("No fit result found")
 
@@ -229,17 +236,23 @@ class ReptimeAnalysis():
         if axs is None and fig is None:
             fig, axs = plt.subplots()
 
-        axs.plot(self.axis, self.data, '.', label='data', color='0.6', ms=6)
+        if hasattr(self,'fit_result'):
+            # renormalise data to fit amplitude
+            data = self.data/self.fit_result[0][0]
+        else:
+            data = self.data
+
+        axs.plot(self.axis, data, '.', label='data', color='0.6', ms=6)
 
         if hasattr(self,'fit_result'):
-            axs.plot(self.axis, self.func(self.axis,*self.fit_result[0]), label='fit', color='C1', lw=2)
-            axs.vlines(self.fit_result[0][1],0,1,linestyles='dashed',label='T1 = {:.3g} us'.format(self.fit_result[0][1]),colors='C0')
+            axs.plot(self.axis, self.func(self.axis,*self.fit_result[0]), label='Fit', color='C1', lw=2)
+            axs.vlines(self.fit_result[0][1],0,1,linestyles='dashed',label='T1 = {:.3g} ms'.format(self.fit_result[0][1]/1e3),colors='C0')
 
             if hasattr(self,'optimal'):
-                axs.vlines(self.optimal,0,1,linestyles='dashed',label='optimal = {:.3g} us'.format(self.optimal),colors='C2')
+                axs.vlines(self.optimal,0,1,linestyles='dashed',label='Optimal = {:.3g} ms'.format(self.optimal/1e3),colors='C2')
 
-        axs.set_xlabel('reptime (us)')
-        axs.set_ylabel('normalized signal')
+        axs.set_xlabel('Reptime $(\mu s)$')
+        axs.set_ylabel('Normalised signal')
         axs.legend()
         return fig
 
@@ -326,9 +339,10 @@ def plot_1Drelax(*args,fig=None, axs=None,cmap=cmap):
         elif arg.dataset.seq_name == 'CarrPurcellSequence':
             xscale = 4
             label='CP-2'
-        elif arg.dataset.seq_name == 'DEERSequence':
+        elif (arg.dataset.seq_name == 'DEERSequence') or (arg.dataset.seq_name == '5pDEER'):
             xscale = 4
             label='CP-2'
+
         else:
             xscale = 4
             label='CP-2'
@@ -424,8 +438,8 @@ class RefocusedEcho2DAnalysis():
         elif axs is None:
             axs = fig.subplots(1,1)
 
-        cmap = cm.get_cmap('Purples',lut=None)
-        cmap_contour = cm.get_cmap('Greys_r',lut=None)
+        cmap = plt.get_cmap('Purples',lut=None)
+        cmap_contour = plt.get_cmap('Greys_r',lut=None)
 
 
         axs.pcolormesh(self.axis[0],self.axis[1],data,cmap=cmap)
@@ -510,13 +524,14 @@ class RefocusedEcho2DAnalysis():
         if not hasattr(self,'data_smooth'):
                 self._smooth()
         data = self.data_smooth
-        # data = np.abs(self.data)
+        raw_data = np.abs(self.data)
+        raw_data /= np.max(raw_data)
         data /= np.max(data)
 
         calc_data = data
 
         # averages = self.seq.shots.value * self.seq.averages.value
-        self.noise = noiselevel(data)
+        self.noise = noiselevel(raw_data)
         data_snr = calc_data / self.noise
         data_snr_avgs = data_snr / np.sqrt(averages)
 

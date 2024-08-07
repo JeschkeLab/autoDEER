@@ -7,12 +7,23 @@ import sys, traceback
 import autodeer as ad
 import numbers
 import numpy as np
+import datetime
 
 # =============================================================================
 #
 #   General functions and classes
 #
 # =============================================================================
+
+def create_save_name(SampleName:str, experiment:str, timestamp=True, ProjectName=None, Comment=None):
+    timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
+    fullname = f"{timestamp}"
+    if ProjectName is not None or ProjectName != "":
+        fullname += f"_({ProjectName})"
+    fullname += f"_{SampleName}_{experiment}"
+    if Comment is not None or Comment != "":
+        fullname += f"_{Comment}"
+    return fullname
 
 def getCIstring(Uncert, precision=2):
     try:

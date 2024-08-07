@@ -84,7 +84,7 @@ class dummyInterface(Interface):
             return y
 
         mode = lambda x: lorenz_fcn(x, fc, fc/Q)
-        x = np.linspace(33,35)
+        x = np.linspace(Bridge['Min Freq'],Bridge['Max Freq'])
         scale = 75/mode(x).max()
         self.mode = lambda x: lorenz_fcn(x, fc, fc/Q) * scale
         super().__init__(log=hw_log)
@@ -158,7 +158,9 @@ class dummyInterface(Interface):
             
     def isrunning(self) -> bool:
         current_time = time.time()
-        if current_time - self.start_time > (self.cur_exp._estimate_time() / self.speedup):
+        runtime =  (self.cur_exp._estimate_time() / self.speedup)
+        runtime = np.min([runtime, 5])
+        if current_time - self.start_time > runtime:
             self.state = False
     
         return self.state
