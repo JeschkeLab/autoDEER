@@ -9,8 +9,9 @@ Spectrometer:
   Hybrid: False
 
   Bridge:
-    Min Freq: 33 #GHz
-    Max Freq: 35 #GHz
+    Min Freq: 9 #GHz
+    Max Freq: 10 #GHz
+    Freq Cal: [-1.24154252e+08,  6.51660462e+07, -1.36865857e+07,  1.43759687e+06, -7.55122947e+04,  1.58683076e+03]
     Digital Source: False
     d0: 650 #ns
     Pulse dt: 2  #ns
@@ -19,9 +20,11 @@ Spectrometer:
     Video BW: 20
 
 Resonators:
-  Holder 5 :
-    Center Freq: 34.265 #GHz
+
+  MD4:
+    Center Freq: 9.609 #GHz
     Q: 80
+  
 
 autoDEER:
   logging:
@@ -40,3 +43,4 @@ autoDEER:
   Refresh_time: 0.5  # mins Default: 3
   cores: 3
   Min_tp: 16
+  reptime: 100 # us

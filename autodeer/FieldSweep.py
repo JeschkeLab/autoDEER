@@ -105,6 +105,7 @@ class FieldSweepAnalysis():
         
         self.data = dataset
         self.data = self.data.epr.correctphasefull
+        self.data.data /= self.data.data[np.argmax(np.abs(self.data.data))]
 
         if 'LO' in dataset.attrs:
             self.LO = dataset.attrs['LO']

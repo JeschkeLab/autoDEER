@@ -28,7 +28,7 @@ class PSPhaseCycle:
         if MPFU is not None:
             pulse_dicts = self._MPFU(sequence, MPFU)
         else:
-            pulse_dicts = self._main(sequence)
+            pulse_dicts = self._main(sequence,OnlyDet)
         
         detect_dicts =self._detect(sequence)
         if not OnlyDet:
@@ -60,7 +60,7 @@ class PSPhaseCycle:
         
         return BPhaseCycles
     
-    def _main(self, sequence):
+    def _main(self, sequence,OnlyDet):
         num_pulses = len(sequence.pcyc_vars)
         num_cycles = sequence.pcyc_dets.shape[0]
 
@@ -70,7 +70,7 @@ class PSPhaseCycle:
             dict = {}
             dict["Pulse"] = sequence.pcyc_vars[i]
             dict["Cycle"] = []
-            if sequence.pulses[i].pcyc["Channels"] == "ELDOR":
+            if (not OnlyDet) and (sequence.pulses[i].pcyc["Channels"] == "ELDOR"):
                 dict["Cycle"].append("ELDOR")
             else:
                 for j in range(0, num_cycles):
@@ -980,9 +980,7 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
     loop_iterators = ["i","j"]
     loop_dims = ["m","f"]
     letter_vars = ['b','c','e','f','g']
-    possible_amps = ["aa1","aa2","aa3","aa4","aa5","aa6","aa7","aa8","aa9","aa10",
-                     "ab1","ab2","ab3","ab4","ab5","ab6","ab7","ab8","ab9","ab10",
-                     "ac1","ac2","ac3","ac4","ac5","ac6","ac7","ac8","ac9","ac10"]
+    possible_amps = [f"aa{i}" for i in range(32)]
 
     n_pulses = len(sequence.pulses)
     n_axes = len(uprogtable)

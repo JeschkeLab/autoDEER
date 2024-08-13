@@ -1,12 +1,33 @@
-from autodeer.classes import Interface
+from autodeer.classes import Interface, Parameter
+from autodeer.pulses import Delay, Detection, RectPulse
+from autodeer.sequences import Sequence, HahnEchoSequence
+from autodeer.utils import save_file, transpose_list_of_dicts, transpose_dict_of_list, round_step
+from autodeer import create_dataset_from_sequence, create_dataset_from_axes
+
 from autodeer.hardware.XeprAPI_link import XeprAPILink
-from autodeer.hardware.Bruker_tools import PulseSpel, run_general
+from autodeer.hardware.Bruker_tools import PulseSpel, run_general,build_unique_progtable,PSPhaseCycle, write_pulsespel_file
+from autodeer.hardware.Bruker_MPFU import step_parameters
 
 import tempfile
 import time
+from scipy.optimize import minimize_scalar, curve_fit
 import numpy as np
+import threading
+import concurrent.futures
+from PyQt6.QtCore import QThreadPool
+from autodeer.gui import Worker
+import os
+from pathlib import Path
+import datetime
+from deerlab import correctphase
+import matplotlib.pyplot as plt
+import logging
+import warnings
+# ===================
+
 
 # =============================================================================
+hw_log = logging.getLogger('interface.Xepr')
 
 
 class BrukerAWG(Interface):
@@ -73,7 +94,7 @@ class BrukerAWG(Interface):
 
         self.api.hidden['BrPlsMode'].value = True
         self.api.hidden['OpMode'].value = 'Operate'
-        self.api.hidden['RefArm'].value = 'On'
+        # self.api.hidden['RefArm'].value = 'On'
 
         self.api.cur_exp['VideoBW'].value = 20
         if d0 is None:
@@ -158,7 +179,7 @@ class BrukerAWG(Interface):
         
         if update_pulsespel:
             
-            def_text, exp_text = write_pulsespel_file(sequence,AWG=True)
+            def_text, exp_text = write_pulsespel_file(sequence,self.d0,AWG=True)
             
             verbMsgParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELVerbMsg')
             plsSPELCmdParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELCmd')
@@ -318,7 +339,7 @@ class BrukerAWG(Interface):
                 pi2_pulse = pulse, pi_pulse=pi_pulse
             )
 
-            scale = Parameter('scale',0,unit=None,step=0.02, dim=45, description='The amplitude of the pulse 0-1')
+            scale = Parameter('scale',0,unit=None,step=0.02, dim=51, description='The amplitude of the pulse 0-1')
             amp_tune.pulses[0].scale = scale
 
             amp_tune.evolution([scale])
@@ -349,7 +370,7 @@ class BrukerAWG(Interface):
                               freq=c_frq-LO))
             nut_tune.addPulse(Detection(t=3e3, tp=512, freq=c_frq-LO))
 
-            scale = Parameter('scale',0,unit=None,step=0.02, dim=45, description='The amplitude of the pulse 0-1')
+            scale = Parameter('scale',0,unit=None,step=0.02, dim=51, description='The amplitude of the pulse 0-1')
             nut_tune.pulses[0].scale = scale
             nut_tune.evolution([scale])
 
@@ -377,22 +398,6 @@ class BrukerAWG(Interface):
             pulse.scale = Parameter('scale',new_amp,unit=None,description='The amplitude of the pulse 0-1')
         
             return pulse
-
-    def tune_nutation(self, test_pulse):
-        Nutation = open.Sequence(
-            name="Nutation Tuning", B=12248.7, LO=33.970715,
-            reptime=3000, averages=1, shots=100)
-
-        pi2_pulse = open.RectPulse(t=0, tp=12, freq=0, pcyc = [0, np.pi], flipangle=np.pi/2)
-        pi_pulse = open.RectPulse(t=500, tp=12, freq=0, pcyc= [0], flipangle=np.pi)
-
-        Nutation.addPulse(test_pulse)
-        Nutation.addPulse(pi2_pulse)
-        Nutation.addPulse(pi_pulse)
-
-        Nutation.addPulse(open.Detection(t=1e3, tp=48))
-        Nutation.convert()
-        pass
 
     
     def isrunning(self) -> bool:
@@ -432,7 +437,7 @@ class BrukerAWG(Interface):
 
         seq = Sequence(name='single_pulse',B=B,LO=LO,reptime=3e3,averages=1,shots=20)
         det_tp = Parameter('tp',value=16,dim=4,step=0)
-        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi))
+        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi,scale=1))
         seq.addPulse(Detection(tp=16,t=d0))
 
         seq.evolution([det_tp])
@@ -473,7 +478,7 @@ class BrukerAWG(Interface):
 
         seq = Sequence(name='single_pulse',B=B,LO=LO,reptime=3e3,averages=1,shots=20)
         det_tp = Parameter('tp',value=16,dim=4,step=0)
-        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi))
+        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi,scale=1))
         seq.addPulse(Detection(tp=16,t=d0))
 
         seq.evolution([det_tp])
