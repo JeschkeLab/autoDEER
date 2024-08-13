@@ -236,7 +236,13 @@ class ReptimeAnalysis():
         if axs is None and fig is None:
             fig, axs = plt.subplots()
 
-        axs.plot(self.axis, self.data, '.', label='data', color='0.6', ms=6)
+        if hasattr(self,'fit_result'):
+            # renormalise data to fit amplitude
+            data = self.data/self.fit_result[0][0]
+        else:
+            data = self.data
+
+        axs.plot(self.axis, data, '.', label='data', color='0.6', ms=6)
 
         if hasattr(self,'fit_result'):
             axs.plot(self.axis, self.func(self.axis,*self.fit_result[0]), label='Fit', color='C1', lw=2)
@@ -333,9 +339,10 @@ def plot_1Drelax(*args,fig=None, axs=None,cmap=cmap):
         elif arg.dataset.seq_name == 'CarrPurcellSequence':
             xscale = 4
             label='CP-2'
-        elif arg.dataset.seq_name == 'DEERSequence':
+        elif (arg.dataset.seq_name == 'DEERSequence') or (arg.dataset.seq_name == '5pDEER'):
             xscale = 4
             label='CP-2'
+
         else:
             xscale = 4
             label='CP-2'
@@ -431,8 +438,8 @@ class RefocusedEcho2DAnalysis():
         elif axs is None:
             axs = fig.subplots(1,1)
 
-        cmap = cm.get_cmap('Purples',lut=None)
-        cmap_contour = cm.get_cmap('Greys_r',lut=None)
+        cmap = plt.get_cmap('Purples',lut=None)
+        cmap_contour = plt.get_cmap('Greys_r',lut=None)
 
 
         axs.pcolormesh(self.axis[0],self.axis[1],data,cmap=cmap)
