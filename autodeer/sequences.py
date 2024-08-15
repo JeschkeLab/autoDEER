@@ -257,6 +257,30 @@ class Sequence:
         return self.pcyc_vars, self.pcyc_cycles, self.pcyc_dets
 
     def evolution(self, params, reduce=[]):
+        """
+        Sets what parameters are being evolved in the sequence, and which are
+        being automatically.
+
+        `self.evo_params = params`
+
+        Parameters
+        ----------
+        params : list
+            A list of Parameter objects which are being evolved. Each every 
+            entry in the list will be a new axis in the sequence. Only one parameter
+            per axis should be specified.
+        reduce : list
+            A list of Parameter objects which are being reduced. These are the
+            parameters which are being averaged over. These parameters should
+            also be in the params list.
+        
+        Returns
+        -------
+        progTable : dict
+            A dictionary containing the progression of the sequence.
+        
+        
+        """
         self.evo_params = params
         self.axes_uuid = [param.uuid for param in params]
         self.reduce_uuid = [param.uuid for param in reduce]
@@ -321,122 +345,6 @@ class Sequence:
                 pulse.final_freq.value -= det_freq
         return self
     
-    def isPulseFocused(self):
-        """
-        Is the sequence expressed to contain only pulses and no delays?
-        """
-        test = []
-        for pulse in self.pulses:
-            test.append(pulse.isPulseFocused())
-
-        if np.array(test).all() == True:
-            return True
-        else:
-            return False
-
-    def isDelayFocused(self):  
-        """
-        Is the sequence expressed to contain both pulses and delays?
-        """ 
-        test = []
-        for pulse in self.pulses:
-            test.append(pulse.isDelayFocused())
-        if np.array(test).all() == True:
-            return True
-        else:
-            return False
-
-    def convert(self, *, reduce=True):
-        """Converts the current sequence to either pulse focused or delay
-        focused depending on the current state
-
-        Parameters
-        ----------
-        reduce : bool, optional
-            Reduce to the smallest number of objects, by default True
-        """
-
-        if self.isPulseFocused():
-            self._convert_to_delay()
-        elif self.isDelayFocused():
-            self._convert_to_pulses()
-
-    def _convert_to_delay(self):
-        num_pulses = len(self.pulses)
-
-        # create list of pulse timeing
-        pulse_times = []
-        new_sequence = []
-
-        new_pulse = copy.deepcopy(self.pulses[0])
-        new_pulse.t = None
-        new_sequence.append(new_pulse)
-        pulse_times.append(self.pulses[0].t.value)
-        pulse_hash = {0: 0}
-
-        for i in range(1, num_pulses):
-            t_cur = self.pulses[i].t.value
-            t_prev = self.pulses[i-1].t.value
-            static_delay = t_cur-t_prev
-            tmp_delay = Delay(tp=static_delay)
-            new_sequence.append(tmp_delay)
-            new_pulse = copy.deepcopy(self.pulses[i])
-            new_pulse.t = None
-            new_sequence.append(new_pulse)
-            pulse_hash[i] = new_sequence.index(new_pulse)
-            pulse_times.append(t_cur)
-
-        new_prog_table = {"EventID": [], "Variable": [], "axis": [],
-                          "axID": []}
-
-        def add_prog_table(dic, Element, Variable, axes, ax_id):
-            dic["EventID"].append(Element)
-            dic["Variable"].append(Variable)
-            dic["axis"].append(axes)
-            dic["axID"].append(ax_id)
-            return dic
-        prog_axes = np.unique(self.progTable["axID"])
-        for ax_id in prog_axes:
-            indexs = np.where(np.array(self.progTable["axID"]) == ax_id)[0]
-            for i in indexs:
-                pulse_num = self.progTable["EventID"][i]
-                pulse_times[pulse_num] = self.progTable["axis"][i]
-            for i in range(1, num_pulses):
-                diff = np.atleast_1d(pulse_times[i] - pulse_times[i-1])
-                if diff.shape[0] > 1:
-                    new_prog_table = add_prog_table(
-                        new_prog_table, int(i*2 - 1), "tp", diff, ax_id)
-        
-        # Change the pcyc_vars
-        new_pcyc_var = []
-        for var in self.pcyc_vars:
-            new_pcyc_var.append(pulse_hash[var])
-        self.pcyc_vars = new_pcyc_var
-
-        self.pulses = new_sequence
-        self.progTable = new_prog_table
-        return self.pulses
-
-    def _convert_to_pulses(self):
-        num_ele = len(self.pulses)
-        new_sequence = []
-
-        new_pulse = copy.deepcopy(self.pulses[0])
-        new_pulse.t = Parameter("t", 0, "ns", "Start time of pulse")
-        new_sequence.append(new_pulse)
-
-        for i in range(1, num_ele):
-            pulse = self.pulses[i]
-            if type(pulse) is not Delay:
-                pos = 0
-                for j in range(0, i):
-                    pos += self.pulses[j].tp.value
-                new_pulse = copy.deepcopy(pulse)
-                new_pulse.t = Parameter("t", pos, "ns", "Start time of pulse")
-                new_sequence.append(new_pulse)
-        self.pulses = new_sequence
-        return self.pulses
-
     def _checkRect(self) -> bool:
         """Checks if all the pulses in the sequence are rectangular.
         """

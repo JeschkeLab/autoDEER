@@ -26,18 +26,6 @@ def test_pulse_is_static():
     pulse = Pulse(tp=tp, scale=0.5, t=0, pcyc=None)
     assert pulse.is_static()
 
-def test_pulse_is_delay_focused():
-    pulse = Pulse(tp=10, scale=0.5)
-    assert pulse.isDelayFocused()
-    pulse = Pulse(tp=10, scale=0.5, t=0)
-    assert not pulse.isDelayFocused()
-
-def test_pulse_is_pulse_focused():
-    pulse = Pulse(tp=10, scale=0.5)
-    assert not pulse.isPulseFocused()
-    pulse = Pulse(tp=10, scale=0.5, t=0)
-    assert pulse.isPulseFocused()
-
 def test_pulse_plot():
     pulse = Pulse(tp=10, scale=0.5)
     pulse._buildFMAM(lambda x: (np.ones_like(x), np.zeros_like(x)))
