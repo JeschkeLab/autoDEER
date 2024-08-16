@@ -261,33 +261,68 @@ class BrukerAWG(Interface):
             B=B, LO=LO, reptime=reptime, averages=1, shots=shots
         )
 
-        scale = Parameter("scale",0,dim=45,step=0.02)
+        scale = Parameter("scale",0,dim=51,step=0.02)
         amp_tune.pulses[0].tp.value = tp
         amp_tune.pulses[0].scale = scale
         amp_tune.pulses[1].tp.value = tp * 2
         amp_tune.pulses[1].scale = scale
 
         amp_tune.evolution([scale])
-        
-        self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
 
-        while self.isrunning():
-            time.sleep(10)
-        dataset = self.acquire_dataset()
-        dataset = dataset.epr.correctphase
+        vg = self.api.get_video_gain()
+        overflow_flag= True
+        while overflow_flag:
+            
+            self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
 
-        data = np.abs(dataset.data)
-        scale = np.around(dataset.pulse0_scale[data.argmax()].data,2)
-        if scale > 0.9:
-            raise RuntimeError("Not enough power avaliable.")
-        
-        if scale == 0:
-            warnings.warn("Pulse tuned with a scale of zero!")
-        p90 = amp_tune.pulses[0].copy(
-            scale=scale, LO=amp_tune.LO)
-        
-        p180 = amp_tune.pulses[1].copy(
-            scale=scale, LO=amp_tune.LO)
+            while self.isrunning():
+                time.sleep(10)
+            dataset = self.acquire_dataset()
+            dataset = dataset.epr.correctphase
+
+            data = np.abs(dataset.data)
+            scale_amp = np.around(dataset.pulse0_scale[data.argmax()].data,2)
+            if scale_amp > 0.95:
+                raise RuntimeError("Not enough power avaliable.")
+            
+            if scale_amp == 0:
+                warnings.warn("Pulse tuned with a scale of zero!")
+            p90 = amp_tune.pulses[0].copy(
+                scale=scale_amp, LO=amp_tune.LO)
+            
+            p180 = amp_tune.pulses[1].copy(
+                scale=scale_amp, LO=amp_tune.LO)
+            
+
+            scale = Parameter("scale",scale_amp,dim=4,step=0.01)
+            amp_tune.pulses[0].scale = scale
+            amp_tune.pulses[1].scale = scale
+            amp_tune.evolution([scale])
+
+            self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+
+            time.sleep(3)
+            self.terminate()
+            self.api.cur_exp['ftEPR.StartPlsPrg'].value = True
+            self.api.hidden['specJet.NoOfPoints'].value = 512
+            self.api.hidden['specJet.NoOfAverages'].value = 20
+            self.api.hidden['specJet.NOnBoardAvgs'].value = 20
+            if not self.api.hidden['specJet.AverageStart'].value:
+                self.api.hidden['specJet.AverageStart'].value = True
+            
+            limit = np.abs(self.api.hidden['specjet.DataRange'][0])
+            data = get_specjet_data(self)
+            
+            if (np.abs(data.real).max() > 0.7*limit) or (np.abs(data.imag).max() > 0.7*limit):
+                self.api.set_video_gain(vg - 9)
+                overflow_flag= True
+                print('overflow')
+            elif (np.abs(data.real).max() < 0.3*limit) and (np.abs(data.imag).max() < 0.3*limit):
+                self.api.set_video_gain(vg + 6)
+                overflow_flag= True
+                print('underflow')
+            else:
+                overflow_flag = False
 
         return p90, p180
     
@@ -381,7 +416,7 @@ class BrukerAWG(Interface):
             dataset = self.acquire_dataset()
             dataset = dataset.epr.correctphase
             data = dataset.data
-            axis = dataset.pulse0_scale
+            axis = dataset.scale
             # data = correctphase(dataset.data)
             if data[0] < 0:
                 data *= -1
@@ -399,7 +434,22 @@ class BrukerAWG(Interface):
         
             return pulse
 
-    
+    def phasetune_pulse(self, pulse):
+        # Bruker SpecJet-I has a phase issue. The pulse is observed and optimised through the transmision mode.
+
+        if isinstance(pulse, Detection):
+            raise RuntimeError("Detection pulses cannot be phase tuned.")
+        
+        current_B = self.api.get_field()
+        current_LO = self.api.get_counterfreq()
+
+        test_seq = Sequence(name='test_seq',B=current_B,LO=current_LO,reptime=250,averages=1,shots=20)
+        test_seq.addPulse(pulse)
+        test_seq.addPulse(Detection(tp=16,t=-self.d0+100))
+
+
+
+        
     def isrunning(self) -> bool:
         if self.tuning:
             return True

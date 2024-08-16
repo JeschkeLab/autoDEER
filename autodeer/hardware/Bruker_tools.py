@@ -18,6 +18,16 @@ header += "; " + \
      f"Auto-generated PulseSpel {{}} file by autoDEER {__version__}\n"
 header += "; " + "-" * 79 + "\n"
 
+
+def get_specjet_data(interface):
+    n_points  = interface.api.hidden['specJet.Data'].aqGetParDimSize(0)
+    array = np.zeros(n_points,dtype=np.complex128)
+    for i in range(n_points):
+        array[i] = interface.api.hidden['specJet.Data'][i] + 1j* interface.api.hidden['specJet.Data1'][i]
+
+    return array
+
+
 # =============================================================================
 
 class PSPhaseCycle:
