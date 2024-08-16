@@ -1,5 +1,6 @@
 from autodeer.classes import Parameter
 from autodeer.utils import build_table, sop, autoEPRDecoder
+from autodeer.ResPro import ResonatorProfileAnalysis
 from memoization import cached
 import numpy as np
 from scipy.integrate import cumulative_trapezoid
@@ -115,20 +116,51 @@ class Pulse:
         return self.AM, self.FM
     
     
-    def build_shape(self,ax=None):
+    def build_shape(self, ax=None, resonator=None,LO=None):
+        """
+        Builds the pulse shape as a complex array for the pulse.
+
+        Parameters
+        ----------
+        ax : np.ndarray, optional
+            The time axis to build the pulse shape on, by default None. 
+            If None, the pulse shape will be built on the internal time axis of 1001 points.
+        resonator : ad.ResonatorProfile, optional
+            The resonator profile to apply resonator compensation, by default None.
+        LO : float, optional
+            The local oscillator frequency must be specified with the resonator, by default None.
+
+        """
+
+            
+
         if ax is None:
             ax = self.ax
-        dt = ax[1]-ax[0]
-        pulse_points = int(np.around(self.tp.value/dt))
-        total_points = ax.shape[0]
-        remaining_points = total_points-pulse_points
-        pulse_axis = np.zeros(pulse_points)
-        AM, FM = self.func(pulse_axis)
+            dt = ax[1]-ax[0]
+            pulse_points = int(np.around(self.tp.value/dt))
+            total_points = ax.shape[0]
+            remaining_points = total_points-pulse_points
+            ax = np.linspace(-self.tp.value/2, self.tp.value/2, pulse_points)
+        else:
+            remaining_points = 0
+            dt = ax[1]-ax[0]
+        AM, FM = self.func(ax)
         AM = np.pad(AM,(int(np.floor(remaining_points/2)),int(np.ceil(remaining_points/2))),'constant',constant_values=0)
         FM = np.pad(FM,(int(np.floor(remaining_points/2)),int(np.ceil(remaining_points/2))),'constant',constant_values=0)
         FM_arg = 2*np.pi*cumulative_trapezoid(FM, initial=0) * dt
         shape = AM * (np.cos(FM_arg) +1j* np.sin(FM_arg))
- 
+
+        if resonator is not None and not isinstance(resonator, ResonatorProfileAnalysis):
+            raise ValueError("resonator must be an instance of ResonatorProfile")
+        elif resonator is not None and LO is None:
+            raise ValueError("LO must be specified with the resonator")
+        elif resonator is not None:
+            resonator_min = 0.1 # Maybe should be adjustable
+            amp_factor = np.interp(FM, resonator.freqs-LO, resonator.profile)
+            amp_factor /= np.max(amp_factor)
+            amp_factor = np.max([amp_factor,np.ones_like(amp_factor)*resonator_min],axis=0)
+            shape /= amp_factor
+
         return shape
 
     def build_table(self):
@@ -831,17 +863,6 @@ class HSPulse(FrequencySweptPulse):
         tcent = tp / 2
         ti = ax
         nx = ax.shape[0]
-        # beta_exp1 = np.log(beta*0.5**(1-order1)) / np.log(beta)
-        # beta_exp2 = np.log(beta*0.5**(1-order2)) / np.log(beta)
-        # cut = round(nx/2)
-        # AM = np.zeros(nx)
-        # AM[0:cut] = 1/np.cosh(
-        #     beta**beta_exp1 * (ax[0:cut]/tp)**order1)
-        # AM[cut:-1] = 1/np.cosh(
-        #     beta**beta_exp2 * (ax[cut:-1]/tp)**order2)
-
-        # FM = BW * cumulative_trapezoid(AM**2,ax,initial=0) /\
-        #      np.trapz(AM**2,ax) + self.init_freq.value
         sech = lambda x: 1/np.cosh(x) 
         cut = round(nx/2)
         AM = np.zeros_like(ti)

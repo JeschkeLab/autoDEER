@@ -44,6 +44,7 @@ class Sequence:
         self.num_pulses = len(self.pulses)
         self.axes_uuid = []
         self.reduce_uuid = []
+        self.evo_params = []
 
 
 
