@@ -240,7 +240,7 @@ class BrukerMPFU(Interface):
         if update_pulsespel:
             # PSpel = PulseSpel(sequence, MPFU=self.MPFU)
             
-            def_text, exp_text = write_pulsespel_file(sequence,self.d0,False,MPFU_chans)
+            def_text, exp_text,_ = write_pulsespel_file(sequence,self.d0,False,MPFU_chans)
             
             verbMsgParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELVerbMsg')
             plsSPELCmdParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELCmd')

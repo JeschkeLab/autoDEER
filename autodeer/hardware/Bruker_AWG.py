@@ -179,7 +179,7 @@ class BrukerAWG(Interface):
         
         if update_pulsespel:
             
-            def_text, exp_text = write_pulsespel_file(sequence,self.d0,AWG=True)
+            def_text, exp_text, pulse_shapes = write_pulsespel_file(sequence,self.d0,AWG=True)
             
             verbMsgParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELVerbMsg')
             plsSPELCmdParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELCmd')
@@ -187,11 +187,20 @@ class BrukerAWG(Interface):
             self.api.XeprCmds.aqPgSelectBuf(2)
             self.api.XeprCmds.aqPgSelectBuf(3)
 
+            # Merge the pulse shapes into one string
+            pulse_shapes = '\n'.join(pulse_shapes)
+
+            self.api.cur_exp.getParam('*ftEpr.PlsSPELShpTxt').value = pulse_shapes
+
+            plsSPELCmdParam.value=9
+            time.sleep(2)
+            self.api.XeprCmds.aqPgSelectBuf(1)
+
             self.api.cur_exp.getParam('*ftEpr.PlsSPELGlbTxt').value = def_text
             self.api.XeprCmds.aqPgShowDef()
 
             plsSPELCmdParam.value=3
-            time.sleep(5)
+            time.sleep(2)
             # while not "The variable values are set up" in verbMsgParam.value:
             #     time.sleep(0.1)
 
@@ -199,9 +208,11 @@ class BrukerAWG(Interface):
 
             self.api.cur_exp.getParam('*ftEpr.PlsSPELPrgTxt').value = exp_text
             plsSPELCmdParam.value=7
-            time.sleep(5)
+            time.sleep(2)
             # while not "Second pass ended" in verbMsgParam.value:
             #     time.sleep(0.1)
+
+
                 
         self.api.set_field(sequence.B.value)
         self.api.set_freq(sequence.LO.value)

@@ -761,7 +761,7 @@ def _add_AWG_line(elements, comment=None, indent=2, repeat=1):
     string += "\n"
     return string
 
-def addAWGPulse(sequence, pulse_num, id,amp_var=None,SpinJet_version=1, resonator=None):
+def addAWGPulse(sequence, pulse_num, id,last_awg_pulse_num,amp_var=None,SpinJet_version=1, resonator=None):
     
     if SpinJet_version == 1:
         default_pulses = [RectPulse,ChirpPulse,GaussianPulse]
@@ -774,7 +774,7 @@ def addAWGPulse(sequence, pulse_num, id,amp_var=None,SpinJet_version=1, resonato
     if resonator is None and type(pulse) in default_pulses:
         return _addDefaultAWGPulse(sequence, pulse_num, id, amp_var, SpinJet_version)
     else:
-        return _addCustomAWGPulse(sequence, pulse_num, id, amp_var, SpinJet_version)
+        return _addCustomAWGPulse(sequence, pulse_num, id, last_awg_pulse_num, amp_var, SpinJet_version)
 
 
 def _addDefaultAWGPulse(sequence, pulse_num, id,amp_var=None,SpinJet_version=1):
@@ -823,7 +823,8 @@ def _addDefaultAWGPulse(sequence, pulse_num, id,amp_var=None,SpinJet_version=1):
 
     return string, f"awg{id}", []
 
-def _addCustomAWGPulse(sequence, pulse_num, id,amp_var=None,SpinJet_version=1):
+def _addCustomAWGPulse(sequence, pulse_num, id, last_awg_pulse_num, amp_var=None,SpinJet_version=1):
+    awg_pulse_min = 10
     awg_id = id
     pulse=sequence.pulses[pulse_num]
     pulses_shapes = []
@@ -841,8 +842,9 @@ def _addCustomAWGPulse(sequence, pulse_num, id,amp_var=None,SpinJet_version=1):
 
     if SpinJet_version == 1:
         for i,phase in enumerate(phases):
-            pulses_shapes.append(write_shape_file(pulse,phase_shift=phase,number=i))
-            pulses_idx.append(i)
+            awg_pulse_num = last_awg_pulse_num + i + awg_pulse_min
+            pulses_shapes.append(write_shape_file(pulse,phase_shift=phase,number=awg_pulse_num))
+            pulses_idx.append(awg_pulse_num)
         
     string = f"begin awg{awg_id}\n"
     string += _add_AWG_line(
@@ -1056,6 +1058,7 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
     loop_dims = ["m","f"]
     letter_vars = ['b','c','e','f','g']
     possible_amps = [f"aa{i}" for i in range(32)]
+    pulse_shapes = []
 
     n_pulses = len(sequence.pulses)
     n_axes = len(uprogtable)
@@ -1264,7 +1267,9 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
                 continue
             id += 1
             amp_var = mv_pulse_amp_hash[pulse_num] if pulse_num in mv_pulse_amp_hash else static_pulse_amp_hash[pulse_num]
-            pulse_pcyc_str, awg_id,pulse_shapes = addAWGPulse(sequence,pulse_num, id,amp_var)
+            last_awg_pulse_num = len(pulse_shapes)
+            pulse_pcyc_str, awg_id,pulse_shapes_tmp = addAWGPulse(sequence,pulse_num, id,last_awg_pulse_num,amp_var)
+            pulse_shapes += pulse_shapes_tmp
             pcyc_str += pulse_pcyc_str
             pcyc_hash[pulse_num] = awg_id
 
@@ -1311,7 +1316,7 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
         exp_file = dims + "\n"*2 + pcyc_str + "\n"*2 +  scanhead+ head + pulse_str + foot + scanfoot
         def_file += "end defs"
 
-    return def_file, exp_file
+    return def_file, exp_file, pulse_shapes
 
 def write_shape_file(pulse:Pulse,name:str = "", phase_shift=0, number=None, AWG_rate=1.6):
     """
