@@ -1351,8 +1351,8 @@ def write_shape_file(pulse:Pulse,name:str = "", phase_shift=0, number=None, AWG_
     shape *= np.exp(1j*phase_shift)
     shape_file = f"begin shape{number} \"{name}\" \n"
     for i in range(len(t_axis)):
-        shape_file += f"\t {shape[i].real: .6f}, {shape[i].imag: .6f}\n"
-    shape_file += "end shape\n"
+        shape_file += f"{shape[i].real: .6f}, {shape[i].imag: .6f}\n"
+    shape_file += f"end shape{number} \n"
 
     return shape_file
 

@@ -316,19 +316,19 @@ class BrukerAWG(Interface):
             self.terminate()
             self.api.cur_exp['ftEPR.StartPlsPrg'].value = True
             self.api.hidden['specJet.NoOfPoints'].value = 512
-            self.api.hidden['specJet.NoOfAverages'].value = 20
-            self.api.hidden['specJet.NOnBoardAvgs'].value = 20
+            self.api.hidden['specJet.NoOfAverages'].value = 1
+            self.api.hidden['specJet.NOnBoardAvgs'].value = 1
             if not self.api.hidden['specJet.AverageStart'].value:
                 self.api.hidden['specJet.AverageStart'].value = True
             
             limit = np.abs(self.api.hidden['specjet.DataRange'][0])
             data = get_specjet_data(self)
             
-            if (np.abs(data.real).max() > 0.7*limit) or (np.abs(data.imag).max() > 0.7*limit):
-                self.api.set_video_gain(vg - 9)
+            if (np.abs(data.real).max() > 0.9*limit) or (np.abs(data.imag).max() > 0.9*limit):
+                self.api.set_video_gain(vg - 6)
                 overflow_flag= True
                 print('overflow')
-            elif (np.abs(data.real).max() < 0.3*limit) and (np.abs(data.imag).max() < 0.3*limit):
+            elif (np.abs(data.real).max() < 0.1*limit) and (np.abs(data.imag).max() < 0.1*limit):
                 self.api.set_video_gain(vg + 6)
                 overflow_flag= True
                 print('underflow')
@@ -427,7 +427,7 @@ class BrukerAWG(Interface):
             dataset = self.acquire_dataset()
             dataset = dataset.epr.correctphase
             data = dataset.data
-            axis = dataset.scale
+            axis = scale.get_axis()
             # data = correctphase(dataset.data)
             if data[0] < 0:
                 data *= -1
@@ -455,8 +455,21 @@ class BrukerAWG(Interface):
         current_LO = self.api.get_counterfreq()
 
         test_seq = Sequence(name='test_seq',B=current_B,LO=current_LO,reptime=250,averages=1,shots=20)
-        test_seq.addPulse(pulse)
-        test_seq.addPulse(Detection(tp=16,t=-self.d0+100))
+        test_seq.addPulse(Detection(tp=1024,t=0))
+        test_seq.addPulse(pulse.copy(t=200))
+        test_seq.evolution([])
+
+        self.launch(test_seq, "autoDEER_phasetune")
+        time.sleep(1)
+        self.terminate()
+
+        self.api.cur_exp['ftEPR.StartPlsPrg'].value = True
+        self.api.hidden['specJet.NoOfAverages'].value = 20
+        self.api.hidden['specJet.NOnBoardAvgs'].value = 20
+        self.api.hidden['specJet.NoOfPoints'].value = 1024
+
+
+        
 
 
 

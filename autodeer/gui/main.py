@@ -360,8 +360,8 @@ class autoDEERUI(QMainWindow):
         # Set LO to resonator central frequency
         self.select_resonator()
 
-        # self.AWG = self.config['Spectrometer']['AWG']
-        self.AWG=False # CHANGE
+        self.AWG = self.config['Spectrometer']['AWG']
+        # self.AWG=False # CHANGE
 
         # Get user preferences
         try:

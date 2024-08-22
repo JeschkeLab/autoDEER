@@ -1201,7 +1201,7 @@ class DEERSequence(Sequence):
 
         pass
     def select_pcyc(self, option: str):
-        """Choose which DEER phase you would like.
+        r"""Choose which DEER phase you would like.
         
         .. |xp| replace:: x\ :sub:`p`
 
