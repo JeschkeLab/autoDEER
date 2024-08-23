@@ -35,10 +35,10 @@ def test_pulse_exciteprofile():
     pulse = Pulse(tp=10, scale=0.5, flipangle=np.pi/2)
     pulse.func = lambda x: (np.ones_like(x), np.zeros_like(x))
     freqs = np.linspace(-.25, .25, 1001)
-    Mx,My,Mz = pulse.exciteprofile(freqs=freqs)
-    assert len(Mx) == 1001
-    assert len(My) == 1001
-    assert len(Mz) == 1001
+    Mag= pulse.exciteprofile(freqs=freqs)
+    assert len(Mag[:,0]) == 1001
+    assert len(Mag[:,1]) == 1001
+    assert len(Mag[:,2]) == 1001
 
 def test_rectpulse_init():
     pulse = RectPulse(tp=10, freq=1, t=0, flipangle=np.pi/2)

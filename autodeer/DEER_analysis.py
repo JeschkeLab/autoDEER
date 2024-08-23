@@ -887,12 +887,12 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
 
     # fieldsweep_profile = np.flip(fieldsweep_fun(f))
     
-    pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[2].real)
-    exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[2].real)
+    pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[:,2].real)
+    exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[:,2].real)
 
     if ref_pulse is not None:
         for i in range(num_ref_pulses):
-            exc_Mz *= normalise_01(-1*ref_pulse.exciteprofile(freqs=f)[2].real)
+            exc_Mz *= normalise_01(-1*ref_pulse.exciteprofile(freqs=f)[:,2].real)
     
     def optimise(filter):
         if filter == 'Matched':
@@ -997,12 +997,12 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     fieldsweep_profile = fieldsweep_fun(f)
 
         
-    pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[2].real)
-    exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[2].real)
+    pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[:,2].real)
+    exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[:,2].real)
 
     if ref_pulse is not None:
         for i in range(num_ref_pulses):
-            exc_Mz *= normalise_01(-1*ref_pulse.exciteprofile(freqs=f)[2].real)
+            exc_Mz *= normalise_01(-1*ref_pulse.exciteprofile(freqs=f)[:,2].real)
     
 
     if filter == 'Matched':
