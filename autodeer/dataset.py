@@ -225,7 +225,8 @@ class EPRAccessor:
         dataset_coords = self._obj.coords
 
         pulses = len([key for key in dataset_attrs.keys() if re.match(r"pulse\d+_name$", key)])
-
+        det_events = len([key for key in dataset_attrs.keys() if re.match(r"det\d+_t$", key)])
+        n_events = pulses + det_events
         seq_param_types = ['seq_name','B','LO','reptime','shots','averages','det_window']
         seq_params = {}
 
@@ -243,28 +244,34 @@ class EPRAccessor:
         seq_params['name'] = seq_params.pop('seq_name')
 
         pulses_obj = []
-        for i in range(pulses):
-            pulse_type = dataset_attrs[f"pulse{i}_name"]
+        for i in range(n_events):
+            if f"pulse{i}_t" in dataset_attrs:
+                pulse_type = dataset_attrs[f"pulse{i}_name"]
+                key="pulse"
+            elif f"det{i}_t" in dataset_attrs:
+                pulse_type = 'Detection'
+                key="det"
+
             param_types = ['t','tp','freq','flipangle','scale','order1','order2','init_freq','BW','final_freq','beta']
             params = {}
 
             for param_type in param_types:
-                if f"pulse{i}_{param_type}" in dataset_attrs:
-                    params[param_type] = dataset_attrs[f"pulse{i}_{param_type}"]
-                elif f"pulse{i}_{param_type}" in dataset_coords:
-                    coord = dataset_coords[f"pulse{i}_{param_type}"]
-                    min = coord.min()
+                if f"{key}{i}_{param_type}" in dataset_attrs:
+                    params[param_type] = dataset_attrs[f"{key}{i}_{param_type}"]
+                elif f"{key}{i}_{param_type}" in dataset_coords:
+                    coord = dataset_coords[f"{key}{i}_{param_type}"]
+                    min_value = coord.min()
                     dim = coord.shape[0]
                     step = coord[1] - coord[0]
 
-                    params[param_type] = Parameter(name = param_type, value = min, dim=dim, step=step)
+                    params[param_type] = Parameter(name = param_type, value = min_value, dim=dim, step=step)
             
             try:
                 pulse_build = getattr(ad_pulses,pulse_type)
                 pulses_obj.append(pulse_build(**params))
             except:
                 continue
-
+       
         sequence = Sequence(**seq_params)
         sequence.pulses = pulses_obj
 

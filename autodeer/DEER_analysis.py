@@ -1036,7 +1036,7 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     axs.set_xlim(fmin*1e3,fmax*1e3)
 
     axs.legend()
-    axs.set_xlabel('Frequency (MHz)')
+    axs.set_xlabel('Frequency / MHz')
 
     return fig
 

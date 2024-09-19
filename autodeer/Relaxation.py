@@ -62,7 +62,7 @@ class CarrPurcellAnalysis():
         elif type == "double":
             self.func = lambda x, a, b, e, c, d, f: a*np.exp(-b*x**e) + c*np.exp(-d*x**f)
             p0 = [1, 1, 2, 1, 1, 2]
-            bounds = ([0, 0, 0, 0, 0, 0],[2, 1000, 10, 2, 1000, 10])
+            bounds = ([0, 0, 0, 0, 1, 0],[2, 1000, 10, 2, 1000, 10])
         else:
             raise ValueError("Type must be one of: mono")
         
