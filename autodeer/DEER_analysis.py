@@ -283,8 +283,11 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     r_max = np.ceil(np.cbrt(t.max()*6**3/2))
     r = np.linspace(1.5,r_max,100)
 
-
-        
+    # Default fit parameters
+    defualt_fit_params = {'regparam':'bic','nnlsSolver':'qp'}
+    for key in defualt_fit_params:
+        if key not in kwargs:
+            kwargs[key] = defualt_fit_params[key]
 
     # identify experiment
     if 'parametrization' in kwargs:
@@ -306,6 +309,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
     else:
         compactness_penalty = None
+
 
 
     # Cleanup extra args
@@ -424,7 +428,8 @@ def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
     dataset = fit_result.dataset
     runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e-6
     aim_time *= 3600
-    factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
+    factor = fit_result.MNR /aim_MNR * aim_time/runtime_s
+    # factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
     return factor
 
 def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=True):

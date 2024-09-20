@@ -85,13 +85,13 @@ class autoDEERWorker(QtCore.QRunnable):
         if (self.project is None) or (self.project == ''):
             def savename(exp, suffix=""):
                 if suffix != "":
-                    return f"({self.samplename})_({exp})_({suffix})"
+                    return f"({self.samplename})_({exp})_{suffix}"
                 else:
                     return f"({self.samplename})_({exp})"
         else:
             def savename(exp,suffix=""):
                 if suffix != "":
-                    return f"({self.project})_({self.samplename})_({exp})_({suffix})"
+                    return f"({self.project})_({self.samplename})_({exp})_{suffix}"
                 else:
                     return f"({self.project})_({self.samplename})_({exp})"
         self.savename = savename
@@ -211,7 +211,7 @@ class autoDEERWorker(QtCore.QRunnable):
         relax._estimate_time();
         relax.pulses[1].scale.value = 0
         relax.pulses[3].scale.value = 0
-        self.interface.launch(relax,savename=self.savename("CP_Q"),IFgain=1)
+        self.interface.launch(relax,savename=self.savename("CP"),IFgain=1)
         self.interface.terminate_at(SNRCriteria(50),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
@@ -231,7 +231,7 @@ class autoDEERWorker(QtCore.QRunnable):
             step=dt,dim=200,pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
-        self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=1)
+        self.interface.launch(seq,savename=self.savename("T2"),IFgain=1)
         self.interface.terminate_at(SNRCriteria(50),test_interval=0.5)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
