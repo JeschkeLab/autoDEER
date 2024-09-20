@@ -7,6 +7,8 @@ from scipy.optimize import curve_fit
 from autodeer.sequences import Sequence
 import deerlab as dl
 from scipy.linalg import svd
+
+from autodeer.colors import primary_colors
 # ===========================================================================
 
 
@@ -19,6 +21,11 @@ class CarrPurcellAnalysis():
         ----------
         dataset : 
             _description_
+
+        Attributes
+        ----------
+        axis : xr.DataArray
+            The time axis representing the interpulse delay.
         """
         # self.axis = dataset.axes[0]
         # self.data = dataset.data
@@ -34,7 +41,7 @@ class CarrPurcellAnalysis():
             self.axis = dataset['X']
         
         dataset = dataset.epr.correctphasefull
-        self.data = dataset.data
+        self.data = dataset.data.real
         self.dataset = dataset
         # if sequence is None and hasattr(dataset,'sequence'):
         #     self.seq = dataset.sequence
@@ -42,7 +49,7 @@ class CarrPurcellAnalysis():
         #     self.seq = sequence
         pass
     
-    def fit(self, type: str = "mono"):
+    def fit(self, type: str = "mono",**kwargs):
         """Fit the experimental CP decay
 
         Parameters
@@ -55,30 +62,42 @@ class CarrPurcellAnalysis():
         data = self.data
         data /= np.max(data)
 
-        if type == "mono":
-            self.func = lambda x, a, b, e: a*np.exp(-b*x**e)
-            p0 = [1, 1, 2]
-            bounds = ([0, 0, 0],[2, 1000, 10])
-        elif type == "double":
-            self.func = lambda x, a, b, e, c, d, f: a*np.exp(-b*x**e) + c*np.exp(-d*x**f)
-            p0 = [1, 1, 2, 1, 1, 2]
-            bounds = ([0, 0, 0, 0, 1, 0],[2, 1000, 10, 2, 1000, 10])
-        else:
-            raise ValueError("Type must be one of: mono")
+        # if type == "mono":
+        #     self.func = lambda x, a, b, e: a*np.exp(-b*x**e)
+        #     p0 = [1, 1, 2]
+        #     bounds = ([0, 0, 0],[2, 1000, 10])
+        # elif type == "double":
+        #     self.func = lambda x, a, b, e, c, d, f: a*np.exp(-b*x**e) + c*np.exp(-d*x**f)
+        #     p0 = [1, 1, 2, 1, 1, 2]
+        #     bounds = ([0, 0, 0, 0, 1, 0],[2, 1000, 10, 2, 1000, 10])
+        # else:
+        #     raise ValueError("Type must be one of: mono")
         
-        self.fit_type = type
-        self.fit_result = curve_fit(self.func, self.axis, data, p0=p0, bounds=bounds)
+        # self.fit_type = type
+        # self.fit_result = curve_fit(self.func, self.axis, data, p0=p0, bounds=bounds)
 
+        if type == "mono":
+            model = dl.bg_strexp
+        elif type == "double":
+            model = dl.bg_sumstrexp
+            model.weight1.ub = 200
 
+        results = dl.fit(model,data,self.axis,reg=False,**kwargs)
+        self.fit_result = results
+        self.fit_model = model
+
+        
         return self.fit_result
 
-    def plot(self, norm: bool = True, axs=None, fig=None) -> Figure:
+    def plot(self, norm: bool = True, ci=50, axs=None, fig=None) -> Figure:
         """Plot the carr purcell decay with fit, if avaliable.
 
         Parameters
         ----------
         norm : bool, optional
             Normalise the fit to a maximum of 1, by default True
+        ci : int, optional
+            The percentage confidence interval to plot, by default 50
         
 
         Returns
@@ -95,9 +114,16 @@ class CarrPurcellAnalysis():
             fig, axs = plt.subplots()
 
         if hasattr(self, "fit_result"):
+            x = self.axis
+            V = self.fit_result.evaluate(self.fit_model, x)*self.fit_result.scale
+            # fitUncert = self.fit_result.propagate(self.fit_model, x)
+            # VCi = fitUncert.ci(50)*self.fit_result.scale
+            ub = self.fit_model(x,*self.fit_result.paramUncert.ci(ci)[:-1,1])*self.fit_result.paramUncert.ci(ci)[-1,1]
+            lb = self.fit_model(x,*self.fit_result.paramUncert.ci(ci)[:-1,0])*self.fit_result.paramUncert.ci(ci)[-1,0]
             axs.plot(self.axis, data, '.', label='data', color='0.6', ms=6)
-            axs.plot(self.axis, self.func(
-                self.axis, *self.fit_result[0]), label='fit', color='C1', lw=2)
+            axs.plot(x, V, label='fit', color=primary_colors[0], lw=2)
+            if ci is not None:
+                axs.fill_between(x, lb, ub, color=primary_colors[0], alpha=0.3, label=f"{ci}% CI")
 
             axs.legend()
         else:
@@ -124,7 +150,9 @@ class CarrPurcellAnalysis():
         """
         n_points = len(self.axis)
         if hasattr(self,"fit_result"):
-            decay = self.func(self.axis, *self.fit_result[0]).data
+            # decay = self.func(self.axis, *self.fit_result[0]).data
+            x = self.axis
+            decay = self.fit_result.evaluate(self.fit_model, x)*self.fit_result.scale
             if (decay.min() < level) and (decay[:int(n_points*0.3)].min() > level):
                 return 0
             elif decay[:int(n_points*0.3)].min() < level:
@@ -243,15 +271,18 @@ class ReptimeAnalysis():
             data = self.data
 
         axs.plot(self.axis, data, '.', label='data', color='0.6', ms=6)
-
+        
         if hasattr(self,'fit_result'):
-            axs.plot(self.axis, self.func(self.axis,*self.fit_result[0]), label='Fit', color='C1', lw=2)
-            axs.vlines(self.fit_result[0][1],0,1,linestyles='dashed',label='T1 = {:.3g} ms'.format(self.fit_result[0][1]/1e3),colors='C0')
+            axs.plot(self.axis, self.func(self.axis,*self.fit_result[0]), label='Fit', color=primary_colors[0], lw=2)
+            axs.set_xlim(*axs.get_xlim())
+            axs.set_ylim(*axs.get_ylim())
+            ylim = axs.get_ylim()
+            axs.vlines(self.fit_result[0][1],*ylim,linestyles='dashed',label='T1 = {:.3g} ms'.format(self.fit_result[0][1]/1e3),colors=primary_colors[1])
 
             if hasattr(self,'optimal'):
-                axs.vlines(self.optimal,0,1,linestyles='dashed',label='Optimal = {:.3g} ms'.format(self.optimal/1e3),colors='C2')
+                axs.vlines(self.optimal,*ylim,linestyles='dashed',label='Optimal = {:.3g} ms'.format(self.optimal/1e3),colors=primary_colors[2])
 
-        axs.set_xlabel('Reptime $(\mu s)$')
+        axs.set_xlabel('Reptime / $\mu s$')
         axs.set_ylabel('Normalised signal')
         axs.legend()
         return fig
@@ -327,9 +358,9 @@ def plot_1Drelax(*args,fig=None, axs=None,cmap=cmap):
     
     """
 
-    if fig is None:
+    if fig is None and axs is None:
         fig, axs = plt.subplots(1,1, figsize=(5,5))
-    else:
+    elif axs is None:
         axs = fig.subplots(1,1)
 
     for i,arg in enumerate(args): 
@@ -348,7 +379,12 @@ def plot_1Drelax(*args,fig=None, axs=None,cmap=cmap):
             label='CP-2'
         
         axs.plot(arg.axis*xscale, arg.data/arg.data.max(), '.', label=label,alpha=0.5,color=cmap[i],mec='none')
-        axs.plot(arg.axis*xscale, arg.func(arg.axis,*arg.fit_result[0]), '-',alpha=1,color=cmap[i], lw=2)
+        if hasattr(arg, 'func'):
+            print('The scipy fitting elements are being deprecated, please use DeerLab fitting')
+            V = arg.func(arg.axis,*arg.fit_result[0])
+        else:
+            V = arg.fit_model(arg.axis,*arg.fit_result.param[:-1])*arg.fit_result.scale
+        axs.plot(arg.axis*xscale, V, '-',alpha=1,color=cmap[i], lw=2)
 
     axs.legend()
     axs.set_xlabel('Total Sequence Length / $\mu s$')
