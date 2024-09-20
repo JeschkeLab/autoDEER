@@ -782,23 +782,24 @@ class autoDEERUI(QMainWindow):
         self.aim_time = 2
         self.aim_MNR = 20
         
-        tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(self.est_lambda*self.label_eff), target_time=self.aim_time, target_step=0.015)
-        tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(self.est_lambda*self.label_eff), target_time=4, target_step=0.015)
-        max_tau = fitresult.find_optimal(SNR_target=self.priorties[self.userinput['priority']]/(self.est_lambda*self.label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
+        # tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(self.est_lambda*self.label_eff), target_time=self.aim_time, target_step=0.015)
+        # tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(self.est_lambda*self.label_eff), target_time=4, target_step=0.015)
+        # max_tau = fitresult.find_optimal(SNR_target=self.priorties[self.userinput['priority']]/(self.est_lambda*self.label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
     
-        self.current_results['relax'].tau2hrs = tau2hrs
+        # self.current_results['relax'].tau2hrs = tau2hrs
 
         self.initialise_deer_settings()
 
-        self.current_results['relax'].max_tau = max_tau
-        self.DipolarEvoMax.setValue(max_tau)
-        self.DipolarEvo2hrs.setValue(tau2hrs)
+        # self.current_results['relax'].max_tau = max_tau
+        # self.DipolarEvoMax.setValue(max_tau)
+        # self.DipolarEvo2hrs.setValue(tau2hrs)
         self.Tab_widget.setCurrentIndex(3)
         
         self.check_CP(fitresult)
         
         if self.worker is not None:
-            CP_decay = fitresult.func(fitresult.axis, *fitresult.fit_result[0]).data
+            # CP_decay = fitresult.func(fitresult.axis, *fitresult.fit_result[0]).data
+            CP_decay = fitresult.fit_result.evaluate(fitresult.fit_model, fitresult.axis)*fitresult.fit_result.scale
             # Find the index when CP_decay is below 0.05
             CP_decay = CP_decay/CP_decay[0]
             CP_decay_bool = CP_decay < 0.05
@@ -852,6 +853,8 @@ class autoDEERUI(QMainWindow):
         main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
         main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
         main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")
+
+        return self.deer_settings
 
     def update_deer_settings(self):
         
