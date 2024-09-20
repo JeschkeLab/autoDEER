@@ -810,7 +810,7 @@ class autoDEERUI(QMainWindow):
             max_tau = fitresult.axis[CP_decay_idx]
             max_tau = ad.round_step(max_tau,1)
             main_log.info(f"Max tau {max_tau:.2f} us")
-            self.worker.set_2D_max_tau(max_tau)
+            self.worker.set_2D_max_tau(max_tau*2)
 
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
@@ -1151,7 +1151,7 @@ class autoDEERUI(QMainWindow):
         self.worker.signals.respro_result.connect(lambda x: self.save_data(x,'ResPro'))
         # self.worker.signals.optimise_pulses.connect(self.optimise_pulses)
         self.worker.signals.relax_result.connect(self.update_relax)
-        self.worker.signals.relax_result.connect(lambda x: self.save_data(x,'CP_Q'))
+        self.worker.signals.relax_result.connect(lambda x: self.save_data(x,'CP'))
         self.worker.signals.T2_result.connect(self.update_T2)
         self.worker.signals.T2_result.connect(lambda x: self.save_data(x,'T2'))
 
