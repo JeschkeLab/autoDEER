@@ -15,6 +15,7 @@ import scipy.signal as sig
 from scipy.optimize import minimize,brute
 from autodeer.colors import primary_colors, ReIm_colors
 from autodeer.utils import round_step
+from autodeer.relaxation_autodeer import calculate_optimal_tau
 import scipy.signal as signal
 
 log = logging.getLogger('autoDEER.DEER')
@@ -1109,8 +1110,12 @@ def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_ti
     elif (experiment == '5pDEER') or (experiment == 'auto'):
         # Calculate a 5pDEER Sequence
         if CPdecay is not None:
-            tau2hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time, target_step=0.015)
-            tau4hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time*2, target_step=0.015)
+            # tau2hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time, target_step=0.015)
+            # tau4hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time*2, target_step=0.015)
+            tau2hrs, tau2hrs_lb, tau2hrs_ub = calculate_optimal_tau(CPdecay,target_time,target_MNR,target_step=0.015)
+            tau4hrs, tau4hrs_lb, tau4hrs_ub = calculate_optimal_tau(CPdecay,target_time*2,target_MNR,target_step=0.015)
+            tau2hrs = tau2hrs_lb/2
+            tau4hrs = tau4hrs_lb/2
         elif Refocused2D is not None:
             tau2hrs = Refocused2D.find_optimal(type='5pDEER',SNR_target=20, target_time=target_time, target_step=0.015)
             tau4hrs = Refocused2D.find_optimal(type='5pDEER',SNR_target=20, target_time=target_time*2, target_step=0.015)
