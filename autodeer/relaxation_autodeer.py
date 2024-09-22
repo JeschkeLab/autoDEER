@@ -48,12 +48,12 @@ def calculate_optimal_tau(CPanalysis, MeasTime, SNR, target_step=0.015, target_s
     y = np.linspace(0,0.2,1000)
     fit = results.evaluate(CPanalysis.fit_model, x)*results.scale
     fitUncert = results.propagate(CPanalysis.fit_model, x)
-    # fitUncertCi = fitUncert.ci(ci)*results.scale
-    # ub = CPanalysis.fit_model(x,*results.paramUncert.ci(ci)[:-1,1])*results.paramUncert.ci(ci)[-1,1]
-    # lb = CPanalysis.fit_model(x,*results.paramUncert.ci(ci)[:-1,0])*results.paramUncert.ci(ci)[-1,0]
-    VCi = fitUncert.ci(ci)*results.scale
-    ub = VCi[:,1]
-    lb = VCi[:,0]
+    fitUncertCi = fitUncert.ci(ci)*results.scale
+    ub = CPanalysis.fit_model(x,*results.paramUncert.ci(ci)[:-1,0])*results.paramUncert.ci(ci)[-1,0]
+    lb = CPanalysis.fit_model(x,*results.paramUncert.ci(ci)[:-1,1])*results.paramUncert.ci(ci)[-1,1]
+    # VCi = fitUncert.ci(ci)*results.scale
+    # ub = VCi[:,1]
+    # lb = VCi[:,0]
 
     spl_fit_inverse = interp.InterpolatedUnivariateSpline(np.flip(corr_factor*fit/(noise*np.sqrt(averages)*np.sqrt(x*2/dt))),np.flip(x*2), k=3)
     spl_fit_inverse_lb = interp.InterpolatedUnivariateSpline(np.flip(corr_factor*lb/(noise*np.sqrt(averages)*np.sqrt(x*2/dt))),np.flip(x*2), k=3)

@@ -866,7 +866,7 @@ class autoDEERUI(QMainWindow):
         mod_depth = data.MNR * data.noiselvl
         remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60)) # in hours
         
-        self.correction_factor = ad.calc_correction_factor(self.current_results['quickdeer'],self.aim_MNR,self.aim_time)
+        self.correction_factor = ad.calc_correction_factor(self.current_results['relax'],self.current_results['quickdeer'])
         main_log.info(f"Correction factor {self.correction_factor:.3f}")
         MNR_target = self.priorties[self.userinput['priority']]
         SNR_target = MNR_target/(mod_depth)
