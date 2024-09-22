@@ -116,10 +116,12 @@ class CarrPurcellAnalysis():
         if hasattr(self, "fit_result"):
             x = self.axis
             V = self.fit_result.evaluate(self.fit_model, x)*self.fit_result.scale
-            # fitUncert = self.fit_result.propagate(self.fit_model, x)
-            # VCi = fitUncert.ci(50)*self.fit_result.scale
-            ub = self.fit_model(x,*self.fit_result.paramUncert.ci(ci)[:-1,1])*self.fit_result.paramUncert.ci(ci)[-1,1]
-            lb = self.fit_model(x,*self.fit_result.paramUncert.ci(ci)[:-1,0])*self.fit_result.paramUncert.ci(ci)[-1,0]
+            fitUncert = self.fit_result.propagate(self.fit_model, x)
+            VCi = fitUncert.ci(ci)*self.fit_result.scale
+            ub = VCi[:,1]
+            lb = VCi[:,0]
+            # ub = self.fit_model(x,*self.fit_result.paramUncert.ci(ci)[:-1,1])*self.fit_result.paramUncert.ci(ci)[-1,1]
+            # lb = self.fit_model(x,*self.fit_result.paramUncert.ci(ci)[:-1,0])*self.fit_result.paramUncert.ci(ci)[-1,0]
             axs.plot(self.axis, data, '.', label='data', color='0.6', ms=6)
             axs.plot(x, V, label='fit', color=primary_colors[0], lw=2)
             if ci is not None:
