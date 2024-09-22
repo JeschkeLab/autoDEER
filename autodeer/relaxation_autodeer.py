@@ -32,6 +32,12 @@ def calculate_optimal_tau(CPanalysis, MeasTime, SNR, target_step=0.015, target_s
     -------
     float or tuple
         The optimal tau value or a tuple with the lower and upper bounds of the optimal
+
+
+    Notes
+    -----
+    * The uncertainty is not taken from deerlab as it must be a montomically decreasing function.
+
     """
     dataset = CPanalysis.dataset
     results = CPanalysis.fit_result
@@ -167,7 +173,7 @@ def calc_correction_factor(CPanalysis,DEER_fit_result):
         dataset = CPanalysis.dataset
         CP_averages = dataset.nAvgs * dataset.shots * dataset.nPcyc
         noise = CPanalysis.fit_result.noiselvl
-        V = lambda tau: CPanalysis.fit_result.evaluate(CPanalysis.fit_model, tau)*CPanalysis.fit_result.scale
+        V = lambda tau: CPanalysis.fit_result.evaluate(CPanalysis.fit_model, tau)[0]*CPanalysis.fit_result.scale
 
         tau = DEER_fit_result.dataset.attrs['tau1']/1e3
 
