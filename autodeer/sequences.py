@@ -1650,7 +1650,7 @@ class ResonatorProfileSequence(Sequence):
         tau1=2000
         tau2=500
 
-        tp = Parameter("tp", 0, step=2, dim=40, unit="ns", description="Test Pulse length")
+        tp = Parameter("tp", 0, step=2, dim=60, unit="ns", description="Test Pulse length")
         fwidth= self.fwidth.value
         fstep = 0.02
         dim = np.floor(fwidth*2/0.02)

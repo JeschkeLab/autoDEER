@@ -131,13 +131,13 @@ def relax_process(dataset):
     if dataset['tau1'].max() > 1e4:
         dataset['tau1'] /= 1e3
     CP_data = ad.CarrPurcellAnalysis(dataset)
-    CP_data.fit('mono')
+    CP_data.fit('double')
 
     return CP_data
 
 def T2_process(dataset):
     CP_data = ad.CarrPurcellAnalysis(dataset)
-    CP_data.fit('mono')
+    CP_data.fit('double')
 
     return CP_data
 
@@ -1069,6 +1069,7 @@ class autoDEERUI(QMainWindow):
         if self.worker is not None:
             self.worker.update_reptime(opt_reptime)
         main_log.info(f"Reptime {opt_reptime*1e-3:.2g} ms")
+        self.update_reptime_figure()
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
 
