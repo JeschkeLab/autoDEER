@@ -409,29 +409,29 @@ def background_func(t, fit):
 
     return scale * prod
 
-def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
-    """
-    Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.
-    Parameters
-    ----------
-    fit_result : Deerlab.FitResult
-        The fit result from the DEER analysis.
-    aim_MNR : float, optional
-        The desired MNR, by default 25
-    aim_time : float, optional
-        The desired time in hours, by default 2
-    Returns
-    -------
-    float
-        The correction factor for the number of averages.
-    """
+# def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
+#     """
+#     Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.
+#     Parameters
+#     ----------
+#     fit_result : Deerlab.FitResult
+#         The fit result from the DEER analysis.
+#     aim_MNR : float, optional
+#         The desired MNR, by default 25
+#     aim_time : float, optional
+#         The desired time in hours, by default 2
+#     Returns
+#     -------
+#     float
+#         The correction factor for the number of averages.
+#     """
 
-    dataset = fit_result.dataset
-    runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e-6
-    aim_time *= 3600
-    factor = fit_result.MNR /aim_MNR * aim_time/runtime_s
-    # factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
-    return factor
+#     dataset = fit_result.dataset
+#     runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e-6
+#     aim_time *= 3600
+#     factor = fit_result.MNR /aim_MNR * aim_time/runtime_s
+#     # factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
+#     return factor
 
 def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=True):
     """DEERanalysis_plot Generates a figure showing both the time domain and
@@ -1046,7 +1046,8 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
 
     return fig
 
-def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_time=2,target_MNR=20, waveform_precision=2):
+def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_time=2,
+                       target_MNR=20, waveform_precision=2, corr_factor=1):
     """
     Calculates the optimal DEER settings based on the avaliable relaxation data
 
@@ -1064,6 +1065,8 @@ def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_ti
         Target modulation to noise ratio, by default 20
     waveform_precision : int, optional
         Precision of the waveform in ns, by default 2
+    corr_factor : float, optional
+        Correction factor for the relaxation decay, by default 1
 
     Returns
     -------
@@ -1117,8 +1120,8 @@ def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_ti
         if CPdecay is not None:
             # tau2hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time, target_step=0.015)
             # tau4hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time*2, target_step=0.015)
-            tau2hrs, tau2hrs_lb, tau2hrs_ub = calculate_optimal_tau(CPdecay,target_time,target_MNR,target_step=0.015)
-            tau4hrs, tau4hrs_lb, tau4hrs_ub = calculate_optimal_tau(CPdecay,target_time*2,target_MNR,target_step=0.015)
+            tau2hrs, tau2hrs_lb, tau2hrs_ub = calculate_optimal_tau(CPdecay,target_time,target_MNR,target_step=0.015,corr_factor=corr_factor)
+            tau4hrs, tau4hrs_lb, tau4hrs_ub = calculate_optimal_tau(CPdecay,target_time*2,target_MNR,target_step=0.015,corr_factor=corr_factor)
             tau2hrs = tau2hrs_lb/2
             tau4hrs = tau4hrs_lb/2
         elif Refocused2D is not None:

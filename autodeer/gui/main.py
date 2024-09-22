@@ -869,7 +869,7 @@ class autoDEERUI(QMainWindow):
         self.correction_factor = ad.calc_correction_factor(self.current_results['quickdeer'],self.aim_MNR,self.aim_time)
         main_log.info(f"Correction factor {self.correction_factor:.3f}")
         MNR_target = self.priorties[self.userinput['priority']]
-        SNR_target = MNR_target/(mod_depth*np.sqrt(self.correction_factor))
+        SNR_target = MNR_target/(mod_depth)
 
         if (self.Exp_types.currentText() == '4pDEER') and ('relax2D' in self.current_results):
             exp = '4pDEER'
@@ -890,7 +890,7 @@ class autoDEERUI(QMainWindow):
                 self.deer_settings['dt'] = 8
 
         else:
-            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,remaining_time,SNR_target,self.waveform_precision)
+            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,remaining_time,SNR_target,self.waveform_precision,corr_factor=self.correction_factor)
             tau = self.deer_settings['tau1'] + self.deer_settings['tau2']
             tau = np.min([rec_tau/2,tau/2])
             self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
