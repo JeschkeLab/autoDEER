@@ -219,7 +219,7 @@ class autoDEERUI(QMainWindow):
         self.Min_tp=12
 
         self.deer_settings = {'ESEEM':None, 'ExpType':'5pDEER'}
-        self.priorties = {'Auto': 100, 'MNR':200, 'Distance': 40}
+        self.priorties = {'Auto': 150, 'MNR':300, 'Distance': 80}
 
         self.priotityComboBox.addItems(list(self.priorties.keys()))
         self.correction_factor=1
