@@ -383,22 +383,9 @@ class Sequence:
         # Pulses
         pulses_string = "\nEvents (Pulses, Delays, etc...): \n"
 
-        if self.isPulseFocused():
-            # pulses_string += "{:<4} {:<12} {:<8} {:<12} \n".format(
-            #     'iD', 't (ns)', 'tp (ns)', 'Type')
-            # for i, pulse in enumerate(self.pulses):
-            #     pulses_string += "{:<4} {:<12.3E} {:<8} {:<10} \n".format(
-            #         i, pulse.t.value, pulse.tp.value, type(pulse).__name__)
-            params = ['iD', 't', 'tp', 'scale', 'type', 'Phase Cycle']
-            params_widths = ["4", "8", "8", "8", "14", "40"]
-        elif self.isDelayFocused():
-            # pulses_string += "{:<4} {:<8} {:<12} \n".format(
-            #     'iD', 'tp (ns)', 'Type')
-            # for i, pulse in enumerate(self.pulses):
-            #     pulses_string += "{:<4} {:<8} {:<10} \n".format(
-            #         i, pulse.tp.value, type(pulse).__name__)
-            params = ['iD', 'tp', 'scale', 'type']
-            params_widths = ["4", "8", "8", "14"]
+        params = ['iD', 't', 'tp', 'scale', 'type', 'Phase Cycle']
+        params_widths = ["4", "8", "8", "8", "14", "40"]
+
         pulses_string += build_table(self.pulses, params, params_widths)
 
         def print_event_id(i):
