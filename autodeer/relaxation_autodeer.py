@@ -84,7 +84,10 @@ def calculate_optimal_tau(CPanalysis, MeasTime, SNR, target_step=0.015, target_s
 
     def find_all_numerical_roots(data,axis):
         sign_changes = np.where(np.abs(np.diff(np.sign(data))) >0)[0]
-        return axis[sign_changes]
+        if sign_changes.shape[0] == 0:
+            return axis[-1]
+        else:
+            return axis[sign_changes]
 
     axis = CPanalysis.axis.values * 2 # Tua_evo in us
     data = CPanalysis.data
