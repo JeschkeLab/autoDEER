@@ -53,7 +53,7 @@ def find_longest_pulse(sequence):
     
     return longest_pulse/1e3
 
-def MNR_estimate(Vexp,t, mask=None):
+def MNR_estimate(Vexp, t, mask=None, norm=False):
     """
     Estimates the Modulation to Noise Ratio (MNR) of a DEER signal without fitting.
     This is done by applying a low pass filter to remove noise and then finding the peaks in the signal.
@@ -66,6 +66,8 @@ def MNR_estimate(Vexp,t, mask=None):
         The time axis of the DEER signal, in microseconds.
     mask : np.ndarray, optional
         The mask to apply to the data, by default None
+    norm : bool, optional
+        If True, the MNR will be normalised for sampling density, by default False
     
     Returns
     -------
@@ -1120,8 +1122,9 @@ def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_ti
         if CPdecay is not None:
             # tau2hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time, target_step=0.015)
             # tau4hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time*2, target_step=0.015)
-            tau2hrs, tau2hrs_lb, tau2hrs_ub = calculate_optimal_tau(CPdecay,target_time,target_MNR,target_step=0.015,corr_factor=corr_factor)
-            tau4hrs, tau4hrs_lb, tau4hrs_ub = calculate_optimal_tau(CPdecay,target_time*2,target_MNR,target_step=0.015,corr_factor=corr_factor)
+            dt = 8e-3
+            tau2hrs, tau2hrs_lb, tau2hrs_ub = calculate_optimal_tau(CPdecay,target_time,target_MNR,target_step=dt,corr_factor=corr_factor)
+            tau4hrs, tau4hrs_lb, tau4hrs_ub = calculate_optimal_tau(CPdecay,target_time*2,target_MNR,target_step=dt,corr_factor=corr_factor)
             tau2hrs = tau2hrs_lb/2
             tau4hrs = tau4hrs_lb/2
         elif Refocused2D is not None:
