@@ -94,9 +94,9 @@ def calculate_optimal_tau(CPanalysis, MeasTime, SNR, target_step=0.015, target_s
     functional_lb = lambda SNR, T: data-2*noise - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
 
     if isinstance(MeasTime,np.ndarray):
-        optimal = [find_all_numerical_roots(functional(SNR, T),axis) for T in MeasTime]
-        optimal_lb = [find_all_numerical_roots(functional_lb(SNR, T),axis) for T in MeasTime]
-        optimal_ub = [find_all_numerical_roots(functional_ub(SNR, T),axis) for T in MeasTime]
+        optimal = [find_all_numerical_roots(functional(SNR, T),axis).max() for T in MeasTime]
+        optimal_lb = [find_all_numerical_roots(functional_lb(SNR, T),axis).max() for T in MeasTime]
+        optimal_ub = [find_all_numerical_roots(functional_ub(SNR, T),axis).max() for T in MeasTime]
         optimal = np.array(optimal)
         optimal_lb = np.array(optimal_lb)
         optimal_ub = np.array(optimal_ub)
