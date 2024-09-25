@@ -47,27 +47,63 @@ def calculate_optimal_tau(CPanalysis, MeasTime, SNR, target_step=0.015, target_s
     if target_shrt is None:
         target_shrt = dataset.attrs['reptime'] *1e-6 # us -> s
     nPointsInTime = lambda x: x * 3600 / target_shrt
-    n_points = lambda x: x / (target_step*1e-3)
-    dt=target_step
+    n_points = lambda x: x / (8*1e-3)
+    # dt=target_step
 
-    x=np.linspace(1e-3, CPanalysis.axis.values.max(), 1000)
-    y = np.linspace(0,0.2,1000)
-    fit = results.evaluate(CPanalysis.fit_model, x)*results.scale
-    fitUncert = results.propagate(CPanalysis.fit_model, x)
-    fitUncertCi = fitUncert.ci(ci)*results.scale
-    ub = CPanalysis.fit_model(x,*results.paramUncert.ci(ci)[:-1,0])*results.paramUncert.ci(ci)[-1,0]
-    lb = CPanalysis.fit_model(x,*results.paramUncert.ci(ci)[:-1,1])*results.paramUncert.ci(ci)[-1,1]
-    # VCi = fitUncert.ci(ci)*results.scale
-    # ub = VCi[:,1]
-    # lb = VCi[:,0]
+    # def linear_axis_func(tau, MaxNPoints,precision=2e-3):
+    #     dtmin = 8e-3
+    #     if tau/dtmin > MaxNPoints:
+    #         dt = round_step(tau/MaxNPoints,precision)
+    #     else:
+    #         dt = dtmin
+        
+    #     axis = np.arange(0,tau,dt)
 
-    spl_fit_inverse = interp.InterpolatedUnivariateSpline(np.flip(corr_factor*fit/(noise*np.sqrt(averages)*np.sqrt(x*2/dt))),np.flip(x*2), k=3)
-    spl_fit_inverse_lb = interp.InterpolatedUnivariateSpline(np.flip(corr_factor*lb/(noise*np.sqrt(averages)*np.sqrt(x*2/dt))),np.flip(x*2), k=3)
-    spl_fit_inverse_ub = interp.InterpolatedUnivariateSpline(np.flip(corr_factor*ub/(noise*np.sqrt(averages)*np.sqrt(x*2/dt))),np.flip(x*2), k=3)
 
-    optimal = spl_fit_inverse(SNR  / np.sqrt(nPointsInTime(MeasTime)))
-    optimal_lb = spl_fit_inverse_lb(SNR / np.sqrt(nPointsInTime(MeasTime)))
-    optimal_ub = spl_fit_inverse_ub(SNR/ np.sqrt(nPointsInTime(MeasTime)))
+
+    # x=np.linspace(1e-3, CPanalysis.axis.values.max(), 1000)
+    # y = np.linspace(0,0.2,1000)
+    # fit = results.evaluate(CPanalysis.fit_model, x)*results.scale
+    # fitUncert = results.propagate(CPanalysis.fit_model, x)
+    # fitUncertCi = fitUncert.ci(ci)*results.scale
+    # ub = CPanalysis.fit_model(x,*results.paramUncert.ci(ci)[:-1,0])*results.paramUncert.ci(ci)[-1,0]
+    # lb = CPanalysis.fit_model(x,*results.paramUncert.ci(ci)[:-1,1])*results.paramUncert.ci(ci)[-1,1]
+    # # VCi = fitUncert.ci(ci)*results.scale
+    # # ub = VCi[:,1]
+    # # lb = VCi[:,0]
+
+    
+
+    # spl_fit_inverse = interp.InterpolatedUnivariateSpline(np.flip(corr_factor*fit/(noise*np.sqrt(averages)*np.sqrt(x*2/dt))),np.flip(x*2), k=3)
+    # spl_fit_inverse_lb = interp.InterpolatedUnivariateSpline(np.flip(corr_factor*lb/(noise*np.sqrt(averages)*np.sqrt(x*2/dt))),np.flip(x*2), k=3)
+    # spl_fit_inverse_ub = interp.InterpolatedUnivariateSpline(np.flip(corr_factor*ub/(noise*np.sqrt(averages)*np.sqrt(x*2/dt))),np.flip(x*2), k=3)
+
+    # optimal = spl_fit_inverse(SNR  / np.sqrt(nPointsInTime(MeasTime)))
+    # optimal_lb = spl_fit_inverse_lb(SNR / np.sqrt(nPointsInTime(MeasTime)))
+    # optimal_ub = spl_fit_inverse_ub(SNR/ np.sqrt(nPointsInTime(MeasTime)))
+
+    def find_all_numerical_roots(data,axis):
+        sign_changes = np.where(np.abs(np.diff(np.sign(data))) >0)[0]
+        return axis[sign_changes]
+
+    axis = CPanalysis.axis.values * 2 # Tua_evo in us
+    data = CPanalysis.data
+    data /= data.max()
+    functional = lambda SNR, T: data - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
+    functional_ub = lambda SNR, T: data+2*noise - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
+    functional_lb = lambda SNR, T: data-2*noise - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
+
+    if isinstance(MeasTime,np.ndarray):
+        optimal = [find_all_numerical_roots(functional(SNR, T),axis) for T in MeasTime]
+        optimal_lb = [find_all_numerical_roots(functional_lb(SNR, T),axis) for T in MeasTime]
+        optimal_ub = [find_all_numerical_roots(functional_ub(SNR, T),axis) for T in MeasTime]
+        optimal = np.array(optimal)
+        optimal_lb = np.array(optimal_lb)
+        optimal_ub = np.array(optimal_ub)
+    else:
+        optimal = find_all_numerical_roots(functional(SNR, MeasTime),axis)
+        optimal_lb = find_all_numerical_roots(functional_lb(SNR, MeasTime),axis)
+        optimal_ub = find_all_numerical_roots(functional_ub(SNR, MeasTime),axis)
 
     if full_output:
         return optimal, optimal_lb, optimal_ub
