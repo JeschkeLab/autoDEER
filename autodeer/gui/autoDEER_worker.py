@@ -263,7 +263,8 @@ class autoDEERWorker(QtCore.QRunnable):
             return 'skip'
         
         self.signals.status.emit('Running QuickDEER')
-        DEER_crit = DEERCriteria(mode="speed",verbosity=2,update_func=self.signals.quickdeer_update.emit)
+        criteria = self.deer_inputs['criteria']
+        DEER_crit = DEERCriteria(mode=criteria,verbosity=2,update_func=self.signals.quickdeer_update.emit)
         time_crit = TimeCriteria('Max time criteria', time.time() + 4*60*60 ,'Max time criteria')
         total_crit = [DEER_crit, time_crit]
         signal = self.signals.quickdeer_result.emit
@@ -271,7 +272,8 @@ class autoDEERWorker(QtCore.QRunnable):
 
     def run_long_deer(self):
         self.signals.status.emit('Running LongDEER')
-        DEER_crit = DEERCriteria(mode="high",verbosity=2,update_func=self.signals.longdeer_update.emit)
+        criteria = self.deer_inputs['criteria']
+        DEER_crit = DEERCriteria(mode=criteria,verbosity=2,update_func=self.signals.longdeer_update.emit)
         total_crit = [DEER_crit, self.EndTimeCriteria]
         signal = self.signals.longdeer_result.emit
         self.run_deer(total_crit,signal, dt=16,shot=50,averages=1e4)
@@ -476,4 +478,3 @@ class autoDEERWorker(QtCore.QRunnable):
         
     def set_noise_mode(self,level):
         self.noise_mode = level
-

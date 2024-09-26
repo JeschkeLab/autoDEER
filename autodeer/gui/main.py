@@ -845,6 +845,8 @@ class autoDEERUI(QMainWindow):
                 self.deer_settings['dt'] = 16
             else:
                 self.deer_settings['dt'] = 8
+        
+        self.deer_settings['criteria'] = self.aim_MNR
 
         self.worker.update_deersettings(self.deer_settings)
         self.update_tau_delays_figure([aim_SNR],[self.aim_time],labels=[f"MNR = {self.aim_MNR}"])
@@ -904,7 +906,7 @@ class autoDEERUI(QMainWindow):
 
 
         # self.deer_settings['dt'] = dt
-        
+        self.deer_settings['criteria'] = MNR_target
         self.worker.update_deersettings(self.deer_settings)
         self.update_tau_delays_figure([SNR_target],[remaining_time],labels=[f"MNR = {MNR_target}"])
         
