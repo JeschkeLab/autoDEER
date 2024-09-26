@@ -1488,15 +1488,15 @@ class CarrPurcellSequence(Sequence):
                     t=self.t*(2*i + 1), pcyc={"phases":phases, "dets": dets}))
             else:
                 self.addPulse(RectPulse(  # pi
-                    t=self.step*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
+                    t=self.t*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
                     pcyc={"phases":phases, "dets": dets}
                 ))
         if hasattr(self, "det_event"):
-            self.addPulse(self.det_event.copy(t=self.step*(2*n)))
+            self.addPulse(self.det_event.copy(t=self.t*(2*n)))
         else:
-            self.addPulse(Detection(t=self.step*(2*n), tp=512))
+            self.addPulse(Detection(t=self.t*(2*n), tp=512))
         
-        self.evolution([self.step])
+        self.evolution([self.t])
 
 # =============================================================================
 

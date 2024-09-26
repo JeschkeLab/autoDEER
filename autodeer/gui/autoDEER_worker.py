@@ -186,7 +186,7 @@ class autoDEERWorker(QtCore.QRunnable):
             
 
 
-    def run_CP_relax(self,dt=50):
+    def run_CP_relax(self,dt=10):
         '''
         Initialise the runner function for relaxation. 
         '''
@@ -194,23 +194,23 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
-        shots = int(20*self.noise_mode)
-        shots = np.min([shots,5])
+        shots = int(10*self.noise_mode)
+        shots = np.min([shots,4])
         relax = DEERSequence(
             B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=shots,
             tau1=0.3, tau2=0.3, tau3=0.2, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
             )
-        relax.five_pulse(relaxation=True, re_step=dt)
+        relax.five_pulse(relaxation=True, re_step=dt,re_dim=500)
         if self.AWG:
             relax.select_pcyc("16step_5p")
         else:
             relax.select_pcyc("DC")
             relax.shots.value *= 8 
         relax._estimate_time();
-        relax.pulses[1].scale.value = 0
-        relax.pulses[3].scale.value = 0
+        # relax.pulses[1].scale.value = 0
+        # relax.pulses[3].scale.value = 0
         self.interface.launch(relax,savename=self.savename("CP"),IFgain=1)
         self.interface.terminate_at(SNRCriteria(50),test_interval=self.test_interval)
         while self.interface.isrunning():
@@ -218,17 +218,17 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.relax_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('Carr-Purcell experiment complete')
         
-    def run_T2_relax(self,dt=60):
+    def run_T2_relax(self,dt=10):
         self.signals.status.emit('Running T2 experiment')
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
-        shots = int(40*self.noise_mode)
-        shots = np.min([shots,10])
+        shots = int(20*self.noise_mode)
+        shots = np.min([shots,4])
 
         seq = T2RelaxationSequence(
             B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=shots,
-            step=dt,dim=200,pi2_pulse=self.pulses['exc_pulse'],
+            step=dt,dim=500,pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
         self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=1)
