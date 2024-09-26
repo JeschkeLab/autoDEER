@@ -166,7 +166,10 @@ class DEERCriteria(Criteria):
         
         name = "DEERCriteria"
         description = "Criteria for terminating DEER experiments."
-        if mode.lower() == "speed":
+        if isinstance(mode,(int,float)):
+            MNR_threshold = mode
+            regparamrange = None  
+        elif mode.lower() == "speed":
             MNR_threshold = 20
             regparamrange = (1,1e3)
 
@@ -179,9 +182,6 @@ class DEERCriteria(Criteria):
         elif mode.lower() == "high":
             MNR_threshold = 100
             regparamrange = None
-        elif isinstance(mode,(int,float)):
-            MNR_threshold = mode
-            regparamrange = None     
         else:
             MNR_threshold = 50
             regparamrange = None
