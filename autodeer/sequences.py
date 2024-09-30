@@ -44,6 +44,7 @@ class Sequence:
         self.num_pulses = len(self.pulses)
         self.axes_uuid = []
         self.reduce_uuid = []
+        self.evo_params = []
 
 
 
@@ -1108,7 +1109,7 @@ class DEERSequence(Sequence):
 
         pass
     def select_pcyc(self, option: str):
-        """Choose which DEER phase you would like.
+        r"""Choose which DEER phase you would like.
         
         .. |xp| replace:: x\ :sub:`p`
 
@@ -1360,7 +1361,7 @@ class ReptimeScan(HahnEchoSequence):
             An autoEPR Pulse object describing the refocusing pi pulses. If
             not specified a RectPulse will be created instead. 
         """
-        min_reptime = 20
+        min_reptime = 100 # 20 for Q band move to be TWT gate dependent
         dim = 100
         step  = (reptime_max-min_reptime)/dim
         step = np.around(step,decimals=-1)

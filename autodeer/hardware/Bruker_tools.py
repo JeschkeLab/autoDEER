@@ -1,5 +1,5 @@
 from autodeer.sequences import Sequence
-from autodeer.pulses import RectPulse, Delay, Detection
+from autodeer.pulses import Pulse, RectPulse, Delay, Detection, ChirpPulse, GaussianPulse
 from autodeer.utils import gcd, val_in_ns, val_in_us, transpose_list_of_dicts
 import numpy as np
 import re
@@ -18,6 +18,16 @@ header += "; " + \
      f"Auto-generated PulseSpel {{}} file by autoDEER {__version__}\n"
 header += "; " + "-" * 79 + "\n"
 
+
+def get_specjet_data(interface):
+    n_points  = interface.api.hidden['specJet.Data'].aqGetParDimSize(0)
+    array = np.zeros(n_points,dtype=np.complex128)
+    for i in range(n_points):
+        array[i] = interface.api.hidden['specJet.Data'][i] + 1j* interface.api.hidden['specJet.Data1'][i]
+
+    return array
+
+
 # =============================================================================
 
 class PSPhaseCycle:
@@ -28,7 +38,7 @@ class PSPhaseCycle:
         if MPFU is not None:
             pulse_dicts = self._MPFU(sequence, MPFU)
         else:
-            pulse_dicts = self._main(sequence)
+            pulse_dicts = self._main(sequence,OnlyDet)
         
         detect_dicts =self._detect(sequence)
         if not OnlyDet:
@@ -60,7 +70,7 @@ class PSPhaseCycle:
         
         return BPhaseCycles
     
-    def _main(self, sequence):
+    def _main(self, sequence,OnlyDet):
         num_pulses = len(sequence.pcyc_vars)
         num_cycles = sequence.pcyc_dets.shape[0]
 
@@ -70,7 +80,7 @@ class PSPhaseCycle:
             dict = {}
             dict["Pulse"] = sequence.pcyc_vars[i]
             dict["Cycle"] = []
-            if sequence.pulses[i].pcyc["Channels"] == "ELDOR":
+            if (not OnlyDet) and (sequence.pulses[i].pcyc["Channels"] == "ELDOR"):
                 dict["Cycle"].append("ELDOR")
             else:
                 for j in range(0, num_cycles):
@@ -735,38 +745,62 @@ def change_dimensions(path, dim: int, new_length):
     with open(path, 'w') as file:
         file.writelines(data)
 
-def _addAWGPulse(sequence, pulse_num, id, pcyc_str,amp_var=None):
+def _add_AWG_line(elements, comment=None, indent=2, repeat=1):
+    string = ""
+    string += " "*indent
+    for i in range(0,repeat):
+        if isinstance(elements,list) or isinstance(elements,np.ndarray):
+            for ele in elements:
+                string += f"{ele:<4}  "
+        else:
+            string += f"{elements:<4}  "
+    
+    if comment is not None:
+        string += ";  " + comment
+    
+    string += "\n"
+    return string
+
+def addAWGPulse(sequence, pulse_num, id,last_awg_pulse_num,amp_var=None,SpinJet_version=1, resonator=None):
+    
+    if SpinJet_version == 1:
+        default_pulses = [RectPulse,ChirpPulse,GaussianPulse]
+
+    else:
+        raise ValueError("Only SpinJet version 1 is currently supported")
+    
+    pulse=sequence.pulses[pulse_num]
+
+    if resonator is None and type(pulse) in default_pulses:
+        return _addDefaultAWGPulse(sequence, pulse_num, id, amp_var, SpinJet_version)
+    else:
+        return _addCustomAWGPulse(sequence, pulse_num, id, last_awg_pulse_num, amp_var, SpinJet_version)
+
+
+def _addDefaultAWGPulse(sequence, pulse_num, id,amp_var=None,SpinJet_version=1):
     awg_id = id
     pulse=sequence.pulses[pulse_num]
-    if type(pulse) is RectPulse:
+    if isinstance(pulse, RectPulse):
         shape = 0
         init_freq = pulse.freq.value
         final_freq = init_freq
-        if amp_var is not None:
+    elif isinstance(pulse, ChirpPulse):
+        shape = 5
+        init_freq = pulse.init_freq.value
+        final_freq = pulse.final_freq.value
+    elif isinstance(pulse, GaussianPulse):
+        shape = 1
+        init_freq = pulse.freq.value
+        final_freq = init_freq
+        
+    if amp_var is not None:
             amplitude = amp_var
+    else:
+        if hasattr(pulse,"scale"):
+            amplitude = pulse.scale.value
         else:
-            if hasattr(pulse,"scale"):
-                amplitude = pulse.scale.value
-            else:
-                amplitude = 0
+            amplitude = 0
         
-
-    def add_AWG_line(elements, comment=None, indent=2, repeat=1):
-        string = ""
-        string += " "*indent
-        for i in range(0,repeat):
-            if isinstance(elements,list) or isinstance(elements,np.ndarray):
-                for ele in elements:
-                    string += f"{ele:<4}  "
-            else:
-                string += f"{elements:<4}  "
-        
-        if comment is not None:
-            string += ";  " + comment
-        
-        string += "\n"
-        return string
-
     string = ""
     
     # phase = np.round(np.degrees(pulse.pcyc["Phases"]))
@@ -775,21 +809,58 @@ def _addAWGPulse(sequence, pulse_num, id, pcyc_str,amp_var=None):
     num_cycles = len(phase)
     
     string += f"begin awg{awg_id}\n"
-    string += add_AWG_line(
+    string += _add_AWG_line(
         init_freq, repeat=num_cycles, comment="Initial Frequency [MHz]")
-    string += add_AWG_line(
+    string += _add_AWG_line(
         final_freq, repeat=num_cycles, comment="Final Frequency [MHz]")
-    string += add_AWG_line(
+    string += _add_AWG_line(
         phase, repeat=1, comment="Phase")
-    string += add_AWG_line(
+    string += _add_AWG_line(
         amplitude, repeat=num_cycles, comment="Amplitude")
-    string += add_AWG_line(
+    string += _add_AWG_line(
         shape, repeat=num_cycles, comment="Shape")
     string += f"end awg{awg_id}\n"
 
-    pcyc_str += string
+    return string, f"awg{id}", []
 
-    return pcyc_str, f"awg{id}"
+def _addCustomAWGPulse(sequence, pulse_num, id, last_awg_pulse_num, amp_var=None,SpinJet_version=1):
+    awg_pulse_min = 10
+    awg_id = id
+    pulse=sequence.pulses[pulse_num]
+    pulses_shapes = []
+    pulses_idx = []
+    phases = np.round(np.degrees(sequence.pcyc_cycles[:,sequence.pcyc_vars.index(pulse_num)]))
+    num_cycles = len(phases)
+
+    if amp_var is not None:
+        amplitude = amp_var
+    else:
+        if hasattr(pulse,"scale"):
+            amplitude = pulse.scale.value
+        else:
+            amplitude = 0
+
+    if SpinJet_version == 1:
+        for i,phase in enumerate(phases):
+            awg_pulse_num = last_awg_pulse_num + i + awg_pulse_min
+            pulses_shapes.append(write_shape_file(pulse,phase_shift=phase,number=awg_pulse_num))
+            pulses_idx.append(awg_pulse_num)
+        
+    string = f"begin awg{awg_id}\n"
+    string += _add_AWG_line(
+        0, repeat=num_cycles, comment="Initial Frequency [MHz]")
+    string += _add_AWG_line(
+        0, repeat=num_cycles, comment="Final Frequency [MHz]")
+    string += _add_AWG_line(
+        0, repeat=num_cycles, comment="Phase")
+    string += _add_AWG_line(
+        amplitude, repeat=num_cycles, comment="Amplitude")
+    string += _add_AWG_line(
+        pulses_idx, repeat=1, comment="Shape")
+    string += f"end awg{awg_id}\n"
+
+    return string, f"awg{id}", pulses_shapes
+
 
 def get_arange(array):
     if np.ndim(array) > 1:
@@ -926,6 +997,7 @@ def check_variable(var:str, uprog):
     
 def determine_TWT_split(sequence, MaxGate):
     n_pulses = len(sequence.pulses)
+    
     uprogtable = build_unique_progtable(sequence)
     TWT_gate_max = MaxGate *1e3
 
@@ -969,7 +1041,12 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
         The string for the experiment file
     """
     
-    split_point = determine_TWT_split(sequence,MaxGate=40)
+    if sequence.evo_params == []:
+        split_point = False
+        static_seq = True
+    else:
+        split_point = determine_TWT_split(sequence,MaxGate=40)
+        static_seq = False
 
     uprogtable = build_unique_progtable(sequence)
     possible_delays = [
@@ -980,9 +1057,8 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
     loop_iterators = ["i","j"]
     loop_dims = ["m","f"]
     letter_vars = ['b','c','e','f','g']
-    possible_amps = ["aa1","aa2","aa3","aa4","aa5","aa6","aa7","aa8","aa9","aa10",
-                     "ab1","ab2","ab3","ab4","ab5","ab6","ab7","ab8","ab9","ab10",
-                     "ac1","ac2","ac3","ac4","ac5","ac6","ac7","ac8","ac9","ac10"]
+    possible_amps = [f"aa{i}" for i in range(32)]
+    pulse_shapes = []
 
     n_pulses = len(sequence.pulses)
     n_axes = len(uprogtable)
@@ -999,8 +1075,10 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
     
     axs_ids = []
 
-
-    scanhead = "begin exp \"auto\" [INTG QUAD] \n"
+    if static_seq:
+        scanhead = "begin exp \"auto\" [TRANS QUAD] \n"
+    else:
+        scanhead = "begin exp \"auto\" [INTG QUAD] \n"
     foot = "end exp"
     def_file = "begin defs \n"
     dims = "begin defs \n dim s["
@@ -1030,16 +1108,26 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
             def_file += f"{static_pulse_amp_hash[i]} = {int(pulse.scale.value * 100):d}\n"
         prev_pulse = pulse
 
-    for axis in uprogtable:
-        ax_ID = axis["axID"]
-        axs_ids.append(ax_ID)
-        axis_start_hash[ax_ID] = possible_delays.pop()
-        axis_step_hash[ax_ID] = possible_delays.pop()
-        axis_val_hash[ax_ID] = possible_delays.pop()
+    if static_seq:
+        # find detection pulse in list of pulses
+        det_pulse_idx = [i for i,pulse in enumerate(sequence.pulses) if isinstance(pulse,Detection)]
+        if len(det_pulse_idx) == 0:
+            raise ValueError("No detection pulse found")
+        elif len(det_pulse_idx) > 1:
+            raise ValueError("More than one detection pulse found")
+        det_pulse = sequence.pulses[det_pulse_idx[0]]
+        dims += f"{det_pulse.tp.value},"
+    else:
+        for axis in uprogtable:
+            ax_ID = axis["axID"]
+            axs_ids.append(ax_ID)
+            axis_start_hash[ax_ID] = possible_delays.pop()
+            axis_step_hash[ax_ID] = possible_delays.pop()
+            axis_val_hash[ax_ID] = possible_delays.pop()
 
-        def_file += f"{axis_step_hash[ax_ID]} = {axis['axis']['step']}\n"
-        if not axis['axis']['reduce']:
-            dims += f"{axis['axis']['dim']},"
+            def_file += f"{axis_step_hash[ax_ID]} = {axis['axis']['step']}\n"
+            if not axis['axis']['reduce']:
+                dims += f"{axis['axis']['dim']},"
 
     axs_ids.sort(reverse=True)
     reduced_axes = np.array([uprogtable[i]["axis"]["reduce"] for i in range(n_axes)])
@@ -1057,10 +1145,14 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
 
 
     # Setup averaging loop
-    scanhead += "for k=1 to m \ntotscans(m) \n"
-    def_file += f"m = {sequence.averages.value}\n"
+    if not static_seq:
+        scanhead += "for k=1 to m \ntotscans(m) \n"
+        def_file += f"m = {sequence.averages.value}\n"
 
-    scanfoot = "scansdone(k) \nnext k \n"+foot
+        scanfoot = "scansdone(k) \nnext k \n"+foot
+    else:
+        scanfoot = foot
+
     foot = ""
     head = ""
 
@@ -1175,7 +1267,10 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
                 continue
             id += 1
             amp_var = mv_pulse_amp_hash[pulse_num] if pulse_num in mv_pulse_amp_hash else static_pulse_amp_hash[pulse_num]
-            pcyc_str, awg_id = _addAWGPulse(sequence,pulse_num, id, pcyc_str,amp_var)
+            last_awg_pulse_num = len(pulse_shapes)
+            pulse_pcyc_str, awg_id,pulse_shapes_tmp = addAWGPulse(sequence,pulse_num, id,last_awg_pulse_num,amp_var)
+            pulse_shapes += pulse_shapes_tmp
+            pcyc_str += pulse_pcyc_str
             pcyc_hash[pulse_num] = awg_id
 
         pcyc = PSPhaseCycle(sequence, MPFU=None, OnlyDet=True)
@@ -1196,8 +1291,10 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
         else:
             pulse_str += f"{static_delay_hash[id]}\n"
         
-        if type(pulse) == Detection:
+        if type(pulse) == Detection and not static_seq:
             pulse_str += f"d0\nacq [sg1]\n"
+        elif type(pulse) == Detection and static_seq:
+            pulse_str += f"d0\ndig [sg1]\n"
         else:
             if id in mv_pulse_hash:
                 pulse_str += f"{mv_pulse_hash[id]} [{pcyc_hash[id]}]\n"
@@ -1219,4 +1316,43 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
         exp_file = dims + "\n"*2 + pcyc_str + "\n"*2 +  scanhead+ head + pulse_str + foot + scanfoot
         def_file += "end defs"
 
-    return def_file, exp_file
+    return def_file, exp_file, pulse_shapes
+
+def write_shape_file(pulse:Pulse,name:str = "", phase_shift=0, number=None, AWG_rate=1.6):
+    """
+    Write a Bruker shape file for a given pulse.
+
+    Parameters
+    ----------
+    pulse : Pulse
+        The pulse to be converted.
+    name : str, optional
+        The name of the pulse, by default ""
+    phase_shift : int, optional
+        The phase shift of the pulse in radians, by default 0
+    number : int, optional
+        The number of the pulse, by default None
+    AWG_rate : float, optional
+        The sample rate of the AWG in GSa/s, by default 1.6 GSa/s for SpinJet-I    
+
+    Returns
+    -------
+    str
+        The string for the shape file.
+    """
+
+    if number is None:
+        number = 101
+
+    pulse_tp = pulse.tp.value
+
+    t_axis = np.linspace(-pulse_tp/2, pulse_tp/2, int(pulse_tp*AWG_rate))
+    shape = pulse.build_shape(t_axis)
+    shape *= np.exp(1j*phase_shift)
+    shape_file = f"begin shape{number} \"{name}\" \n"
+    for i in range(len(t_axis)):
+        shape_file += f"{shape[i].real: .6f}, {shape[i].imag: .6f}\n"
+    shape_file += f"end shape{number} \n"
+
+    return shape_file
+

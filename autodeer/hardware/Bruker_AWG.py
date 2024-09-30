@@ -1,12 +1,33 @@
-from autodeer.classes import Interface
+from autodeer.classes import Interface, Parameter
+from autodeer.pulses import Delay, Detection, RectPulse
+from autodeer.sequences import Sequence, HahnEchoSequence
+from autodeer.utils import save_file, transpose_list_of_dicts, transpose_dict_of_list, round_step
+from autodeer import create_dataset_from_sequence, create_dataset_from_axes
+
 from autodeer.hardware.XeprAPI_link import XeprAPILink
-from autodeer.hardware.Bruker_tools import PulseSpel, run_general
+from autodeer.hardware.Bruker_tools import PulseSpel, run_general,build_unique_progtable,PSPhaseCycle, write_pulsespel_file
+from autodeer.hardware.Bruker_MPFU import step_parameters
 
 import tempfile
 import time
+from scipy.optimize import minimize_scalar, curve_fit
 import numpy as np
+import threading
+import concurrent.futures
+from PyQt6.QtCore import QThreadPool
+from autodeer.gui import Worker
+import os
+from pathlib import Path
+import datetime
+from deerlab import correctphase
+import matplotlib.pyplot as plt
+import logging
+import warnings
+# ===================
+
 
 # =============================================================================
+hw_log = logging.getLogger('interface.Xepr')
 
 
 class BrukerAWG(Interface):
@@ -73,7 +94,7 @@ class BrukerAWG(Interface):
 
         self.api.hidden['BrPlsMode'].value = True
         self.api.hidden['OpMode'].value = 'Operate'
-        self.api.hidden['RefArm'].value = 'On'
+        # self.api.hidden['RefArm'].value = 'On'
 
         self.api.cur_exp['VideoBW'].value = 20
         if d0 is None:
@@ -158,7 +179,7 @@ class BrukerAWG(Interface):
         
         if update_pulsespel:
             
-            def_text, exp_text = write_pulsespel_file(sequence,AWG=True)
+            def_text, exp_text, pulse_shapes = write_pulsespel_file(sequence,self.d0,AWG=True)
             
             verbMsgParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELVerbMsg')
             plsSPELCmdParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELCmd')
@@ -166,11 +187,20 @@ class BrukerAWG(Interface):
             self.api.XeprCmds.aqPgSelectBuf(2)
             self.api.XeprCmds.aqPgSelectBuf(3)
 
+            # Merge the pulse shapes into one string
+            pulse_shapes = '\n'.join(pulse_shapes)
+
+            self.api.cur_exp.getParam('*ftEpr.PlsSPELShpTxt').value = pulse_shapes
+
+            plsSPELCmdParam.value=9
+            time.sleep(2)
+            self.api.XeprCmds.aqPgSelectBuf(1)
+
             self.api.cur_exp.getParam('*ftEpr.PlsSPELGlbTxt').value = def_text
             self.api.XeprCmds.aqPgShowDef()
 
             plsSPELCmdParam.value=3
-            time.sleep(5)
+            time.sleep(2)
             # while not "The variable values are set up" in verbMsgParam.value:
             #     time.sleep(0.1)
 
@@ -178,9 +208,11 @@ class BrukerAWG(Interface):
 
             self.api.cur_exp.getParam('*ftEpr.PlsSPELPrgTxt').value = exp_text
             plsSPELCmdParam.value=7
-            time.sleep(5)
+            time.sleep(2)
             # while not "Second pass ended" in verbMsgParam.value:
             #     time.sleep(0.1)
+
+
                 
         self.api.set_field(sequence.B.value)
         self.api.set_freq(sequence.LO.value)
@@ -240,33 +272,68 @@ class BrukerAWG(Interface):
             B=B, LO=LO, reptime=reptime, averages=1, shots=shots
         )
 
-        scale = Parameter("scale",0,dim=45,step=0.02)
+        scale = Parameter("scale",0,dim=51,step=0.02)
         amp_tune.pulses[0].tp.value = tp
         amp_tune.pulses[0].scale = scale
         amp_tune.pulses[1].tp.value = tp * 2
         amp_tune.pulses[1].scale = scale
 
         amp_tune.evolution([scale])
-        
-        self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
 
-        while self.isrunning():
-            time.sleep(10)
-        dataset = self.acquire_dataset()
-        dataset = dataset.epr.correctphase
+        vg = self.api.get_video_gain()
+        overflow_flag= True
+        while overflow_flag:
+            
+            self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
 
-        data = np.abs(dataset.data)
-        scale = np.around(dataset.pulse0_scale[data.argmax()].data,2)
-        if scale > 0.9:
-            raise RuntimeError("Not enough power avaliable.")
-        
-        if scale == 0:
-            warnings.warn("Pulse tuned with a scale of zero!")
-        p90 = amp_tune.pulses[0].copy(
-            scale=scale, LO=amp_tune.LO)
-        
-        p180 = amp_tune.pulses[1].copy(
-            scale=scale, LO=amp_tune.LO)
+            while self.isrunning():
+                time.sleep(10)
+            dataset = self.acquire_dataset()
+            dataset = dataset.epr.correctphase
+
+            data = np.abs(dataset.data)
+            scale_amp = np.around(dataset.pulse0_scale[data.argmax()].data,2)
+            if scale_amp > 0.95:
+                raise RuntimeError("Not enough power avaliable.")
+            
+            if scale_amp == 0:
+                warnings.warn("Pulse tuned with a scale of zero!")
+            p90 = amp_tune.pulses[0].copy(
+                scale=scale_amp, LO=amp_tune.LO)
+            
+            p180 = amp_tune.pulses[1].copy(
+                scale=scale_amp, LO=amp_tune.LO)
+            
+
+            scale = Parameter("scale",scale_amp,dim=4,step=0.01)
+            amp_tune.pulses[0].scale = scale
+            amp_tune.pulses[1].scale = scale
+            amp_tune.evolution([scale])
+
+            self.launch(amp_tune, "autoDEER_amptune", IFgain=1)
+
+            time.sleep(3)
+            self.terminate()
+            self.api.cur_exp['ftEPR.StartPlsPrg'].value = True
+            self.api.hidden['specJet.NoOfPoints'].value = 512
+            self.api.hidden['specJet.NoOfAverages'].value = 1
+            self.api.hidden['specJet.NOnBoardAvgs'].value = 1
+            if not self.api.hidden['specJet.AverageStart'].value:
+                self.api.hidden['specJet.AverageStart'].value = True
+            
+            limit = np.abs(self.api.hidden['specjet.DataRange'][0])
+            data = get_specjet_data(self)
+            
+            if (np.abs(data.real).max() > 0.9*limit) or (np.abs(data.imag).max() > 0.9*limit):
+                self.api.set_video_gain(vg - 6)
+                overflow_flag= True
+                print('overflow')
+            elif (np.abs(data.real).max() < 0.1*limit) and (np.abs(data.imag).max() < 0.1*limit):
+                self.api.set_video_gain(vg + 6)
+                overflow_flag= True
+                print('underflow')
+            else:
+                overflow_flag = False
 
         return p90, p180
     
@@ -318,7 +385,7 @@ class BrukerAWG(Interface):
                 pi2_pulse = pulse, pi_pulse=pi_pulse
             )
 
-            scale = Parameter('scale',0,unit=None,step=0.02, dim=45, description='The amplitude of the pulse 0-1')
+            scale = Parameter('scale',0,unit=None,step=0.02, dim=51, description='The amplitude of the pulse 0-1')
             amp_tune.pulses[0].scale = scale
 
             amp_tune.evolution([scale])
@@ -349,7 +416,7 @@ class BrukerAWG(Interface):
                               freq=c_frq-LO))
             nut_tune.addPulse(Detection(t=3e3, tp=512, freq=c_frq-LO))
 
-            scale = Parameter('scale',0,unit=None,step=0.02, dim=45, description='The amplitude of the pulse 0-1')
+            scale = Parameter('scale',0,unit=None,step=0.02, dim=51, description='The amplitude of the pulse 0-1')
             nut_tune.pulses[0].scale = scale
             nut_tune.evolution([scale])
 
@@ -360,7 +427,7 @@ class BrukerAWG(Interface):
             dataset = self.acquire_dataset()
             dataset = dataset.epr.correctphase
             data = dataset.data
-            axis = dataset.pulse0_scale
+            axis = scale.get_axis()
             # data = correctphase(dataset.data)
             if data[0] < 0:
                 data *= -1
@@ -378,6 +445,35 @@ class BrukerAWG(Interface):
         
             return pulse
 
+    def phasetune_pulse(self, pulse):
+        # Bruker SpecJet-I has a phase issue. The pulse is observed and optimised through the transmision mode.
+
+        if isinstance(pulse, Detection):
+            raise RuntimeError("Detection pulses cannot be phase tuned.")
+        
+        current_B = self.api.get_field()
+        current_LO = self.api.get_counterfreq()
+
+        test_seq = Sequence(name='test_seq',B=current_B,LO=current_LO,reptime=250,averages=1,shots=20)
+        test_seq.addPulse(Detection(tp=1024,t=0))
+        test_seq.addPulse(pulse.copy(t=200))
+        test_seq.evolution([])
+
+        self.launch(test_seq, "autoDEER_phasetune")
+        time.sleep(1)
+        self.terminate()
+
+        self.api.cur_exp['ftEPR.StartPlsPrg'].value = True
+        self.api.hidden['specJet.NoOfAverages'].value = 20
+        self.api.hidden['specJet.NOnBoardAvgs'].value = 20
+        self.api.hidden['specJet.NoOfPoints'].value = 1024
+
+
+        
+
+
+
+        
     def isrunning(self) -> bool:
         if self.tuning:
             return True
@@ -415,7 +511,7 @@ class BrukerAWG(Interface):
 
         seq = Sequence(name='single_pulse',B=B,LO=LO,reptime=3e3,averages=1,shots=20)
         det_tp = Parameter('tp',value=16,dim=4,step=0)
-        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi))
+        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi,scale=1))
         seq.addPulse(Detection(tp=16,t=d0))
 
         seq.evolution([det_tp])
@@ -456,7 +552,7 @@ class BrukerAWG(Interface):
 
         seq = Sequence(name='single_pulse',B=B,LO=LO,reptime=3e3,averages=1,shots=20)
         det_tp = Parameter('tp',value=16,dim=4,step=0)
-        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi))
+        seq.addPulse(RectPulse(tp=det_tp,t=0,flipangle=np.pi,scale=1))
         seq.addPulse(Detection(tp=16,t=d0))
 
         seq.evolution([det_tp])

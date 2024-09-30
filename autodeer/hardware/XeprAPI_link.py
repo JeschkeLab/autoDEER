@@ -614,7 +614,7 @@ class XeprAPILink:
             if val > self.bridge_config["Max Freq"]:
                 raise RuntimeError("Set Frequency is too high!")
                 
-        if "Digital Source" in self.bridge_config.keys():
+        if "Digital Source" in self.bridge_config.keys() and self.bridge_config["Digital Source"]:
             if self.bridge_config["Digital Source"]:
                 self.set_hidden_param('FineFreq',val)
                 hw_log.info(f'Bridge Frequency set to {val}Fset')

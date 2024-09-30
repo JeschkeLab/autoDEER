@@ -2,7 +2,6 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, 
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
-from pathlib import Path
 import sys, traceback, os
 from threadpoolctl import threadpool_limits
 
@@ -362,6 +361,7 @@ class autoDEERUI(QMainWindow):
         self.select_resonator()
 
         self.AWG = self.config['Spectrometer']['AWG']
+        # self.AWG=False # CHANGE
 
         # Get user preferences
         try:
@@ -381,6 +381,13 @@ class autoDEERUI(QMainWindow):
             
             if ('Min_tp' in self.config['autoDEER']):
                 self.Min_tp = self.config['autoDEER']['Min_tp']
+
+            if 'reptime' in self.config['autoDEER']:
+                self.reptime = self.config['autoDEER']['reptime']
+                self.reptime_opt = False
+            else:
+                self.reptime = 3e3
+                self.reptime_opt = True
 
         self.q_DEER.DL_params = self.DL_params
         self.longDEER.DL_params = self.DL_params
@@ -1108,7 +1115,8 @@ class autoDEERUI(QMainWindow):
         userinput['DEER_update_func'] = self.q_DEER.refresh_deer
         userinput['SampleConc'] = SampleConcComboBox_opts[self.SampleConcComboBox.currentText()]
         userinput['tp'] = self.Min_tp
-
+        userinput['reptime'] = self.reptime
+        userinput['reptime_opt'] = self.reptime_opt 
         self.userinput = userinput
 
         if advanced:

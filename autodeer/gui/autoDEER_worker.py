@@ -119,6 +119,16 @@ class autoDEERWorker(QtCore.QRunnable):
         if "night_hours" in kwargs:
             night_hours = kwargs['night_hours']
 
+        if 'reptime'in self.user_inputs:
+            self.reptime = self.user_inputs['reptime']
+        else:
+            self.reptime = 3e3
+        
+        if 'reptime_opt' in self.user_inputs:
+            self.reptime_opt = self.user_inputs['reptime_opt']
+        else:
+            self.reptime_opt = True
+
         self.deer_inputs = {}
         
         self.EndTimeCriteria = TimeCriteria('End Time',time.time() + self.user_inputs['MaxTime']*3600, "Overall end time",end_signal=self.signals.timeout.emit,night_hours=night_hours)
@@ -365,7 +375,9 @@ class autoDEERWorker(QtCore.QRunnable):
         p90, p180 = self.interface.tune_rectpulse(tp=self.tp, LO=LO, B=LO/self.gyro, reptime = reptime_guess,shots=int(100*self.noise_mode))
 
         n_shots = int(np.min([int(50*self.noise_mode),50]))
-        scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=12e3, averages=10, shots=n_shots,
+        reptime_max = 12e3
+        reptime_max = 3e3
+        scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=reptime_max, averages=10, shots=n_shots,
                            pi2_pulse=p90, pi_pulse=p180)
         self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",IFgain=1)
         self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=self.test_interval)
@@ -397,9 +409,13 @@ class autoDEERWorker(QtCore.QRunnable):
             quick_deer = True
         else:
             quick_deer = False
-        
-        methods = [self.run_fsweep,self.run_reptime_opt,self.run_respro,self.run_fsweep,
-                   self.tune_pulses]
+
+        if self.reptime_opt:
+            methods = [self.run_fsweep,self.run_reptime_opt,self.run_respro,self.run_fsweep,
+                       self.tune_pulses]
+        else:
+            methods = [self.run_fsweep,self.run_respro,self.run_fsweep,
+                       self.tune_pulses]
         
         if (seq is None) or (seq == '5pDEER'):
             methods.append(self.run_CP_relax)
@@ -422,7 +438,7 @@ class autoDEERWorker(QtCore.QRunnable):
     @QtCore.pyqtSlot()    
     def run(self):
 
-        self.reptime = 3e3
+        # self.reptime = 100 # 3e3 CHANGE BACK
         self.stop_flag = False
 
 
