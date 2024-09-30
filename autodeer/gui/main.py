@@ -360,8 +360,10 @@ class autoDEERUI(QMainWindow):
         # Set LO to resonator central frequency
         self.select_resonator()
 
-        self.AWG = self.config['Spectrometer']['AWG']
-        # self.AWG=False # CHANGE
+        if 'RectOnly' in self.config['autoDEER'].keys():
+            self.shapedPulses = self.config['Spectrometer']['AWG'] and self.config['autoDEER']['RectOnly']
+        else:
+            self.shapedPulses = self.config['Spectrometer']['AWG']
 
         # Get user preferences
         try:
@@ -645,7 +647,7 @@ class autoDEERUI(QMainWindow):
 
     def optimise_pulses(self, pulses=None):
         if (pulses is None) or pulses == {}:
-            self.pulses = ad.build_default_pulses(self.AWG,tp = self.Min_tp)
+            self.pulses = ad.build_default_pulses(self.shapedPulses,tp = self.Min_tp)
             # pump_pulse = ad.HSPulse(tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0, order1=6, order2=1, beta=10)
             # exc_pulse = ad.RectPulse(tp=16, freq=0.02, flipangle=np.pi/2, scale=0)
             # ref_pulse = exc_pulse.copy(flipangle=np.pi)
@@ -1144,7 +1146,7 @@ class autoDEERUI(QMainWindow):
         mutex = QtCore.QMutex()
         self.worker = autoDEERWorker(
             self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
-            pulses=self.pulses,results=self.current_results, AWG=self.AWG, LO=self.LO, gyro = self.gyro,
+            pulses=self.pulses,results=self.current_results, AWG=self.shapedPulses, LO=self.LO, gyro = self.gyro,
             user_inputs=userinput, cores=self.cores,night_hours=night_hours)
         
         self.starttime = time.time()
