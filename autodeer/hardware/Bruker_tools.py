@@ -1181,7 +1181,8 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
 
         if param == 'x':
             stop = 'sx'
-            foot = f"dx=dx+{axis_step_hash[ax]}\n"+ foot
+            if not check_variable("B", uprog):
+                foot = f"dx=dx+{axis_step_hash[ax]}\n"+ foot
         elif param == 'y':
             stop = 'sy'
             foot = f"dy=dy+{axis_step_hash[ax]}\n"+ foot
