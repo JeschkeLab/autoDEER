@@ -1045,7 +1045,7 @@ def write_pulsespel_file(sequence,d0, AWG=False, MPFU=False,MaxGate=40):
         split_point = False
         static_seq = True
     else:
-        split_point = determine_TWT_split(sequence,MaxGate=40)
+        split_point = determine_TWT_split(sequence,MaxGate=MaxGate)
         static_seq = False
 
     uprogtable = build_unique_progtable(sequence)

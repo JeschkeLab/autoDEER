@@ -183,8 +183,9 @@ class BrukerAWG(Interface):
                 
         
         if update_pulsespel:
-            
-            def_text, exp_text, pulse_shapes = write_pulsespel_file(sequence,self.d0,AWG=True)
+
+            MaxGate = np.min([40,sequence.reptime.value*self.bridge_config['DutyCycle']*1e-2])
+            def_text, exp_text, pulse_shapes = write_pulsespel_file(sequence,self.d0,AWG=True,MaxGate=MaxGate)
             
             verbMsgParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELVerbMsg')
             plsSPELCmdParam = self.api.cur_exp.getParam('*ftEPR.PlsSPELCmd')

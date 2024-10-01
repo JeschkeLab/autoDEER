@@ -196,7 +196,7 @@ class autoDEERWorker(QtCore.QRunnable):
             
 
 
-    def run_CP_relax(self,dt=200):
+    def run_CP_relax(self,dt=12):
         '''
         Initialise the runner function for relaxation. 
         '''
@@ -204,7 +204,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
-        shots = int(40*self.noise_mode)
+        shots = int(100*self.noise_mode)
         shots = np.min([shots,10])
         relax = DEERSequence(
             B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=shots,
@@ -212,7 +212,11 @@ class autoDEERWorker(QtCore.QRunnable):
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
             )
-        relax.five_pulse(relaxation=True, re_step=dt)
+        duty_cycle = self.interface.bridge_config['DutyCycle']*1e-2
+        max_dim = np.floor((reptime  * duty_cycle* 0.8 - relax.tau3.value/1e3 - self.pulses['pump_pulse'].tp.value/1e3) / (2*dt/1e3))
+        dim = np.min([500,max_dim])
+
+        relax.five_pulse(relaxation=True, re_step=dt,re_dim=dim)
         if self.AWG:
             relax.select_pcyc("16step_5p")
         else:
@@ -228,12 +232,12 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.relax_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('Carr-Purcell experiment complete')
         
-    def run_T2_relax(self,dt=60):
+    def run_T2_relax(self,dt=12):
         self.signals.status.emit('Running T2 experiment')
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
-        shots = int(40*self.noise_mode)
+        shots = int(100*self.noise_mode)
         shots = np.min([shots,10])
 
         seq = T2RelaxationSequence(
