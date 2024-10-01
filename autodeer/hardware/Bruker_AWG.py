@@ -109,6 +109,9 @@ class BrukerAWG(Interface):
         if self.bg_data is None:
             if not self.isrunning():
                 if (self.savename is not None) and (self.savename != ''):
+                    full_path = os.path.join(self.savefolder,self.savename)
+                    if Path(full_path).is_file():
+                        self.savename = self.savename+"_1"
                     self.api.xepr_save(os.path.join(self.savefolder,self.savename))
                 data = self.api.acquire_dataset(self.cur_exp)
             else:
@@ -166,6 +169,8 @@ class BrukerAWG(Interface):
 
         if reset_cur_exp:
             timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M_')
+            if Path(os.path.join(self.savefolder,timestamp+savename+'.DSC')).is_file():
+                timestamp = datetime.datetime.now().strftime(r'%Y%m%d_%H%M%S_')
             self.savename = timestamp+savename
             self.cur_exp = sequence
                     
