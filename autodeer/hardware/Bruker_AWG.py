@@ -344,7 +344,7 @@ class BrukerAWG(Interface):
 
         return p90, p180
     
-    def tune_pulse(self, pulse, mode, LO, B , reptime, shots=400):
+    def tune_pulse(self, pulse, mode, LO, B , reptime, shots=400,tp=12):
         """Tunes a single pulse a range of methods.
 
         Parameters
@@ -361,6 +361,8 @@ class BrukerAWG(Interface):
             Shot repetion time in us.
         shots: int
             The number of shots
+        tp: float
+            The length of the pi/2 pulse used for Hahn Echo, by default 12 ns. The pi pulse will be twice the length
 
         Returns
         -------
@@ -383,7 +385,7 @@ class BrukerAWG(Interface):
         elif hasattr(pulse, "init_freq") & hasattr(pulse, "final_freq"):
             c_frq = 0.5*(pulse.final_freq.value + pulse.final_freq.value) + LO
 
-        pi2_pulse, pi_pulse = self.tune_rectpulse(tp=12, B=B, LO=c_frq, reptime=reptime)
+        pi2_pulse, pi_pulse = self.tune_rectpulse(tp=tp, B=B, LO=c_frq, reptime=reptime)
         
         if mode == "amp_hahn":
             amp_tune =HahnEchoSequence(
