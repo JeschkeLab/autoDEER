@@ -535,11 +535,12 @@ class BrukerAWG(Interface):
             max_value = np.abs(get_specjet_data(self)).max()
             y_max = np.abs(self.api.hidden['specjet.DataRange'][0])
             vg  =self.api.get_video_gain()
+            vg_step = self.api.get_video_gain_step()
             if max_value > 0.7* y_max:
-                self.api.set_video_gain(vg - 3)
+                self.api.set_video_gain(vg - vg_step)
                 time.sleep(0.5)
             elif max_value < 0.3* y_max:
-                self.api.set_video_gain(vg + 3)
+                self.api.set_video_gain(vg + vg_step)
                 time.sleep(0.5)
             else:
                 optimal=True
@@ -606,11 +607,12 @@ class BrukerAWG(Interface):
             max_value = np.abs(get_specjet_data(self)).max()
             y_max = np.abs(self.api.hidden['specjet.DataRange'][0])
             vg  =self.api.get_video_gain()
+            vg_step = self.api.get_video_gain_step()
             if max_value > 0.7* y_max:
-                self.api.set_video_gain(vg - 3)
+                self.api.set_video_gain(vg - vg_step)
                 time.sleep(0.5)
             elif max_value < 0.3* y_max:
-                self.api.set_video_gain(vg + 3)
+                self.api.set_video_gain(vg + vg_step)
                 time.sleep(0.5)
             else:
                 optimal=True

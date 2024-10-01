@@ -800,6 +800,10 @@ class XeprAPILink:
             Video gain in dB
         """
         return self.get_param('VideoGain')
+    
+    def get_video_gain_step(self) -> int:
+
+        return self.cur_exp['VideoGain'].aqGetParFineSteps()
 
     def set_video_gain(self, value: int) -> int:
         """Set the video gain in dB
