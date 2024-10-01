@@ -222,15 +222,17 @@ class BrukerAWG(Interface):
         self.api.set_field(sequence.B.value)
         self.api.set_freq(sequence.LO.value)
         
+        self.api.set_PhaseCycle(False)
         if 'B' in sequence.progTable['Variable']:
             idx = sequence.progTable['Variable'].index('B')
             B_axis = sequence.progTable['axis'][idx]
             self.api.set_sweep_width(B_axis.max()-B_axis.min())
+            self.api.set_PhaseCycle(False)
+        
         
 
         self.api.set_ReplaceMode(False)
         self.api.set_Acquisition_mode(1)
-        self.api.set_PhaseCycle(True)
         pg = sequence.pulses[-1].tp.value
         pg = round_step(pg/2,self.bridge_config['Pulse dt'])
         d0 = self.d0-pg
