@@ -153,6 +153,7 @@ class autoDEERUI(QMainWindow):
         self.set_spectrometer_connected_light(0)
 
         self.setWindowTitle("autoDEER")
+        self.Version_label.setText(f"Version: {ad.__version__}")
 
 
         self.qDEER_tab.layout().addWidget(DEERplot())
