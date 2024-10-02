@@ -102,12 +102,12 @@ Functions
 
 
 
+
+
       :Returns:
 
           float
               Max field
-
-
 
 
 
@@ -133,12 +133,12 @@ Functions
           **det_frq** : float
               The detection frequency for the field sweep.
 
+
+
       :Returns:
 
           float
               The gyromagnetic ratio in G/GHz.
-
-
 
 
 
@@ -163,12 +163,12 @@ Functions
 
 
 
+
+
       :Returns:
 
           np.ndarray
               The smoothed data.
-
-
 
 
 
@@ -200,12 +200,12 @@ Functions
           **axis** : str, optional
               plot field sweep on either the "field" axis or "freq" axis
 
+
+
       :Returns:
 
           Matplotlib.Figure
               matplotlib figure
-
-
 
 
 
@@ -376,6 +376,8 @@ Functions
        **npoints** : int, optional
            The number of points in the spectrum, by default 1000
 
+
+
    :Returns:
 
        xAxis: np.ndarray
@@ -383,8 +385,6 @@ Functions
 
        y: np.ndarray
            The spectrum intensities normalised to 1  
-
-
 
 
 

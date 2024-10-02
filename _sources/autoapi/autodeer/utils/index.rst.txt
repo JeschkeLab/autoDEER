@@ -161,12 +161,12 @@ Functions
        **Param** : autodeer.Parameter
            The parameter to be converted
 
+
+
    :Returns:
 
        float or numpy.ndarray
            ..
-
-
 
 
 
@@ -192,12 +192,12 @@ Functions
        **Param** : autodeer.Parameter
            The parameter to be converted
 
+
+
    :Returns:
 
        float or numpy.ndarray
            ..
-
-
 
 
 

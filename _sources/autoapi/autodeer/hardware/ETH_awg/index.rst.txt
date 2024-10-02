@@ -175,12 +175,12 @@ Attributes
 
 
 
+
+
       :Returns:
 
           dict
               The dataset
-
-
 
 
 
@@ -327,6 +327,8 @@ Attributes
           **shots: int**
               The number of shots
 
+
+
       :Returns:
 
           p90: RectPulse
@@ -334,8 +336,6 @@ Attributes
 
           p180: RectPulse
               A tuned rectangular pi pulse of length tp
-
-
 
 
 
@@ -376,12 +376,12 @@ Attributes
           **shots: int**
               The number of shots
 
+
+
       :Returns:
 
           Tunned Pulse: Pulse
               The returned pulse object that is now tunned.
-
-
 
 
 
@@ -428,12 +428,12 @@ Attributes
           **sequence** : _type_
               _description_
 
+
+
       :Returns:
 
           dict
               _description_
-
-
 
 
 

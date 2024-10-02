@@ -470,12 +470,12 @@
 
 
 
+
+
       :Returns:
 
           int
               Field position in Gauss
-
-
 
 
 
@@ -504,12 +504,12 @@
           **hold** : bool, optional
               Wait until Xepr belives the field is stable, by default True
 
+
+
       :Returns:
 
           int
               Field position in Gauss
-
-
 
 
 
@@ -532,12 +532,12 @@
       Note: There is no equivalent set command 
 
 
+
+
       :Returns:
 
           float
               The counter frequency in GHz
-
-
 
 
 
@@ -563,12 +563,12 @@
           **val** : int
               Field sweep width in Gauss
 
+
+
       :Returns:
 
           int
               Field sweep width in Gauss
-
-
 
 
 
@@ -590,12 +590,12 @@
 
 
 
+
+
       :Returns:
 
           int
               Field sweep width in Gauss.
-
-
 
 
 
@@ -625,12 +625,12 @@
           **pol** : list, optional
               Conversion polynomal coefficents for freq->Step, by default None
 
+
+
       :Returns:
 
           float
               Frequency in GHz
-
-
 
 
 
@@ -657,12 +657,12 @@
           **pol** : list, optional
               Conversion polynomal coefficents for freq->Step, by default None
 
+
+
       :Returns:
 
           float
               Frequency in GHz
-
-
 
 
 
@@ -685,12 +685,12 @@
 
 
 
+
+
       :Returns:
 
           str
               Returns the name of the current spectrometer configuration file
-
-
 
 
 
@@ -777,12 +777,12 @@
 
 
 
+
+
       :Returns:
 
           int
               Video gain in dB
-
-
 
 
 
@@ -808,12 +808,12 @@
           **value** : int
               Video gain to be set in dB.
 
+
+
       :Returns:
 
           int
               The adjusted video gain
-
-
 
 
 
@@ -835,12 +835,12 @@
 
 
 
+
+
       :Returns:
 
           str
               The name of the spectrometer configuration file
-
-
 
 
 
@@ -867,12 +867,12 @@
           **config_file** : str
               The new configuration file name.
 
+
+
       :Returns:
 
           str
               The name of the spectrometer configuration file
-
-
 
 
 
@@ -894,12 +894,12 @@
 
 
 
+
+
       :Returns:
 
           bool
               current setting of the microwave amplifier
-
-
 
 
 
@@ -925,12 +925,12 @@
           **value** : bool
               New setting of the microwave amplifier
 
+
+
       :Returns:
 
           bool
               Setting of the microwave amplifier
-
-
 
 
 
@@ -952,12 +952,12 @@
 
 
 
+
+
       :Returns:
 
           float
               Video bandwidth in MHz
-
-
 
 
 
@@ -983,12 +983,12 @@
           **value** : float
               Video bandwidth in MHz, options = [200,20].
 
+
+
       :Returns:
 
           float
               Video bandwidth in MHz
-
-
 
 
 

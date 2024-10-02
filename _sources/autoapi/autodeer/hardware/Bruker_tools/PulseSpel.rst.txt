@@ -111,24 +111,4 @@
 
    .. py:method:: __str__()
 
-      
-      Return str(self).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 

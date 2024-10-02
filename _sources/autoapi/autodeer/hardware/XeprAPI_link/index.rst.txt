@@ -507,12 +507,12 @@ Attributes
 
 
 
+
+
       :Returns:
 
           int
               Field position in Gauss
-
-
 
 
 
@@ -541,12 +541,12 @@ Attributes
           **hold** : bool, optional
               Wait until Xepr belives the field is stable, by default True
 
+
+
       :Returns:
 
           int
               Field position in Gauss
-
-
 
 
 
@@ -569,12 +569,12 @@ Attributes
       Note: There is no equivalent set command 
 
 
+
+
       :Returns:
 
           float
               The counter frequency in GHz
-
-
 
 
 
@@ -600,12 +600,12 @@ Attributes
           **val** : int
               Field sweep width in Gauss
 
+
+
       :Returns:
 
           int
               Field sweep width in Gauss
-
-
 
 
 
@@ -627,12 +627,12 @@ Attributes
 
 
 
+
+
       :Returns:
 
           int
               Field sweep width in Gauss.
-
-
 
 
 
@@ -662,12 +662,12 @@ Attributes
           **pol** : list, optional
               Conversion polynomal coefficents for freq->Step, by default None
 
+
+
       :Returns:
 
           float
               Frequency in GHz
-
-
 
 
 
@@ -694,12 +694,12 @@ Attributes
           **pol** : list, optional
               Conversion polynomal coefficents for freq->Step, by default None
 
+
+
       :Returns:
 
           float
               Frequency in GHz
-
-
 
 
 
@@ -722,12 +722,12 @@ Attributes
 
 
 
+
+
       :Returns:
 
           str
               Returns the name of the current spectrometer configuration file
-
-
 
 
 
@@ -814,12 +814,12 @@ Attributes
 
 
 
+
+
       :Returns:
 
           int
               Video gain in dB
-
-
 
 
 
@@ -845,12 +845,12 @@ Attributes
           **value** : int
               Video gain to be set in dB.
 
+
+
       :Returns:
 
           int
               The adjusted video gain
-
-
 
 
 
@@ -872,12 +872,12 @@ Attributes
 
 
 
+
+
       :Returns:
 
           str
               The name of the spectrometer configuration file
-
-
 
 
 
@@ -904,12 +904,12 @@ Attributes
           **config_file** : str
               The new configuration file name.
 
+
+
       :Returns:
 
           str
               The name of the spectrometer configuration file
-
-
 
 
 
@@ -931,12 +931,12 @@ Attributes
 
 
 
+
+
       :Returns:
 
           bool
               current setting of the microwave amplifier
-
-
 
 
 
@@ -962,12 +962,12 @@ Attributes
           **value** : bool
               New setting of the microwave amplifier
 
+
+
       :Returns:
 
           bool
               Setting of the microwave amplifier
-
-
 
 
 
@@ -989,12 +989,12 @@ Attributes
 
 
 
+
+
       :Returns:
 
           float
               Video bandwidth in MHz
-
-
 
 
 
@@ -1020,12 +1020,12 @@ Attributes
           **value** : float
               Video bandwidth in MHz, options = [200,20].
 
+
+
       :Returns:
 
           float
               Video bandwidth in MHz
-
-
 
 
 

@@ -300,6 +300,16 @@ By default, False</p>
 </dd>
 </dl>
 </dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>progressive</strong><span class="classifier">bool</span></dt><dd><p>Is the parameter used in any progression or is it constant</p>
+</dd>
+<dt><strong>prog</strong><span class="classifier">dict</span></dt><dd><p>A dict containing progressive programs for this parameter. This
+list has two elements. 1) The axis_id”s and 2) the “axis” of
+values.</p>
+</dd>
+</dl>
+</dd>
 </dl>
 <p class="rubric">Examples</p>
 <p>Creating a static parameter
@@ -324,18 +334,6 @@ Par1 = Parameter(</p>
 <div><p>name=”Par1”, value=10, unit=”us”, description=”The first parameter”)</p>
 </div></blockquote>
 <p>Par2 = Par1 + 2</p>
-<dl class="field-list simple">
-<dt class="field-odd">Attributes<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>progressive</strong><span class="classifier">bool</span></dt><dd><p>Is the parameter used in any progression or is it constant</p>
-</dd>
-<dt><strong>prog</strong><span class="classifier">dict</span></dt><dd><p>A dict containing progressive programs for this parameter. This
-list has two elements. 1) The axis_id”s and 2) the “axis” of
-values.</p>
-</dd>
-</dl>
-</dd>
-</dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="Parameter.dim">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dim</span></span><a class="headerlink" href="#Parameter.dim" title="Link to this definition">¶</a></dt>
@@ -394,8 +392,7 @@ values.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="Parameter.__eq__">
 <span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">__o</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Parameter.__eq__" title="Link to this definition">¶</a></dt>
-<dd><p>Return self==value.</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="Parameter.__add__">

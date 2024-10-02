@@ -176,70 +176,30 @@ Classes
 
    .. py:method:: evolution(params, reduce=[])
 
-
-   .. py:method:: shift_detfreq_to_zero()
-
-
-   .. py:method:: isPulseFocused()
-
       
-      Is the sequence expressed to contain only pulses and no delays?
+      Sets what parameters are being evolved in the sequence, and which are
+      being automatically.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: isDelayFocused()
-
-      
-      Is the sequence expressed to contain both pulses and delays?
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: convert(*, reduce=True)
-
-      
-      Converts the current sequence to either pulse focused or delay
-      focused depending on the current state
-
+      `self.evo_params = params`
 
       :Parameters:
 
-          **reduce** : bool, optional
-              Reduce to the smallest number of objects, by default True
+          **params** : list
+              A list of Parameter objects which are being evolved. Each every 
+              entry in the list will be a new axis in the sequence. Only one parameter
+              per axis should be specified.
+
+          **reduce** : list
+              A list of Parameter objects which are being reduced. These are the
+              parameters which are being averaged over. These parameters should
+              also be in the params list.
 
 
 
+      :Returns:
+
+          **progTable** : dict
+              A dictionary containing the progression of the sequence.
 
 
 
@@ -254,10 +214,7 @@ Classes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: _convert_to_delay()
-
-
-   .. py:method:: _convert_to_pulses()
+   .. py:method:: shift_detfreq_to_zero()
 
 
    .. py:method:: _checkRect()
@@ -285,26 +242,6 @@ Classes
 
    .. py:method:: __str__()
 
-      
-      Return str(self).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
    .. py:method:: copy()
 
@@ -326,6 +263,8 @@ Classes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           None
@@ -338,8 +277,6 @@ Classes
 
           TypeError
               If the object cannot be serialized to JSON.
-
-
 
 
 
@@ -370,6 +307,8 @@ Classes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           **obj** : Sequence
@@ -382,8 +321,6 @@ Classes
 
           FileNotFoundError
               If the file does not exist.
-
-
 
 
 

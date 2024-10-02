@@ -99,6 +99,8 @@ Functions
               The multiples above the noise a single must be to not be excluded,
               default is 2.
 
+
+
       :Returns:
 
           prof_data: np.ndarray
@@ -106,8 +108,6 @@ Functions
 
           prof_frqs: np.ndarray
               The frequency axis in GHz
-
-
 
 
 
@@ -169,12 +169,12 @@ Functions
           **fig** : matplotlib.Figure, optional
               Figure to plot on, by default None
 
+
+
       :Returns:
 
           Matplotlib.Figure
               matplotlib figure object
-
-
 
 
 
@@ -213,12 +213,12 @@ Functions
        **func2** : function
            The second function
 
+
+
    :Returns:
 
        float
            The overlap between the two functions.
-
-
 
 
 

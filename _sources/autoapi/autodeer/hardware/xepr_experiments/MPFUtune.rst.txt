@@ -85,12 +85,12 @@
           **maxiter** : int, optional
               The maximum number of iterations in the optimisation, by default 30
 
+
+
       :Returns:
 
           float
               The optimal value of the phase parameter
-
-
 
 
 
@@ -123,12 +123,12 @@
           **maxiter** : int, optional
               The maximum number of iterations in the optimisation, by default 30
 
+
+
       :Returns:
 
           float
               The optimal value of the attenuator parameter
-
-
 
 
 

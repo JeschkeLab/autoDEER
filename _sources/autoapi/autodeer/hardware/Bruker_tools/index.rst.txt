@@ -85,26 +85,6 @@ Attributes
 
    .. py:method:: __str__()
 
-      
-      Return str(self).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
 
 .. py:class:: PSparvar(sequence, id)
@@ -142,12 +122,12 @@ Attributes
 
 
 
+
+
       :Returns:
 
           bool
               _description_
-
-
 
 
 
@@ -338,26 +318,6 @@ Attributes
 
    .. py:method:: __str__()
 
-      
-      Return str(self).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
 
 .. py:function:: run_general(api, ps_file, exp, settings, variables, run = True)
@@ -392,12 +352,12 @@ Attributes
 
 
 
+
+
    :Raises:
 
        ValueError
            If an input is of the wrong type.
-
-
 
 
 
@@ -429,13 +389,13 @@ Attributes
 
 
 
+
+
    :Raises:
 
        ValueError
            If there more than 2 dimesnions are supplied. Xepr can not handle 3+D 
            experiments.
-
-
 
 
 
@@ -481,6 +441,8 @@ Attributes
        **MaxGate** : float, optional
            The maximum gate time for the TWT gate in microseconds, by default 40 us
 
+
+
    :Returns:
 
        str
@@ -488,8 +450,6 @@ Attributes
 
        str
            The string for the experiment file
-
-
 
 
 

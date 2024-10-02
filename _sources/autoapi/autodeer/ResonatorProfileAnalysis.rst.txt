@@ -67,6 +67,8 @@
               The multiples above the noise a single must be to not be excluded,
               default is 2.
 
+
+
       :Returns:
 
           prof_data: np.ndarray
@@ -74,8 +76,6 @@
 
           prof_frqs: np.ndarray
               The frequency axis in GHz
-
-
 
 
 
@@ -137,12 +137,12 @@
           **fig** : matplotlib.Figure, optional
               Figure to plot on, by default None
 
+
+
       :Returns:
 
           Matplotlib.Figure
               matplotlib figure object
-
-
 
 
 

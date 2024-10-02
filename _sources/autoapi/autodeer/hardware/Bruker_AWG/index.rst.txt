@@ -45,21 +45,21 @@ Functions
        **config_file** : str
            The path to a YAML configuration file.
 
-
-
-
-
-
-
-
-
-
-
-
    :Attributes:
 
        **bg_thread: None or threading.Thread**
            If a background thread is needed, it is stored here.
+
+
+
+
+
+
+
+
+
+
+
 
 
    ..
@@ -209,6 +209,8 @@ Functions
           **shots: int**
               The number of shots
 
+
+
       :Returns:
 
           p90: RectPulse
@@ -216,8 +218,6 @@ Functions
 
           p180: RectPulse
               A tuned rectangular pi pulse of length tp
-
-
 
 
 
@@ -258,6 +258,8 @@ Functions
           **shots: int**
               The number of shots
 
+
+
       :Returns:
 
           Tunned Pulse: Pulse
@@ -273,13 +275,8 @@ Functions
 
 
 
-
-
       ..
           !! processed by numpydoc !!
-
-   .. py:method:: tune_nutation(test_pulse)
-
 
    .. py:method:: isrunning()
 

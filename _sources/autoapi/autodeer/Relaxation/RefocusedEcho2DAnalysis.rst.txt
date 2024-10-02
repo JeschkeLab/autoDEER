@@ -54,12 +54,12 @@
           **elements** : int, optional
               The number of elements to use in the smoothing, by default 3
 
+
+
       :Returns:
 
           np.ndarray
               The smoothed data.
-
-
 
 
 
@@ -164,6 +164,8 @@
               The total number of shots taken, by default None. If None, the
               number of shots will be calculated from the dataset.
 
+
+
       :Returns:
 
           tau1: float
@@ -171,8 +173,6 @@
 
           tau2: float
               The calculated optimal tau2 in us
-
-
 
 
 

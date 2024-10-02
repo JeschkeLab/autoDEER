@@ -73,12 +73,12 @@
           **norm** : bool, optional
               Normalise the fit to a maximum of 1, by default True
 
+
+
       :Returns:
 
           Figure
               The figure.
-
-
 
 
 
@@ -104,12 +104,12 @@
           **level** : float, optional
               The level to check the decay, by default 0.05
 
+
+
       :Returns:
 
           int
               0 if both conditions are met, 1 if the decay is less than 5% in the first 30% of the data, and -1 if the decay is less than 5% in the entire length.
-
-
 
 
 
@@ -149,12 +149,12 @@
               The total number of shots taken, by default None. If None, the
               number of shots will be calculated from the dataset.
 
+
+
       :Returns:
 
           float
               The calculated optimal time in us
-
-
 
 
 

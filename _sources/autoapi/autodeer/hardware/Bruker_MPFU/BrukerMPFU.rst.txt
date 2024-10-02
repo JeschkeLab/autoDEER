@@ -16,21 +16,21 @@
        **config_file** : str
            The path to a YAML configuration file.
 
-
-
-
-
-
-
-
-
-
-
-
    :Attributes:
 
        **bg_thread: None or threading.Thread**
            If a background thread is needed, it is stored here.
+
+
+
+
+
+
+
+
+
+
+
 
 
    ..

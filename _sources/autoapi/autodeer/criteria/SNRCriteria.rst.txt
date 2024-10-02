@@ -32,6 +32,8 @@
 
 
 
+
+
    .. rubric:: References
 
    [1] F. Stoehr, R. White, M. Smith, I. Kamp, R. Thompson, D. Durand,
@@ -44,8 +46,6 @@
    .. only:: latex
 
       
-
-
 
 
    ..

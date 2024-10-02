@@ -294,7 +294,7 @@ Functions
    .. py:method:: _calc_fft(pad=10000)
 
 
-   .. py:method:: exciteprofile(freqs=None, resonator=None)
+   .. py:method:: exciteprofile_old(freqs=None, resonator=None)
 
       
       Excitation profile
@@ -330,6 +330,8 @@ Functions
           **resonator: ad.ResonatorProfile, optional**
               ..
 
+
+
       :Returns:
 
           Mx: np.ndarray
@@ -342,6 +344,52 @@ Functions
               The magentisation in the Z direction.
 
 
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: exciteprofile(freqs=None, resonator=None, trajectory=False)
+
+      
+      Excitation profile
+
+      Generates the exciatation profiles for this pulse, using the two-level system model developed by Jeschke et al. [1].
+      And then optimised in the PulseShape software package by Maxx Tessmer [2], reproduced under the GNU GPL v3 license.
+
+      References:
+      +++++++++++
+      [1] Jeschke, G., Pribitzer, S. & Doll, A. 
+          Coherence Transfer by Passage Pulses in Electron Paramagnetic 
+          Resonance Spectroscopy. 
+          J. Phys. Chem. B 119, 13570-13582 (2015)
+      [2] https://github.com/mtessmer/PulseShape
+
+      :Parameters:
+
+          **freqs: np.ndarray, optional**
+              The frequency axis. Caution: A larger number of points will linearly
+              increase computation time.
+
+          **resonator: ad.ResonatorProfile, optional**
+              The resonator profile to apply resonator compensation.
+
+          **trajectory: bool, optional**
+              If True, the function will return the magnetisation at each time point. Default is False.
+
+
+
+      :Returns:
+
+          Mag: np.ndarray
+              The magnetisation in the X, Y, and Z directions.
 
 
 
@@ -364,26 +412,6 @@ Functions
 
    .. py:method:: __str__()
 
-      
-      Return str(self).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
    .. py:method:: copy(clear=False, **kwargs)
 
@@ -395,12 +423,12 @@ Functions
       arguments (kwargs).
 
 
+
+
       :Returns:
 
           Pulse
               A deep copy of the pulse
-
-
 
 
 
@@ -432,6 +460,8 @@ Functions
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           None
@@ -444,8 +474,6 @@ Functions
 
           TypeError
               If the object cannot be serialized to JSON.
-
-
 
 
 
@@ -476,6 +504,8 @@ Functions
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           **obj** : Pulse
@@ -488,8 +518,6 @@ Functions
 
           FileNotFoundError
               If the file does not exist.
-
-
 
 
 

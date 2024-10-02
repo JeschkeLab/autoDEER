@@ -26,7 +26,6 @@ Submodules
    Logging/index.rst
    Relaxation/index.rst
    ResPro/index.rst
-   TwoD_Experiment/index.rst
    _version/index.rst
    classes/index.rst
    colors/index.rst
@@ -80,10 +79,13 @@ Classes
    autodeer.HSPulse
    autodeer.ChirpPulse
    autodeer.SincPulse
-   autodeer.Criteria
-   autodeer.TimeCriteria
-   autodeer.SNRCriteria
-   autodeer.DEERCriteria
+   autodeer.Pulse
+   autodeer.Detection
+   autodeer.Parameter
+   autodeer.Interface
+   autodeer.Sequence
+   autodeer.DEERSequence
+   autodeer.EPRAccessor
    autodeer.Reporter
 
 
@@ -105,15 +107,6 @@ Functions
    autodeer.val_in_ns
    autodeer.round_step
    autodeer.optimise_spectra_position
-   autodeer.DEERanalysis
-   autodeer.DEERanalysis_plot
-   autodeer.DEERanalysis_plot_pub
-   autodeer.IdentifyROI
-   autodeer.optimise_pulses
-   autodeer.plot_overlap
-   autodeer.normalise_01
-   autodeer.calc_correction_factor
-   autodeer.calc_deer_settings
    autodeer.detect_ESEEM
    autodeer.plot_1Drelax
    autodeer.build_table
@@ -122,7 +115,12 @@ Functions
    autodeer.sop
    autodeer.autoEPRDecoder
    autodeer.build_default_pulses
-   autodeer.DEERanalysis
+   autodeer.autoEPRDecoder
+   autodeer.get_all_axes
+   autodeer.get_all_fixed_param
+   autodeer.create_dataset_from_sequence
+   autodeer.create_dataset_from_axes
+   autodeer.create_dataset_from_bruker
    autodeer.combo_figure
 
 
@@ -134,12 +132,11 @@ Attributes
 
    autodeer.__version__
    autodeer.cmap
-   autodeer.log
    autodeer.primary_colors
 
 
 .. py:data:: __version__
-   :value: "'0.8'"
+   :value: "'0.9'"
 
    
 
@@ -160,6 +157,8 @@ Attributes
        **type** : str, optional
            _description_, by default None
 
+
+
    :Returns:
 
        xarray.Dataarray
@@ -175,8 +174,6 @@ Attributes
 
        RuntimeError
            _description_
-
-
 
 
 
@@ -321,12 +318,12 @@ Attributes
        **Param** : autodeer.Parameter
            The parameter to be converted
 
+
+
    :Returns:
 
        float or numpy.ndarray
            ..
-
-
 
 
 
@@ -352,12 +349,12 @@ Attributes
        **Param** : autodeer.Parameter
            The parameter to be converted
 
+
+
    :Returns:
 
        float or numpy.ndarray
            ..
-
-
 
 
 
@@ -415,12 +412,12 @@ Attributes
 
 
 
+
+
       :Returns:
 
           float
               Max field
-
-
 
 
 
@@ -446,12 +443,12 @@ Attributes
           **det_frq** : float
               The detection frequency for the field sweep.
 
+
+
       :Returns:
 
           float
               The gyromagnetic ratio in G/GHz.
-
-
 
 
 
@@ -476,12 +473,12 @@ Attributes
 
 
 
+
+
       :Returns:
 
           np.ndarray
               The smoothed data.
-
-
 
 
 
@@ -513,12 +510,12 @@ Attributes
           **axis** : str, optional
               plot field sweep on either the "field" axis or "freq" axis
 
+
+
       :Returns:
 
           Matplotlib.Figure
               matplotlib figure
-
-
 
 
 
@@ -603,6 +600,8 @@ Attributes
               The multiples above the noise a single must be to not be excluded,
               default is 2.
 
+
+
       :Returns:
 
           prof_data: np.ndarray
@@ -610,8 +609,6 @@ Attributes
 
           prof_frqs: np.ndarray
               The frequency axis in GHz
-
-
 
 
 
@@ -673,12 +670,12 @@ Attributes
           **fig** : matplotlib.Figure, optional
               Figure to plot on, by default None
 
+
+
       :Returns:
 
           Matplotlib.Figure
               matplotlib figure object
-
-
 
 
 
@@ -696,387 +693,6 @@ Attributes
 
 .. py:function:: optimise_spectra_position(resonator_profile, fieldsweep, verbosity=0)
 
-
-.. py:function:: DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, remove_crossing=True, **kwargs)
-
-
-.. py:function:: DEERanalysis_plot(fit, background, ROI=None, axs=None, fig=None, text=True)
-
-   
-   DEERanalysis_plot Generates a figure showing both the time domain and
-   distance domain data along with extra important infomation such as the 
-   Modulation to Noise Ratio (MNR), Region of Interest (ROI) and the 
-   recommended dipolar evolution time for future experiments based upon the 
-   ROI.
-
-
-   :Parameters:
-
-       **fit** : Deerlab.FitResult
-           _description_
-
-       **background** : bool
-           Should the background fit be plotted.
-
-       **ROI** : tuple, optional
-           The minimum and maximum of the Region of Interest (ROI),
-           by default None
-
-   :Returns:
-
-       Figure
-           A Matplotlib Figure object of the figure. 
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: DEERanalysis_plot_pub(results, ROI=None, fig=None, axs=None)
-
-   
-   Generates a vertical plot of the DEER analysis results, ready for publication.
-
-
-   :Parameters:
-
-       **results** : Deerlab.FitResult
-           The results of the DEER analysis.
-
-       **ROI** : tuple, optional
-           The minimum and maximum of the Region of Interest (ROI),
-           by default None
-
-       **fig** : matplotlib.figure.Figure, optional
-           The figure to plot the results on. If None, a new figure is created.
-
-       **axs** : matplotlib.axes.Axes, optional
-           The axes to plot the results on. If None, a new axes is created.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: IdentifyROI(P, r, criterion = 0.99, method = 'gauss')
-
-   
-   IdentifyROI Identifies the region of interest. Two methods are sypported
-
-   Methods
-   +++++++
-
-   1. Gaussian fitting ("gauss"):
-
-   2. Intergration ("int"):
-
-   :Parameters:
-
-       **P** : np.ndarray
-           The distance distribution.
-
-       **r** : np.ndarray
-           The distance axis
-
-       **criterion** : float, optional
-           The fraction of the distance distribution that must be in the ROI, by 
-           default 0.99
-
-       **method: str, optional**
-           The method used to calculate region of interest.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute', nDEER=False, num_ref_pulses=2, full_output=False, resonator=None, **kwargs)
-
-   
-   Optimise the pulse positions to maximise the pump-exc overlap.
-
-
-   :Parameters:
-
-       **Fieldsweep** : ad.FieldSweepAnalysis
-           The FieldSweep analysis object
-
-       **pump_pulse** : ad.Pulse
-           The pump pulse object
-
-       **exc_pulse** : ad.Pulse
-           The excitation pulse object
-
-       **ref_pulse** : ad.Pulse, optional
-           The refocusing pulse object\, by default None
-
-       **filter** : str or number or list, optional
-           The filter profile if applicable, by default None. If it is a number a filter is generated with this cutoff frequency.
-           If the string 'Matched' is used a matched filter is used. If a list is used the optimisation is performed for each filter and the best is returned.
-
-       **verbosity** : int, optional
-           The verbosity, by default 0
-
-       **method** : str, optional
-           What search optimisation is used, by default 'grid'
-
-       **nDEER** : bool, optional
-           Is the sequence an nDEER sequrence, by default False. If True then the refocusing pulse is not optimised.
-
-       **num_ref_pulses** : int, optional
-           The total number of refocusing pulses, by default 2
-
-       **full_output** : bool, optional
-           Return the full output, by default False
-
-       **resonator** : ad.ResonatorProfile, optional
-           The resonator profile, by default None
-
-       **Returns**
-           ..
-
-       **-------**
-           ..
-
-       **ad.Pulse**
-           The optimised pump pulse
-
-       **ad.Pulse**
-           The optimised excitation pulse
-
-       **ad.Pulse**
-           The optimised refocusing pulse
-
-       **str or number**
-           The best filter, only if a list of filters is provided
-
-       **float**
-           The functional value after optimisation, only if full_output is True
-
-       **tuple**
-           The grid of the optimisation, only if full_output is True
-
-       **tuple**
-           The output of the optimisation, only if full_output is True
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, respro=None, num_ref_pulses=2, axs=None, fig=None)
-
-   
-   Plots the pump and excitation profiles as well as the fieldsweep and filter profile.
-
-
-   :Parameters:
-
-       **Fieldsweep** : ad.FieldSweepAnalysis
-           The FieldSweep analysis object
-
-       **pump_pulse** : ad.Pulse
-           The pump pulse object
-
-       **exc_pulse** : ad.Pulse
-           The excitation pulse object
-
-       **ref_pulse** : ad.Pulse, optional
-           The refocusing pulse object, by default None
-
-       **filter** : str or number, optional
-           The filter profile if applicable, by default None. If it is a number a filter is generated with this cutoff frequency.
-           If the string 'Matched' is used a matched filter is used.
-
-       **respro** : ad.ResonatorProfileAnalysis, optional
-           The resonator profile for fitting, by default None. The resonator profile must include the fit.
-
-       **num_ref_pulses** : int, optional
-           The total number of refocusing pulses, by default 2
-
-       **axs** : matplotlib.axes, optional
-           The axes to plot on, by default None
-
-       **fig** : matplotlib.figure, optional
-           The figure to plot on, by default None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: normalise_01(A)
-
-   
-   Normalizes the input vector A to be between 0 and 1.
-
-   Parameters:
-   A (numpy.ndarray): Input vector to be normalized.
-
-   Returns:
-   numpy.ndarray: Normalized vector between 0 and 1.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: calc_correction_factor(fit_result, aim_MNR=25, aim_time=2)
-
-   
-   Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.
-   Parameters
-   ----------
-   fit_result : Deerlab.FitResult
-       The fit result from the DEER analysis.
-   aim_MNR : float, optional
-       The desired MNR, by default 25
-   aim_time : float, optional
-       The desired time in hours, by default 2
-   Returns
-   -------
-   float
-       The correction factor for the number of averages.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: calc_deer_settings(experiment, CPdecay=None, Refocused2D=None, target_time=2, target_MNR=20, waveform_precision=2)
-
-   
-   Calculates the optimal DEER settings based on the avaliable relaxation data
-
-
-   :Parameters:
-
-       **experiment** : str
-           Type of DEER experiment, either 'auto', '4pDEER' or '5pDEER'
-
-       **CPdecay** : ad.CarrPurcellAnalysis
-           Carr-Purcell relaxation data
-
-       **Refocused2D** : ad.RefocusedEcho2DAnalysis, optional
-           Refocused 2D data required for '4pDEER', by default None
-
-       **target_time** : int, optional
-           Target time for the DEER experiment in hours, by default 2
-
-       **target_MNR** : float, optional
-           Target modulation to noise ratio, by default 20
-
-       **waveform_precision** : int, optional
-           Precision of the waveform in ns, by default 2
-
-   :Returns:
-
-       dict
-           DEER settings, with keys: 
-               -'ExpType': '4pDEER' or '5pDEER'
-               -'tau1': in us
-               -'tau2': in us
-               -'tau3': in us, only for 5pDEER
-               -'AimTime': in hours
-
-
-
-
-
-
-
-
-   .. rubric:: Notes
-
-   This function will calcate the optimal DEER settings based on the avaliable relaxation data, depending on the experiment type.
-   For 4pDEER, the optimal tau1 and tau2 are calculated based on the refocused 2D data, and for 5pDEER, the optimal tau2 is calculated based on the CPdecay data or refocused 2D if CP decay data is not availiable.
-   If the optimal tau2 for 5pDEER is less than 1.5us, the function will calculate the optimal tau1 and tau2 for 4pDEER instead. This is only possible if the refocused 2D data is availiable, otherwise a non optimal tau1 of 0.4us is used.
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
 
 .. py:class:: Sequence(*, name, B, LO, reptime, averages, shots, **kwargs)
 
@@ -1227,70 +843,30 @@ Attributes
 
    .. py:method:: evolution(params, reduce=[])
 
-
-   .. py:method:: shift_detfreq_to_zero()
-
-
-   .. py:method:: isPulseFocused()
-
       
-      Is the sequence expressed to contain only pulses and no delays?
+      Sets what parameters are being evolved in the sequence, and which are
+      being automatically.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: isDelayFocused()
-
-      
-      Is the sequence expressed to contain both pulses and delays?
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: convert(*, reduce=True)
-
-      
-      Converts the current sequence to either pulse focused or delay
-      focused depending on the current state
-
+      `self.evo_params = params`
 
       :Parameters:
 
-          **reduce** : bool, optional
-              Reduce to the smallest number of objects, by default True
+          **params** : list
+              A list of Parameter objects which are being evolved. Each every 
+              entry in the list will be a new axis in the sequence. Only one parameter
+              per axis should be specified.
+
+          **reduce** : list
+              A list of Parameter objects which are being reduced. These are the
+              parameters which are being averaged over. These parameters should
+              also be in the params list.
 
 
 
+      :Returns:
+
+          **progTable** : dict
+              A dictionary containing the progression of the sequence.
 
 
 
@@ -1305,10 +881,7 @@ Attributes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: _convert_to_delay()
-
-
-   .. py:method:: _convert_to_pulses()
+   .. py:method:: shift_detfreq_to_zero()
 
 
    .. py:method:: _checkRect()
@@ -1336,26 +909,6 @@ Attributes
 
    .. py:method:: __str__()
 
-      
-      Return str(self).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
    .. py:method:: copy()
 
@@ -1377,6 +930,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           None
@@ -1389,8 +944,6 @@ Attributes
 
           TypeError
               If the object cannot be serialized to JSON.
-
-
 
 
 
@@ -1421,6 +974,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           **obj** : Sequence
@@ -1433,8 +988,6 @@ Attributes
 
           FileNotFoundError
               If the file does not exist.
-
-
 
 
 
@@ -1521,12 +1074,12 @@ Attributes
           **norm** : bool, optional
               Normalise the fit to a maximum of 1, by default True
 
+
+
       :Returns:
 
           Figure
               The figure.
-
-
 
 
 
@@ -1552,12 +1105,12 @@ Attributes
           **level** : float, optional
               The level to check the decay, by default 0.05
 
+
+
       :Returns:
 
           int
               0 if both conditions are met, 1 if the decay is less than 5% in the first 30% of the data, and -1 if the decay is less than 5% in the entire length.
-
-
 
 
 
@@ -1597,12 +1150,12 @@ Attributes
               The total number of shots taken, by default None. If None, the
               number of shots will be calculated from the dataset.
 
+
+
       :Returns:
 
           float
               The calculated optimal time in us
-
-
 
 
 
@@ -1685,12 +1238,12 @@ Attributes
        **threshold** : float, optional
            The SNR threshold for detection, by default 1.5
 
+
+
    :Returns:
 
        bool
            True if ESEEM is detected, False if not.
-
-
 
 
 
@@ -1802,12 +1355,12 @@ Attributes
           **elements** : int, optional
               The number of elements to use in the smoothing, by default 3
 
+
+
       :Returns:
 
           np.ndarray
               The smoothed data.
-
-
 
 
 
@@ -1912,6 +1465,8 @@ Attributes
               The total number of shots taken, by default None. If None, the
               number of shots will be calculated from the dataset.
 
+
+
       :Returns:
 
           tau1: float
@@ -1919,8 +1474,6 @@ Attributes
 
           tau2: float
               The calculated optimal tau2 in us
-
-
 
 
 
@@ -1975,6 +1528,17 @@ Attributes
            This parameter is **never** inherited.
            By default, False
 
+   :Attributes:
+
+       **progressive** : bool
+           Is the parameter used in any progression or is it constant
+
+       **prog** : dict
+           A dict containing progressive programs for this parameter. This 
+           list has two elements. 1) The axis_id"s and 2) the "axis" of 
+           values.
+
+
 
 
 
@@ -2004,17 +1568,6 @@ Attributes
    Par1 = Parameter(
        name="Par1", value=10, unit="us", description="The first parameter")
    Par2 = Par1 + 2
-
-   :Attributes:
-
-       **progressive** : bool
-           Is the parameter used in any progression or is it constant
-
-       **prog** : dict
-           A dict containing progressive programs for this parameter. This 
-           list has two elements. 1) The axis_id"s and 2) the "axis" of 
-           values.
-
 
    ..
        !! processed by numpydoc !!
@@ -2062,26 +1615,6 @@ Attributes
 
    .. py:method:: __eq__(__o)
 
-      
-      Return self==value.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
    .. py:method:: __add__(__o)
 
@@ -2115,6 +1648,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           None
@@ -2127,8 +1662,6 @@ Attributes
 
           TypeError
               If the object cannot be serialized to JSON.
-
-
 
 
 
@@ -2159,6 +1692,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           **obj** : Parameter
@@ -2171,8 +1706,6 @@ Attributes
 
           FileNotFoundError
               If the file does not exist.
-
-
 
 
 
@@ -2384,6 +1917,17 @@ Attributes
            This parameter is **never** inherited.
            By default, False
 
+   :Attributes:
+
+       **progressive** : bool
+           Is the parameter used in any progression or is it constant
+
+       **prog** : dict
+           A dict containing progressive programs for this parameter. This 
+           list has two elements. 1) The axis_id"s and 2) the "axis" of 
+           values.
+
+
 
 
 
@@ -2413,17 +1957,6 @@ Attributes
    Par1 = Parameter(
        name="Par1", value=10, unit="us", description="The first parameter")
    Par2 = Par1 + 2
-
-   :Attributes:
-
-       **progressive** : bool
-           Is the parameter used in any progression or is it constant
-
-       **prog** : dict
-           A dict containing progressive programs for this parameter. This 
-           list has two elements. 1) The axis_id"s and 2) the "axis" of 
-           values.
-
 
    ..
        !! processed by numpydoc !!
@@ -2471,26 +2004,6 @@ Attributes
 
    .. py:method:: __eq__(__o)
 
-      
-      Return self==value.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
    .. py:method:: __add__(__o)
 
@@ -2524,6 +2037,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           None
@@ -2536,8 +2051,6 @@ Attributes
 
           TypeError
               If the object cannot be serialized to JSON.
-
-
 
 
 
@@ -2568,6 +2081,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           **obj** : Parameter
@@ -2580,8 +2095,6 @@ Attributes
 
           FileNotFoundError
               If the file does not exist.
-
-
 
 
 
@@ -2853,7 +2366,7 @@ Attributes
    .. py:method:: _calc_fft(pad=10000)
 
 
-   .. py:method:: exciteprofile(freqs=None, resonator=None)
+   .. py:method:: exciteprofile_old(freqs=None, resonator=None)
 
       
       Excitation profile
@@ -2889,6 +2402,8 @@ Attributes
           **resonator: ad.ResonatorProfile, optional**
               ..
 
+
+
       :Returns:
 
           Mx: np.ndarray
@@ -2901,6 +2416,52 @@ Attributes
               The magentisation in the Z direction.
 
 
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: exciteprofile(freqs=None, resonator=None, trajectory=False)
+
+      
+      Excitation profile
+
+      Generates the exciatation profiles for this pulse, using the two-level system model developed by Jeschke et al. [1].
+      And then optimised in the PulseShape software package by Maxx Tessmer [2], reproduced under the GNU GPL v3 license.
+
+      References:
+      +++++++++++
+      [1] Jeschke, G., Pribitzer, S. & Doll, A. 
+          Coherence Transfer by Passage Pulses in Electron Paramagnetic 
+          Resonance Spectroscopy. 
+          J. Phys. Chem. B 119, 13570-13582 (2015)
+      [2] https://github.com/mtessmer/PulseShape
+
+      :Parameters:
+
+          **freqs: np.ndarray, optional**
+              The frequency axis. Caution: A larger number of points will linearly
+              increase computation time.
+
+          **resonator: ad.ResonatorProfile, optional**
+              The resonator profile to apply resonator compensation.
+
+          **trajectory: bool, optional**
+              If True, the function will return the magnetisation at each time point. Default is False.
+
+
+
+      :Returns:
+
+          Mag: np.ndarray
+              The magnetisation in the X, Y, and Z directions.
 
 
 
@@ -2923,26 +2484,6 @@ Attributes
 
    .. py:method:: __str__()
 
-      
-      Return str(self).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
    .. py:method:: copy(clear=False, **kwargs)
 
@@ -2954,12 +2495,12 @@ Attributes
       arguments (kwargs).
 
 
+
+
       :Returns:
 
           Pulse
               A deep copy of the pulse
-
-
 
 
 
@@ -2991,6 +2532,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           None
@@ -3003,8 +2546,6 @@ Attributes
 
           TypeError
               If the object cannot be serialized to JSON.
-
-
 
 
 
@@ -3035,6 +2576,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           **obj** : Pulse
@@ -3047,8 +2590,6 @@ Attributes
 
           FileNotFoundError
               If the file does not exist.
-
-
 
 
 
@@ -3374,70 +2915,30 @@ Attributes
 
    .. py:method:: evolution(params, reduce=[])
 
-
-   .. py:method:: shift_detfreq_to_zero()
-
-
-   .. py:method:: isPulseFocused()
-
       
-      Is the sequence expressed to contain only pulses and no delays?
+      Sets what parameters are being evolved in the sequence, and which are
+      being automatically.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: isDelayFocused()
-
-      
-      Is the sequence expressed to contain both pulses and delays?
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: convert(*, reduce=True)
-
-      
-      Converts the current sequence to either pulse focused or delay
-      focused depending on the current state
-
+      `self.evo_params = params`
 
       :Parameters:
 
-          **reduce** : bool, optional
-              Reduce to the smallest number of objects, by default True
+          **params** : list
+              A list of Parameter objects which are being evolved. Each every 
+              entry in the list will be a new axis in the sequence. Only one parameter
+              per axis should be specified.
+
+          **reduce** : list
+              A list of Parameter objects which are being reduced. These are the
+              parameters which are being averaged over. These parameters should
+              also be in the params list.
 
 
 
+      :Returns:
+
+          **progTable** : dict
+              A dictionary containing the progression of the sequence.
 
 
 
@@ -3452,10 +2953,7 @@ Attributes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: _convert_to_delay()
-
-
-   .. py:method:: _convert_to_pulses()
+   .. py:method:: shift_detfreq_to_zero()
 
 
    .. py:method:: _checkRect()
@@ -3483,26 +2981,6 @@ Attributes
 
    .. py:method:: __str__()
 
-      
-      Return str(self).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
    .. py:method:: copy()
 
@@ -3524,6 +3002,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           None
@@ -3536,8 +3016,6 @@ Attributes
 
           TypeError
               If the object cannot be serialized to JSON.
-
-
 
 
 
@@ -3568,6 +3046,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           **obj** : Sequence
@@ -3580,8 +3060,6 @@ Attributes
 
           FileNotFoundError
               If the file does not exist.
-
-
 
 
 
@@ -4448,6 +3926,17 @@ Attributes
            This parameter is **never** inherited.
            By default, False
 
+   :Attributes:
+
+       **progressive** : bool
+           Is the parameter used in any progression or is it constant
+
+       **prog** : dict
+           A dict containing progressive programs for this parameter. This 
+           list has two elements. 1) The axis_id"s and 2) the "axis" of 
+           values.
+
+
 
 
 
@@ -4477,17 +3966,6 @@ Attributes
    Par1 = Parameter(
        name="Par1", value=10, unit="us", description="The first parameter")
    Par2 = Par1 + 2
-
-   :Attributes:
-
-       **progressive** : bool
-           Is the parameter used in any progression or is it constant
-
-       **prog** : dict
-           A dict containing progressive programs for this parameter. This 
-           list has two elements. 1) The axis_id"s and 2) the "axis" of 
-           values.
-
 
    ..
        !! processed by numpydoc !!
@@ -4535,26 +4013,6 @@ Attributes
 
    .. py:method:: __eq__(__o)
 
-      
-      Return self==value.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
    .. py:method:: __add__(__o)
 
@@ -4588,6 +4046,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           None
@@ -4600,8 +4060,6 @@ Attributes
 
           TypeError
               If the object cannot be serialized to JSON.
-
-
 
 
 
@@ -4632,6 +4090,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           **obj** : Parameter
@@ -4644,8 +4104,6 @@ Attributes
 
           FileNotFoundError
               If the file does not exist.
-
-
 
 
 
@@ -4964,7 +4422,7 @@ Attributes
    .. py:method:: _calc_fft(pad=10000)
 
 
-   .. py:method:: exciteprofile(freqs=None, resonator=None)
+   .. py:method:: exciteprofile_old(freqs=None, resonator=None)
 
       
       Excitation profile
@@ -5000,6 +4458,8 @@ Attributes
           **resonator: ad.ResonatorProfile, optional**
               ..
 
+
+
       :Returns:
 
           Mx: np.ndarray
@@ -5012,6 +4472,52 @@ Attributes
               The magentisation in the Z direction.
 
 
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: exciteprofile(freqs=None, resonator=None, trajectory=False)
+
+      
+      Excitation profile
+
+      Generates the exciatation profiles for this pulse, using the two-level system model developed by Jeschke et al. [1].
+      And then optimised in the PulseShape software package by Maxx Tessmer [2], reproduced under the GNU GPL v3 license.
+
+      References:
+      +++++++++++
+      [1] Jeschke, G., Pribitzer, S. & Doll, A. 
+          Coherence Transfer by Passage Pulses in Electron Paramagnetic 
+          Resonance Spectroscopy. 
+          J. Phys. Chem. B 119, 13570-13582 (2015)
+      [2] https://github.com/mtessmer/PulseShape
+
+      :Parameters:
+
+          **freqs: np.ndarray, optional**
+              The frequency axis. Caution: A larger number of points will linearly
+              increase computation time.
+
+          **resonator: ad.ResonatorProfile, optional**
+              The resonator profile to apply resonator compensation.
+
+          **trajectory: bool, optional**
+              If True, the function will return the magnetisation at each time point. Default is False.
+
+
+
+      :Returns:
+
+          Mag: np.ndarray
+              The magnetisation in the X, Y, and Z directions.
 
 
 
@@ -5034,26 +4540,6 @@ Attributes
 
    .. py:method:: __str__()
 
-      
-      Return str(self).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
    .. py:method:: copy(clear=False, **kwargs)
 
@@ -5065,12 +4551,12 @@ Attributes
       arguments (kwargs).
 
 
+
+
       :Returns:
 
           Pulse
               A deep copy of the pulse
-
-
 
 
 
@@ -5102,6 +4588,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           None
@@ -5114,8 +4602,6 @@ Attributes
 
           TypeError
               If the object cannot be serialized to JSON.
-
-
 
 
 
@@ -5146,6 +4632,8 @@ Attributes
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           **obj** : Pulse
@@ -5158,8 +4646,6 @@ Attributes
 
           FileNotFoundError
               If the file does not exist.
-
-
 
 
 
@@ -5691,21 +5177,28 @@ Attributes
 .. py:function:: build_default_pulses(AWG=True, SPFU=False, tp=12)
 
 
-.. py:function:: DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0, remove_crossing=True, **kwargs)
+.. py:function:: autoEPRDecoder(dct)
 
 
-.. py:data:: log
-
-   
-
-.. py:class:: Criteria(name, test, description = '', end_signal=None)
+.. py:class:: Pulse(*, tp, t=None, scale=None, flipangle=None, pcyc=[0], name=None, **kwargs)
 
 
-   
-   A class for defining criteria for terminating experiments. This should
-   only be subclassed and not used directly.
+   Represents a general experimental pulse.
 
 
+   The class for a general pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The pulse length in ns.
+
+       **scale** : float
+           The arbitary experimental pulse amplitude, 0-1.
+
+       **t** : float, optional
+           The pulse start time in ns.
 
 
 
@@ -5722,7 +5215,609 @@ Attributes
 
    ..
        !! processed by numpydoc !!
+
+   .. py:property:: bandwidth
+
+
+   .. py:property:: amp_factor
+
+      
+      The B1 amplitude factor (nutation frequency) for the pulse in GHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
    .. py:attribute:: name
+
+      
+
+   .. py:attribute:: Progression
+      :value: 'False'
+
+      
+
+   .. py:method:: _addPhaseCycle(phases, detections=None)
+
+      
+      Adds a phase cycle to the pulse sequence.
+
+      Args:
+          phases (list): List of phases to add to the phase cycle.
+          detections (list, optional): List of detection signs. Defaults to None. If None then all cycles are summed.
+
+      Returns:
+          None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _buildFMAM(func, ax=None)
+
+      
+      Builds the amplitude modulation (AM) and frequency modulation (FM) of a given function.
+
+      Args:
+          func: A function that takes in an array of values and returns two arrays, representing the AM and FM of the function.
+
+      Returns:
+          Two arrays representing the AM and FM of the function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: build_shape(ax=None)
+
+
+   .. py:method:: build_table()
+
+      
+      Builds a table of variables, axes, and UUIDs for all non-static Parameters in the object.
+
+      Returns:
+          dict: A dictionary containing the following keys: "Variable", "axis", and "uuid".
+          The values for each key are lists of the corresponding values for each non-static Parameter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: is_static()
+
+      
+      Check if all parameters in the pulse object are static.
+
+      Returns:
+          bool: True if all parameters are static, False otherwise.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: isDelayFocused()
+
+      
+      Does the pulse contain a specified time, `t`?
+
+      If so then it is not delay focused.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: isPulseFocused()
+
+      
+      Does the pulse contain a specified time, `t`?
+
+      If so then it is delay focused.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: plot(pad=1000)
+
+      
+      Plots the time domain representation of this pulse.
+
+
+      :Parameters:
+
+          **pad** : int, optional
+              The number of zeros to pad the data with, by default 1000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _calc_fft(pad=10000)
+
+
+   .. py:method:: exciteprofile_old(freqs=None, resonator=None)
+
+      
+      Excitation profile
+
+      Generates the exciatation profiles for this pulse.
+
+      This function is ported from EasySpin 
+      (https://easyspin.org/easyspin/documentation/sop.html) [1-2],
+      and based upon the method from Gunnar Jeschke, Stefan Pribitzer and
+      Andrin Doll[3].
+
+      References:
+      +++++++++++
+      [1] Stefan Stoll, Arthur Schweiger
+      EasySpin, a comprehensive software package for spectral simulation and analysis in EPR
+      J. Magn. Reson. 178(1), 42-55 (2006)
+
+      [2] Stefan Stoll, R. David Britt
+      General and efficient simulation of pulse EPR spectra
+      Phys. Chem. Chem. Phys. 11, 6614-6625 (2009)
+
+      [3] Jeschke, G., Pribitzer, S. & DollA. 
+      Coherence Transfer by Passage Pulses in Electron Paramagnetic 
+      Resonance Spectroscopy. 
+      J. Phys. Chem. B 119, 13570-13582 (2015)
+
+      :Parameters:
+
+          **freqs: np.ndarray, optional**
+              The frequency axis. Caution: A larger number of points will linearly
+              increase computation time.
+
+          **resonator: ad.ResonatorProfile, optional**
+              ..
+
+
+
+      :Returns:
+
+          Mx: np.ndarray
+              The magentisation in the X direction.
+
+          My: np.ndarray
+              The magentisation in the Y direction.
+
+          Mz: np.ndarray
+              The magentisation in the Z direction.
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: exciteprofile(freqs=None, resonator=None, trajectory=False)
+
+      
+      Excitation profile
+
+      Generates the exciatation profiles for this pulse, using the two-level system model developed by Jeschke et al. [1].
+      And then optimised in the PulseShape software package by Maxx Tessmer [2], reproduced under the GNU GPL v3 license.
+
+      References:
+      +++++++++++
+      [1] Jeschke, G., Pribitzer, S. & Doll, A. 
+          Coherence Transfer by Passage Pulses in Electron Paramagnetic 
+          Resonance Spectroscopy. 
+          J. Phys. Chem. B 119, 13570-13582 (2015)
+      [2] https://github.com/mtessmer/PulseShape
+
+      :Parameters:
+
+          **freqs: np.ndarray, optional**
+              The frequency axis. Caution: A larger number of points will linearly
+              increase computation time.
+
+          **resonator: ad.ResonatorProfile, optional**
+              The resonator profile to apply resonator compensation.
+
+          **trajectory: bool, optional**
+              If True, the function will return the magnetisation at each time point. Default is False.
+
+
+
+      :Returns:
+
+          Mag: np.ndarray
+              The magnetisation in the X, Y, and Z directions.
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: plot_fft()
+
+
+   .. py:method:: _pcyc_str()
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: copy(clear=False, **kwargs)
+
+      
+      Creates a deep-copy of the pulse. I.e. Every parameter object is
+      re-created at another memory space.
+
+      Parameter can be chaged at this stage by adding them as keyword-
+      arguments (kwargs).
+
+
+
+
+      :Returns:
+
+          Pulse
+              A deep copy of the pulse
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _to_dict()
+
+
+   .. py:method:: _to_json()
+
+
+   .. py:method:: save(filename)
+
+      
+      Save the Pulse to a JSON file.
+
+
+      :Parameters:
+
+          **filename** : str
+              Path to the JSON file.
+
+
+
+      :Returns:
+
+          None
+              ..
+
+
+
+
+      :Raises:
+
+          TypeError
+              If the object cannot be serialized to JSON.
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _from_dict(dct)
+      :classmethod:
+
+
+   .. py:method:: _from_json(JSONstring)
+      :classmethod:
+
+
+   .. py:method:: load(filename)
+      :classmethod:
+
+      
+      Load a Pulse object from a JSON file.
+
+
+      :Parameters:
+
+          **filename** : str
+              Path to the JSON file.
+
+
+
+      :Returns:
+
+          **obj** : Pulse
+              The Pulse loaded from the JSON file.
+
+
+
+
+      :Raises:
+
+          FileNotFoundError
+              If the file does not exist.
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: Detection(*, tp, t=None, freq=0, **kwargs)
+
+
+   Bases: :py:obj:`Pulse`
+
+   Represents a detection pulse.
+
+
+   A general detection pulse.
+
+
+   :Parameters:
+
+       **tp** : float
+           The **total** time of the detection event. The detection event will
+           be symetrical about the centre time. 
+
+       **t** : float, optional
+           The **centre** time of the detection event
+
+       **freq: float, optional**
+           The detection frequency, not all spectrometer support this 
+           functionality, by default 0 MHz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: scale
+      :value: 'None'
+
+      
+
+   .. py:attribute:: freq
+
+      
+
+   .. py:attribute:: pcyc
+      :value: 'None'
+
+      
+
+
+.. py:class:: Parameter(name, value, unit='', description='', virtual=False, **kwargs)
+
+
+   Represents a sequence or pulse parameter.
+
+
+   A general parameter.
+
+
+   :Parameters:
+
+       **name** : str
+           The parameter name
+
+       **value** : float or int
+           The parameter value, eithe initial or static
+
+       **unit** : str, optional
+           The unit of parameter, by default None. Leave as None if unitless.
+
+       **description** : str, optional
+           A brief description of the parameter, by default None    
+
+       **axis** : np.ndarray, optional
+           The difference from the intial value for each position in a 
+           dynamic axis. Can be n-dimensional, by default None.
+
+       **ax_id** : list, optional
+           ..
+
+       **virtual: bool, optional**
+           A virtual paramter is only used to vary other parameters, it is not 
+           varied itself and will not be directly passed to a spectrometer.
+           This parameter is **never** inherited.
+           By default, False
+
+   :Attributes:
+
+       **progressive** : bool
+           Is the parameter used in any progression or is it constant
+
+       **prog** : dict
+           A dict containing progressive programs for this parameter. This 
+           list has two elements. 1) The axis_id"s and 2) the "axis" of 
+           values.
+
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Examples
+
+   Creating a static parameter
+   ```
+   Par1 = Parameter(
+       name="Par1", value=10, unit="us", description="The first parameter")
+   ```
+   Creating a dynamic parameter
+   ```
+   Par1 = Parameter(
+       name="Par1", value=10, unit="us", description="The first parameter",
+       axis=np.arange(0,10,1), axis_id=0)
+   ```
+
+   Adding a parameter and a number:
+   ```
+   Par1 = Parameter(
+       name="Par1", value=10, unit="us", description="The first parameter")
+   Par2 = Par1 + 2
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:property:: dim
+
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: unit
 
       
 
@@ -5730,46 +5825,143 @@ Attributes
 
       
 
-   .. py:attribute:: test
+   .. py:attribute:: virtual
 
       
 
-   .. py:attribute:: end_signal
+   .. py:attribute:: axis
+      :value: '[]'
 
       
+
+   .. py:attribute:: ax_id
+      :value: '[]'
+
+      
+
+   .. py:method:: add_axis(axis_id, axis)
+
+
+   .. py:method:: get_axis()
+
+
+   .. py:method:: remove_dynamic()
+
+
+   .. py:method:: is_static()
+
+
+   .. py:method:: __eq__(__o)
+
 
    .. py:method:: __add__(__o)
 
 
-
-.. py:class:: TimeCriteria(name, end_time, description = '', night_hours = None, **kwargs)
-
-
-   Bases: :py:obj:`Criteria`
-
-   A class for defining criteria for terminating experiments. This should
-   only be subclassed and not used directly.
+   .. py:method:: __sub__(__o)
 
 
-   Criteria testing for a specific finishing time. The finishing time 
-   is given as absolute time in the locale of the computer, it is *not* 
-   how the long the measurment continues for. 
+   .. py:method:: __mul__(__o)
 
 
-   :Parameters:
+   .. py:method:: __rmul__(__o)
 
-       **name** : str
-           Name of the criteria
 
-       **end_time** : float
-           Finishing time in seconds since epoch
+   .. py:method:: copy()
 
-       **description** : str, optional
-           A description of the criteria, by default None
 
-       **night_hours** : tuple, optional
-           A tuple of two integers specifying the start and end of night hours.
-           The criteria will always return False during these hours, by default None
+   .. py:method:: _to_dict()
+
+
+   .. py:method:: _to_json()
+
+
+   .. py:method:: save(filename)
+
+      
+      Save the parameter to a JSON file.
+
+
+      :Parameters:
+
+          **filename** : str
+              Path to the JSON file.
+
+
+
+      :Returns:
+
+          None
+              ..
+
+
+
+
+      :Raises:
+
+          TypeError
+              If the object cannot be serialized to JSON.
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _from_dict(dict)
+      :staticmethod:
+
+
+   .. py:method:: _from_json(JSONstring)
+      :classmethod:
+
+
+   .. py:method:: load(filename)
+      :classmethod:
+
+      
+      Load a Parameter object from a JSON file.
+
+
+      :Parameters:
+
+          **filename** : str
+              Path to the JSON file.
+
+
+
+      :Returns:
+
+          **obj** : Parameter
+              The Pulse loaded from the JSON file.
+
+
+
+
+      :Raises:
+
+          FileNotFoundError
+              If the file does not exist.
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: Interface(log=None)
+
+
+   
+   Represents the interface connection from autoEPR to the spectrometer.
+
+
 
 
 
@@ -5786,92 +5978,502 @@ Attributes
 
    ..
        !! processed by numpydoc !!
-
-
-.. py:class:: SNRCriteria(SNR_target, description = '', verbosity=0, **kwargs)
-
-
-   Bases: :py:obj:`Criteria`
-
-   A class for defining criteria for terminating experiments. This should
-   only be subclassed and not used directly.
-
-
-   Criteria testing for signal to noise ratio. This checks the SNR of 
-   the normalised absolute data using the deerlab SNR noise estimation
-   which is based on the work by Stoher et. al. [1]
-
-
-   :Parameters:
-
-       **name** : str
-           _description_
-
-       **SNR_target** : int
-           The mimimum SNR value.
-
-       **description** : str, optional
-           _description_, by default None
-
-
-
-
-
-
-
-
-
-
-   .. rubric:: References
-
-   [1] F. Stoehr, R. White, M. Smith, I. Kamp, R. Thompson, D. Durand,
-   W. Freudling, D. Fraquelli, J. Haase, R. Hook, T. Kimball, M. Kummel,
-   K. Levay, M. Lombardi, A. Micol, T. Rogers DERSNR: A Simple & General
-   Spectroscopic Signal-to-Noise Measurement Algorithm Astronomical Data
-   Analysis Software and Systems XVII, ASP Conference Series, Vol. 30,
-   2008, p5.4
-
-   .. only:: latex
+   .. py:attribute:: pulses
 
       
 
+   .. py:attribute:: savefolder
+
+      
+
+   .. py:attribute:: savename
+      :value: "''"
+
+      
+
+   .. py:attribute:: resonator
+      :value: 'None'
+
+      
+
+   .. py:method:: connect()
+
+
+   .. py:method:: acquire_dataset(data)
+
+      
+      Acquires the dataset.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: launch(sequence, savename)
+
+      
+      Launches the experiment and initialises autosaving.
+
+
+      :Parameters:
+
+          **sequence** : Sequence
+              The sequence to be launched
+
+          **savename** : str
+              The savename for this measurement. A timestamp will be added to the value.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: isrunning()
+
+
+   .. py:method:: terminate()
+
+      
+      Terminates the experiment immediately. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: terminate_at(criterion, test_interval=2, keep_running=True, verbosity=0, autosave=True)
+
+      
+      Terminates the experiment upon a specific condition being
+      satisified. 
+
+
+      :Parameters:
+
+          **criterion** : _type_
+              The criteria to be tested.
+
+          **test_interval** : int, optional
+              How often should the criteria be tested in minutes, by default 10.
+
+          **keep_running** : bool, optional
+              If True, an error will not be raised if the experiment finishes before the criteria is met, by default True.
+
+          **verbosity** : int, optional
+              The verbosity level, by default 0. 
+
+          **autosave** : bool, optional
+              If True, the data will be autosaved, by default True.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: Sequence(*, name, B, LO, reptime, averages, shots, **kwargs)
+
+
+   Represents an experimental pulse sequence.
+
+
+   Represents an experimental pulse sequence.
+
+
+   :Parameters:
+
+       **name** : str
+           The name of this pulse sequence
+
+       **B** : float
+           The magnetic field for this sequence in Gauss.
+
+       **LO** : float
+           The central frequency of this sequence. I.e. The frequnecy at which
+           a zero offset pulse is at. 
+
+       **reptime** : float
+           The shot repetition time in us.
+
+       **averages** : int
+           The number of scans to be accumulated.
+
+       **shots** : itn
+           The number of shots per point.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
    ..
        !! processed by numpydoc !!
 
-
-.. py:class:: DEERCriteria(mode='Speed', model=None, verbosity=0, update_func=None, **kwargs)
-
-
-   Bases: :py:obj:`Criteria`
-
-   A class for defining criteria for terminating experiments. This should
-   only be subclassed and not used directly.
+   .. py:property:: seqtable_steps
 
 
-   Criteria for running DEER experiments.
+   .. py:attribute:: pulses
+      :value: '[]'
+
+      
+
+   .. py:attribute:: num_pulses
+
+      
+
+   .. py:attribute:: axes_uuid
+      :value: '[]'
+
+      
+
+   .. py:attribute:: reduce_uuid
+      :value: '[]'
+
+      
+
+   .. py:attribute:: LO
+
+      
+
+   .. py:attribute:: averages
+
+      
+
+   .. py:attribute:: shots
+
+      
+
+   .. py:attribute:: name
+
+      
+
+   .. py:attribute:: progTable
+
+      
+
+   .. py:method:: plot()
+
+
+   .. py:method:: plot_pulse_exc(FieldSweep=None, ResonatorProfile=None)
+
+
+   .. py:method:: addPulse(pulse)
+
+      
+      Adds a pulse to the next position in the sequence.
+
+
+      :Parameters:
+
+          **pulse** : Pulse
+              The object describing the pulse.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _estimate_time()
+
+      
+      Calculates the estimated experiment time in seconds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _buildPhaseCycle()
+
+
+   .. py:method:: evolution(params, reduce=[])
+
+      
+      Sets what parameters are being evolved in the sequence, and which are
+      being automatically.
+
+      `self.evo_params = params`
+
+      :Parameters:
+
+          **params** : list
+              A list of Parameter objects which are being evolved. Each every 
+              entry in the list will be a new axis in the sequence. Only one parameter
+              per axis should be specified.
+
+          **reduce** : list
+              A list of Parameter objects which are being reduced. These are the
+              parameters which are being averaged over. These parameters should
+              also be in the params list.
+
+
+
+      :Returns:
+
+          **progTable** : dict
+              A dictionary containing the progression of the sequence.
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: shift_detfreq_to_zero()
+
+
+   .. py:method:: _checkRect()
+
+      
+      Checks if all the pulses in the sequence are rectangular.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: copy()
+
+
+   .. py:method:: _to_dict()
+
+
+   .. py:method:: _to_json()
+
+
+   .. py:method:: save(filename)
+
+      
+      Save the sequence to a JSON file.
+
+
+      :Parameters:
+
+          **filename** : str
+              Path to the JSON file.
+
+
+
+      :Returns:
+
+          None
+              ..
+
+
+
+
+      :Raises:
+
+          TypeError
+              If the object cannot be serialized to JSON.
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _from_dict(dct)
+      :classmethod:
+
+
+   .. py:method:: _from_json(JSONstring)
+      :classmethod:
+
+
+   .. py:method:: load(filename)
+      :classmethod:
+
+      
+      Load an object from a JSON file.
+
+
+      :Parameters:
+
+          **filename** : str
+              Path to the JSON file.
+
+
+
+      :Returns:
+
+          **obj** : Sequence
+              The Sequence loaded from the JSON file.
+
+
+
+
+      :Raises:
+
+          FileNotFoundError
+              If the file does not exist.
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+.. py:class:: DEERSequence(*, tau1, tau2, tau3=None, tau4=None, dt, B, LO, reptime, averages, shots, ESEEM_avg=None, **kwargs)
+
+
+   Bases: :py:obj:`Sequence`
+
+   Represents a DEER/PELDOR sequence. 
+
+
+   Build a DEER sequence using rectangular pulses
 
 
    :Parameters:
 
-       **tau1** : _type_
-           _description_
+       **tau1** : int or float
+           The first interpulse delay in us
 
-       **tau2** : _type_
-           _description_
+       **tau2** : int or float
+           The second interpulse delay in us
 
-       **tau3** : _type_, optional
-           _description_, by default None
+       **dt** : int or float
+           The time step for DEER measurment in ns
 
-       **mode** : str, optional
-           _description_, by default "Speed"
+       **B** : int or float
+           The B0 field, in Guass
 
-   :Returns:
+       **LO** : int or float
+           The LO frequency in GHz
 
-       _type_
-           _description_
+       **reptime** : _type_
+           The shot repetition time in us
+
+       **averages** : int
+           The number of scans.
+
+       **shots** : int
+           The number of shots per point
+
+       **tau3** : int or float, optional
+           The delay between the first static pump pulse in 5-pulse DEER and 
+           the 1st refocusing pulse in us, by default None. If the value is 
+           None then a 4-pulse sequence is created, otherwise a 5-pulse. 
+
+       **ESEEM_avg: str**
+           Selecting the ESEEM averaging required. ESEEM averaging works by 
+           introducing small stepping in the first tau delay and averaging 
+           across them all. Options:
+           * `proton` - 8 small steps of 8ns
+           * `deuteron` - 8 small steps of 16ns
+           * None - default
+
 
 
 
@@ -5889,14 +6491,302 @@ Attributes
        !! processed by numpydoc !!
 
    .. py:attribute:: name
-      :value: "'DEERCriteria'"
+      :value: "'DEERSequence'"
 
       
 
-   .. py:attribute:: description
-      :value: "'Criteria for terminating DEER experiments.'"
+   .. py:attribute:: tau1us
 
       
+
+   .. py:attribute:: tau1
+
+      
+
+   .. py:attribute:: tau2
+
+      
+
+   .. py:attribute:: dt
+
+      
+
+   .. py:attribute:: deadtime
+      :value: '200'
+
+      
+
+   .. py:attribute:: ESEEM
+      :value: 'False'
+
+      
+
+   .. py:method:: add_ESEEM_avg(type=None)
+
+
+   .. py:method:: three_pulse(tp=16)
+
+      
+      Build a four pulse DEER sequence.
+
+
+      :Parameters:
+
+          **tp** : float
+              Length of default RectPulse in ns, by default 16ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: four_pulse(tp=16, relaxation=False)
+
+      
+      Build a four pulse DEER sequence.
+
+
+      :Parameters:
+
+          **tp** : float
+              Length of default RectPulse in ns, by default 16ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: five_pulse(tp=16, relaxation=False, re_step=50, re_dim=100)
+
+      
+      Build a five pulse DEER sequence.
+
+
+      :Parameters:
+
+          **tp** : float
+              Length of default RectPulse in ns, by default 16ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: seven_pulse(tp=16, relaxation=False)
+
+      
+      Build a seven pulse DEER sequence.
+
+
+      :Parameters:
+
+          **tp** : float
+              Length of default RectPulse in ns, by default 16ns.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: nDEER_CP(n, tp=16, relaxation=False, pcyc='Normal')
+
+      
+      Generate an nDEER sequence.
+
+      The sum of tau1 and tau2 is used as total trace length. 
+
+      :Parameters:
+
+          **n** : int
+              The number of refocusing pulses
+
+          **tp** : int, optional
+              _description_, by default 16
+
+          **relaxation** : bool, optional
+              _description_, by default False
+
+          **pcyc: str, optional**
+              Normal: Phases cycles pump and observer pulses, no DC cycle
+              NormalDC: Phases cycles pump and observer pulses, DC cycle
+              Obs: Phases cycles observer pulses, no DC cycle
+              ObsDC: Phases cycles and observer pulses, DC cycle
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: select_pcyc(option)
+
+      
+      Choose which DEER phase you would like.
+
+      .. |xp| replace:: x\ :sub:`p`
+
+      .. table::
+          :width: 150
+          :widths: 10 10 10 5 30 30 5
+
+          +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+          | Phase cycle               | Short Code  | Sequence       | Steps  | Pulse Phase Cycle         | Remaining Echoes            | Ref.       |
+          +===========================+=============+================+========+===========================+=============================+============+
+          | (x)x|xp|x                 | DC          | ALL            | 2      | [+(+x)-(-x)]              | PE12rp, SE(PE12)p3, PE12rpr3|            |
+          +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+          | (x)[|xp|]x                | 8step_3p    | 3 pulse        | 8      | [+(+x)-(-x)]              |                             |            |
+          +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+          | x[x][|xp|]x               | 16step_4p   | 4 pulse        | 16     | [+(+x)-(+y)+(-x)-(-y)]    |                             | [1]        |
+          +---------------------------+-------------+----------------+--------+                           +-----------------------------+------------+
+          | x|xp|[x][|xp|]x           | 16step_5p   | 5 pulse        | 16     | [+(+x)+(+y)+(-x)+(-y)]    | PEp02r3,b PE1p0r2r3b        | [1]        |
+          +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+          | x[x]|xp|(x)(|xp|)(|xp|)x  | 32step_7p   | 7 pulse        | 32     |                           |                             | [1]        |
+          +---------------------------+-------------+----------------+--------+---------------------------+-----------------------------+------------+
+
+      :Parameters:
+
+          **option** : str
+              The short code of the phase cycle. See table above.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: simulate()
+
+
+
+.. py:function:: get_all_axes(sequence)
+
+
+.. py:function:: get_all_fixed_param(sequence)
+
+
+.. py:function:: create_dataset_from_sequence(data, sequence, extra_params={})
+
+
+.. py:function:: create_dataset_from_axes(data, axes, params = None, axes_labels=None)
+
+
+.. py:function:: create_dataset_from_bruker(filepath)
+
+
+.. py:class:: EPRAccessor(xarray_obj)
+
+
+   .. py:property:: correctphase
+
+
+   .. py:property:: normalise
+
+
+   .. py:property:: correctphasefull
+
+
+   .. py:property:: SNR
+
+
+   .. py:property:: fft
+
+
+   .. py:property:: MeasurementTime
+
+      
+      Calculate the total measurement time in seconds
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:property:: sequence
+
+
+   .. py:attribute:: _obj
+
+      
+
+   .. py:method:: save(filename, type='netCDF')
+
 
 
 .. py:class:: Reporter(filepath, pagesize='A4')

@@ -34,6 +34,17 @@
            This parameter is **never** inherited.
            By default, False
 
+   :Attributes:
+
+       **progressive** : bool
+           Is the parameter used in any progression or is it constant
+
+       **prog** : dict
+           A dict containing progressive programs for this parameter. This 
+           list has two elements. 1) The axis_id"s and 2) the "axis" of 
+           values.
+
+
 
 
 
@@ -63,17 +74,6 @@
    Par1 = Parameter(
        name="Par1", value=10, unit="us", description="The first parameter")
    Par2 = Par1 + 2
-
-   :Attributes:
-
-       **progressive** : bool
-           Is the parameter used in any progression or is it constant
-
-       **prog** : dict
-           A dict containing progressive programs for this parameter. This 
-           list has two elements. 1) The axis_id"s and 2) the "axis" of 
-           values.
-
 
    ..
        !! processed by numpydoc !!
@@ -121,26 +121,6 @@
 
    .. py:method:: __eq__(__o)
 
-      
-      Return self==value.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
    .. py:method:: __add__(__o)
 
@@ -174,6 +154,8 @@
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           None
@@ -186,8 +168,6 @@
 
           TypeError
               If the object cannot be serialized to JSON.
-
-
 
 
 
@@ -218,6 +198,8 @@
           **filename** : str
               Path to the JSON file.
 
+
+
       :Returns:
 
           **obj** : Parameter
@@ -230,8 +212,6 @@
 
           FileNotFoundError
               If the file does not exist.
-
-
 
 
 

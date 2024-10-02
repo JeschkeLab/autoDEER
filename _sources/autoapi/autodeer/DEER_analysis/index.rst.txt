@@ -102,12 +102,12 @@ Attributes
        **mask** : np.ndarray, optional
            The mask to apply to the data, by default None
 
+
+
    :Returns:
 
        float
            The estimated MNR of the dataset.
-
-
 
 
 
@@ -188,12 +188,12 @@ Attributes
            The minimum and maximum of the Region of Interest (ROI),
            by default None
 
+
+
    :Returns:
 
        Figure
            A Matplotlib Figure object of the figure. 
-
-
 
 
 
@@ -307,12 +307,12 @@ Attributes
 
 
 
+
+
    :Returns:
 
        np.ndarray
            The mask of points to be ignored.
-
-
 
 
 
@@ -468,12 +468,12 @@ Attributes
        **B_shift** : int, optional
            The shift in effective exciatation pulse in GHz, by default 0
 
+
+
    :Returns:
 
        _type_
            _description_
-
-
 
 
 
@@ -651,6 +651,8 @@ Attributes
        **waveform_precision** : int, optional
            Precision of the waveform in ns, by default 2
 
+
+
    :Returns:
 
        dict
@@ -673,8 +675,6 @@ Attributes
    This function will calcate the optimal DEER settings based on the avaliable relaxation data, depending on the experiment type.
    For 4pDEER, the optimal tau1 and tau2 are calculated based on the refocused 2D data, and for 5pDEER, the optimal tau2 is calculated based on the CPdecay data or refocused 2D if CP decay data is not availiable.
    If the optimal tau2 for 5pDEER is less than 1.5us, the function will calculate the optimal tau1 and tau2 for 4pDEER instead. This is only possible if the refocused 2D data is availiable, otherwise a non optimal tau1 of 0.4us is used.
-
-
 
 
 

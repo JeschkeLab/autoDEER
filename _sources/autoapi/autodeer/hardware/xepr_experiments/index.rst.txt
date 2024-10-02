@@ -188,12 +188,12 @@ Attributes
           **maxiter** : int, optional
               The maximum number of iterations in the optimisation, by default 30
 
+
+
       :Returns:
 
           float
               The optimal value of the phase parameter
-
-
 
 
 
@@ -226,12 +226,12 @@ Attributes
           **maxiter** : int, optional
               The maximum number of iterations in the optimisation, by default 30
 
+
+
       :Returns:
 
           float
               The optimal value of the attenuator parameter
-
-
 
 
 
@@ -459,12 +459,12 @@ Attributes
           **gyro** : float
               The gyromagnetic ratio in G/GHz. 
 
+
+
       :Returns:
 
           _type_
               _description_
-
-
 
 
 

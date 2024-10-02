@@ -269,8 +269,26 @@
           <h1>Source code for autodeer._version</h1><div class="highlight"><pre>
 <div class="viewcode-block" id="__version__">
 <a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer._version.__version__">[docs]</a>
-<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.8&quot;</span></div>
+<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.9&quot;</span></div>
 
+
+<span class="k">try</span><span class="p">:</span> 
+    <span class="kn">import</span> <span class="nn">git</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+
+<div class="viewcode-block" id="branch">
+<a class="viewcode-back" href="../../autoapi/autodeer/_version/index.html#autodeer._version.branch">[docs]</a>
+    <span class="n">branch</span> <span class="o">=</span> <span class="n">git</span><span class="o">.</span><span class="n">Repo</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span><span class="n">search_parent_directories</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">active_branch</span><span class="o">.</span><span class="n">name</span></div>
+
+    <span class="n">commit</span> <span class="o">=</span> <span class="n">git</span><span class="o">.</span><span class="n">Repo</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span><span class="n">search_parent_directories</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">commit</span><span class="o">.</span><span class="n">hexsha</span>
+
+    <span class="k">if</span> <span class="n">branch</span> <span class="o">==</span> <span class="s1">&#39;main&#39;</span><span class="p">:</span>
+        <span class="n">__version__</span> <span class="o">=</span> <span class="n">__version__</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">__version__</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">__version__</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">commit</span><span class="p">[:</span><span class="mi">7</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">__version__</span> <span class="o">=</span> <span class="n">__version__</span>
 </pre></div>
         </article>
       </div>

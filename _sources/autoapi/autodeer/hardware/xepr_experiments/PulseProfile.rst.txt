@@ -102,12 +102,12 @@
           **gyro** : float
               The gyromagnetic ratio in G/GHz. 
 
+
+
       :Returns:
 
           _type_
               _description_
-
-
 
 
 

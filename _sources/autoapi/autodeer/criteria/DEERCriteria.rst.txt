@@ -24,12 +24,12 @@
        **mode** : str, optional
            _description_, by default "Speed"
 
+
+
    :Returns:
 
        _type_
            _description_
-
-
 
 
 

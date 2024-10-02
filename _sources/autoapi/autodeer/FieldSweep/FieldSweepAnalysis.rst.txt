@@ -38,12 +38,12 @@
 
 
 
+
+
       :Returns:
 
           float
               Max field
-
-
 
 
 
@@ -69,12 +69,12 @@
           **det_frq** : float
               The detection frequency for the field sweep.
 
+
+
       :Returns:
 
           float
               The gyromagnetic ratio in G/GHz.
-
-
 
 
 
@@ -99,12 +99,12 @@
 
 
 
+
+
       :Returns:
 
           np.ndarray
               The smoothed data.
-
-
 
 
 
@@ -136,12 +136,12 @@
           **axis** : str, optional
               plot field sweep on either the "field" axis or "freq" axis
 
+
+
       :Returns:
 
           Matplotlib.Figure
               matplotlib figure
-
-
 
 
 
