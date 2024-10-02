@@ -109,7 +109,7 @@ def create_dataset_from_sequence(data, sequence: Sequence,extra_params={}):
     coords = {a:(default_labels[b['ax_id']],b['axis']) for a,b in axes.items()}
     attr = get_all_fixed_param(sequence)
     attr.update(extra_params)
-    
+    attr.update({'autoDEER_Version':__version__})
     return xr.DataArray(data, dims=dims, coords=coords,attrs=attr)
 
 def create_dataset_from_axes(data, axes, params: dict = None,axes_labels=None):
@@ -124,7 +124,8 @@ def create_dataset_from_axes(data, axes, params: dict = None,axes_labels=None):
     if not isinstance(axes, list):
         axes = [axes]
     coords = {default_labels.pop(0):a for a in axes}
-    
+    params.update({'autoDEER_Version':__version__})
+
     return xr.DataArray(data, dims=dims, coords=coords, attrs=params)
 
 def create_dataset_from_bruker(filepath):
@@ -161,7 +162,8 @@ def create_dataset_from_bruker(filepath):
     attr['reptime'] = float(params['DSL']['ftEpr']['ShotRepTime'].replace('us',''))
     attr['nAvgs'] = int(params['DSL']['recorder']['NbScansAcc'])
     attr['shots'] = int(params['DSL']['ftEpr']['ShotsPLoop'])
-    
+    attr.update({'autoDEER_Version':__version__})
+
     return xr.DataArray(data, dims=dims, coords=coords, attrs=attr)
 
 @xr.register_dataarray_accessor("epr")
@@ -217,6 +219,11 @@ class EPRAccessor:
         new_obj = new_obj.assign_coords(**new_coords)
         
         return new_obj
+    
+    @property
+    def MeasurementTime(self):
+        """Calculate the total measurement time in seconds"""
+        return self._obj.reptime *1e-6 * self._obj.shots * self._obj.nAvgs * self._obj.nPcyc
     
     
     @property
