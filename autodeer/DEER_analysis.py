@@ -1099,7 +1099,7 @@ def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_ti
         
         if tau2 < 2.5:
             # Dipolar evo time still too short. Hardcoding a 2.5us dipolar evo time
-            tau1,tau2 = Refocused2D.optimal_tau1(type='4pDEER',tau2=2.5)
+            tau1,tau2 = Refocused2D.optimal_tau1(tau2=2.5)
         
 
         deer_settings['tau1'] = round_step(tau1,waveform_precision/1e3)
