@@ -220,6 +220,11 @@ class EPRAccessor:
         
         return new_obj
     
+    @property
+    def MeasurementTime(self):
+        """Calculate the total measurement time in seconds"""
+        return self._obj.reptime *1e-6 * self._obj.shots * self._obj.nAvgs * self._obj.nPcyc
+    
     
     @property
     def sequence(self):
