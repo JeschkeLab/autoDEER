@@ -200,7 +200,7 @@
                <item row="0" column="0">
                 <widget class="QLabel" name="label_11">
                  <property name="text">
-                  <string>Max Measurement Time</string>
+                  <string>Max Measurement Time:</string>
                  </property>
                 </widget>
                </item>
@@ -244,7 +244,7 @@
                <item row="3" column="0">
                 <widget class="QLabel" name="commentLabel">
                  <property name="text">
-                  <string>Comment</string>
+                  <string>Comment:</string>
                  </property>
                 </widget>
                </item>
@@ -281,7 +281,7 @@
                <item row="5" column="0">
                 <widget class="QLabel" name="estLabellingEfficiencyLabel">
                  <property name="text">
-                  <string>Est. Labelling Efficiency</string>
+                  <string>Est. Labelling Efficiency:</string>
                  </property>
                 </widget>
                </item>
@@ -304,7 +304,7 @@
                <item row="6" column="0">
                 <widget class="QLabel" name="priotityLabel">
                  <property name="text">
-                  <string>Priority</string>
+                  <string>MNR Priority:</string>
                  </property>
                 </widget>
                </item>
@@ -330,7 +330,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QCheckBox" name="autoStop_checkbox">
+                  <widget class="QCheckBox" name="Time_autoStop_checkbox">
                    <property name="toolTip">
                     <string extracomment="If selected the experiment will stop at Max Measurment Time or when MNR achieved. If not selected, then it will continue until you manually stop."/>
                    </property>
