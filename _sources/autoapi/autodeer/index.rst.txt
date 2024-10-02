@@ -26,6 +26,7 @@ Submodules
    Logging/index.rst
    Relaxation/index.rst
    ResPro/index.rst
+   TwoD_Experiment/index.rst
    _version/index.rst
    classes/index.rst
    colors/index.rst
@@ -136,7 +137,7 @@ Attributes
 
 
 .. py:data:: __version__
-   :value: "'0.9'"
+   :value: "'0.8'"
 
    
 
@@ -843,30 +844,19 @@ Attributes
 
    .. py:method:: evolution(params, reduce=[])
 
+
+   .. py:method:: shift_detfreq_to_zero()
+
+
+   .. py:method:: isPulseFocused()
+
       
-      Sets what parameters are being evolved in the sequence, and which are
-      being automatically.
-
-      `self.evo_params = params`
-
-      :Parameters:
-
-          **params** : list
-              A list of Parameter objects which are being evolved. Each every 
-              entry in the list will be a new axis in the sequence. Only one parameter
-              per axis should be specified.
-
-          **reduce** : list
-              A list of Parameter objects which are being reduced. These are the
-              parameters which are being averaged over. These parameters should
-              also be in the params list.
+      Is the sequence expressed to contain only pulses and no delays?
 
 
 
-      :Returns:
 
-          **progTable** : dict
-              A dictionary containing the progression of the sequence.
+
 
 
 
@@ -881,7 +871,61 @@ Attributes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: shift_detfreq_to_zero()
+   .. py:method:: isDelayFocused()
+
+      
+      Is the sequence expressed to contain both pulses and delays?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: convert(*, reduce=True)
+
+      
+      Converts the current sequence to either pulse focused or delay
+      focused depending on the current state
+
+
+      :Parameters:
+
+          **reduce** : bool, optional
+              Reduce to the smallest number of objects, by default True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _convert_to_delay()
+
+
+   .. py:method:: _convert_to_pulses()
 
 
    .. py:method:: _checkRect()
@@ -2366,7 +2410,7 @@ Attributes
    .. py:method:: _calc_fft(pad=10000)
 
 
-   .. py:method:: exciteprofile_old(freqs=None, resonator=None)
+   .. py:method:: exciteprofile(freqs=None, resonator=None)
 
       
       Excitation profile
@@ -2414,54 +2458,6 @@ Attributes
 
           Mz: np.ndarray
               The magentisation in the Z direction.
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: exciteprofile(freqs=None, resonator=None, trajectory=False)
-
-      
-      Excitation profile
-
-      Generates the exciatation profiles for this pulse, using the two-level system model developed by Jeschke et al. [1].
-      And then optimised in the PulseShape software package by Maxx Tessmer [2], reproduced under the GNU GPL v3 license.
-
-      References:
-      +++++++++++
-      [1] Jeschke, G., Pribitzer, S. & Doll, A. 
-          Coherence Transfer by Passage Pulses in Electron Paramagnetic 
-          Resonance Spectroscopy. 
-          J. Phys. Chem. B 119, 13570-13582 (2015)
-      [2] https://github.com/mtessmer/PulseShape
-
-      :Parameters:
-
-          **freqs: np.ndarray, optional**
-              The frequency axis. Caution: A larger number of points will linearly
-              increase computation time.
-
-          **resonator: ad.ResonatorProfile, optional**
-              The resonator profile to apply resonator compensation.
-
-          **trajectory: bool, optional**
-              If True, the function will return the magnetisation at each time point. Default is False.
-
-
-
-      :Returns:
-
-          Mag: np.ndarray
-              The magnetisation in the X, Y, and Z directions.
 
 
 
@@ -2915,30 +2911,19 @@ Attributes
 
    .. py:method:: evolution(params, reduce=[])
 
+
+   .. py:method:: shift_detfreq_to_zero()
+
+
+   .. py:method:: isPulseFocused()
+
       
-      Sets what parameters are being evolved in the sequence, and which are
-      being automatically.
-
-      `self.evo_params = params`
-
-      :Parameters:
-
-          **params** : list
-              A list of Parameter objects which are being evolved. Each every 
-              entry in the list will be a new axis in the sequence. Only one parameter
-              per axis should be specified.
-
-          **reduce** : list
-              A list of Parameter objects which are being reduced. These are the
-              parameters which are being averaged over. These parameters should
-              also be in the params list.
+      Is the sequence expressed to contain only pulses and no delays?
 
 
 
-      :Returns:
 
-          **progTable** : dict
-              A dictionary containing the progression of the sequence.
+
 
 
 
@@ -2953,7 +2938,61 @@ Attributes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: shift_detfreq_to_zero()
+   .. py:method:: isDelayFocused()
+
+      
+      Is the sequence expressed to contain both pulses and delays?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: convert(*, reduce=True)
+
+      
+      Converts the current sequence to either pulse focused or delay
+      focused depending on the current state
+
+
+      :Parameters:
+
+          **reduce** : bool, optional
+              Reduce to the smallest number of objects, by default True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _convert_to_delay()
+
+
+   .. py:method:: _convert_to_pulses()
 
 
    .. py:method:: _checkRect()
@@ -4422,7 +4461,7 @@ Attributes
    .. py:method:: _calc_fft(pad=10000)
 
 
-   .. py:method:: exciteprofile_old(freqs=None, resonator=None)
+   .. py:method:: exciteprofile(freqs=None, resonator=None)
 
       
       Excitation profile
@@ -4470,54 +4509,6 @@ Attributes
 
           Mz: np.ndarray
               The magentisation in the Z direction.
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: exciteprofile(freqs=None, resonator=None, trajectory=False)
-
-      
-      Excitation profile
-
-      Generates the exciatation profiles for this pulse, using the two-level system model developed by Jeschke et al. [1].
-      And then optimised in the PulseShape software package by Maxx Tessmer [2], reproduced under the GNU GPL v3 license.
-
-      References:
-      +++++++++++
-      [1] Jeschke, G., Pribitzer, S. & Doll, A. 
-          Coherence Transfer by Passage Pulses in Electron Paramagnetic 
-          Resonance Spectroscopy. 
-          J. Phys. Chem. B 119, 13570-13582 (2015)
-      [2] https://github.com/mtessmer/PulseShape
-
-      :Parameters:
-
-          **freqs: np.ndarray, optional**
-              The frequency axis. Caution: A larger number of points will linearly
-              increase computation time.
-
-          **resonator: ad.ResonatorProfile, optional**
-              The resonator profile to apply resonator compensation.
-
-          **trajectory: bool, optional**
-              If True, the function will return the magnetisation at each time point. Default is False.
-
-
-
-      :Returns:
-
-          Mag: np.ndarray
-              The magnetisation in the X, Y, and Z directions.
 
 
 
@@ -5440,7 +5431,7 @@ Attributes
    .. py:method:: _calc_fft(pad=10000)
 
 
-   .. py:method:: exciteprofile_old(freqs=None, resonator=None)
+   .. py:method:: exciteprofile(freqs=None, resonator=None)
 
       
       Excitation profile
@@ -5488,54 +5479,6 @@ Attributes
 
           Mz: np.ndarray
               The magentisation in the Z direction.
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
-   .. py:method:: exciteprofile(freqs=None, resonator=None, trajectory=False)
-
-      
-      Excitation profile
-
-      Generates the exciatation profiles for this pulse, using the two-level system model developed by Jeschke et al. [1].
-      And then optimised in the PulseShape software package by Maxx Tessmer [2], reproduced under the GNU GPL v3 license.
-
-      References:
-      +++++++++++
-      [1] Jeschke, G., Pribitzer, S. & Doll, A. 
-          Coherence Transfer by Passage Pulses in Electron Paramagnetic 
-          Resonance Spectroscopy. 
-          J. Phys. Chem. B 119, 13570-13582 (2015)
-      [2] https://github.com/mtessmer/PulseShape
-
-      :Parameters:
-
-          **freqs: np.ndarray, optional**
-              The frequency axis. Caution: A larger number of points will linearly
-              increase computation time.
-
-          **resonator: ad.ResonatorProfile, optional**
-              The resonator profile to apply resonator compensation.
-
-          **trajectory: bool, optional**
-              If True, the function will return the magnetisation at each time point. Default is False.
-
-
-
-      :Returns:
-
-          Mag: np.ndarray
-              The magnetisation in the X, Y, and Z directions.
 
 
 
@@ -6268,30 +6211,19 @@ Attributes
 
    .. py:method:: evolution(params, reduce=[])
 
+
+   .. py:method:: shift_detfreq_to_zero()
+
+
+   .. py:method:: isPulseFocused()
+
       
-      Sets what parameters are being evolved in the sequence, and which are
-      being automatically.
-
-      `self.evo_params = params`
-
-      :Parameters:
-
-          **params** : list
-              A list of Parameter objects which are being evolved. Each every 
-              entry in the list will be a new axis in the sequence. Only one parameter
-              per axis should be specified.
-
-          **reduce** : list
-              A list of Parameter objects which are being reduced. These are the
-              parameters which are being averaged over. These parameters should
-              also be in the params list.
+      Is the sequence expressed to contain only pulses and no delays?
 
 
 
-      :Returns:
 
-          **progTable** : dict
-              A dictionary containing the progression of the sequence.
+
 
 
 
@@ -6306,7 +6238,61 @@ Attributes
       ..
           !! processed by numpydoc !!
 
-   .. py:method:: shift_detfreq_to_zero()
+   .. py:method:: isDelayFocused()
+
+      
+      Is the sequence expressed to contain both pulses and delays?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: convert(*, reduce=True)
+
+      
+      Converts the current sequence to either pulse focused or delay
+      focused depending on the current state
+
+
+      :Parameters:
+
+          **reduce** : bool, optional
+              Reduce to the smallest number of objects, by default True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+   .. py:method:: _convert_to_delay()
+
+
+   .. py:method:: _convert_to_pulses()
 
 
    .. py:method:: _checkRect()
@@ -6754,29 +6740,6 @@ Attributes
 
    .. py:property:: fft
 
-
-   .. py:property:: MeasurementTime
-
-      
-      Calculate the total measurement time in seconds
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
 
    .. py:property:: sequence
 

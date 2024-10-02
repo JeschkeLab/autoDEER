@@ -709,6 +709,26 @@
             <span class="k">return</span> <span class="n">pulse</span></div>
 
 
+<div class="viewcode-block" id="BrukerAWG.tune_nutation">
+<a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_AWG/index.html#autodeer.hardware.Bruker_AWG.BrukerAWG.tune_nutation">[docs]</a>
+    <span class="k">def</span> <span class="nf">tune_nutation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_pulse</span><span class="p">):</span>
+        <span class="n">Nutation</span> <span class="o">=</span> <span class="nb">open</span><span class="o">.</span><span class="n">Sequence</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Nutation Tuning&quot;</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mf">12248.7</span><span class="p">,</span> <span class="n">LO</span><span class="o">=</span><span class="mf">33.970715</span><span class="p">,</span>
+            <span class="n">reptime</span><span class="o">=</span><span class="mi">3000</span><span class="p">,</span> <span class="n">averages</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+        <span class="n">pi2_pulse</span> <span class="o">=</span> <span class="nb">open</span><span class="o">.</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pcyc</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">],</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">pi_pulse</span> <span class="o">=</span> <span class="nb">open</span><span class="o">.</span><span class="n">RectPulse</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pcyc</span><span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">flipangle</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+        <span class="n">Nutation</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">test_pulse</span><span class="p">)</span>
+        <span class="n">Nutation</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">pi2_pulse</span><span class="p">)</span>
+        <span class="n">Nutation</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="n">pi_pulse</span><span class="p">)</span>
+
+        <span class="n">Nutation</span><span class="o">.</span><span class="n">addPulse</span><span class="p">(</span><span class="nb">open</span><span class="o">.</span><span class="n">Detection</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">48</span><span class="p">))</span>
+        <span class="n">Nutation</span><span class="o">.</span><span class="n">convert</span><span class="p">()</span>
+        <span class="k">pass</span></div>
+
+
+    
 <div class="viewcode-block" id="BrukerAWG.isrunning">
 <a class="viewcode-back" href="../../../autoapi/autodeer/hardware/Bruker_AWG/index.html#autodeer.hardware.Bruker_AWG.BrukerAWG.isrunning">[docs]</a>
     <span class="k">def</span> <span class="nf">isrunning</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>

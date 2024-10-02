@@ -16,29 +16,6 @@
    .. py:property:: fft
 
 
-   .. py:property:: MeasurementTime
-
-      
-      Calculate the total measurement time in seconds
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      ..
-          !! processed by numpydoc !!
-
    .. py:property:: sequence
 
 

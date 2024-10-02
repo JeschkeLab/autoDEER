@@ -385,25 +385,34 @@ a zero offset pulse is at.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="Sequence.evolution">
 <span class="sig-name descname"><span class="pre">evolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Sequence.evolution" title="Link to this definition">¶</a></dt>
-<dd><p>Sets what parameters are being evolved in the sequence, and which are
-being automatically.</p>
-<p><cite>self.evo_params = params</cite></p>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Sequence.shift_detfreq_to_zero">
+<span class="sig-name descname"><span class="pre">shift_detfreq_to_zero</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Sequence.shift_detfreq_to_zero" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Sequence.isPulseFocused">
+<span class="sig-name descname"><span class="pre">isPulseFocused</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Sequence.isPulseFocused" title="Link to this definition">¶</a></dt>
+<dd><p>Is the sequence expressed to contain only pulses and no delays?</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Sequence.isDelayFocused">
+<span class="sig-name descname"><span class="pre">isDelayFocused</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Sequence.isDelayFocused" title="Link to this definition">¶</a></dt>
+<dd><p>Is the sequence expressed to contain both pulses and delays?</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Sequence.convert">
+<span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Sequence.convert" title="Link to this definition">¶</a></dt>
+<dd><p>Converts the current sequence to either pulse focused or delay
+focused depending on the current state</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>params</strong><span class="classifier">list</span></dt><dd><p>A list of Parameter objects which are being evolved. Each every
-entry in the list will be a new axis in the sequence. Only one parameter
-per axis should be specified.</p>
-</dd>
-<dt><strong>reduce</strong><span class="classifier">list</span></dt><dd><p>A list of Parameter objects which are being reduced. These are the
-parameters which are being averaged over. These parameters should
-also be in the params list.</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt><strong>progTable</strong><span class="classifier">dict</span></dt><dd><p>A dictionary containing the progression of the sequence.</p>
+<dt><strong>reduce</strong><span class="classifier">bool, optional</span></dt><dd><p>Reduce to the smallest number of objects, by default True</p>
 </dd>
 </dl>
 </dd>
@@ -411,8 +420,13 @@ also be in the params list.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="Sequence.shift_detfreq_to_zero">
-<span class="sig-name descname"><span class="pre">shift_detfreq_to_zero</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Sequence.shift_detfreq_to_zero" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="Sequence._convert_to_delay">
+<span class="sig-name descname"><span class="pre">_convert_to_delay</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Sequence._convert_to_delay" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Sequence._convert_to_pulses">
+<span class="sig-name descname"><span class="pre">_convert_to_pulses</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#Sequence._convert_to_pulses" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -560,6 +574,11 @@ also be in the params list.</p>
 <li><a class="reference internal" href="#Sequence._buildPhaseCycle"><code class="docutils literal notranslate"><span class="pre">Sequence._buildPhaseCycle()</span></code></a></li>
 <li><a class="reference internal" href="#Sequence.evolution"><code class="docutils literal notranslate"><span class="pre">Sequence.evolution()</span></code></a></li>
 <li><a class="reference internal" href="#Sequence.shift_detfreq_to_zero"><code class="docutils literal notranslate"><span class="pre">Sequence.shift_detfreq_to_zero()</span></code></a></li>
+<li><a class="reference internal" href="#Sequence.isPulseFocused"><code class="docutils literal notranslate"><span class="pre">Sequence.isPulseFocused()</span></code></a></li>
+<li><a class="reference internal" href="#Sequence.isDelayFocused"><code class="docutils literal notranslate"><span class="pre">Sequence.isDelayFocused()</span></code></a></li>
+<li><a class="reference internal" href="#Sequence.convert"><code class="docutils literal notranslate"><span class="pre">Sequence.convert()</span></code></a></li>
+<li><a class="reference internal" href="#Sequence._convert_to_delay"><code class="docutils literal notranslate"><span class="pre">Sequence._convert_to_delay()</span></code></a></li>
+<li><a class="reference internal" href="#Sequence._convert_to_pulses"><code class="docutils literal notranslate"><span class="pre">Sequence._convert_to_pulses()</span></code></a></li>
 <li><a class="reference internal" href="#Sequence._checkRect"><code class="docutils literal notranslate"><span class="pre">Sequence._checkRect()</span></code></a></li>
 <li><a class="reference internal" href="#Sequence.__str__"><code class="docutils literal notranslate"><span class="pre">Sequence.__str__()</span></code></a></li>
 <li><a class="reference internal" href="#Sequence.copy"><code class="docutils literal notranslate"><span class="pre">Sequence.copy()</span></code></a></li>

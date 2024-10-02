@@ -447,8 +447,8 @@ The values for each key are lists of the corresponding values for each non-stati
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="autodeer.pulses.Pulse.exciteprofile_old">
-<span class="sig-name descname"><span class="pre">exciteprofile_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freqs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resonator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/pulses.html#Pulse.exciteprofile_old"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.pulses.Pulse.exciteprofile_old" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="autodeer.pulses.Pulse.exciteprofile">
+<span class="sig-name descname"><span class="pre">exciteprofile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freqs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resonator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/pulses.html#Pulse.exciteprofile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.pulses.Pulse.exciteprofile" title="Link to this definition">¶</a></dt>
 <dd><p>Excitation profile</p>
 <p>Generates the exciatation profiles for this pulse.</p>
 <p>This function is ported from EasySpin
@@ -483,43 +483,6 @@ increase computation time.</p>
 <dt>My: np.ndarray</dt><dd><p>The magentisation in the Y direction.</p>
 </dd>
 <dt>Mz: np.ndarray</dt><dd><p>The magentisation in the Z direction.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="autodeer.pulses.Pulse.exciteprofile">
-<span class="sig-name descname"><span class="pre">exciteprofile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freqs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resonator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/autodeer/pulses.html#Pulse.exciteprofile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#autodeer.pulses.Pulse.exciteprofile" title="Link to this definition">¶</a></dt>
-<dd><p>Excitation profile</p>
-<p>Generates the exciatation profiles for this pulse, using the two-level system model developed by Jeschke et al. [1].
-And then optimised in the PulseShape software package by Maxx Tessmer [2], reproduced under the GNU GPL v3 license.</p>
-<section id="id1">
-<h4>References:<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h4>
-<dl class="simple">
-<dt>[1] Jeschke, G., Pribitzer, S. &amp; Doll, A.</dt><dd><p>Coherence Transfer by Passage Pulses in Electron Paramagnetic
-Resonance Spectroscopy.
-J. Phys. Chem. B 119, 13570-13582 (2015)</p>
-</dd>
-</dl>
-<p>[2] <a class="reference external" href="https://github.com/mtessmer/PulseShape">https://github.com/mtessmer/PulseShape</a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>freqs: np.ndarray, optional</strong></dt><dd><p>The frequency axis. Caution: A larger number of points will linearly
-increase computation time.</p>
-</dd>
-<dt><strong>resonator: ad.ResonatorProfile, optional</strong></dt><dd><p>The resonator profile to apply resonator compensation.</p>
-</dd>
-<dt><strong>trajectory: bool, optional</strong></dt><dd><p>If True, the function will return the magnetisation at each time point. Default is False.</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>Mag: np.ndarray</dt><dd><p>The magnetisation in the X, Y, and Z directions.</p>
 </dd>
 </dl>
 </dd>
@@ -992,7 +955,6 @@ functionality, by default 0 MHz</p>
 <li><a class="reference internal" href="#autodeer.pulses.Pulse.isPulseFocused"><code class="docutils literal notranslate"><span class="pre">Pulse.isPulseFocused()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.pulses.Pulse.plot"><code class="docutils literal notranslate"><span class="pre">Pulse.plot()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.pulses.Pulse._calc_fft"><code class="docutils literal notranslate"><span class="pre">Pulse._calc_fft()</span></code></a></li>
-<li><a class="reference internal" href="#autodeer.pulses.Pulse.exciteprofile_old"><code class="docutils literal notranslate"><span class="pre">Pulse.exciteprofile_old()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.pulses.Pulse.exciteprofile"><code class="docutils literal notranslate"><span class="pre">Pulse.exciteprofile()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.pulses.Pulse.plot_fft"><code class="docutils literal notranslate"><span class="pre">Pulse.plot_fft()</span></code></a></li>
 <li><a class="reference internal" href="#autodeer.pulses.Pulse._pcyc_str"><code class="docutils literal notranslate"><span class="pre">Pulse._pcyc_str()</span></code></a></li>

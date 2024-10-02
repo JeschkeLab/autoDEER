@@ -572,30 +572,6 @@
 <div class="viewcode-block" id="Sequence.evolution">
 <a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.evolution">[docs]</a>
     <span class="k">def</span> <span class="nf">evolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">reduce</span><span class="o">=</span><span class="p">[]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets what parameters are being evolved in the sequence, and which are</span>
-<span class="sd">        being automatically.</span>
-
-<span class="sd">        `self.evo_params = params`</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        params : list</span>
-<span class="sd">            A list of Parameter objects which are being evolved. Each every </span>
-<span class="sd">            entry in the list will be a new axis in the sequence. Only one parameter</span>
-<span class="sd">            per axis should be specified.</span>
-<span class="sd">        reduce : list</span>
-<span class="sd">            A list of Parameter objects which are being reduced. These are the</span>
-<span class="sd">            parameters which are being averaged over. These parameters should</span>
-<span class="sd">            also be in the params list.</span>
-<span class="sd">        </span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        progTable : dict</span>
-<span class="sd">            A dictionary containing the progression of the sequence.</span>
-<span class="sd">        </span>
-<span class="sd">        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">evo_params</span> <span class="o">=</span> <span class="n">params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axes_uuid</span> <span class="o">=</span> <span class="p">[</span><span class="n">param</span><span class="o">.</span><span class="n">uuid</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reduce_uuid</span> <span class="o">=</span> <span class="p">[</span><span class="n">param</span><span class="o">.</span><span class="n">uuid</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">reduce</span><span class="p">]</span>
@@ -667,6 +643,137 @@
         <span class="k">return</span> <span class="bp">self</span></div>
 
     
+<div class="viewcode-block" id="Sequence.isPulseFocused">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.isPulseFocused">[docs]</a>
+    <span class="k">def</span> <span class="nf">isPulseFocused</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Is the sequence expressed to contain only pulses and no delays?</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">test</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pulse</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">:</span>
+            <span class="n">test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">isPulseFocused</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">test</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="Sequence.isDelayFocused">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.isDelayFocused">[docs]</a>
+    <span class="k">def</span> <span class="nf">isDelayFocused</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Is the sequence expressed to contain both pulses and delays?</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="n">test</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pulse</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">:</span>
+            <span class="n">test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pulse</span><span class="o">.</span><span class="n">isDelayFocused</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">test</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="Sequence.convert">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence.convert">[docs]</a>
+    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">reduce</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts the current sequence to either pulse focused or delay</span>
+<span class="sd">        focused depending on the current state</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reduce : bool, optional</span>
+<span class="sd">            Reduce to the smallest number of objects, by default True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isPulseFocused</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_convert_to_delay</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">isDelayFocused</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_convert_to_pulses</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Sequence._convert_to_delay">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence._convert_to_delay">[docs]</a>
+    <span class="k">def</span> <span class="nf">_convert_to_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">num_pulses</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">)</span>
+
+        <span class="c1"># create list of pulse timeing</span>
+        <span class="n">pulse_times</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">new_sequence</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">new_pulse</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">new_pulse</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">new_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_pulse</span><span class="p">)</span>
+        <span class="n">pulse_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">pulse_hash</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_pulses</span><span class="p">):</span>
+            <span class="n">t_cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">t_prev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">value</span>
+            <span class="n">static_delay</span> <span class="o">=</span> <span class="n">t_cur</span><span class="o">-</span><span class="n">t_prev</span>
+            <span class="n">tmp_delay</span> <span class="o">=</span> <span class="n">Delay</span><span class="p">(</span><span class="n">tp</span><span class="o">=</span><span class="n">static_delay</span><span class="p">)</span>
+            <span class="n">new_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp_delay</span><span class="p">)</span>
+            <span class="n">new_pulse</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">new_pulse</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">new_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_pulse</span><span class="p">)</span>
+            <span class="n">pulse_hash</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_sequence</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">new_pulse</span><span class="p">)</span>
+            <span class="n">pulse_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_cur</span><span class="p">)</span>
+
+        <span class="n">new_prog_table</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;EventID&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;Variable&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;axis&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                          <span class="s2">&quot;axID&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+
+        <span class="k">def</span> <span class="nf">add_prog_table</span><span class="p">(</span><span class="n">dic</span><span class="p">,</span> <span class="n">Element</span><span class="p">,</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">ax_id</span><span class="p">):</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s2">&quot;EventID&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Element</span><span class="p">)</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s2">&quot;Variable&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Variable</span><span class="p">)</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s2">&quot;axis&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+            <span class="n">dic</span><span class="p">[</span><span class="s2">&quot;axID&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ax_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">dic</span>
+        <span class="n">prog_axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">progTable</span><span class="p">[</span><span class="s2">&quot;axID&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">ax_id</span> <span class="ow">in</span> <span class="n">prog_axes</span><span class="p">:</span>
+            <span class="n">indexs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">progTable</span><span class="p">[</span><span class="s2">&quot;axID&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="n">ax_id</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indexs</span><span class="p">:</span>
+                <span class="n">pulse_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">progTable</span><span class="p">[</span><span class="s2">&quot;EventID&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">pulse_times</span><span class="p">[</span><span class="n">pulse_num</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">progTable</span><span class="p">[</span><span class="s2">&quot;axis&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_pulses</span><span class="p">):</span>
+                <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">pulse_times</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">pulse_times</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">diff</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">new_prog_table</span> <span class="o">=</span> <span class="n">add_prog_table</span><span class="p">(</span>
+                        <span class="n">new_prog_table</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;tp&quot;</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">ax_id</span><span class="p">)</span>
+        
+        <span class="c1"># Change the pcyc_vars</span>
+        <span class="n">new_pcyc_var</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pcyc_vars</span><span class="p">:</span>
+            <span class="n">new_pcyc_var</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pulse_hash</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pcyc_vars</span> <span class="o">=</span> <span class="n">new_pcyc_var</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="n">new_sequence</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">progTable</span> <span class="o">=</span> <span class="n">new_prog_table</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span></div>
+
+
+<div class="viewcode-block" id="Sequence._convert_to_pulses">
+<a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence._convert_to_pulses">[docs]</a>
+    <span class="k">def</span> <span class="nf">_convert_to_pulses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">num_ele</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">)</span>
+        <span class="n">new_sequence</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">new_pulse</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">new_pulse</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="s2">&quot;Start time of pulse&quot;</span><span class="p">)</span>
+        <span class="n">new_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_pulse</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_ele</span><span class="p">):</span>
+            <span class="n">pulse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pulse</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Delay</span><span class="p">:</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+                    <span class="n">pos</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">tp</span><span class="o">.</span><span class="n">value</span>
+                <span class="n">new_pulse</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">pulse</span><span class="p">)</span>
+                <span class="n">new_pulse</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="s2">&quot;ns&quot;</span><span class="p">,</span> <span class="s2">&quot;Start time of pulse&quot;</span><span class="p">)</span>
+                <span class="n">new_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_pulse</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="n">new_sequence</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span></div>
+
+
 <div class="viewcode-block" id="Sequence._checkRect">
 <a class="viewcode-back" href="../../autoapi/autodeer/sequences/index.html#autodeer.Sequence._checkRect">[docs]</a>
     <span class="k">def</span> <span class="nf">_checkRect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>

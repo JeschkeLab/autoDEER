@@ -249,6 +249,9 @@
       ..
           !! processed by numpydoc !!
 
+   .. py:method:: tune_nutation(test_pulse)
+
+
    .. py:method:: isrunning()
 
 
