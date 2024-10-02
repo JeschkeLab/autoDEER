@@ -845,6 +845,7 @@ class autoDEERUI(QMainWindow):
             else:
                 self.deer_settings['dt'] = 8
 
+        self.deer_settings['autoStop'] = self.Time_autoStop_checkbox.isChecked()
         self.worker.update_deersettings(self.deer_settings)
         
         main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
@@ -900,6 +901,7 @@ class autoDEERUI(QMainWindow):
 
         # self.deer_settings['dt'] = dt
         
+        self.deer_settings['autoStop'] = self.Time_autoStop_checkbox.isChecked()
         self.worker.update_deersettings(self.deer_settings)
         
         main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
