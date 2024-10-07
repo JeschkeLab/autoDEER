@@ -155,7 +155,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>3</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideRight</enum>
@@ -200,23 +200,7 @@
                <item row="0" column="0">
                 <widget class="QLabel" name="label_11">
                  <property name="text">
-                  <string>Max Measurement Time</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QDoubleSpinBox" name="MaxTime">
-                 <property name="suffix">
-                  <string> hrs</string>
-                 </property>
-                 <property name="decimals">
-                  <number>1</number>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.500000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>24.000000000000000</double>
+                  <string>Max Measurement Time:</string>
                  </property>
                 </widget>
                </item>
@@ -257,6 +241,26 @@
                  </property>
                 </widget>
                </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="commentLabel">
+                 <property name="text">
+                  <string>Comment:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="commentLineEdit">
+                 <property name="toolTip">
+                  <string extracomment="A comment can also be appened to all file names"/>
+                 </property>
+                 <property name="whatsThis">
+                  <string/>
+                 </property>
+                 <property name="placeholderText">
+                  <string>No Comment</string>
+                 </property>
+                </widget>
+               </item>
                <item row="4" column="0">
                 <widget class="QLabel" name="label_12">
                  <property name="text">
@@ -277,7 +281,7 @@
                <item row="5" column="0">
                 <widget class="QLabel" name="estLabellingEfficiencyLabel">
                  <property name="text">
-                  <string>Est. Labelling Efficiency</string>
+                  <string>Est. Labelling Efficiency:</string>
                  </property>
                 </widget>
                </item>
@@ -297,35 +301,48 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="commentLabel">
-                 <property name="text">
-                  <string>Comment</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QLineEdit" name="commentLineEdit">
-                 <property name="toolTip">
-                  <string extracomment="A comment can also be appened to all file names"/>
-                 </property>
-                 <property name="whatsThis">
-                  <string/>
-                 </property>
-                 <property name="placeholderText">
-                  <string>No Comment</string>
-                 </property>
-                </widget>
-               </item>
                <item row="6" column="0">
                 <widget class="QLabel" name="priotityLabel">
                  <property name="text">
-                  <string>Priority</string>
+                  <string>MNR Priority:</string>
                  </property>
                 </widget>
                </item>
                <item row="6" column="1">
                 <widget class="QComboBox" name="priotityComboBox"/>
+               </item>
+               <item row="0" column="1">
+                <layout class="QHBoxLayout" name="horizontalLayout_18">
+                 <item>
+                  <widget class="QDoubleSpinBox" name="MaxTime">
+                   <property name="suffix">
+                    <string> hrs</string>
+                   </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.500000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>24.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="Time_autoStop_checkbox">
+                   <property name="toolTip">
+                    <string extracomment="If selected the experiment will stop at Max Measurment Time or when MNR achieved. If not selected, then it will continue until you manually stop."/>
+                   </property>
+                   <property name="text">
+                    <string>autoStop</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
              </item>
@@ -1019,6 +1036,9 @@
                     </property>
                     <property name="buttonSymbols">
                      <enum>QAbstractSpinBox::NoButtons</enum>
+                    </property>
+                    <property name="maximum">
+                     <double>1000.000000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -1731,11 +1751,38 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>autoDEER © 2023 Hugo Karas, Stefan Stoll, Gunnar Jeschke</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_16">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>autoDEER © 2024 Hugo Karas, Stefan Stoll, Gunnar Jeschke</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_12">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="Version_label">
+          <property name="text">
+           <string>Version:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>
