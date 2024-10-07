@@ -38,6 +38,7 @@ autoDEER:
   Refresh_time: 0.5  # mins Default: 3
   cores: 8
   Night Hours: [18,8]
+  ReptimeRecovery: 0.75 # Default: 0.75
   FieldSweep:
     Fit: False # Default: False
     

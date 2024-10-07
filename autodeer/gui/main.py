@@ -1062,7 +1062,12 @@ class autoDEERUI(QMainWindow):
         # reptime_analysis = ad.ReptimeAnalysis(dataset,dataset.sequence)
         reptime_analysis = ad.ReptimeAnalysis(dataset)
         reptime_analysis.fit()
-        opt_reptime = reptime_analysis.calc_optimal_reptime(0.9)
+
+        if 'ReptimeRecovery' in self.config['autoDEER']:
+            ReptimeRecovery = self.config['autoDEER']['ReptimeRecovery']
+        else:
+            ReptimeRecovery = 0.75
+        opt_reptime = reptime_analysis.calc_optimal_reptime(ReptimeRecovery)
 
         if (opt_reptime*1e-3 > 8) or (opt_reptime*1e-3 < 0.5):
             main_log.warning(f"Reptime optimisation failed. Setting to default for spin system")

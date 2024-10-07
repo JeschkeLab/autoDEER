@@ -7,7 +7,6 @@ from scipy.optimize import curve_fit
 from autodeer.sequences import Sequence
 import deerlab as dl
 from scipy.linalg import svd
-
 from autodeer.colors import primary_colors
 # ===========================================================================
 
@@ -261,11 +260,20 @@ class ReptimeAnalysis():
         self.seq = sequence
         pass
 
-    def fit(self, **kwargs):
-        def func(t,A,T1):
-            return A*(1-np.exp(-t/T1))
+    def fit(self,type='SE', **kwargs):
+
+        if type == 'SE': # stetch exponential recovery
+            def func(t,A,T1,xi):
+                return A*(1-np.exp(-(t/T1)**xi))
+            p0 = [1,1.8e3,1]
+        elif type.lower() == 'exp': # exponential recovery
+            def func(t,A,T1):
+                return A*(1-np.exp(-t/T1))
+            p0 = [1,1.8e3]
         self.func = func
 
+        if 'p0' in kwargs:
+            p0 = kwargs.pop('p0')
         # mymodel = dl.Model(func,constants='t')
         # mymodel.T1.set(lb=0,ub=np.inf,par0=1.8e3)
         # mymodel.T1.unit = 'us'
@@ -274,7 +282,7 @@ class ReptimeAnalysis():
         # results = dl.fit(mymodel,self.data.real,self.axis,reg=False,**kwargs)
         # self.fit_result = results
 
-        self.fit_result = curve_fit(func, self.axis, self.data, p0=[1,1.8e3])
+        self.fit_result = curve_fit(func, self.axis, self.data, p0=p0,**kwargs)
 
         return self.fit_result
 
@@ -283,32 +291,37 @@ class ReptimeAnalysis():
         if axs is None and fig is None:
             fig, axs = plt.subplots()
 
-        if hasattr(self,'fit_result'):
-            # renormalise data to fit amplitude
-            data = self.data/self.fit_result[0][0]
-        else:
-            data = self.data
+        # if hasattr(self,'fit_result'):
+        #     # renormalise data to fit amplitude
+        #     data = self.data/self.fit_result[0][0]
+        # else:
+        data = self.data
 
-        axs.plot(self.axis, data, '.', label='data', color='0.6', ms=6)
+        axs.plot(self.axis/1e3, data, '.', label='data', color='0.6', ms=6)
         
         if hasattr(self,'fit_result'):
-            axs.plot(self.axis, self.func(self.axis,*self.fit_result[0]), label='Fit', color=primary_colors[0], lw=2)
+            axs.plot(self.axis/1e3, self.func(self.axis,*self.fit_result[0]), label='Fit', color=primary_colors[0], lw=2)
             axs.set_xlim(*axs.get_xlim())
             axs.set_ylim(*axs.get_ylim())
             ylim = axs.get_ylim()
-            axs.vlines(self.fit_result[0][1],*ylim,linestyles='dashed',label='T1 = {:.3g} ms'.format(self.fit_result[0][1]/1e3),colors=primary_colors[1])
+            axs.vlines(self.fit_result[0][1]/1e3,*ylim,linestyles='dashed',label='T1 = {:.3g} ms'.format(self.fit_result[0][1]/1e3),colors=primary_colors[1])
 
             if hasattr(self,'optimal'):
-                axs.vlines(self.optimal,*ylim,linestyles='dashed',label='Optimal = {:.3g} ms'.format(self.optimal/1e3),colors=primary_colors[2])
+                axs.vlines(self.optimal/1e3,*ylim,linestyles='dashed',label='Optimal = {:.3g} ms'.format(self.optimal/1e3),colors=primary_colors[2])
 
-        axs.set_xlabel('Reptime / $\mu s$')
+        axs.set_xlabel('Reptime / ms')
         axs.set_ylabel('Normalised signal')
         axs.legend()
         return fig
 
     def calc_optimal_reptime(self, recovery=0.9):
         # Calculates the x% recovery time
-        self.optimal = self.fit_result[0][1]*np.log(1/(1-recovery))
+        if recovery is not None:
+            self.optimal = self.fit_result[0][1]*np.log(1/(1-recovery))
+        else:
+            t = self.axis
+            optimal_vals = self.func(t,*self.fit_result[0])* 1/np.sqrt(t)
+            self.optimal = t[np.nanargmax(optimal_vals)]
         return self.optimal
 
 def detect_ESEEM(dataset,type='deuteron', threshold=1.5):
