@@ -75,17 +75,34 @@ class CarrPurcellAnalysis():
         
         # self.fit_type = type
         # self.fit_result = curve_fit(self.func, self.axis, data, p0=p0, bounds=bounds)
+        monoModel = dl.bg_strexp
+        monoModel.name = 'Stretched exponential'
+        doubleModel = dl.bg_sumstrexp
+        doubleModel.weight1.ub = 200
+        doubleModel.name = "Sum of two stretched exponentials"
 
+        testModels = []
         if type == "mono":
-            model = dl.bg_strexp
+            testModels.append(monoModel)
         elif type == "double":
-            model = dl.bg_sumstrexp
-            model.weight1.ub = 200
+            testModels.append(doubleModel)
 
-        results = dl.fit(model,data,self.axis,reg=False,**kwargs)
-        self.fit_result = results
-        self.fit_model = model
+        else: # type == "auto"
+            testModels = [monoModel, doubleModel]
 
+        results = []
+        for model in testModels:
+            results.append(dl.fit(model,data,self.axis,reg=False,**kwargs))
+        
+        if len(results) == 1:
+            self.fit_result = results[0]
+            self.fit_model = testModels[0]
+        else:
+            # Select based of R2
+            R2 = [result.stats['R2'] for result in results]
+            self.fit_result = results[np.argmax(R2)]
+            self.fit_model = testModels[np.argmax(R2)]
+            print(f"Selected model: {self.fit_model.description}")
         
         return self.fit_result
 

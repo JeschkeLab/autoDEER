@@ -83,18 +83,37 @@ def calculate_optimal_tau(CPanalysis, MeasTime, SNR, target_step=0.015, target_s
     # optimal_ub = spl_fit_inverse_ub(SNR/ np.sqrt(nPointsInTime(MeasTime)))
 
     def find_all_numerical_roots(data,axis):
-        sign_changes = np.where(np.abs(np.diff(np.sign(data))) >0)[0]
+        sign_changes = np.where(np.abs(np.diff(np.sign(data)))>0)[0]
         if sign_changes.shape[0] == 0:
-            return axis[-1]
+            return axis[0]
         else:
             return axis[sign_changes]
 
     axis = CPanalysis.axis.values * 2 # Tua_evo in us
     data = CPanalysis.data
     data /= data.max()
-    functional = lambda SNR, T: data - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
-    functional_ub = lambda SNR, T: data+2*noise - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
-    functional_lb = lambda SNR, T: data-2*noise - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
+    R2 = 0
+    if hasattr(CPanalysis, 'fit_result'):
+        # If the fit result is avaliable and off high quality, use it
+        fit = CPanalysis.fit_result.evaluate(CPanalysis.fit_model, CPanalysis.axis.values)*CPanalysis.fit_result.scale
+        R2 = CPanalysis.fit_result.stats['R2']
+        fitUncert = CPanalysis.fit_result.propagate(CPanalysis.fit_model, CPanalysis.axis.values)
+        fitUncertCi = fitUncert.ci(50)*CPanalysis.fit_result.scale
+        ub = fitUncertCi[:,1]
+        lb = fitUncertCi[:,0]
+    if R2 < 0.9: # Either there is no fit or the fit is bad
+        # Use the data
+        data = CPanalysis.data
+        data /= data.max()
+        fit = data
+        ub = data + 2*noise
+        lb = data - 2*noise
+        # enforce a lower bound on lb
+        lb[lb<0] = 0
+
+    functional = lambda SNR, T: corr_factor*fit - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
+    functional_ub = lambda SNR, T: corr_factor*ub - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
+    functional_lb = lambda SNR, T: corr_factor*lb - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
 
     if isinstance(MeasTime,np.ndarray):
         optimal = [find_all_numerical_roots(functional(SNR, T),axis).max() for T in MeasTime]
@@ -113,7 +132,7 @@ def calculate_optimal_tau(CPanalysis, MeasTime, SNR, target_step=0.015, target_s
     else:
         return optimal
     
-def plot_optimal_tau(CPanlaysis, SNR,MeasTime=None, MaxMeasTime=24, labels=None, fig=None, axs=None):
+def plot_optimal_tau(CPanlaysis, SNR,MeasTime=None, MaxMeasTime=24, labels=None,corr_factor=1, fig=None, axs=None):
     """
     Generate a plot of the optimal evolution time for a given SNR against measurement time.
 
@@ -154,7 +173,7 @@ def plot_optimal_tau(CPanlaysis, SNR,MeasTime=None, MaxMeasTime=24, labels=None,
         labels = [f'SNR = {snr}' for snr in SNR]
 
     for i,snr in enumerate(SNR):
-        optimal, optimal_lb, optimal_ub = calculate_optimal_tau(CPanlaysis, MeasTimeAxis, snr, full_output=True)
+        optimal, optimal_lb, optimal_ub = calculate_optimal_tau(CPanlaysis, MeasTimeAxis, snr, full_output=True, corr_factor=corr_factor)
         axs.plot(MeasTimeAxis, optimal, color=primary_colors[i], label=labels[i])
         axs.fill_between(MeasTimeAxis, optimal_lb, optimal_ub, color=primary_colors[i], alpha=0.3)
 
@@ -167,7 +186,7 @@ def plot_optimal_tau(CPanlaysis, SNR,MeasTime=None, MaxMeasTime=24, labels=None,
         if len(MeasTime) != len(SNR):
             raise ValueError('MeasTime and SNR must have the same length')
         for i, (mt, snr) in enumerate(zip(MeasTime, SNR)):
-            optimal, optimal_lb, optimal_ub = calculate_optimal_tau(CPanlaysis, mt, snr, full_output=True)
+            optimal, optimal_lb, optimal_ub = calculate_optimal_tau(CPanlaysis, mt, snr, full_output=True,corr_factor=corr_factor)
             ylim = axs.get_ylim()
             axs.vlines(mt, *ylim,ls='--', color=primary_colors[i])
             xlim = axs.get_xlim()
