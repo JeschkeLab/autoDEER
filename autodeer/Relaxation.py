@@ -7,6 +7,7 @@ from scipy.optimize import curve_fit
 from autodeer.sequences import Sequence
 import deerlab as dl
 from scipy.linalg import svd
+from autodeer.colors import primary_colors
 # ===========================================================================
 
 
@@ -218,7 +219,7 @@ class ReptimeAnalysis():
 
         if type == 'SE': # stetch exponential recovery
             def func(t,A,T1,xi):
-                return A*np.exp(-(t/T1)**xi)
+                return A*(1-np.exp(-(t/T1)**xi))
             p0 = [1,1.8e3,1]
         elif type.lower() == 'exp': # exponential recovery
             def func(t,A,T1):
@@ -270,7 +271,12 @@ class ReptimeAnalysis():
 
     def calc_optimal_reptime(self, recovery=0.9):
         # Calculates the x% recovery time
-        self.optimal = self.fit_result[0][1]*np.log(1/(1-recovery))
+        if recovery is not None:
+            self.optimal = self.fit_result[0][1]*np.log(1/(1-recovery))
+        else:
+            t = self.axis
+            optimal_vals = self.func(t,*self.fit_result[0])* 1/np.sqrt(t)
+            self.optimal = t[np.nanargmax(optimal_vals)]
         return self.optimal
 
 def detect_ESEEM(dataset,type='deuteron', threshold=1.5):
