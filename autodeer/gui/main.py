@@ -980,15 +980,21 @@ class autoDEERUI(QMainWindow):
 
         test_result = fitresult.check_decay()
 
-        if test_result:
+        if test_result == 0:
             if self.waitCondition is not None: # Wake up the runner thread
                 self.waitCondition.wakeAll()
-        else:
+                return None
+        elif test_result == -1: # The trace needs to be longer
             test_dt = fitresult.axis[1] - fitresult.axis[0]
             test_dt *= 1e3
             new_dt = ad.round_step(test_dt*2,self.waveform_precision)
-            if self.worker is not None:
-                self.worker.run_T2_relax(dt=new_dt)
+        elif test_result == 1: # The trace needs to be shorter
+            test_dt = fitresult.axis[1] - fitresult.axis[0]
+            test_dt *= 1e3
+            new_dt = ad.round_step(test_dt/2,self.waveform_precision)
+        
+        if self.worker is not None:
+            self.worker.run_CP_relax(dt=new_dt)
 
     def check_CP(self, fitresult):
         # Check if the CP measurment is too short. 
