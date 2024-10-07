@@ -368,7 +368,7 @@ class autoDEERWorker(QtCore.QRunnable):
         scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=12e3, averages=10, shots=n_shots,
                            pi2_pulse=p90, pi_pulse=p180)
         self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",IFgain=1)
-        self.interface.terminate_at(SNRCriteria(15),verbosity=2,test_interval=self.test_interval)
+        self.interface.terminate_at(SNRCriteria(45),verbosity=2,test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.status.emit('Reptime scan complete')
