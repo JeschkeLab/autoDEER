@@ -272,11 +272,14 @@ class autoDEERWorker(QtCore.QRunnable):
 
     def run_long_deer(self):
         self.signals.status.emit('Running LongDEER')
-        criteria = self.deer_inputs['criteria']
-        DEER_crit = DEERCriteria(mode=criteria,verbosity=2,update_func=self.signals.longdeer_update.emit)
-        total_crit = [DEER_crit, self.EndTimeCriteria]
-        signal = self.signals.longdeer_result.emit
-        self.run_deer(total_crit,signal, dt=16,shot=50,averages=1e4)
+        if 'autoStop' in self.deer_inputs and not self.deer_inputs['autoStop']:
+            DEER_crit = DEERCriteria(mode=np.inf,verbosity=2,update_func=self.signals.longdeer_update.emit)
+            total_crit = [DEER_crit]
+        else: # autoStop is True
+            DEER_crit = DEERCriteria(mode="high",verbosity=2,update_func=self.signals.longdeer_update.emit)
+            total_crit = [DEER_crit, self.EndTimeCriteria]
+        end_signal = self.signals.longdeer_result.emit
+        self.run_deer(total_crit,end_signal, dt=16,shot=50,averages=1e4)
 
 
     def run_deer(self,end_criteria,signal, dt=16,shot=50,averages=1000,):

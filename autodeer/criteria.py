@@ -143,18 +143,13 @@ class DEERCriteria(Criteria):
         +------------+--------+------+------+-------+
         | Parameter  | Speed  | Low  | Med  | High  |
         +============+========+======+======+=======+
-        | MNR        | 20     | 10   | 50   | 100   |
+        | MNR        | 20     | 10   | 50   | 150   |
         +------------+--------+------+------+-------+
 
 
         Parameters
         ----------
-        tau1 : _type_
-            _description_
-        tau2 : _type_
-            _description_
-        tau3 : _type_, optional
-            _description_, by default None
+        
         mode : str, optional
             _description_, by default "Speed"
 
@@ -166,9 +161,9 @@ class DEERCriteria(Criteria):
         
         name = "DEERCriteria"
         description = "Criteria for terminating DEER experiments."
-        if isinstance(mode,(int,float)):
+        if isinstance(mode, (int,float)):
             MNR_threshold = mode
-            regparamrange = None  
+            regparamrange = None
         elif mode.lower() == "speed":
             MNR_threshold = 20
             regparamrange = (1,1e3)
@@ -180,8 +175,8 @@ class DEERCriteria(Criteria):
             MNR_threshold = 50
             regparamrange = None
         elif mode.lower() == "high":
-            MNR_threshold = 100
-            regparamrange = None
+            MNR_threshold = 150
+            regparamrange = None    
         else:
             MNR_threshold = 50
             regparamrange = None
@@ -200,7 +195,7 @@ class DEERCriteria(Criteria):
 
 
             fit = DEERanalysis(
-                data, compactness=compactness, model=model, regparamrange=regparamrange,verbosity=verbosity,lin_maxiter=50,max_nfev=100
+                data, compactness=True, model=model, regparamrange=regparamrange,verbosity=verbosity,lin_maxiter=50,max_nfev=100
             )
             test = True
             if fit.MNR < MNR_threshold:

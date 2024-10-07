@@ -849,6 +849,7 @@ class autoDEERUI(QMainWindow):
         
         self.deer_settings['criteria'] = self.aim_MNR
 
+        self.deer_settings['autoStop'] = self.Time_autoStop_checkbox.isChecked()
         self.worker.update_deersettings(self.deer_settings)
         self.update_tau_delays_figure([aim_SNR],[self.aim_time],labels=[f"MNR = {self.aim_MNR}"])
 
@@ -908,6 +909,8 @@ class autoDEERUI(QMainWindow):
 
         # self.deer_settings['dt'] = dt
         self.deer_settings['criteria'] = MNR_target
+        
+        self.deer_settings['autoStop'] = self.Time_autoStop_checkbox.isChecked()
         self.worker.update_deersettings(self.deer_settings)
         self.update_tau_delays_figure([SNR_target],[remaining_time],labels=[f"MNR = {MNR_target}"])
         
