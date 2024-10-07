@@ -383,22 +383,9 @@ class Sequence:
         # Pulses
         pulses_string = "\nEvents (Pulses, Delays, etc...): \n"
 
-        if self.isPulseFocused():
-            # pulses_string += "{:<4} {:<12} {:<8} {:<12} \n".format(
-            #     'iD', 't (ns)', 'tp (ns)', 'Type')
-            # for i, pulse in enumerate(self.pulses):
-            #     pulses_string += "{:<4} {:<12.3E} {:<8} {:<10} \n".format(
-            #         i, pulse.t.value, pulse.tp.value, type(pulse).__name__)
-            params = ['iD', 't', 'tp', 'scale', 'type', 'Phase Cycle']
-            params_widths = ["4", "8", "8", "8", "14", "40"]
-        elif self.isDelayFocused():
-            # pulses_string += "{:<4} {:<8} {:<12} \n".format(
-            #     'iD', 'tp (ns)', 'Type')
-            # for i, pulse in enumerate(self.pulses):
-            #     pulses_string += "{:<4} {:<8} {:<10} \n".format(
-            #         i, pulse.tp.value, type(pulse).__name__)
-            params = ['iD', 'tp', 'scale', 'type']
-            params_widths = ["4", "8", "8", "14"]
+        params = ['iD', 't', 'tp', 'scale', 'type', 'Phase Cycle']
+        params_widths = ["4", "8", "8", "8", "14", "40"]
+
         pulses_string += build_table(self.pulses, params, params_widths)
 
         def print_event_id(i):
@@ -1271,11 +1258,39 @@ class HahnEchoSequence(Sequence):
 class T2RelaxationSequence(HahnEchoSequence):
     """
     Represents a T2 relaxation sequence. A Hahn Echo where the interpulse delay increases
+    
+    Parameters
+    ----------
+    B : int or float
+        The B0 field, in Guass
+    LO : int or float
+        The LO frequency in GHz
+    reptime : _type_
+        The shot repetition time in us
+    averages : int
+        The number of scans.
+    shots : int
+        The number of shots per point
+    start : float
+        The minimum interpulse delay in ns, by default 300 ns
+    step : float
+        The step size of the interpulse delay in ns, by default 50 ns
+    dim : int
+        The number of points in the X axis
+
+    Optional Parameters
+    -------------------
+    pi2_pulse : Pulse
+        An autoEPR Pulse object describing the excitation pi/2 pulse. If
+        not specified a RectPulse will be created instead. 
+    pi_pulse : Pulse
+        An autoEPR Pulse object describing the refocusing pi pulses. If
+        not specified a RectPulse will be created instead. 
     """
 
-    def __init__(self, *, B, LO, reptime, averages, shots, step=40, dim=200, **kwargs) -> None:
+    def __init__(self, *, B, LO, reptime, averages, shots,start=500, step=40, dim=200, **kwargs) -> None:
 
-        self.tau = Parameter(name="tau", value=500,step=step,dim=dim, unit="ns", description="The interpulse delay",virtual=True)
+        self.tau = Parameter(name="tau", value=start,step=step,dim=dim, unit="ns", description="The interpulse delay",virtual=True)
         super().__init__(B=B, LO=LO, reptime=reptime, averages=averages, shots=shots,tau=self.tau, **kwargs)
 
         self.name = "T2RelaxationSequence"
@@ -1383,7 +1398,7 @@ class CarrPurcellSequence(Sequence):
     Represents a Carr-Purcell sequence. 
     """
     def __init__(self, *, B, LO, reptime, averages, shots,
-            tau, n, dim=100,**kwargs) -> None:
+             n,start=300,step=50, dim=100,**kwargs) -> None:
         """Build a Carr-Purcell dynamical decoupling sequence using either 
         rectangular pulses or specified pulses.
 
@@ -1399,10 +1414,12 @@ class CarrPurcellSequence(Sequence):
             The number of scans.
         shots : int
             The number of shots per point
-        tau : int
-            The maximum total sequence length in us
         n : int
             The number refocusing pulses
+        start : float
+            The minimum interpulse delay in ns, by default 300 ns
+        step : float
+            The step size of the interpulse delay in ns, by default 50 ns
         dim : int
             The number of points in the X axis
 
@@ -1420,8 +1437,8 @@ class CarrPurcellSequence(Sequence):
         super().__init__(
             name=name, B=B, LO=LO, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
-        self.tau = Parameter(name="tau", value=tau*1e3, unit="ns",
-            description="Total sequence length", virtual=True)
+        self.t = Parameter(name="tau", value=start,step=step,dim=dim, unit="ns",
+            description="First interpulse delay", virtual=True)
         self.n = Parameter(name="n", value=n,
             description="The number of pi pulses", unit="None", virtual=True)
         self.dim = Parameter(name="dim", value=dim, unit="None",
@@ -1439,13 +1456,8 @@ class CarrPurcellSequence(Sequence):
     def _build_sequence(self):
 
         n = self.n.value
-        deadtime = 300
         # dt = 20
         # dim = np.floor((self.tau.value/(2*self.n.value) -deadtime)/dt)
-        dim = self.dim.value
-        tau_interval = self.tau.value/(2*n)
-        dt = (tau_interval-deadtime)/dim
-        self.step = Parameter("step",deadtime,unit="ns",step=dt, dim=dim)
         # # multipliers = [1]
         # # multipliers += [1+2*i for i in range(1,n)]
         # # multipliers += [2*n]
@@ -1473,18 +1485,18 @@ class CarrPurcellSequence(Sequence):
                 dets = [1,-1,1,-1]
             if hasattr(self, "pi_pulse"):
                 self.addPulse(self.pi_pulse.copy(
-                    t=self.step*(2*i + 1), pcyc={"phases":phases, "dets": dets}))
+                    t=self.t*(2*i + 1), pcyc={"phases":phases, "dets": dets}))
             else:
                 self.addPulse(RectPulse(  # pi
-                    t=self.step*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
+                    t=self.t*(2*i + 1), tp=32, freq=0, flipangle=np.pi,
                     pcyc={"phases":phases, "dets": dets}
                 ))
         if hasattr(self, "det_event"):
-            self.addPulse(self.det_event.copy(t=self.step*(2*n)))
+            self.addPulse(self.det_event.copy(t=self.t*(2*n)))
         else:
-            self.addPulse(Detection(t=self.step*(2*n), tp=512))
+            self.addPulse(Detection(t=self.t*(2*n), tp=512))
         
-        self.evolution([self.step])
+        self.evolution([self.t])
 
 # =============================================================================
 
@@ -1650,7 +1662,7 @@ class ResonatorProfileSequence(Sequence):
         tau1=2000
         tau2=500
 
-        tp = Parameter("tp", 0, step=2, dim=40, unit="ns", description="Test Pulse length")
+        tp = Parameter("tp", 0, step=2, dim=60, unit="ns", description="Test Pulse length")
         fwidth= self.fwidth.value
         fstep = 0.02
         dim = np.floor(fwidth*2/0.02)

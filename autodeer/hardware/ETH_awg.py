@@ -178,6 +178,7 @@ class ETH_awg_interface(Interface):
         test_IF = True
         while test_IF:
             self.terminate()
+            print(self.IFgain)
             self.launch_withIFGain(sequence,savename,self.IFgain)
             scan_time = sequence._estimate_time() / sequence.averages.value
             check_1stScan = True
@@ -190,7 +191,7 @@ class ETH_awg_interface(Interface):
                 pos_levels[pos_levels > 0.85] = 0
                 if dig_level == 0:
                     continue
-                if (pos_levels[self.IFgain] > 0.85) or  (pos_levels[self.IFgain] < 0.1):
+                if (pos_levels[self.IFgain] > 0.85) or  (pos_levels[self.IFgain] < 0.03):
                     best_IFgain = np.argmax(pos_levels)
                 else:
                     best_IFgain = self.IFgain
