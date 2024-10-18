@@ -859,8 +859,13 @@ class autoDEERUI(QMainWindow):
         dt= 8
         mod_depth = data.MNR * data.noiselvl
         remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60)) # in hours
+
+        if self.deer_settings['ExpType'] == '4pDEER':
+            relax = self.current_results['T2_relax']
+        elif self.deer_settings['ExpType'] == '5pDEER':
+            relax = self.current_results['relax']
         
-        self.correction_factor = ad.calc_correction_factor(self.current_results['relax'],self.current_results['quickdeer'])
+        self.correction_factor = ad.calc_correction_factor(relax,self.current_results['quickdeer'])
         main_log.info(f"Correction factor {self.correction_factor:.3f}")
         MNR_target = self.priorties[self.userinput['priority']]
         SNR_target = MNR_target/(mod_depth)
@@ -969,7 +974,7 @@ class autoDEERUI(QMainWindow):
             new_dt = ad.round_step(test_dt/2,self.waveform_precision)
         
         if self.worker is not None:
-            self.worker.run_CP_relax(dt=new_dt)
+            self.worker.run_T2_relax(dt=new_dt)
 
     def check_CP(self, fitresult):
         # Check if the CP measurment is too short. 

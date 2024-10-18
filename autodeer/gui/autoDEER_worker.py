@@ -139,17 +139,17 @@ class autoDEERWorker(QtCore.QRunnable):
         gyro_N = self.gyro
         reptime = self.reptime
         p90, p180 = self.interface.tune_rectpulse(tp=self.tp, LO=LO, B=LO/gyro_N, reptime = reptime,shots=int(100*self.noise_mode))
-        shots = int(50*self.noise_mode)
-        shots = np.min([shots,20])
+        shots = int(300*self.noise_mode)
+        shots = np.min([shots,100])
         fsweep = FieldSweepSequence(
-            B=LO/gyro_N, LO=LO,reptime=reptime,averages=50,shots=int(50*self.noise_mode),
+            B=LO/gyro_N, LO=LO,reptime=reptime,averages=50,shots=shots,
             Bwidth = 250, 
             pi2_pulse=p90, pi_pulse=p180,
         )
 
         self.interface.launch(fsweep,savename=self.savename("EDFS_Q"),IFgain=1)
         self.signals.status.emit('Field-sweep running')
-        self.interface.terminate_at(SNRCriteria(30),test_interval=self.test_interval)
+        self.interface.terminate_at(SNRCriteria(150),test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.status.emit('Field-sweep complete')
@@ -165,7 +165,7 @@ class autoDEERWorker(QtCore.QRunnable):
         p90, p180 = self.interface.tune_rectpulse(tp=self.tp, LO=LO, B=LO/gyro, reptime = reptime,shots=int(100*self.noise_mode))
 
         RPseq = ResonatorProfileSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(50*self.noise_mode),
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(100*self.noise_mode),
             pi2_pulse=p90, pi_pulse=p180,fwidth=0.15
         )
 
@@ -194,10 +194,10 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
-        shots = int(10*self.noise_mode)
-        shots = np.min([shots,4])
+        shots = int(100*self.noise_mode)
+        shots = np.min([shots,25])
         relax = DEERSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=shots,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=30,shots=shots,
             tau1=0.3, tau2=0.3, tau3=0.2, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
@@ -223,11 +223,11 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
-        shots = int(20*self.noise_mode)
-        shots = np.min([shots,4])
+        shots = int(100*self.noise_mode)
+        shots = np.min([shots,25])
 
         seq = T2RelaxationSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=shots,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=30,shots=shots,
             step=dt,dim=500,pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
@@ -246,7 +246,7 @@ class autoDEERWorker(QtCore.QRunnable):
         reptime = self.reptime
 
         seq = RefocusedEcho2DSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(25*self.noise_mode),
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(100*self.noise_mode),
             tau=self.max_tau, pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
 
@@ -321,9 +321,9 @@ class autoDEERWorker(QtCore.QRunnable):
         else:
             ESEEM = None
 
-
+         
         deer = DEERSequence(
-            B=LO/self.gyro, LO=LO,reptime=reptime,averages=averages,shots=int(10*self.noise_mode),
+            B=LO/self.gyro, LO=LO,reptime=reptime,averages=averages,shots=int(250*self.noise_mode),
             tau1=tau1, tau2=tau2, tau3=tau3, dt=dt,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event'],
@@ -352,6 +352,7 @@ class autoDEERWorker(QtCore.QRunnable):
             deer.select_pcyc("16step_4p")
         elif deertype == '3pDEER':
             deer.select_pcyc("8step_3p")
+
 
         deer._estimate_time();
 

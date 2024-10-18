@@ -465,28 +465,6 @@ def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=T
     Vmodel = fit.Vmodel
     pathways = Vmodel.pathways
 
-    # Calculate background
-    def background_func(t, fit):
-        conc = fit.conc
-        prod = 1
-        scale = 1
-        for i in pathways:
-            if type(i) is list:
-                # linked pathway
-                lam = getattr(fit, f"lam{i[0]}{i[1]}")
-                scale += -1 * lam
-                for j in i:
-                    reftime = getattr(fit, f"reftime{pathways.index(j)+1}")
-                    prod *= dl.bg_hom3d(t-reftime, conc, lam)
-
-            else:
-                reftime = getattr(fit, f"reftime{i}")
-                lam = getattr(fit, f"lam{i}")
-                prod *= dl.bg_hom3d(t-reftime, conc, lam)
-                scale += -1 * lam
-
-        return fit.P_scale * scale * prod
-
     if axs is None and fig is None:
         fig, axs = plt.subplot_mosaic([
             ['Primary_time', 'Primary_time', 'Primary_dist', 'Primary_dist']

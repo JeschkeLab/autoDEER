@@ -232,6 +232,20 @@ def calc_correction_factor(CPanalysis,DEER_fit_result):
         est_SNR *= np.sqrt(nPointsInTime(actual_time)/t_axis.shape[0])
 
         correction_factor = actual_MNR/est_SNR
+    elif DEER_sequence.name == '4pDEER':
+        dataset = CPanalysis.dataset
+        CP_averages = dataset.nAvgs * dataset.shots * dataset.nPcyc
+        noise = CPanalysis.fit_result.noiselvl
+        V = lambda tau: CPanalysis.fit_result.evaluate(CPanalysis.fit_model, tau)[0]*CPanalysis.fit_result.scale
+
+        tau = DEER_fit_result.dataset.attrs['tau2']/1e3
+
+        est_SNR = V(tau)/(noise*np.sqrt(CP_averages))
+        est_SNR *= np.sqrt(nPointsInTime(actual_time)/t_axis.shape[0])
+
+        correction_factor = actual_MNR/est_SNR
+    else:
+        correction_factor = 1
     
     return correction_factor
 
