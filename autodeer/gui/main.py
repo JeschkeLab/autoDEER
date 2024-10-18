@@ -818,33 +818,23 @@ class autoDEERUI(QMainWindow):
 
     def initialise_deer_settings(self):
         
+        aim_SNR = self.aim_MNR/(self.est_lambda*self.label_eff)
 
-        if (self.Exp_types.currentText() == '4pDEER') and ('relax2D' in self.current_results):
+        # Assemble all relaxation data
+        if (self.Exp_types.currentText() == '4pDEER'):
             exp = '4pDEER'
         else:
             exp = 'auto'
 
-        aim_SNR = self.aim_MNR/(self.est_lambda*self.label_eff)
-
-        if exp == '4pDEER':
-            self.deer_settings = ad.calc_deer_settings('4pDEER',self.current_results['relax'],self.current_results['relax2D'],self.aim_time,aim_SNR,self.waveform_precision)
-        else:
-            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,self.aim_time,aim_SNR,self.waveform_precision)
-        self.deer_settings['dt'] = 8
-        if self.deer_settings['ExpType'] == '4pDEER':
-            if self.deer_settings['tau2'] > 10:
-                self.deer_settings['dt'] = 12
-            elif self.deer_settings['tau2'] > 20:
-                self.deer_settings['dt'] = 16
-            else:
-                self.deer_settings['dt'] = 8
-        elif self.deer_settings['ExpType'] == '5pDEER':
-            if self.deer_settings['tau2']*2 > 10:
-                self.deer_settings['dt'] = 12
-            elif self.deer_settings['tau2']*2 > 20:
-                self.deer_settings['dt'] = 16
-            else:
-                self.deer_settings['dt'] = 8
+        relax_data = []
+        if 'relax' in self.current_results and exp == 'auto':
+            relax_data.append(self.current_results['relax'])
+        if 'T2_relax' in self.current_results:
+            relax_data.append(self.current_results['T2_relax'])
+        if 'relax2D' in self.current_results:
+            relax_data.append(self.current_results['relax2D'])        
+            
+        self.deer_settings = ad.calc_DEER_settings(*relax_data,self.aim_time,aim_SNR,self.waveform_precision)
         
         self.deer_settings['criteria'] = self.aim_MNR
 
@@ -873,37 +863,22 @@ class autoDEERUI(QMainWindow):
         MNR_target = self.priorties[self.userinput['priority']]
         SNR_target = MNR_target/(mod_depth)
 
-        if (self.Exp_types.currentText() == '4pDEER') and ('relax2D' in self.current_results):
+        # Assemble all relaxation data
+        if (self.Exp_types.currentText() == '4pDEER'):
             exp = '4pDEER'
         else:
             exp = 'auto'
 
-        
-        if exp == '4pDEER':
-            self.deer_settings = ad.calc_deer_settings('4pDEER',self.current_results['relax'],self.current_results['relax2D'],remaining_time,SNR_target,self.waveform_precision)
-            max_tau = self.deer_settings['tau2']
-            tau = np.min([rec_tau,max_tau])
-            self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
-            if self.deer_settings['tau2'] > 10:
-                self.deer_settings['dt'] = 12
-            elif self.deer_settings['tau2'] > 20:
-                self.deer_settings['dt'] = 16
-            else:
-                self.deer_settings['dt'] = 8
+        relax_data = []
+        if 'relax' in self.current_results and exp == 'auto':
+            relax_data.append(self.current_results['relax'])
+        if 'T2_relax' in self.current_results:
+            relax_data.append(self.current_results['T2_relax'])
+        if 'relax2D' in self.current_results:
+            relax_data.append(self.current_results['relax2D'])        
 
-        else:
-            self.deer_settings = ad.calc_deer_settings('auto',self.current_results['relax'],None,remaining_time,SNR_target,self.waveform_precision,corr_factor=self.correction_factor)
-            tau = self.deer_settings['tau1'] + self.deer_settings['tau2']
-            tau = np.min([rec_tau/2,tau/2])
-            self.deer_settings['tau2'] = ad.round_step(tau,self.waveform_precision/1e3)
-            self.deer_settings['tau1'] = ad.round_step(tau,self.waveform_precision/1e3)
-            if tau*2 > 10:
-                self.deer_settings['dt'] = 12
-            elif tau*2 > 20:
-                self.deer_settings['dt'] = 16
-            else:
-                self.deer_settings['dt'] = 8
-
+        # Calculate the optimal DEER settings using relaxation data
+        self.deer_settings = ad.calc_DEER_settings(*relax_data,self.aim_time,SNR_target,self.waveform_precision,rec_tau=rec_tau)
 
         # self.deer_settings['dt'] = dt
         self.deer_settings['criteria'] = MNR_target

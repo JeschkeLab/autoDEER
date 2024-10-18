@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import cumulative_trapezoid
 import logging
 import importlib
-from autodeer import FieldSweepAnalysis, ResonatorProfileAnalysis
+from autodeer.Relaxation import RefocusedEcho2DAnalysis, CarrPurcellAnalysis, HahnEchoRelaxationAnalysis
 import scipy.fft as fft
 from deerlab import correctphase
 from scipy.interpolate import interp1d
@@ -1048,28 +1048,27 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
 
     return fig
 
-def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_time=2,
-                       target_MNR=20, waveform_precision=2, corr_factor=1):
+
+def calc_DEER_settings(*relaxation_data, target_time=2,
+                       target_SNR=20, waveform_precision=2, corr_factor=1, rec_tau=None):
     """
-    Calculates the optimal DEER settings based on the avaliable relaxation data
+    Calculates the optimal DEER settings based on the avaliable relaxation data.
 
     Parameters
     ----------
-    experiment : str
-        Type of DEER experiment, either 'auto', '4pDEER' or '5pDEER'
-    CPdecay : ad.CarrPurcellAnalysis
-        Carr-Purcell relaxation data
-    Refocused2D : ad.RefocusedEcho2DAnalysis, optional
-        Refocused 2D data required for '4pDEER', by default None
+    *relaxation_data : 
+        Relaxation data, either RefocusedEcho2DAnalysis, HahnEchoRelaxationAnalysis or CarrPurcellAnalysis
     target_time : int, optional
         Target time for the DEER experiment in hours, by default 2
-    target_MNR : float, optional
-        Target modulation to noise ratio, by default 20
+    target_SNR : float, optional
+        Target signal to noise ratio, by default 20
     waveform_precision : int, optional
         Precision of the waveform in ns, by default 2
     corr_factor : float, optional
         Correction factor for the relaxation decay, by default 1
-
+    rec_tau : float, optional
+        Recommended tau2 time in us, by default None
+    
     Returns
     -------
     dict
@@ -1079,91 +1078,95 @@ def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_ti
             -'tau2': in us
             -'tau3': in us, only for 5pDEER
             -'AimTime': in hours
-
-    Notes
-    -----
-
-    This function will calcate the optimal DEER settings based on the avaliable relaxation data, depending on the experiment type.
-    For 4pDEER, the optimal tau1 and tau2 are calculated based on the refocused 2D data, and for 5pDEER, the optimal tau2 is calculated based on the CPdecay data or refocused 2D if CP decay data is not availiable.
-    If the optimal tau2 for 5pDEER is less than 1.5us, the function will calculate the optimal tau1 and tau2 for 4pDEER instead. This is only possible if the refocused 2D data is availiable, otherwise a non optimal tau1 of 0.4us is used.
+            -'dt': in ns
 
     """
 
-    # Calculate the DEER settings from the avaliable relaxation data
-    # Move out of the GUI Code asap
+    dt=8e-3
 
-    deer_settings = {}
+    relaxation_data_type = [type(i) for i in relaxation_data]
+    if RefocusedEcho2DAnalysis in relaxation_data_type:
+        decay = relaxation_data[relaxation_data_type.index(RefocusedEcho2DAnalysis)]
+        tau2_est, tau_2_lb, tau_2_ub = calculate_optimal_tau(decay,target_time,target_SNR,target_step=dt,corr_factor=corr_factor)
+        tau2_4p = tau_2_lb
+        tau1_4p = decay.optimal_tau1(tau2=tau2_est)
+        V_4p = decay(tau1_4p,tau2_est,SNR=True)
 
-    if experiment == '4pDEER':
-        if Refocused2D is None:
-            raise ValueError("Refocused2D data required for 4pDEER")
-        # Calcualting a 4pDEER Sequence
-        deer_settings['ExpType'] = '4pDEER'
+        # Use refocused 2D data for 4pDEER
+    elif HahnEchoRelaxationAnalysis in relaxation_data_type:
+        # Use Hahn echo data as an estimate for 4pDEER
+        decay = relaxation_data[relaxation_data_type.index(HahnEchoRelaxationAnalysis)]
+        tau2_est, tau_2_lb, tau_2_ub = calculate_optimal_tau(decay,target_time,target_SNR,target_step=dt,corr_factor=corr_factor)
+        tau2_4p = tau_2_lb
+        tau1_4p = 0.4
+        V_4p = decay(tau2_est,SNR=True)
 
-        # Calculate tau1 and tau2
-        tau1,tau2 = Refocused2D.find_optimal(type='4pDEER',SNR_target=target_MNR, target_time=target_time, target_step=0.015)
-        
-        if tau2 < 2.5:
-            # 2hr dipolar evo too short for meaningful results. Using double the time instead
-            target_time *= 2
-            tau1,tau2 = Refocused2D.find_optimal(type='4pDEER',SNR_target=target_MNR, target_time=target_time, target_step=0.015)
-        
-        if tau2 < 2.5:
-            # Dipolar evo time still too short. Hardcoding a 2.5us dipolar evo time
-            tau1,tau2 = Refocused2D.optimal_tau1(type='4pDEER',tau2=2.5)
-        
+    else:
+        # No estimate avaliable for 4pDEER
+        V_4p = 0
+        tau1_4p = 0
+        tau2_4p = 0
 
-        deer_settings['tau1'] = round_step(tau1,waveform_precision/1e3)
-        deer_settings['tau2'] = round_step(tau2,waveform_precision/1e3)
-        deer_settings['AimTime'] = target_time
+    if CarrPurcellAnalysis in relaxation_data_type:
+        CPdecay = relaxation_data[relaxation_data_type.index(CarrPurcellAnalysis)]
+        tau_evo, tau_evo_lb, tau_evo_ub = calculate_optimal_tau(CPdecay,target_time,target_SNR,target_step=dt,corr_factor=corr_factor)
+        tau1_5p = tau_evo_lb/2
+        tau2_5p = tau_evo_lb/2
+        tau3_5p = 0.3
+        V_5p = CPdecay(tau1_5p,SNR=True)
 
-    elif (experiment == '5pDEER') or (experiment == 'auto'):
-        # Calculate a 5pDEER Sequence
-        if CPdecay is not None:
-            # tau2hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time, target_step=0.015)
-            # tau4hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time*2, target_step=0.015)
-            dt = 8e-3
-            tau2hrs, tau2hrs_lb, tau2hrs_ub = calculate_optimal_tau(CPdecay,target_time,target_MNR,target_step=dt,corr_factor=corr_factor)
-            tau4hrs, tau4hrs_lb, tau4hrs_ub = calculate_optimal_tau(CPdecay,target_time*2,target_MNR,target_step=dt,corr_factor=corr_factor)
-            tau2hrs = tau2hrs_lb/2
-            tau4hrs = tau4hrs_lb/2
-        elif Refocused2D is not None:
-            tau2hrs = Refocused2D.find_optimal(type='5pDEER',SNR_target=20, target_time=target_time, target_step=0.015)
-            tau4hrs = Refocused2D.find_optimal(type='5pDEER',SNR_target=20, target_time=target_time*2, target_step=0.015)
+    else:
+        # No CPdecay data avaliable
+        V_5p = 0
+        tau1_5p = 0
+        tau2_5p = 0
+        tau3_5p = 0 
+
+    if (V_4p == 0) and (V_5p == 0):
+        raise ValueError("No relaxation data avaliable")
+
+    # Select between five-pulse and four-pulse DEER
+    if (V_4p > V_5p * 0.9) or (tau1_5p < 1.5):
+        # Use four-pulse DEER
+        deer_settings = {
+            'ExpType': '4pDEER',
+            'tau1': round_step(tau1_4p,waveform_precision/1e3),
+            'tau2': round_step(tau2_4p,waveform_precision/1e3),
+            'AimTime': target_time
+        }
+    else:
+        # Use five-pulse DEER
+        deer_settings = {
+            'ExpType': '5pDEER',
+            'tau1': round_step(tau1_5p,waveform_precision/1e3),
+            'tau2': round_step(tau2_5p,waveform_precision/1e3),
+            'tau3': round_step(tau3_5p,waveform_precision/1e3),
+            'AimTime': target_time
+        }
+
+    if rec_tau is not None:
+        if (deer_settings['ExpType'] == '4pDEER') and deer_settings['tau2'] > rec_tau:
+            deer_settings['tau2'] = rec_tau
+        elif (deer_settings['ExpType'] == '5pDEER') and deer_settings['tau2']*2 > rec_tau:
+            deer_settings['tau2'] = rec_tau/2
+            deer_settings['tau1'] = rec_tau/2
+
+    if deer_settings['ExpType'] == '4pDEER':
+        if deer_settings['tau2'] > 10:
+            deer_settings['dt'] = 12
+        elif deer_settings['tau2'] > 20:
+            deer_settings['dt'] = 16
         else:
-            raise ValueError("CPdecay data required for 5pDEER")
+            deer_settings['dt'] = 8
 
-        
-        if (tau2hrs < 1.5) and (tau4hrs > 1.5):
-            # 2hr dipolar evo too short for meaningful results. Using 4hr number instead
-            deer_settings['tau1'] = round_step(tau4hrs,waveform_precision/1e3)
-            deer_settings['tau2'] = round_step(tau4hrs,waveform_precision/1e3)
-            deer_settings['tau3'] = round_step(0.3,waveform_precision/1e3)
-            deer_settings['ExpType'] = '5pDEER'
-            deer_settings['AimTime'] = target_time*2
-
-        elif (tau2hrs < 1.5) and (tau4hrs < 1.5):
-            # 2hr & 4hr dipolar evo too short for meaningful results. Hardcoding a 2.5us dipolar evo time, in 4pDEER and 4hrs
-            # self.raise_warning(f"2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time")
-            tau2 = 2.5
-            if Refocused2D is not None:
-                tau1 = Refocused2D.optimal_tau1(tau2=tau2)
-            else:
-                tau1 = 0.4
-
-            deer_settings['tau1'] = round_step(tau1,waveform_precision/1e3)
-            deer_settings['tau2'] = round_step(tau2,waveform_precision/1e3)
-            
-            deer_settings['ExpType'] = '4pDEER'
-            deer_settings['AimTime'] = target_time * 2
-            # self.raise_warning(f"2hr dipolar evo {tau2hrs:.2f} us, using 4pDEER")
-        
+    elif deer_settings['ExpType'] == '5pDEER':
+        if deer_settings['tau2']*2 > 10:
+            deer_settings['dt'] = 12
+        elif deer_settings['tau2']*2 > 20:
+            deer_settings['dt'] = 16
         else:
-            # Normal case, using 2hr dipolar evo time
-            deer_settings['tau1'] = round_step(tau2hrs,waveform_precision/1e3)
-            deer_settings['tau2'] = round_step(tau2hrs,waveform_precision/1e3)
-            deer_settings['tau3'] = round_step(0.3,waveform_precision/1e3)
-            deer_settings['ExpType'] = '5pDEER'
-            deer_settings['AimTime'] = target_time
+            deer_settings['dt'] = 8
+
 
     return deer_settings
+    

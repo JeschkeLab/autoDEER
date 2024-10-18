@@ -2,17 +2,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate as interp
 from autodeer.colors import primary_colors
+from autodeer.Relaxation import CarrPurcellAnalysis, HahnEchoRelaxationAnalysis, RefocusedEcho2DAnalysis
+from deerlab import der_snr
 
 
-
-def calculate_optimal_tau(CPanalysis, MeasTime, SNR, target_step=0.015, target_shrt=None, corr_factor=1, ci=50, full_output=True):
+def calculate_optimal_tau(RelaxAnalysis, MeasTime, SNR, target_step=0.015, target_shrt=None, corr_factor=1, ci=50, full_output=True):
     """
     Calculate the optimal evolution time for a given SNR and measurement time.
 
     Parameters
     ----------
-    CPanalysis : CPanalysis
-        The analysis object for the Carr-Purcell Relaxation measurement
+    RelaxAnalysis : CPanalysis
+        The relaxation analysis object
     MeasTime : float or array-like
         The measurement time in hours. If array-like, the optimal tau will be calculated for each value.
     SNR : float
@@ -39,48 +40,58 @@ def calculate_optimal_tau(CPanalysis, MeasTime, SNR, target_step=0.015, target_s
     * The uncertainty is not taken from deerlab as it must be a montomically decreasing function.
 
     """
-    dataset = CPanalysis.dataset
-    results = CPanalysis.fit_result
+    # Process the input data
+
+    dataset = RelaxAnalysis.dataset
     averages = dataset.nAvgs * dataset.shots * dataset.nPcyc
-    noise = results.noiselvl
-
     if target_shrt is None:
-        target_shrt = dataset.attrs['reptime'] *1e-6 # us -> s
-    nPointsInTime = lambda x: x * 3600 / target_shrt
-    n_points = lambda x: x / (8*1e-3)
-    # dt=target_step
+            target_shrt = dataset.attrs['reptime'] *1e-6 # us -> s
 
-    # def linear_axis_func(tau, MaxNPoints,precision=2e-3):
-    #     dtmin = 8e-3
-    #     if tau/dtmin > MaxNPoints:
-    #         dt = round_step(tau/MaxNPoints,precision)
-    #     else:
-    #         dt = dtmin
-        
-    #     axis = np.arange(0,tau,dt)
+    if isinstance(RelaxAnalysis, RefocusedEcho2DAnalysis):
+        # There will be no fit result, so we need to use the data
+        if not hasattr(RelaxAnalysis, 'optimal_4p'):
+            RelaxAnalysis._calc_optimal_4p_values()
+        fit = RelaxAnalysis.optimal_4p_V
+        axis = RelaxAnalysis.optimal_4p_tau2
+        noise = der_snr(RelaxAnalysis.data/RelaxAnalysis.data.max())
 
+        ub = fit + 2*noise
+        lb = fit - 2*noise
+        # enforce a lower bound on lb
+        lb[lb<0] = 0
 
+    else:
 
-    # x=np.linspace(1e-3, CPanalysis.axis.values.max(), 1000)
-    # y = np.linspace(0,0.2,1000)
-    # fit = results.evaluate(CPanalysis.fit_model, x)*results.scale
-    # fitUncert = results.propagate(CPanalysis.fit_model, x)
-    # fitUncertCi = fitUncert.ci(ci)*results.scale
-    # ub = CPanalysis.fit_model(x,*results.paramUncert.ci(ci)[:-1,0])*results.paramUncert.ci(ci)[-1,0]
-    # lb = CPanalysis.fit_model(x,*results.paramUncert.ci(ci)[:-1,1])*results.paramUncert.ci(ci)[-1,1]
-    # # VCi = fitUncert.ci(ci)*results.scale
-    # # ub = VCi[:,1]
-    # # lb = VCi[:,0]
+        if isinstance(RelaxAnalysis,CarrPurcellAnalysis):
+            axis = RelaxAnalysis.axis.values * 2 # Tua_evo in us
+        elif isinstance(RelaxAnalysis,HahnEchoRelaxationAnalysis):
+            axis = RelaxAnalysis.axis.values
+        else:
+            raise ValueError('RelaxAnalysis must be an instance of CarrPurcellAnalysis, HahnEchoRelaxationAnalysis and RefocusedEcho2DAnalysis')
+        data = RelaxAnalysis.data
+        data /= data.max()
+        R2 = 0
+        if hasattr(RelaxAnalysis, 'fit_result'):
+            fit_results = RelaxAnalysis.fit_result
+            noise = fit_results.noiselvl
 
-    
-
-    # spl_fit_inverse = interp.InterpolatedUnivariateSpline(np.flip(corr_factor*fit/(noise*np.sqrt(averages)*np.sqrt(x*2/dt))),np.flip(x*2), k=3)
-    # spl_fit_inverse_lb = interp.InterpolatedUnivariateSpline(np.flip(corr_factor*lb/(noise*np.sqrt(averages)*np.sqrt(x*2/dt))),np.flip(x*2), k=3)
-    # spl_fit_inverse_ub = interp.InterpolatedUnivariateSpline(np.flip(corr_factor*ub/(noise*np.sqrt(averages)*np.sqrt(x*2/dt))),np.flip(x*2), k=3)
-
-    # optimal = spl_fit_inverse(SNR  / np.sqrt(nPointsInTime(MeasTime)))
-    # optimal_lb = spl_fit_inverse_lb(SNR / np.sqrt(nPointsInTime(MeasTime)))
-    # optimal_ub = spl_fit_inverse_ub(SNR/ np.sqrt(nPointsInTime(MeasTime)))
+            # If the fit result is avaliable and off high quality, use it
+            fit = fit_results.evaluate(RelaxAnalysis.fit_model, RelaxAnalysis.axis.values)*fit_results.scale
+            R2 = fit_results.stats['R2']
+            fitUncert = fit_results.propagate(RelaxAnalysis.fit_model, RelaxAnalysis.axis.values)
+            fitUncertCi = fitUncert.ci(50)*fit_results.scale
+            ub = fitUncertCi[:,1]
+            lb = fitUncertCi[:,0]
+        if R2 < 0.9: # Either there is no fit or the fit is bad
+            # Use the data
+            data = RelaxAnalysis.data
+            data /= data.max()
+            noise = der_snr(data)
+            fit = data
+            ub = data + 2*noise
+            lb = data - 2*noise
+            # enforce a lower bound on lb
+            lb[lb<0] = 0
 
     def find_all_numerical_roots(data,axis):
         sign_changes = np.where(np.abs(np.diff(np.sign(data)))>0)[0]
@@ -89,27 +100,9 @@ def calculate_optimal_tau(CPanalysis, MeasTime, SNR, target_step=0.015, target_s
         else:
             return axis[sign_changes]
 
-    axis = CPanalysis.axis.values * 2 # Tua_evo in us
-    data = CPanalysis.data
-    data /= data.max()
-    R2 = 0
-    if hasattr(CPanalysis, 'fit_result'):
-        # If the fit result is avaliable and off high quality, use it
-        fit = CPanalysis.fit_result.evaluate(CPanalysis.fit_model, CPanalysis.axis.values)*CPanalysis.fit_result.scale
-        R2 = CPanalysis.fit_result.stats['R2']
-        fitUncert = CPanalysis.fit_result.propagate(CPanalysis.fit_model, CPanalysis.axis.values)
-        fitUncertCi = fitUncert.ci(50)*CPanalysis.fit_result.scale
-        ub = fitUncertCi[:,1]
-        lb = fitUncertCi[:,0]
-    if R2 < 0.9: # Either there is no fit or the fit is bad
-        # Use the data
-        data = CPanalysis.data
-        data /= data.max()
-        fit = data
-        ub = data + 2*noise
-        lb = data - 2*noise
-        # enforce a lower bound on lb
-        lb[lb<0] = 0
+    nPointsInTime = lambda x: x * 3600 / target_shrt
+    n_points = lambda x: x / (8*1e-3)
+
 
     functional = lambda SNR, T: corr_factor*fit - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
     functional_ub = lambda SNR, T: corr_factor*ub - np.sqrt(SNR**2 * n_points(axis) * averages *noise**2 / (T*3600/target_shrt))
