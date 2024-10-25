@@ -173,47 +173,50 @@ class ETH_awg_interface(Interface):
                 return data
         raise RuntimeError("Data was unable to be retrieved")
     
-    def launch(self, sequence: Sequence , savename: str, *args,**kwargs):
+    def launch(self, sequence: Sequence , savename: str, IFgain=None, *args,**kwargs):
         
-        test_IF = True
-        while test_IF:
-            self.terminate()
-            print(self.IFgain)
-            self.launch_withIFGain(sequence,savename,self.IFgain)
-            scan_time = sequence._estimate_time() / sequence.averages.value
-            check_1stScan = True
-            while check_1stScan:
-                dataset = self.acquire_dataset()
-                time.sleep(np.min([scan_time//10,2]))
+        if IFgain is None:
+            test_IF = True
+            while test_IF:
+                self.terminate()
+                print(self.IFgain)
+                self.launch_withIFGain(sequence,savename,self.IFgain)
+                scan_time = sequence._estimate_time() / sequence.averages.value
+                check_1stScan = True
+                while check_1stScan:
+                    dataset = self.acquire_dataset()
+                    time.sleep(np.min([scan_time//10,2]))
 
-                dig_level = dataset.attrs['diglevel'] / (2**11 *sequence.shots.value* sequence.pcyc_dets.shape[0])
-                pos_levels = dig_level * self.IFgain_options / self.IFgain_options[self.IFgain]
-                pos_levels[pos_levels > 0.85] = 0
-                if dig_level == 0:
-                    continue
-                if (pos_levels[self.IFgain] > 0.85) or  (pos_levels[self.IFgain] < 0.03):
-                    best_IFgain = np.argmax(pos_levels)
-                else:
-                    best_IFgain = self.IFgain
+                    dig_level = dataset.attrs['diglevel'] / (2**11 *sequence.shots.value* sequence.pcyc_dets.shape[0])
+                    pos_levels = dig_level * self.IFgain_options / self.IFgain_options[self.IFgain]
+                    pos_levels[pos_levels > 0.85] = 0
+                    if dig_level == 0:
+                        continue
+                    if (pos_levels[self.IFgain] > 0.85) or  (pos_levels[self.IFgain] < 0.03):
+                        best_IFgain = np.argmax(pos_levels)
+                    else:
+                        best_IFgain = self.IFgain
 
-                if np.all(pos_levels==0):
-                    log.critical('Saturation detected with IF gain 0. Please check the power levels.')
-                    raise RuntimeError('Saturation detected with IF gain 0. Please check the power levels.')
-                elif (best_IFgain < self.IFgain) and (dataset.nAvgs == 0):
-                    new_IFgain = self.IFgain - 1
-                    log.warning(f"IF gain changed from {self.IFgain} to {new_IFgain}")
-                    self.IFgain = new_IFgain
-                    check_1stScan = False
-                elif (best_IFgain != self.IFgain) and (dataset.nAvgs >= 1):
-                    new_IFgain = self.IFgain +1
-                    log.warning(f"IF gain changed from {self.IFgain} to {new_IFgain}")
-                    self.IFgain = new_IFgain
-                    check_1stScan = False
-                elif dataset.nAvgs >=1:
-                    log.debug(f"IF gain {self.IFgain} is optimal")
-                    check_1stScan = False
-                    test_IF = False
-             
+                    if np.all(pos_levels==0):
+                        log.critical('Saturation detected with IF gain 0. Please check the power levels.')
+                        raise RuntimeError('Saturation detected with IF gain 0. Please check the power levels.')
+                    elif (best_IFgain < self.IFgain) and (dataset.nAvgs == 0):
+                        new_IFgain = self.IFgain - 1
+                        log.warning(f"IF gain changed from {self.IFgain} to {new_IFgain}")
+                        self.IFgain = new_IFgain
+                        check_1stScan = False
+                    elif (best_IFgain != self.IFgain) and (dataset.nAvgs >= 1):
+                        new_IFgain = self.IFgain +1
+                        log.warning(f"IF gain changed from {self.IFgain} to {new_IFgain}")
+                        self.IFgain = new_IFgain
+                        check_1stScan = False
+                    elif dataset.nAvgs >=1:
+                        log.debug(f"IF gain {self.IFgain} is optimal")
+                        check_1stScan = False
+                        test_IF = False
+        elif IFgain is not None:
+            
+            self.launch_withIFGain(sequence,savename,IFgain)
 
 
     def launch_withIFGain(self, sequence , savename: str, IFgain: int = 0):

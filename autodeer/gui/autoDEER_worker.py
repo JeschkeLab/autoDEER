@@ -148,7 +148,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi2_pulse=p90, pi_pulse=p180,
         )
 
-        self.interface.launch(fsweep,savename=self.savename("EDFS_Q"),IFgain=1)
+        self.interface.launch(fsweep,savename=self.savename("EDFS_Q"),)
         self.signals.status.emit('Field-sweep running')
         self.interface.terminate_at(SNRCriteria(150),test_interval=self.test_interval)
         while self.interface.isrunning():
@@ -170,7 +170,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi2_pulse=p90, pi_pulse=p180,fwidth=0.15
         )
 
-        self.interface.launch(RPseq,savename=self.savename("ResPro"),IFgain=1)
+        self.interface.launch(RPseq,savename=self.savename("ResPro"),)
         self.signals.status.emit('Resonator Profile running')
 
         self.interface.terminate_at(SNRCriteria(5),test_interval=self.test_interval)
@@ -187,19 +187,20 @@ class autoDEERWorker(QtCore.QRunnable):
             
 
 
-    def run_CP_relax(self,dt=10):
+    def run_CP_relax(self,dt=10,tmin=0.7,averages=30,autoStop=True,autoIFGain=True,*kwargs):
         '''
         Initialise the runner function for relaxation. 
         '''
         self.signals.status.emit('Running Carr-Purcell Experiment')
+        print(f"Running Carr-Purcell Experiment with tmin: {tmin} us and dt: {dt} us")
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
         shots = int(100*self.noise_mode)
         shots = np.min([shots,25])
         relax = DEERSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=30,shots=shots,
-            tau1=0.3, tau2=0.3, tau3=0.2, dt=15,
+            B=LO/gyro, LO=LO,reptime=reptime,averages=averages,shots=shots,
+            tau1=tmin/2, tau2=tmin/2, tau3=0.2, dt=15,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
             )
@@ -209,18 +210,22 @@ class autoDEERWorker(QtCore.QRunnable):
         else:
             relax.select_pcyc("DC")
             relax.shots.value *= 8 
-        relax._estimate_time();
+        relax._estimate_time()
 
         # relax.pulses[1].scale.value = 0
         # relax.pulses[3].scale.value = 0
-        self.interface.launch(relax,savename=self.savename("CP"),IFgain=1)
-        self.interface.terminate_at(SNRCriteria(50),test_interval=self.test_interval)
+        if not autoIFGain:
+            autoIFGain = self.interface.IFgain
+
+        self.interface.launch(relax,savename=self.savename("CP"),IFgain=autoIFGain)
+        if autoStop:
+            self.interface.terminate_at(SNRCriteria(50),test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.relax_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('Carr-Purcell experiment complete')
         
-    def run_T2_relax(self,dt=10):
+    def run_T2_relax(self,dt=10,tmin=0.5,averages=30,autoStop=True,autoIFGain=True,*kwargs):
         self.signals.status.emit('Running T2 experiment')
         LO = self.LO
         gyro = self.gyro
@@ -229,12 +234,16 @@ class autoDEERWorker(QtCore.QRunnable):
         shots = np.min([shots,25])
 
         seq = T2RelaxationSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=30,shots=shots,
-            step=dt,dim=500,pi2_pulse=self.pulses['exc_pulse'],
+            B=LO/gyro, LO=LO,reptime=reptime,averages=averages,shots=shots,
+            start=tmin*1e3,step=dt,dim=500,pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
-        self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=1)
-        self.interface.terminate_at(SNRCriteria(50),test_interval=self.test_interval)
+        if not autoIFGain:
+            autoIFGain = self.interface.IFgain
+
+        self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=autoIFGain)
+        if autoStop:
+            self.interface.terminate_at(SNRCriteria(50),test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.T2_result.emit(self.interface.acquire_dataset())
@@ -255,7 +264,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
 
-        self.interface.launch(seq,savename=self.savename("2D_DEC"),IFgain=2)
+        self.interface.launch(seq,savename=self.savename("2D_DEC"),)
         self.interface.terminate_at(SNRCriteria(15),test_interval=self.test_interval,verbosity=2,)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
@@ -361,7 +370,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
         deer._estimate_time();
 
-        self.interface.launch(deer,savename=self.savename(savename_type,savename_suffix),IFgain=2)
+        self.interface.launch(deer,savename=self.savename(savename_type,savename_suffix),)
         time.sleep(30) # Always wait for the experiment to properly start
         with threadpool_limits(limits=self.cores, user_api='blas'):
             self.interface.terminate_at(end_criteria,verbosity=2,test_interval=self.test_interval) # Change criteria backagain
@@ -378,7 +387,7 @@ class autoDEERWorker(QtCore.QRunnable):
         n_shots = int(np.min([int(50*self.noise_mode),50]))
         scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=20e3, averages=10, shots=n_shots,
                            pi2_pulse=p90, pi_pulse=p180)
-        self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",IFgain=1)
+        self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",)
         self.interface.terminate_at(SNRCriteria(45),verbosity=2,test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)

@@ -724,6 +724,10 @@ class autoDEERUI(QMainWindow):
         if dataset is None:
             dataset = self.current_data['relax']
         else:
+            if 'relax' in self.current_data:
+                # attempt to merge datasets
+                self.current_data['relax'].epr.merge(dataset)
+
             self.current_data['relax'] = dataset
 
         worker = Worker(relax_process, dataset)
@@ -992,43 +996,47 @@ class autoDEERUI(QMainWindow):
         # Check if the T2 measurment is too short. 
 
         test_result = fitresult.check_decay()
+        test_dt = fitresult.axis[1].values - fitresult.axis[0].values
+        test_dt *= 1e3
 
         if test_result == 0:
             if self.waitCondition is not None: # Wake up the runner thread
                 self.waitCondition.wakeAll()
                 return None
         elif test_result == -1: # The trace needs to be longer
-            test_dt = fitresult.axis[1] - fitresult.axis[0]
-            test_dt *= 1e3
             new_dt = ad.round_step(test_dt*2,self.waveform_precision)
         elif test_result == 1: # The trace needs to be shorter
-            test_dt = fitresult.axis[1] - fitresult.axis[0]
-            test_dt *= 1e3
             new_dt = ad.round_step(test_dt/2,self.waveform_precision)
+
+        new_tmin = fitresult.axis[-1].values
+        new_tmin += new_dt*1e-3
+        nAvgs = fitresult.dataset.attrs['nAvgs']
         
         if self.worker is not None:
-            self.worker.run_T2_relax(dt=new_dt)
+            self.worker.run_T2_relax(dt=new_dt,tmin=new_tmin,averages=nAvgs,autoStop=False)
 
     def check_CP(self, fitresult):
         # Check if the CP measurment is too short. 
 
         test_result = fitresult.check_decay()
 
+        test_dt = fitresult.axis[1].values - fitresult.axis[0].values
+        test_dt *= 1e3
         if test_result == 0:
             if self.waitCondition is not None: # Wake up the runner thread
                 self.waitCondition.wakeAll()
                 return None
         elif test_result == -1: # The trace needs to be longer
-            test_dt = fitresult.axis[1] - fitresult.axis[0]
-            test_dt *= 1e3
             new_dt = ad.round_step(test_dt*2,self.waveform_precision)
         elif test_result == 1: # The trace needs to be shorter
-            test_dt = fitresult.axis[1] - fitresult.axis[0]
-            test_dt *= 1e3
             new_dt = ad.round_step(test_dt/2,self.waveform_precision)
+
+        new_tmin = fitresult.axis[-1].values
+        new_tmin += new_dt*1e-3
+        nAvgs = fitresult.dataset.attrs['nAvgs']
         
         if self.worker is not None:
-            self.worker.run_CP_relax(dt=new_dt)
+            self.worker.run_CP_relax(dt=new_dt,tmin=new_tmin*2,averages=nAvgs,autoStop=False)
 
 
     def refresh_T2(self, fitresult):
