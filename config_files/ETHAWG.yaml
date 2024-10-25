@@ -8,8 +8,8 @@ Spectrometer:
 
   Bridge:
     Min Freq: 33 #GHz
-    Max Freq: 35 #GHz
-    Sample Freq: 8 #GSa/s
+    Max Freq: 36 #GHz
+    Sample Freq: 8 # GSa/s
     Det Freq: 2 #GSa/s
     Det Res: 12  #bit
 

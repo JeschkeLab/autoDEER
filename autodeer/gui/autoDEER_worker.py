@@ -1,5 +1,5 @@
 import PyQt6.QtCore as QtCore
-from autodeer import RectPulse, ChirpPulse, HSPulse, Detection, DEERCriteria, SNRCriteria, TimeCriteria
+from autodeer import RectPulse, ChirpPulse, HSPulse, Detection, DEERCriteria, SNRCriteria, TimeCriteria, get_waveform_precision
 from autodeer.sequences import *
 import time
 import numpy as np
@@ -81,6 +81,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.quick_deer_state = True
 
         self.max_tau = 3.5
+        print(f"Waveform Precision is: {get_waveform_precision()}")
 
         if (self.project is None) or (self.project == ''):
             def savename(exp, suffix=""):
@@ -209,6 +210,7 @@ class autoDEERWorker(QtCore.QRunnable):
             relax.select_pcyc("DC")
             relax.shots.value *= 8 
         relax._estimate_time();
+
         # relax.pulses[1].scale.value = 0
         # relax.pulses[3].scale.value = 0
         self.interface.launch(relax,savename=self.savename("CP"),IFgain=1)
@@ -232,7 +234,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
         self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=1)
-        self.interface.terminate_at(SNRCriteria(50),test_interval=0.5)
+        self.interface.terminate_at(SNRCriteria(50),test_interval=self.test_interval)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.T2_result.emit(self.interface.acquire_dataset())
@@ -245,13 +247,16 @@ class autoDEERWorker(QtCore.QRunnable):
         gyro = self.gyro
         reptime = self.reptime
 
+        tau = self.max_tau
+        dim = 75
         seq = RefocusedEcho2DSequence(
-            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(100*self.noise_mode),
-            tau=self.max_tau, pi2_pulse=self.pulses['exc_pulse'],
+            B=LO/gyro, LO=LO,reptime=reptime,averages=10,shots=int(50*self.noise_mode),
+            tau=tau,dim=dim, pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
+        
 
         self.interface.launch(seq,savename=self.savename("2D_DEC"),IFgain=2)
-        self.interface.terminate_at(SNRCriteria(15),test_interval=self.test_interval)
+        self.interface.terminate_at(SNRCriteria(15),test_interval=self.test_interval,verbosity=2,)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.Relax2D_result.emit(self.interface.acquire_dataset())
