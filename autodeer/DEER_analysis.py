@@ -1027,14 +1027,14 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     return fig
 
 
-def calc_DEER_settings(*relaxation_data, target_time=2,
+def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
                        target_SNR=20, waveform_precision=2, corr_factor=1, rec_tau=None):
     """
     Calculates the optimal DEER settings based on the avaliable relaxation data.
 
     Parameters
     ----------
-    *relaxation_data : 
+    relaxation_data : dict 
         Relaxation data, either RefocusedEcho2DAnalysis, HahnEchoRelaxationAnalysis or CarrPurcellAnalysis
     target_time : int, optional
         Target time for the DEER experiment in hours, by default 2
@@ -1062,18 +1062,20 @@ def calc_DEER_settings(*relaxation_data, target_time=2,
 
     dt=8e-3
 
-    relaxation_data_type = [type(i) for i in relaxation_data]
-    if RefocusedEcho2DAnalysis in relaxation_data_type:
-        decay = relaxation_data[relaxation_data_type.index(RefocusedEcho2DAnalysis)]
+    if len(relaxation_data) == 0:
+        raise ValueError("No relaxation data provided")
+    
+    if "Ref2D" in relaxation_data.keys():
+        decay = relaxation_data['Ref2D']
         tau2_est, tau_2_lb, tau_2_ub = calculate_optimal_tau(decay,target_time,target_SNR,target_step=dt,corr_factor=corr_factor)
         tau2_4p = tau_2_lb
         tau1_4p = decay.optimal_tau1(tau2=tau2_est)
         V_4p = decay(tau1_4p,tau2_est,SNR=True)
 
         # Use refocused 2D data for 4pDEER
-    elif HahnEchoRelaxationAnalysis in relaxation_data_type:
+    elif "Tm" in relaxation_data.keys():
         # Use Hahn echo data as an estimate for 4pDEER
-        decay = relaxation_data[relaxation_data_type.index(HahnEchoRelaxationAnalysis)]
+        decay = relaxation_data['Tm']
         tau2_est, tau_2_lb, tau_2_ub = calculate_optimal_tau(decay,target_time,target_SNR,target_step=dt,corr_factor=corr_factor)
         tau2_4p = tau_2_lb
         tau1_4p = 0.4
@@ -1085,8 +1087,8 @@ def calc_DEER_settings(*relaxation_data, target_time=2,
         tau1_4p = 0
         tau2_4p = 0
 
-    if CarrPurcellAnalysis in relaxation_data_type:
-        CPdecay = relaxation_data[relaxation_data_type.index(CarrPurcellAnalysis)]
+    if "CP" in relaxation_data.keys():
+        CPdecay = relaxation_data['CP']
         tau_evo, tau_evo_lb, tau_evo_ub = calculate_optimal_tau(CPdecay,target_time,target_SNR,target_step=dt,corr_factor=corr_factor)
         tau1_5p = tau_evo_lb/2
         tau2_5p = tau_evo_lb/2
@@ -1101,10 +1103,10 @@ def calc_DEER_settings(*relaxation_data, target_time=2,
         tau3_5p = 0 
 
     if (V_4p == 0) and (V_5p == 0):
-        raise ValueError("No relaxation data avaliable")
+        raise ValueError("No signal at either optimal")
 
     # Select between five-pulse and four-pulse DEER
-    if (V_4p > V_5p * 0.9) or (tau1_5p < 1.5):
+    if (V_4p > V_5p * 0.9) or (tau1_5p < 1.5) or mode =='4pDEER':
         # Use four-pulse DEER
         deer_settings = {
             'ExpType': '4pDEER',
@@ -1123,11 +1125,20 @@ def calc_DEER_settings(*relaxation_data, target_time=2,
         }
 
     if rec_tau is not None:
-        if (deer_settings['ExpType'] == '4pDEER') and deer_settings['tau2'] > rec_tau:
+        if (deer_settings['ExpType'] == '4pDEER') and (deer_settings['tau2'] > rec_tau):
             deer_settings['tau2'] = rec_tau
-        elif (deer_settings['ExpType'] == '5pDEER') and deer_settings['tau2']*2 > rec_tau:
+            # get a new tau1 from ref2D if available
+            if "Ref2D" in relaxation_data.keys():
+                decay = relaxation_data['Ref2D']
+                deer_settings['tau1'] = decay.optimal_tau1(tau2=rec_tau)
+            else:
+                deer_settings['tau1'] = 0.4
+            log.info(f"Using recommended tau2: {rec_tau}us")
+            
+        elif (deer_settings['ExpType'] == '5pDEER') and (deer_settings['tau2']*2 > rec_tau):
             deer_settings['tau2'] = rec_tau/2
             deer_settings['tau1'] = rec_tau/2
+            log.info(f"Using recommended tau2: {rec_tau}us")
 
     if deer_settings['ExpType'] == '4pDEER':
         if deer_settings['tau2'] > 10:
