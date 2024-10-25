@@ -285,8 +285,11 @@ class Sequence:
         self.axes_uuid = [param.uuid for param in params]
         self.reduce_uuid = [param.uuid for param in reduce]
 
+        self._buildProgTable()
 
-        # Build the ProgTable
+
+    def _buildProgTable(self):
+
         progTable = {"EventID": [], "Variable": [], "axis": [],
                      "axID": [], "uuid": [], "reduce": []}
         
@@ -327,6 +330,27 @@ class Sequence:
     def seqtable_steps(self):
         if len(self.evo_params) > 0:
             return self.pcyc_dets.shape[0] * (len(self.pcyc_vars)+1) * np.prod([np.prod(param.dim) for param in self.evo_params])
+        
+    def adjust_step(self,waveform_precision):
+        """
+        Adjust the step size of all axes and pulses to be an integer multiple of the waveform precision
+        This is to ensure that the waveform is generated correctly by the specific AWG
+
+        Parameters
+        ----------
+        waveform_precision : float
+            The precision of the waveform in ns
+
+        """
+
+        for param in self.evo_params:
+            param.adjust_step(waveform_precision)
+        for pulse in self.pulses:
+            pulse.t.adjust_step(waveform_precision)
+            pulse.tp.adjust_step(waveform_precision)
+
+        self._buildProgTable()
+        return self
 
     def shift_detfreq_to_zero(self):
         det_pulse = None

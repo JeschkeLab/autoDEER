@@ -13,7 +13,7 @@ from .criteria import *
 from .dataset import *
 from .reporter import Reporter, combo_figure
 from .colors import primary_colors
-
+from .config import get_waveform_precision, set_waveform_precision, waveform_precision
 try:
     import PyQt6
 except ImportError:
