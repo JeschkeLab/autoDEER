@@ -125,7 +125,7 @@ def calculate_optimal_tau(RelaxAnalysis, MeasTime, SNR, target_step=0.015, targe
     else:
         return optimal
     
-def plot_optimal_tau(CPanlaysis, SNR,MeasTime=None, MaxMeasTime=24, labels=None,corr_factor=1, fig=None, axs=None):
+def plot_optimal_tau(CPanlaysis, SNR,MeasTime=None, MaxMeasTime=24, labels=None,corr_factor=1, fig=None, axs=None,cmap=None):
     """
     Generate a plot of the optimal evolution time for a given SNR against measurement time.
 
@@ -145,6 +145,8 @@ def plot_optimal_tau(CPanlaysis, SNR,MeasTime=None, MaxMeasTime=24, labels=None,
         Figure to plot on, by default None
     axs : matplotlib.axes.Axes, optional
         Axes to plot on, by default None
+    cmap : list, optional
+        List of colors to use for the lines, by default None
 
     Returns
     -------
@@ -157,6 +159,9 @@ def plot_optimal_tau(CPanlaysis, SNR,MeasTime=None, MaxMeasTime=24, labels=None,
     elif axs is None:
         axs = fig.add_subplot(111)
     
+    if cmap is None:
+        cmap = primary_colors
+
     MeasTimeAxis = np.logspace(0, np.log2(MaxMeasTime), 100, base=2)
     
     if not isinstance(SNR, (list, tuple)):
@@ -167,8 +172,8 @@ def plot_optimal_tau(CPanlaysis, SNR,MeasTime=None, MaxMeasTime=24, labels=None,
 
     for i,snr in enumerate(SNR):
         optimal, optimal_lb, optimal_ub = calculate_optimal_tau(CPanlaysis, MeasTimeAxis, snr, full_output=True, corr_factor=corr_factor)
-        axs.plot(MeasTimeAxis, optimal, color=primary_colors[i], label=labels[i])
-        axs.fill_between(MeasTimeAxis, optimal_lb, optimal_ub, color=primary_colors[i], alpha=0.3)
+        axs.plot(MeasTimeAxis, optimal, color=cmap[i], label=labels[i])
+        axs.fill_between(MeasTimeAxis, optimal_lb, optimal_ub, color=cmap[i], alpha=0.3)
 
     axs.set_xlim(*axs.get_xlim())
     axs.set_ylim(*axs.get_ylim())
@@ -181,10 +186,10 @@ def plot_optimal_tau(CPanlaysis, SNR,MeasTime=None, MaxMeasTime=24, labels=None,
         for i, (mt, snr) in enumerate(zip(MeasTime, SNR)):
             optimal, optimal_lb, optimal_ub = calculate_optimal_tau(CPanlaysis, mt, snr, full_output=True,corr_factor=corr_factor)
             ylim = axs.get_ylim()
-            axs.vlines(mt, *ylim,ls='--', color=primary_colors[i])
+            axs.vlines(mt, *ylim,ls='--', color=cmap[i])
             xlim = axs.get_xlim()
-            axs.hlines(optimal, *xlim,ls='--', color=primary_colors[i])
-            axs.fill_between(xlim, (optimal_lb,optimal_lb), (optimal_ub,optimal_ub), color=primary_colors[i], alpha=0.3)
+            axs.hlines(optimal, *xlim,ls='--', color=cmap[i])
+            axs.fill_between(xlim, (optimal_lb,optimal_lb), (optimal_ub,optimal_ub), color=cmap[i], alpha=0.3)
             
 
 

@@ -155,9 +155,9 @@ class CarrPurcellAnalysis():
         axs.set_ylabel('Normalised Amplitude')
         return fig
     
-    def check_decay(self,level=0.05):
+    def check_decay(self,level=0.1):
         """
-        Checks that the data has decayed by over 5% in the entire length and less than 5% in the first 30% of the data.
+        Checks that the data has decayed by over 90% in the first half, and less than 90% in the first quarter.
 
         Parameters
         ----------
@@ -167,7 +167,7 @@ class CarrPurcellAnalysis():
         Returns
         -------
         int
-            0 if both conditions are met, 1 if the decay is less than 5% in the first 30% of the data, and -1 if the decay is less than 5% in the entire length.
+            0 if both conditions are met, 1 if a longer decay is needed, and -1 if the decay is too long.
         
         """
         n_points = len(self.axis)
@@ -175,11 +175,11 @@ class CarrPurcellAnalysis():
             # decay = self.func(self.axis, *self.fit_result[0]).data
             x = self.axis
             decay = self.fit_result.evaluate(self.fit_model, x)*self.fit_result.scale
-            if (decay.min() < level) and (decay[:int(n_points*0.3)].min() > level):
+            if (decay[:int(n_points*0.50)].min() < level) and (decay[:int(n_points*0.25)].min() > level):
                 return 0
-            elif decay[:int(n_points*0.3)].min() < level:
+            elif decay[:int(n_points*0.25)].min() < level:
                 return 1
-            elif decay.min() > level:
+            elif decay[:int(n_points*0.50)].min() > level:
                 return -1
         else:
             raise ValueError("No fit result found")
@@ -404,9 +404,9 @@ class HahnEchoRelaxationAnalysis():
         axs.set_ylabel('Normalised Amplitude')
         return fig
     
-    def check_decay(self,level=0.05):
+    def check_decay(self,level=0.1):
         """
-        Checks that the data has decayed by over 5% in the entire length and less than 5% in the first 30% of the data.
+        Checks that the data has decayed by over 90% in the first half, and less than 90% in the first quarter.
 
         Parameters
         ----------
@@ -416,7 +416,7 @@ class HahnEchoRelaxationAnalysis():
         Returns
         -------
         int
-            0 if both conditions are met, 1 if the decay is less than 5% in the first 30% of the data, and -1 if the decay is less than 5% in the entire length.
+            0 if both conditions are met, 1 if a longer decay is needed, and -1 if the decay is too long.
         
         """
         n_points = len(self.axis)
@@ -424,11 +424,11 @@ class HahnEchoRelaxationAnalysis():
             # decay = self.func(self.axis, *self.fit_result[0]).data
             x = self.axis
             decay = self.fit_result.evaluate(self.fit_model, x)*self.fit_result.scale
-            if (decay.min() < level) and (decay[:int(n_points*0.3)].min() > level):
+            if (decay[:int(n_points*0.50)].min() < level) and (decay[:int(n_points*0.25)].min() > level):
                 return 0
-            elif decay[:int(n_points*0.3)].min() < level:
+            elif decay[:int(n_points*0.25)].min() < level:
                 return 1
-            elif decay.min() > level:
+            elif decay[:int(n_points*0.50)].min() > level:
                 return -1
         else:
             raise ValueError("No fit result found")
@@ -622,8 +622,8 @@ class RefocusedEcho2DAnalysis():
 
         optimal_4p = np.argmax(data,axis=0)
         self.optimal_4p_V = np.max(data,axis=0)
-        self.optimal_4p_tau1 = self.axis[0].data[np.argmax(data[optimal_4p,:],axis=1)]
-        self.optimal_4p_tau2 = self.axis[1].data[np.argmax(data[optimal_4p,:],axis=0)]
+        self.optimal_4p_tau1 = self.axis[0].data[optimal_4p]
+        self.optimal_4p_tau2 = self.axis[1].data
         
 
     def plot2D(self, contour=True,smooth=False, norm = 'Normal', axs=None, fig=None):
