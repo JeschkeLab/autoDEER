@@ -173,7 +173,7 @@ class ETH_awg_interface(Interface):
                 return data
         raise RuntimeError("Data was unable to be retrieved")
     
-    def launch(self, sequence: Sequence , savename: str,*args,**kwargs):
+    def launch(self, sequence: Sequence , savename: str, *args,**kwargs):
         
         test_IF = True
         while test_IF:
@@ -200,12 +200,14 @@ class ETH_awg_interface(Interface):
                     log.critical('Saturation detected with IF gain 0. Please check the power levels.')
                     raise RuntimeError('Saturation detected with IF gain 0. Please check the power levels.')
                 elif (best_IFgain < self.IFgain) and (dataset.nAvgs == 0):
-                    log.warning(f"IF gain changed from {self.IFgain} to {best_IFgain}")
-                    self.IFgain = best_IFgain
+                    new_IFgain = self.IFgain - 1
+                    log.warning(f"IF gain changed from {self.IFgain} to {new_IFgain}")
+                    self.IFgain = new_IFgain
                     check_1stScan = False
                 elif (best_IFgain != self.IFgain) and (dataset.nAvgs >= 1):
-                    log.warning(f"IF gain changed from {self.IFgain} to {best_IFgain}")
-                    self.IFgain = best_IFgain
+                    new_IFgain = self.IFgain +1
+                    log.warning(f"IF gain changed from {self.IFgain} to {new_IFgain}")
+                    self.IFgain = new_IFgain
                     check_1stScan = False
                 elif dataset.nAvgs >=1:
                     log.debug(f"IF gain {self.IFgain} is optimal")
@@ -692,7 +694,7 @@ class ETH_awg_interface(Interface):
         
         if self.resonator is not None:
             resonator = {}
-            resonator['LO'] = self.resonator.dataset.pulse1_LO # Change to LO after shifting resonator profile definition
+            resonator['LO'] = self.resonator.dataset.pulse1_LO #- 1.5 # Change to LO after shifting resonator profile definition
             resonator['nu1'] = self.resonator.profile
             resonator['range'] = self.resonator.freqs.values - resonator['LO'] + self.awg_freq
             resonator['scale'] = self.resonator.dataset.pulse0_scale
