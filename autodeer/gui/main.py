@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog, QPushButton,QVBoxLayout
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
@@ -131,15 +131,15 @@ def relax_process(dataset):
     if dataset['tau1'].max() > 1e4:
         dataset['tau1'] /= 1e3
     CP_data = ad.CarrPurcellAnalysis(dataset)
-    CP_data.fit('double')
+    CP_data.fit('auto')
 
     return CP_data
 
 def T2_process(dataset):
-    CP_data = ad.CarrPurcellAnalysis(dataset)
-    CP_data.fit('double')
+    Tm_data = ad.HahnEchoRelaxationAnalysis(dataset)
+    Tm_data.fit('auto')
 
-    return CP_data
+    return Tm_data
 
 class autoDEERUI(QMainWindow):
 
@@ -365,6 +365,11 @@ class autoDEERUI(QMainWindow):
         self.select_resonator()
 
         self.AWG = self.config['Spectrometer']['AWG']
+
+        # Set the wavefrom precision to 1/Sampling Frequency
+        waveform_precision = 1/self.config['Spectrometer']['Bridge']['Sample Freq']
+        ad.set_waveform_precision(waveform_precision)
+        main_log.debug(f"Setting waveform precision to {ad.get_waveform_precision()}")
 
         # Get user preferences
         try:
@@ -726,45 +731,66 @@ class autoDEERUI(QMainWindow):
 
         self.threadpool.start(worker)
 
-    def create_relax_figure(self):
-        fig  = plt.figure(figsize=(8,8), layout='constrained')
-        self.relax_canvas = FigureCanvas(fig)
-        Navbar = NavigationToolbar2QT(self.relax_canvas, self)
-        Navbar.setMaximumHeight(24)
-        self.relax_v_left.addWidget(self.relax_canvas)
-        self.relax_v_left.addWidget(Navbar)
+    def create_relax_figure(self,n_plots=3):
+        # if hasattr(self,'relax_canvas'):
+        #     self.relax_v_left :QVBoxLayout
+        #     for i in reversed(range(self.relax_v_left.count())): 
+        #         self.relax_v_left.itemAt(i).widget().setParent(None)
+
+        if not hasattr(self,'relax_canvas'):
+            fig  = plt.figure(figsize=(8,8), layout='constrained')
+            self.relax_canvas = FigureCanvas(fig)
+            Navbar = NavigationToolbar2QT(self.relax_canvas, self)
+            Navbar.setMaximumHeight(24)
+            self.relax_v_left.addWidget(self.relax_canvas)
+            self.relax_v_left.addWidget(Navbar)
+        else:
+            fig = self.relax_canvas.figure
+
+        fig.clear()
 
         gs = GridSpec(2, 2, figure=fig)
-        ax1 = fig.add_subplot(gs[0, :])
-        ax2 = fig.add_subplot(gs[1, 0])
-        ax3 = fig.add_subplot(gs[1, 1])
+        if n_plots == 3:
+            ax1 = fig.add_subplot(gs[0, :])
+            ax2 = fig.add_subplot(gs[1, 0])
+            ax3 = fig.add_subplot(gs[1, 1])
 
-        self.relax_ax = [ax1, ax2, ax3]
+            self.relax_ax = [ax1, ax2, ax3]
+        elif n_plots == 4:
+            ax1 = fig.add_subplot(gs[0, 0])
+            ax2 = fig.add_subplot(gs[1, 0])
+            ax3 = fig.add_subplot(gs[1, 1])
+            ax4 = fig.add_subplot(gs[0, 1])
+
+            self.relax_ax = [ax1, ax2, ax3, ax4]
 
     def refresh_relax_figure(self):
     
+        # if 'relax2D' in self.current_results:
+            
+        #     fig, axs  = plt.subplots(2,1,figsize=(12.5, 6.28),layout='constrained',height_ratios=[2,1])
+        #     relax_canvas = FigureCanvas(fig)
+        #     self.relax_canvas.figure.clear()
+        #     self.relax_v_left.replaceWidget(self.relax_canvas,relax_canvas)
+        #     self.relax_canvas = relax_canvas
+        #     self.relax_ax = axs
+
+        #     self.current_results['relax2D'].plot2D(axs=self.relax_ax[0],fig=fig)
+        #     self.current_results['relax2D'].plot1D(axs=self.relax_ax[1],fig=fig)        
+        # else:
+        fig = self.relax_canvas.figure
+        self.relax_ax[0].cla()
+        relax1D_results = []
+        if 'relax' in self.current_results:
+            relax1D_results.append(self.current_results['relax'])
+        if 'T2_relax' in self.current_results:
+            relax1D_results.append(self.current_results['T2_relax'])
+
+        ad.plot_1Drelax(*relax1D_results,axs=self.relax_ax[0],fig=fig,cmap=ad.primary_colors)
+            
         if 'relax2D' in self.current_results:
-            
-            fig, axs  = plt.subplots(2,1,figsize=(12.5, 6.28),layout='constrained',height_ratios=[2,1])
-            relax_canvas = FigureCanvas(fig)
-            self.relax_canvas.figure.clear()
-            self.relax_v_left.replaceWidget(self.relax_canvas,relax_canvas)
-            self.relax_canvas = relax_canvas
-            self.relax_ax = axs
-
-            self.current_results['relax2D'].plot2D(axs=self.relax_ax[0],fig=fig)
-            self.current_results['relax2D'].plot1D(axs=self.relax_ax[1],fig=fig)        
-        else:
-            fig = self.relax_canvas.figure
-            self.relax_ax[0].cla()
-            relax1D_results = []
-            if 'relax' in self.current_results:
-                relax1D_results.append(self.current_results['relax'])
-            if 'T2_relax' in self.current_results:
-                relax1D_results.append(self.current_results['T2_relax'])
-
-            ad.plot_1Drelax(*relax1D_results,axs=self.relax_ax[0],fig=fig,cmap=ad.primary_colors)
-            
+            self.relax_ax[1].cla()
+            self.current_results['relax2D'].plot2D(axs=self.relax_ax[3],fig=fig)
 
         self.relax_canvas.draw()
 
@@ -827,15 +853,15 @@ class autoDEERUI(QMainWindow):
         else:
             exp = 'auto'
 
-        relax_data = []
-        if 'relax' in self.current_results and exp == 'auto':
-            relax_data.append(self.current_results['relax'])
+        relax_data = {}
+        if 'relax' in self.current_results:
+            relax_data['CP'] = self.current_results['relax']
         if 'T2_relax' in self.current_results:
-            relax_data.append(self.current_results['T2_relax'])
+            relax_data['Tm'] = self.current_results['T2_relax']
         if 'relax2D' in self.current_results:
-            relax_data.append(self.current_results['relax2D'])        
+            relax_data['Ref2D'] = self.current_results['relax2D']   
             
-        self.deer_settings = ad.calc_DEER_settings(*relax_data,self.aim_time,aim_SNR,self.waveform_precision)
+        self.deer_settings = ad.calc_DEER_settings(relax_data,exp,self.aim_time,aim_SNR,self.waveform_precision)
         
         self.deer_settings['criteria'] = self.aim_MNR
 
@@ -876,16 +902,16 @@ class autoDEERUI(QMainWindow):
         else:
             exp = 'auto'
 
-        relax_data = []
-        if 'relax' in self.current_results and exp == 'auto':
-            relax_data.append(self.current_results['relax'])
+        relax_data = {}
+        if 'relax' in self.current_results:
+            relax_data['CP'] = self.current_results['relax']
         if 'T2_relax' in self.current_results:
-            relax_data.append(self.current_results['T2_relax'])
+            relax_data['Tm'] = self.current_results['T2_relax']
         if 'relax2D' in self.current_results:
-            relax_data.append(self.current_results['relax2D'])        
+            relax_data['Ref2D'] = self.current_results['relax2D']         
 
         # Calculate the optimal DEER settings using relaxation data
-        self.deer_settings = ad.calc_DEER_settings(*relax_data,self.aim_time,SNR_target,self.waveform_precision,rec_tau=rec_tau)
+        self.deer_settings = ad.calc_DEER_settings(relax_data,exp,self.aim_time,SNR_target,self.waveform_precision,rec_tau=rec_tau)
 
         # self.deer_settings['dt'] = dt
         self.deer_settings['criteria'] = MNR_target
@@ -901,11 +927,18 @@ class autoDEERUI(QMainWindow):
     def update_tau_delays_figure(self, SNRs, MeasTimes, labels=None):
 
         fig = self.relax_canvas.figure
-        axs = self.relax_ax[-1]
+        axs = self.relax_ax[2]
         axs.cla()
         # Only supports 5pDEER expand to 4pDEER
         CP_analysis = self.current_results['relax']
-        ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=labels,fig=fig,axs=axs);
+        ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[0]])
+
+        if 'relax2D' in self.current_results:
+            ad.plot_optimal_tau(self.current_results['relax2D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[1]])
+        elif 'T2_relax' in self.current_results:
+            ad.plot_optimal_tau(self.current_results['T2_relax'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[1]])
+
+        axs.set_title(labels[0])
 
     def update_relax2D(self, dataset=None):
         if dataset is None:
@@ -1142,6 +1175,11 @@ class autoDEERUI(QMainWindow):
             self.deer_settings = {'ExpType':'5pDEER','tau1':0,'tau2':0,'tau3':0}
         if not 'ESEEM' in self.deer_settings:
             self.deer_settings['ESEEM'] = None
+
+        if self.Exp_types.currentText() in ['4pDEER','Ref2D']:
+            self.create_relax_figure(4)
+        else:
+            self.create_relax_figure(3)
 
         # Block the autoDEER buttons
         self.FullyAutoButton.setEnabled(False)
