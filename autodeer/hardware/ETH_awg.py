@@ -201,12 +201,12 @@ class ETH_awg_interface(Interface):
                         log.critical('Saturation detected with IF gain 0. Please check the power levels.')
                         raise RuntimeError('Saturation detected with IF gain 0. Please check the power levels.')
                     elif (best_IFgain < self.IFgain) and (dataset.nAvgs == 0):
-                        new_IFgain = self.IFgain - 1
+                        new_IFgain = np.max([self.IFgain - 1,best_IFgain])
                         log.warning(f"IF gain changed from {self.IFgain} to {new_IFgain}")
                         self.IFgain = new_IFgain
                         check_1stScan = False
                     elif (best_IFgain != self.IFgain) and (dataset.nAvgs >= 1):
-                        new_IFgain = self.IFgain +1
+                        new_IFgain = np.min([self.IFgain +1,best_IFgain])
                         log.warning(f"IF gain changed from {self.IFgain} to {new_IFgain}")
                         self.IFgain = new_IFgain
                         check_1stScan = False
