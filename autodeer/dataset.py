@@ -285,9 +285,57 @@ class EPRAccessor:
         return sequence
 
 
+    def merge(self,other):
+        """
+        Merge two datasets into one dataset.
 
+        Handles the following cases:
+        1. Both datasets have the same parameters but different axes and are 1D
+        """
 
+        # Check if the datasets have the same parameters
 
+        dataarray1: xr.DataArray = self._obj
+        dataarray2: xr.DataArray = other
+
+        # check both axes are 1D
+        if len(dataarray1.dims) != 1 or len(dataarray2.dims) != 1:
+            raise ValueError("Both datasets must be 1D")
+
+        keys_check = [
+            'B','LO','reptime','shots','nAvgs','nPcyc','pcyc_name',
+        ]
+
+        for key in keys_check:
+            if key in dataarray1.attrs and key in dataarray2.attrs:
+                if dataarray1.attrs[key] != dataarray2.attrs[key]:
+                    raise ValueError(f"Datasets have different values for {key}, cannot merge")
+            elif key in dataarray1.attrs:
+                print(f"Parameter {key} not found in dataset 2")
+            elif key in dataarray2.attrs:
+                print(f"Parameter {key} not found in dataset 1")
+        
+        
+        new_data = np.concatenate((dataarray1.data,dataarray2.data),axis=0)
+
+        new_coords = {}
+        for key, coord in dataarray1.coords.items():
+            new_coords[key] = (coord.dims,np.concatenate((coord,dataarray2.coords[key]),axis=0))
+
+        # Sort based on the first coord
+        first_coord = new_coords[list(new_coords.keys())[0]][1]
+        sort_dir = first_coord[-1] - first_coord[0] # check if ascending or descending
+        sort_idx = np.argsort(first_coord)
+        if sort_dir < 0:
+            sort_idx = np.flip(sort_idx)
+
+        new_data = new_data[sort_idx]
+        for key in new_coords.keys():
+            new_coords[key] = (new_coords[key][0],new_coords[key][1][sort_idx])
+        
+        new_dataset = xr.DataArray(new_data, dims=dataarray1.dims, coords=new_coords, attrs=dataarray1.attrs)
+
+        return new_dataset
         
         
         

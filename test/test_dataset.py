@@ -1,7 +1,7 @@
 from autodeer.classes import *
 from autodeer.dataset import *
 from autodeer.sequences import *
-from autodeer.hardware.dummy import _simulate_field_sweep
+from autodeer.hardware.dummy import _simulate_field_sweep, _simulate_T2
 import numpy as np
 from scipy.signal import hilbert
 import pytest
@@ -87,3 +87,21 @@ def test_MeasurementTime(dataset_from_sequence):
     dataset = dataset_from_sequence
     dset = dataset.epr.correctphase
     assert dset.epr.MeasurementTime == 0.6
+
+def test_merge_dataset():
+    rng = np.random.default_rng(seed=0)
+    def build_dataset(tmin):
+        seq = T2RelaxationSequence(
+            B=12200, LO=34.4, reptime=3e3, averages=1, shots=100, start=tmin)
+        t, data = _simulate_T2(seq,0.2)
+        data += rng.normal(0,0.04,data.shape) + 1j*rng.normal(0,0.04,data.shape)
+        extra_params = {"nAvgs":1}
+        dset = create_dataset_from_sequence(data,seq, extra_params)
+        return dset
+    
+    dset1 = build_dataset(500)
+    dset2 = build_dataset(dset1.tau[-1].values*1e3+10)
+
+    dset = dset1.epr.merge(dset2)
+    assert dset.data.shape[0] == dset1.data.shape[0] + dset2.data.shape[0]
+
