@@ -109,7 +109,7 @@ def create_dataset_from_sequence(data, sequence: Sequence,extra_params={}):
     coords = {a:(default_labels[b['ax_id']],b['axis']) for a,b in axes.items()}
     attr = get_all_fixed_param(sequence)
     attr.update(extra_params)
-    
+    attr.update({'autoDEER_Version':__version__})
     return xr.DataArray(data, dims=dims, coords=coords,attrs=attr)
 
 def create_dataset_from_axes(data, axes, params: dict = None,axes_labels=None):
@@ -124,7 +124,8 @@ def create_dataset_from_axes(data, axes, params: dict = None,axes_labels=None):
     if not isinstance(axes, list):
         axes = [axes]
     coords = {default_labels.pop(0):a for a in axes}
-    
+    params.update({'autoDEER_Version':__version__})
+
     return xr.DataArray(data, dims=dims, coords=coords, attrs=params)
 
 def create_dataset_from_bruker(filepath):
@@ -161,7 +162,8 @@ def create_dataset_from_bruker(filepath):
     attr['reptime'] = float(params['DSL']['ftEpr']['ShotRepTime'].replace('us',''))
     attr['nAvgs'] = int(params['DSL']['recorder']['NbScansAcc'])
     attr['shots'] = int(params['DSL']['ftEpr']['ShotsPLoop'])
-    
+    attr.update({'autoDEER_Version':__version__})
+
     return xr.DataArray(data, dims=dims, coords=coords, attrs=attr)
 
 @xr.register_dataarray_accessor("epr")
@@ -218,6 +220,11 @@ class EPRAccessor:
         
         return new_obj
     
+    @property
+    def MeasurementTime(self):
+        """Calculate the total measurement time in seconds"""
+        return self._obj.reptime *1e-6 * self._obj.shots * self._obj.nAvgs * self._obj.nPcyc
+    
     
     @property
     def sequence(self):
@@ -225,7 +232,8 @@ class EPRAccessor:
         dataset_coords = self._obj.coords
 
         pulses = len([key for key in dataset_attrs.keys() if re.match(r"pulse\d+_name$", key)])
-
+        det_events = len([key for key in dataset_attrs.keys() if re.match(r"det\d+_t$", key)])
+        n_events = pulses + det_events
         seq_param_types = ['seq_name','B','LO','reptime','shots','averages','det_window']
         seq_params = {}
 
@@ -243,37 +251,91 @@ class EPRAccessor:
         seq_params['name'] = seq_params.pop('seq_name')
 
         pulses_obj = []
-        for i in range(pulses):
-            pulse_type = dataset_attrs[f"pulse{i}_name"]
+        for i in range(n_events):
+            if f"pulse{i}_t" in dataset_attrs:
+                pulse_type = dataset_attrs[f"pulse{i}_name"]
+                key="pulse"
+            elif f"det{i}_t" in dataset_attrs:
+                pulse_type = 'Detection'
+                key="det"
+
             param_types = ['t','tp','freq','flipangle','scale','order1','order2','init_freq','BW','final_freq','beta']
             params = {}
 
             for param_type in param_types:
-                if f"pulse{i}_{param_type}" in dataset_attrs:
-                    params[param_type] = dataset_attrs[f"pulse{i}_{param_type}"]
-                elif f"pulse{i}_{param_type}" in dataset_coords:
-                    coord = dataset_coords[f"pulse{i}_{param_type}"]
-                    min = coord.min()
+                if f"{key}{i}_{param_type}" in dataset_attrs:
+                    params[param_type] = dataset_attrs[f"{key}{i}_{param_type}"]
+                elif f"{key}{i}_{param_type}" in dataset_coords:
+                    coord = dataset_coords[f"{key}{i}_{param_type}"]
+                    min_value = coord.min()
                     dim = coord.shape[0]
                     step = coord[1] - coord[0]
 
-                    params[param_type] = Parameter(name = param_type, value = min, dim=dim, step=step)
+                    params[param_type] = Parameter(name = param_type, value = min_value, dim=dim, step=step)
             
             try:
                 pulse_build = getattr(ad_pulses,pulse_type)
                 pulses_obj.append(pulse_build(**params))
             except:
                 continue
-
+       
         sequence = Sequence(**seq_params)
         sequence.pulses = pulses_obj
 
         return sequence
 
 
+    def merge(self,other):
+        """
+        Merge two datasets into one dataset.
 
+        Handles the following cases:
+        1. Both datasets have the same parameters but different axes and are 1D
+        """
 
+        # Check if the datasets have the same parameters
 
+        dataarray1: xr.DataArray = self._obj
+        dataarray2: xr.DataArray = other
+
+        # check both axes are 1D
+        if len(dataarray1.dims) != 1 or len(dataarray2.dims) != 1:
+            raise ValueError("Both datasets must be 1D")
+
+        keys_check = [
+            'B','LO','reptime','shots','nAvgs','nPcyc','pcyc_name',
+        ]
+
+        for key in keys_check:
+            if key in dataarray1.attrs and key in dataarray2.attrs:
+                if dataarray1.attrs[key] != dataarray2.attrs[key]:
+                    raise ValueError(f"Datasets have different values for {key}, cannot merge")
+            elif key in dataarray1.attrs:
+                print(f"Parameter {key} not found in dataset 2")
+            elif key in dataarray2.attrs:
+                print(f"Parameter {key} not found in dataset 1")
+        
+        
+        new_data = np.concatenate((dataarray1.data,dataarray2.data),axis=0)
+
+        new_coords = {}
+        for key, coord in dataarray1.coords.items():
+            new_coords[key] = (coord.dims,np.concatenate((coord,dataarray2.coords[key]),axis=0))
+
+        # Sort based on the first coord
+        first_coord = new_coords[list(new_coords.keys())[0]][1]
+        sort_dir = first_coord[-1] - first_coord[0] # check if ascending or descending
+        sort_idx = np.argsort(first_coord)
+        if sort_dir < 0:
+            sort_idx = np.flip(sort_idx)
+
+        new_data = new_data[sort_idx]
+        for key in new_coords.keys():
+            new_coords[key] = (new_coords[key][0],new_coords[key][1][sort_idx])
+        
+        new_dataset = xr.DataArray(new_data, dims=dataarray1.dims, coords=new_coords, attrs=dataarray1.attrs)
+
+        return new_dataset
         
         
         

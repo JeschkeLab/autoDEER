@@ -143,18 +143,13 @@ class DEERCriteria(Criteria):
         +------------+--------+------+------+-------+
         | Parameter  | Speed  | Low  | Med  | High  |
         +============+========+======+======+=======+
-        | MNR        | 20     | 10   | 50   | 100   |
+        | MNR        | 20     | 10   | 50   | 150   |
         +------------+--------+------+------+-------+
 
 
         Parameters
         ----------
-        tau1 : _type_
-            _description_
-        tau2 : _type_
-            _description_
-        tau3 : _type_, optional
-            _description_, by default None
+        
         mode : str, optional
             _description_, by default "Speed"
 
@@ -166,7 +161,10 @@ class DEERCriteria(Criteria):
         
         name = "DEERCriteria"
         description = "Criteria for terminating DEER experiments."
-        if mode.lower() == "speed":
+        if isinstance(mode, (int,float)):
+            MNR_threshold = mode
+            regparamrange = None
+        elif mode.lower() == "speed":
             MNR_threshold = 20
             regparamrange = (1,1e3)
 
@@ -177,11 +175,16 @@ class DEERCriteria(Criteria):
             MNR_threshold = 50
             regparamrange = None
         elif mode.lower() == "high":
-            MNR_threshold = 100
+            MNR_threshold = 150
             regparamrange = None    
         else:
             MNR_threshold = 50
             regparamrange = None
+
+        if 'compactness' in kwargs:
+            compactness = kwargs.pop('compactness')
+        else:
+            compactness = False
 
         def test_func(data, verbosity=verbosity):
             # fit, _, _ = DEERanalysis(
@@ -192,7 +195,7 @@ class DEERCriteria(Criteria):
 
 
             fit = DEERanalysis(
-                data, compactness=False, model=model, regparamrange=regparamrange,verbosity=verbosity,lin_maxiter=50,max_nfev=100
+                data, compactness=True, model=model, regparamrange=regparamrange,verbosity=verbosity,lin_maxiter=50,max_nfev=100
             )
             test = True
             if fit.MNR < MNR_threshold:
