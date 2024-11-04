@@ -66,11 +66,6 @@ Attributes
 
 
    .. py:attribute:: BPhaseCycles
-      :value: '[]'
-
-      
-
-   .. py:attribute:: detect_dicts
 
       
 
@@ -89,18 +84,6 @@ Attributes
 
 .. py:class:: PSparvar(sequence, id)
 
-
-   .. py:attribute:: progTable
-
-      
-
-   .. py:attribute:: progTable_n
-
-      
-
-   .. py:attribute:: parvar
-
-      
 
    .. py:attribute:: PulseSpel
       :value: 'True'
@@ -256,24 +239,8 @@ Attributes
 
       
 
-   .. py:attribute:: rel_positions
-
-      
-
-   .. py:attribute:: unique_parvars
-
-      
-
    .. py:attribute:: parvars
       :value: '[]'
-
-      
-
-   .. py:attribute:: step_hash
-
-      
-
-   .. py:attribute:: place_hash
 
       
 

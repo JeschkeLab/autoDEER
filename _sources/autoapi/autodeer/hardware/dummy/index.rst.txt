@@ -91,18 +91,6 @@ Attributes
 
    ..
        !! processed by numpydoc !!
-   .. py:attribute:: Dummy
-
-      
-
-   .. py:attribute:: Bridge
-
-      
-
-   .. py:attribute:: resonator_list
-
-      
-
    .. py:attribute:: state
       :value: 'False'
 
@@ -125,27 +113,7 @@ Attributes
 
       
 
-   .. py:attribute:: key1
-
-      
-
-   .. py:attribute:: fc
-
-      
-
-   .. py:attribute:: Q
-
-      
-
    .. py:attribute:: mode
-
-      
-
-   .. py:attribute:: x
-
-      
-
-   .. py:attribute:: scale
 
       
 

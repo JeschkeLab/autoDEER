@@ -43,8 +43,3 @@
    ..
        !! processed by numpydoc !!
 
-   .. py:attribute:: name
-      :value: "'HahnEchoSequence'"
-
-      
-

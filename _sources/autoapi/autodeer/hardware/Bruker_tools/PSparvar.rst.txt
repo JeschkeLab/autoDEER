@@ -1,18 +1,6 @@
 .. py:class:: PSparvar(sequence, id)
 
 
-   .. py:attribute:: progTable
-
-      
-
-   .. py:attribute:: progTable_n
-
-      
-
-   .. py:attribute:: parvar
-
-      
-
    .. py:attribute:: PulseSpel
       :value: 'True'
 

@@ -39,14 +39,6 @@ Attributes
 
       
 
-   .. py:attribute:: core_logger
-
-      
-
-   .. py:attribute:: hardware_logger
-
-      
-
    .. py:attribute:: log
       :value: '[]'
 

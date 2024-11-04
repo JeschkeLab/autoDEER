@@ -46,11 +46,6 @@
    ..
        !! processed by numpydoc !!
 
-   .. py:attribute:: name
-      :value: "'TWTProfileSequence'"
-
-      
-
    .. py:method:: _build_sequence()
 
 

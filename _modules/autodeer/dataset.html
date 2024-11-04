@@ -4,11 +4,11 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
         <title>autodeer.dataset - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
@@ -294,7 +294,7 @@
 <span class="c1"># =============================================================================</span>
 
 <div class="viewcode-block" id="get_all_axes">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.get_all_axes">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.get_all_axes">[docs]</a>
 <span class="k">def</span> <span class="nf">get_all_axes</span><span class="p">(</span><span class="n">sequence</span><span class="p">):</span>
     <span class="c1"># loop over all parameters and get the axis</span>
     <span class="n">axes</span> <span class="o">=</span> <span class="p">{}</span>
@@ -334,7 +334,7 @@
 
 
 <div class="viewcode-block" id="get_all_fixed_param">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.get_all_fixed_param">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.get_all_fixed_param">[docs]</a>
 <span class="k">def</span> <span class="nf">get_all_fixed_param</span><span class="p">(</span><span class="n">sequence</span><span class="p">):</span>
 
     <span class="n">fixed_param</span> <span class="o">=</span> <span class="p">{}</span>
@@ -377,7 +377,7 @@
 
 
 <div class="viewcode-block" id="create_dataset_from_sequence">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.create_dataset_from_sequence">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.create_dataset_from_sequence">[docs]</a>
 <span class="k">def</span> <span class="nf">create_dataset_from_sequence</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">sequence</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">,</span><span class="n">extra_params</span><span class="o">=</span><span class="p">{}):</span>
     <span class="n">ndims</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span>
     <span class="n">default_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>
@@ -391,7 +391,7 @@
 
 
 <div class="viewcode-block" id="create_dataset_from_axes">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.create_dataset_from_axes">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.create_dataset_from_axes">[docs]</a>
 <span class="k">def</span> <span class="nf">create_dataset_from_axes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span><span class="n">axes_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">ndims</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span>
     <span class="k">if</span> <span class="n">axes_labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -409,7 +409,7 @@
 
 
 <div class="viewcode-block" id="create_dataset_from_bruker">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.create_dataset_from_bruker">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.create_dataset_from_bruker">[docs]</a>
 <span class="k">def</span> <span class="nf">create_dataset_from_bruker</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
     <span class="n">axes</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">deerload</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -450,7 +450,7 @@
 
 <span class="nd">@xr</span><span class="o">.</span><span class="n">register_dataarray_accessor</span><span class="p">(</span><span class="s2">&quot;epr&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="EPRAccessor">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.EPRAccessor">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.EPRAccessor">[docs]</a>
 <span class="k">class</span> <span class="nc">EPRAccessor</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xarray_obj</span><span class="p">):</span>
@@ -460,7 +460,7 @@
 
 
 <div class="viewcode-block" id="EPRAccessor.save">
-<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.dataset.EPRAccessor.save">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/dataset/index.html#autodeer.dataset.EPRAccessor.save">[docs]</a>
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;netCDF&#39;</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;netCDF&#39;</span><span class="p">:</span>
@@ -622,7 +622,7 @@
     </aside>
   </div>
 </div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
-    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

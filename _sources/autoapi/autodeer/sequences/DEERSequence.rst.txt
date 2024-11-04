@@ -64,11 +64,6 @@
    ..
        !! processed by numpydoc !!
 
-   .. py:attribute:: name
-      :value: "'DEERSequence'"
-
-      
-
    .. py:attribute:: tau1us
 
       

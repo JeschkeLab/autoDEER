@@ -5,11 +5,11 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
         <title>&lt;no title&gt; - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
@@ -253,7 +253,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../../_sources/autoapi/autodeer/EPRAccessor.rst.txt" title="View this page">
+  <a class="muted-link" href="../../_sources/autoapi/autodeer/Criteria.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -274,46 +274,33 @@
         </div>
         <article role="main" id="furo-main-content">
           <dl class="py class">
-<dt class="sig sig-object py" id="EPRAccessor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EPRAccessor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xarray_obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#EPRAccessor" title="Link to this definition">¶</a></dt>
-<dd><dl class="py property">
-<dt class="sig sig-object py" id="EPRAccessor.correctphase">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">correctphase</span></span><a class="headerlink" href="#EPRAccessor.correctphase" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="EPRAccessor.normalise">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">normalise</span></span><a class="headerlink" href="#EPRAccessor.normalise" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="EPRAccessor.correctphasefull">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">correctphasefull</span></span><a class="headerlink" href="#EPRAccessor.correctphasefull" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="EPRAccessor.SNR">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SNR</span></span><a class="headerlink" href="#EPRAccessor.SNR" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="EPRAccessor.fft">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fft</span></span><a class="headerlink" href="#EPRAccessor.fft" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="EPRAccessor.sequence">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sequence</span></span><a class="headerlink" href="#EPRAccessor.sequence" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="Criteria">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Criteria</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_signal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Criteria" title="Link to this definition">¶</a></dt>
+<dd><p>A class for defining criteria for terminating experiments. This should
+only be subclassed and not used directly.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Criteria.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#Criteria.name" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="EPRAccessor._obj">
-<span class="sig-name descname"><span class="pre">_obj</span></span><a class="headerlink" href="#EPRAccessor._obj" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="Criteria.description">
+<span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#Criteria.description" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Criteria.test">
+<span class="sig-name descname"><span class="pre">test</span></span><a class="headerlink" href="#Criteria.test" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Criteria.end_signal">
+<span class="sig-name descname"><span class="pre">end_signal</span></span><a class="headerlink" href="#Criteria.end_signal" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="EPRAccessor.save">
-<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'netCDF'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#EPRAccessor.save" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="Criteria.__add__">
+<span class="sig-name descname"><span class="pre">__add__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">__o</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#Criteria.__add__" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -356,15 +343,12 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">EPRAccessor</span></code></a><ul>
-<li><a class="reference internal" href="#EPRAccessor.correctphase"><code class="docutils literal notranslate"><span class="pre">EPRAccessor.correctphase</span></code></a></li>
-<li><a class="reference internal" href="#EPRAccessor.normalise"><code class="docutils literal notranslate"><span class="pre">EPRAccessor.normalise</span></code></a></li>
-<li><a class="reference internal" href="#EPRAccessor.correctphasefull"><code class="docutils literal notranslate"><span class="pre">EPRAccessor.correctphasefull</span></code></a></li>
-<li><a class="reference internal" href="#EPRAccessor.SNR"><code class="docutils literal notranslate"><span class="pre">EPRAccessor.SNR</span></code></a></li>
-<li><a class="reference internal" href="#EPRAccessor.fft"><code class="docutils literal notranslate"><span class="pre">EPRAccessor.fft</span></code></a></li>
-<li><a class="reference internal" href="#EPRAccessor.sequence"><code class="docutils literal notranslate"><span class="pre">EPRAccessor.sequence</span></code></a></li>
-<li><a class="reference internal" href="#EPRAccessor._obj"><code class="docutils literal notranslate"><span class="pre">EPRAccessor._obj</span></code></a></li>
-<li><a class="reference internal" href="#EPRAccessor.save"><code class="docutils literal notranslate"><span class="pre">EPRAccessor.save()</span></code></a></li>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">Criteria</span></code></a><ul>
+<li><a class="reference internal" href="#Criteria.name"><code class="docutils literal notranslate"><span class="pre">Criteria.name</span></code></a></li>
+<li><a class="reference internal" href="#Criteria.description"><code class="docutils literal notranslate"><span class="pre">Criteria.description</span></code></a></li>
+<li><a class="reference internal" href="#Criteria.test"><code class="docutils literal notranslate"><span class="pre">Criteria.test</span></code></a></li>
+<li><a class="reference internal" href="#Criteria.end_signal"><code class="docutils literal notranslate"><span class="pre">Criteria.end_signal</span></code></a></li>
+<li><a class="reference internal" href="#Criteria.__add__"><code class="docutils literal notranslate"><span class="pre">Criteria.__add__()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -377,7 +361,7 @@
     </aside>
   </div>
 </div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
-    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

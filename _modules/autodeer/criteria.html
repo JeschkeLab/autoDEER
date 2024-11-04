@@ -4,11 +4,11 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
 
-    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
         <title>autodeer.criteria - </title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
@@ -275,13 +275,13 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <div class="viewcode-block" id="log">
-<a class="viewcode-back" href="../../autoapi/autodeer/criteria/index.html#autodeer.criteria.log">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.criteria.log">[docs]</a>
 <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;autoDEER.criteria&#39;</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="Criteria">
-<a class="viewcode-back" href="../../autoapi/autodeer/criteria/index.html#autodeer.criteria.Criteria">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.criteria.Criteria">[docs]</a>
 <span class="k">class</span> <span class="nc">Criteria</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class for defining criteria for terminating experiments. This should</span>
@@ -309,7 +309,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="Criteria.__add__">
-<a class="viewcode-back" href="../../autoapi/autodeer/criteria/index.html#autodeer.criteria.Criteria.__add__">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.criteria.Criteria.__add__">[docs]</a>
     <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__o</span><span class="p">:</span><span class="nb">object</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">__o</span><span class="p">,</span><span class="n">Criteria</span><span class="p">):</span>
@@ -345,7 +345,7 @@
 
 
 <div class="viewcode-block" id="TimeCriteria">
-<a class="viewcode-back" href="../../autoapi/autodeer/criteria/index.html#autodeer.criteria.TimeCriteria">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.criteria.TimeCriteria">[docs]</a>
 <span class="k">class</span> <span class="nc">TimeCriteria</span><span class="p">(</span><span class="n">Criteria</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">end_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
@@ -384,7 +384,7 @@
 
 
 <div class="viewcode-block" id="SNRCriteria">
-<a class="viewcode-back" href="../../autoapi/autodeer/criteria/index.html#autodeer.criteria.SNRCriteria">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.criteria.SNRCriteria">[docs]</a>
 <span class="k">class</span> <span class="nc">SNRCriteria</span><span class="p">(</span><span class="n">Criteria</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -430,7 +430,7 @@
 
 
 <div class="viewcode-block" id="DEERCriteria">
-<a class="viewcode-back" href="../../autoapi/autodeer/criteria/index.html#autodeer.criteria.DEERCriteria">[docs]</a>
+<a class="viewcode-back" href="../../autoapi/autodeer/index.html#autodeer.criteria.DEERCriteria">[docs]</a>
 <span class="k">class</span> <span class="nc">DEERCriteria</span><span class="p">(</span><span class="n">Criteria</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;Speed&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">update_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -462,14 +462,8 @@
 <span class="sd">            _description_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         
-<div class="viewcode-block" id="DEERCriteria.name">
-<a class="viewcode-back" href="../../autoapi/autodeer/criteria/index.html#autodeer.criteria.DEERCriteria.name">[docs]</a>
-        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;DEERCriteria&quot;</span></div>
-
-<div class="viewcode-block" id="DEERCriteria.description">
-<a class="viewcode-back" href="../../autoapi/autodeer/criteria/index.html#autodeer.criteria.DEERCriteria.description">[docs]</a>
-        <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Criteria for terminating DEER experiments.&quot;</span></div>
-
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;DEERCriteria&quot;</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Criteria for terminating DEER experiments.&quot;</span>
         <span class="k">if</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;speed&quot;</span><span class="p">:</span>
             <span class="n">MNR_threshold</span> <span class="o">=</span> <span class="mi">20</span>
             <span class="n">regparamrange</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mf">1e3</span><span class="p">)</span>
@@ -546,7 +540,7 @@
     </aside>
   </div>
 </div><script src="../../_static/documentation_options.js?v=48f8e935"></script>
-    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>

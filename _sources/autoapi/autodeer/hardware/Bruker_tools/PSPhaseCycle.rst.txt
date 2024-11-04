@@ -2,11 +2,6 @@
 
 
    .. py:attribute:: BPhaseCycles
-      :value: '[]'
-
-      
-
-   .. py:attribute:: detect_dicts
 
       
 

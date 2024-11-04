@@ -441,11 +441,6 @@ Classes
    ..
        !! processed by numpydoc !!
 
-   .. py:attribute:: name
-      :value: "'DEERSequence'"
-
-      
-
    .. py:attribute:: tau1us
 
       
@@ -718,11 +713,6 @@ Classes
    ..
        !! processed by numpydoc !!
 
-   .. py:attribute:: name
-      :value: "'HahnEchoSequence'"
-
-      
-
 
 .. py:class:: T2RelaxationSequence(*, B, LO, reptime, averages, shots, step=40, dim=200, **kwargs)
 
@@ -884,24 +874,6 @@ Classes
    ..
        !! processed by numpydoc !!
 
-   .. py:attribute:: min_reptime
-      :value: '20'
-
-      
-
-   .. py:attribute:: dim
-      :value: '100'
-
-      
-
-   .. py:attribute:: step
-
-      
-
-   .. py:attribute:: reptime
-
-      
-
    .. py:attribute:: name
       :value: "'ReptimeScan'"
 
@@ -961,11 +933,6 @@ Classes
 
    ..
        !! processed by numpydoc !!
-
-   .. py:attribute:: name
-      :value: "'CarrPurcellSequence'"
-
-      
 
    .. py:attribute:: tau
 
@@ -1033,20 +1000,6 @@ Classes
 
    ..
        !! processed by numpydoc !!
-
-   .. py:attribute:: name
-      :value: "'RefocusedEcho2D'"
-
-      
-
-   .. py:attribute:: tau_init
-      :value: '400'
-
-      
-
-   .. py:attribute:: dt
-
-      
 
    .. py:attribute:: tau1
 
@@ -1120,11 +1073,6 @@ Classes
    ..
        !! processed by numpydoc !!
 
-   .. py:attribute:: name
-      :value: "'ResonatorProfileSequence'"
-
-      
-
    .. py:attribute:: gyro
 
       
@@ -1184,11 +1132,6 @@ Classes
 
    ..
        !! processed by numpydoc !!
-
-   .. py:attribute:: name
-      :value: "'TWTProfileSequence'"
-
-      
 
    .. py:method:: _build_sequence()
 

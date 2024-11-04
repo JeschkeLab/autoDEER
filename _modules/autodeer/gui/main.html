@@ -4,11 +4,11 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
 
-    <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
         <title>autodeer.gui.main - </title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-toolbox-code.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=302659d7" />
@@ -469,10 +469,7 @@
  
         <span class="c1"># loading the ui file with uic module</span>
         <span class="n">uic</span><span class="o">.</span><span class="n">loadUi</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">package_directory</span><span class="si">}</span><span class="s2">/gui2.ui&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
-<div class="viewcode-block" id="autoDEERUI.logo_pixmap">
-<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.logo_pixmap">[docs]</a>
-        <span class="n">logo_pixmap</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="s1">&#39;icons:logo.png&#39;</span><span class="p">)</span></div>
-
+        <span class="n">logo_pixmap</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="s1">&#39;icons:logo.png&#39;</span><span class="p">)</span>
         <span class="n">logo_pixmap</span> <span class="o">=</span> <span class="n">logo_pixmap</span><span class="o">.</span><span class="n">scaledToHeight</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logo</span><span class="o">.</span><span class="n">setPixmap</span><span class="p">(</span><span class="n">logo_pixmap</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_spectrometer_connected_light</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -532,22 +529,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">FullyAutoButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RunFullyAutoDEER</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">AdvancedAutoButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RunAdvancedAutoDEER</span><span class="p">)</span>
 
-<div class="viewcode-block" id="autoDEERUI.docs_url">
-<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.docs_url">[docs]</a>
-        <span class="n">docs_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://jeschkelab.github.io/autoDEER/&#39;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="autoDEERUI.github_url">
-<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.github_url">[docs]</a>
-        <span class="n">github_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/&#39;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="autoDEERUI.issues_url">
-<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.issues_url">[docs]</a>
-        <span class="n">issues_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/issues&#39;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="autoDEERUI.discussion_url">
-<a class="viewcode-back" href="../../../autoapi/autodeer/gui/main/index.html#autodeer.gui.autoDEERUI.discussion_url">[docs]</a>
-        <span class="n">discussion_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/discussions&#39;</span><span class="p">)</span></div>
-
+        <span class="n">docs_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://jeschkelab.github.io/autoDEER/&#39;</span><span class="p">)</span>
+        <span class="n">github_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/&#39;</span><span class="p">)</span>
+        <span class="n">issues_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/issues&#39;</span><span class="p">)</span>
+        <span class="n">discussion_url</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="s1">&#39;https://github.com/JeschkeLab/autoDEER/discussions&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">actionDocumentation</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QDesktopServices</span><span class="o">.</span><span class="n">openUrl</span><span class="p">(</span><span class="n">docs_url</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">actionGitHub</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QDesktopServices</span><span class="o">.</span><span class="n">openUrl</span><span class="p">(</span><span class="n">github_url</span><span class="p">))</span>
@@ -1856,7 +1841,7 @@
     </aside>
   </div>
 </div><script src="../../../_static/documentation_options.js?v=48f8e935"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>

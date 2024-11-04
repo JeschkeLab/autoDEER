@@ -49,24 +49,8 @@
 
       
 
-   .. py:attribute:: rel_positions
-
-      
-
-   .. py:attribute:: unique_parvars
-
-      
-
    .. py:attribute:: parvars
       :value: '[]'
-
-      
-
-   .. py:attribute:: step_hash
-
-      
-
-   .. py:attribute:: place_hash
 
       
 

@@ -35,11 +35,11 @@
 
       
 
-   .. py:attribute:: dataset
+   .. py:attribute:: data
 
       
 
-   .. py:attribute:: data
+   .. py:attribute:: dataset
 
       
 

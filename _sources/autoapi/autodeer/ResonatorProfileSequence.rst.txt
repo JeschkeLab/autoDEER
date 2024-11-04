@@ -58,11 +58,6 @@
    ..
        !! processed by numpydoc !!
 
-   .. py:attribute:: name
-      :value: "'ResonatorProfileSequence'"
-
-      
-
    .. py:attribute:: gyro
 
       

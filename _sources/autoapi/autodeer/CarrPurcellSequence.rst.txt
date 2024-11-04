@@ -52,11 +52,6 @@
    ..
        !! processed by numpydoc !!
 
-   .. py:attribute:: name
-      :value: "'CarrPurcellSequence'"
-
-      
-
    .. py:attribute:: tau
 
       

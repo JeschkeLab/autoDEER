@@ -45,24 +45,6 @@
    ..
        !! processed by numpydoc !!
 
-   .. py:attribute:: min_reptime
-      :value: '20'
-
-      
-
-   .. py:attribute:: dim
-      :value: '100'
-
-      
-
-   .. py:attribute:: step
-
-      
-
-   .. py:attribute:: reptime
-
-      
-
    .. py:attribute:: name
       :value: "'ReptimeScan'"
 

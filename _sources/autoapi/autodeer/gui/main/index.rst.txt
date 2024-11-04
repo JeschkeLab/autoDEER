@@ -193,10 +193,6 @@ Attributes
 
    Bases: :py:obj:`autodeer.gui.tools.QMainWindow`
 
-   .. py:attribute:: logo_pixmap
-
-      
-
    .. py:attribute:: q_DEER
 
       
@@ -232,22 +228,6 @@ Attributes
       
 
    .. py:attribute:: queue
-
-      
-
-   .. py:attribute:: docs_url
-
-      
-
-   .. py:attribute:: github_url
-
-      
-
-   .. py:attribute:: issues_url
-
-      
-
-   .. py:attribute:: discussion_url
 
       
 

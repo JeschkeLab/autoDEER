@@ -146,14 +146,6 @@ Attributes
 
       
 
-   .. py:attribute:: frame
-
-      
-
-   .. py:attribute:: template
-
-      
-
    .. py:method:: header(canvas, doc)
 
 

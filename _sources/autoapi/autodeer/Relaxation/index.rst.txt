@@ -66,11 +66,11 @@ Attributes
    ..
        !! processed by numpydoc !!
 
-   .. py:attribute:: dataset
+   .. py:attribute:: data
 
       
 
-   .. py:attribute:: data
+   .. py:attribute:: dataset
 
       
 
@@ -374,11 +374,11 @@ Attributes
 
       
 
-   .. py:attribute:: dataset
+   .. py:attribute:: data
 
       
 
-   .. py:attribute:: data
+   .. py:attribute:: dataset
 
       
 
