@@ -25,15 +25,12 @@ def test_CarrPurcellAnalysis_dataset(fit_type):
         averages=1, shots=50)
 
     seq.five_pulse(relaxation=True, re_step=200)
-    seq.select_pcyc("16step_5p")
     x,V = _simulate_CP(seq)
     dataset = create_dataset_from_sequence(V,seq)
-    dataset.attrs['nAvgs'] = 1
     CP = CarrPurcellAnalysis(dataset)
     CP.fit(fit_type)
-
-    assert isinstance(CP(1.5),float)
-    assert isinstance(CP(1.5,SNR=True),float)
+    CP.find_optimal(2*3600, 4, 40, target_shrt=3e3, target_step=16)
+    assert np.abs(CP.optimal - 3.35)/3.35 < 0.1
 
     fig = CP.plot()
     assert isinstance(fig,mplFigure)

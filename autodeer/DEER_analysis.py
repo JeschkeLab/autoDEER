@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import cumulative_trapezoid
 import logging
 import importlib
-from autodeer.Relaxation import RefocusedEcho2DAnalysis, CarrPurcellAnalysis, HahnEchoRelaxationAnalysis
+from autodeer import FieldSweepAnalysis, ResonatorProfileAnalysis
 import scipy.fft as fft
 from deerlab import correctphase
 from scipy.interpolate import interp1d
@@ -15,7 +15,6 @@ import scipy.signal as sig
 from scipy.optimize import minimize,brute
 from autodeer.colors import primary_colors, ReIm_colors
 from autodeer.utils import round_step
-from autodeer.relaxation_autodeer import calculate_optimal_tau
 import scipy.signal as signal
 
 log = logging.getLogger('autoDEER.DEER')
@@ -53,7 +52,7 @@ def find_longest_pulse(sequence):
     
     return longest_pulse/1e3
 
-def MNR_estimate(Vexp, t, mask=None, norm=False):
+def MNR_estimate(Vexp,t, mask=None):
     """
     Estimates the Modulation to Noise Ratio (MNR) of a DEER signal without fitting.
     This is done by applying a low pass filter to remove noise and then finding the peaks in the signal.
@@ -66,8 +65,6 @@ def MNR_estimate(Vexp, t, mask=None, norm=False):
         The time axis of the DEER signal, in microseconds.
     mask : np.ndarray, optional
         The mask to apply to the data, by default None
-    norm : bool, optional
-        If True, the MNR will be normalised for sampling density, by default False
     
     Returns
     -------
@@ -286,11 +283,8 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     r_max = np.ceil(np.cbrt(t.max()*6**3/2))
     r = np.linspace(1.5,r_max,100)
 
-    # Default fit parameters
-    defualt_fit_params = {'regparam':'bic','nnlsSolver':'qp'}
-    for key in defualt_fit_params:
-        if key not in kwargs:
-            kwargs[key] = defualt_fit_params[key]
+
+        
 
     # identify experiment
     if 'parametrization' in kwargs:
@@ -312,7 +306,6 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
     else:
         compactness_penalty = None
-
 
 
     # Cleanup extra args
@@ -411,29 +404,28 @@ def background_func(t, fit):
 
     return scale * prod
 
-# def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
-#     """
-#     Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.
-#     Parameters
-#     ----------
-#     fit_result : Deerlab.FitResult
-#         The fit result from the DEER analysis.
-#     aim_MNR : float, optional
-#         The desired MNR, by default 25
-#     aim_time : float, optional
-#         The desired time in hours, by default 2
-#     Returns
-#     -------
-#     float
-#         The correction factor for the number of averages.
-#     """
+def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
+    """
+    Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.
+    Parameters
+    ----------
+    fit_result : Deerlab.FitResult
+        The fit result from the DEER analysis.
+    aim_MNR : float, optional
+        The desired MNR, by default 25
+    aim_time : float, optional
+        The desired time in hours, by default 2
+    Returns
+    -------
+    float
+        The correction factor for the number of averages.
+    """
 
-#     dataset = fit_result.dataset
-#     runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e-6
-#     aim_time *= 3600
-#     factor = fit_result.MNR /aim_MNR * aim_time/runtime_s
-#     # factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
-#     return factor
+    dataset = fit_result.dataset
+    runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e-6
+    aim_time *= 3600
+    factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
+    return factor
 
 def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=True):
     """DEERanalysis_plot Generates a figure showing both the time domain and
@@ -464,6 +456,28 @@ def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=T
     Vfit = fit.model
     Vmodel = fit.Vmodel
     pathways = Vmodel.pathways
+
+    # Calculate background
+    def background_func(t, fit):
+        conc = fit.conc
+        prod = 1
+        scale = 1
+        for i in pathways:
+            if type(i) is list:
+                # linked pathway
+                lam = getattr(fit, f"lam{i[0]}{i[1]}")
+                scale += -1 * lam
+                for j in i:
+                    reftime = getattr(fit, f"reftime{pathways.index(j)+1}")
+                    prod *= dl.bg_hom3d(t-reftime, conc, lam)
+
+            else:
+                reftime = getattr(fit, f"reftime{i}")
+                lam = getattr(fit, f"lam{i}")
+                prod *= dl.bg_hom3d(t-reftime, conc, lam)
+                scale += -1 * lam
+
+        return fit.P_scale * scale * prod
 
     if axs is None and fig is None:
         fig, axs = plt.subplot_mosaic([
@@ -873,12 +887,12 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
 
     # fieldsweep_profile = np.flip(fieldsweep_fun(f))
     
-    pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[:,2].real)
-    exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[:,2].real)
+    pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[2].real)
+    exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[2].real)
 
     if ref_pulse is not None:
         for i in range(num_ref_pulses):
-            exc_Mz *= normalise_01(-1*ref_pulse.exciteprofile(freqs=f)[:,2].real)
+            exc_Mz *= normalise_01(-1*ref_pulse.exciteprofile(freqs=f)[2].real)
     
     def optimise(filter):
         if filter == 'Matched':
@@ -983,12 +997,12 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     fieldsweep_profile = fieldsweep_fun(f)
 
         
-    pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[:,2].real)
-    exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[:,2].real)
+    pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[2].real)
+    exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[2].real)
 
     if ref_pulse is not None:
         for i in range(num_ref_pulses):
-            exc_Mz *= normalise_01(-1*ref_pulse.exciteprofile(freqs=f)[:,2].real)
+            exc_Mz *= normalise_01(-1*ref_pulse.exciteprofile(freqs=f)[2].real)
     
 
     if filter == 'Matched':
@@ -1022,31 +1036,29 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     axs.set_xlim(fmin*1e3,fmax*1e3)
 
     axs.legend()
-    axs.set_xlabel('Frequency / MHz')
+    axs.set_xlabel('Frequency (MHz)')
 
     return fig
 
-
-def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
-                       target_SNR=20, waveform_precision=2, corr_factor=1, rec_tau=None):
+def calc_deer_settings(experiment:str, CPdecay=None, Refocused2D=None, target_time=2,target_MNR=20, waveform_precision=2):
     """
-    Calculates the optimal DEER settings based on the avaliable relaxation data.
+    Calculates the optimal DEER settings based on the avaliable relaxation data
 
     Parameters
     ----------
-    relaxation_data : dict 
-        Relaxation data, either RefocusedEcho2DAnalysis, HahnEchoRelaxationAnalysis or CarrPurcellAnalysis
+    experiment : str
+        Type of DEER experiment, either 'auto', '4pDEER' or '5pDEER'
+    CPdecay : ad.CarrPurcellAnalysis
+        Carr-Purcell relaxation data
+    Refocused2D : ad.RefocusedEcho2DAnalysis, optional
+        Refocused 2D data required for '4pDEER', by default None
     target_time : int, optional
         Target time for the DEER experiment in hours, by default 2
-    target_SNR : float, optional
-        Target signal to noise ratio, by default 20
+    target_MNR : float, optional
+        Target modulation to noise ratio, by default 20
     waveform_precision : int, optional
         Precision of the waveform in ns, by default 2
-    corr_factor : float, optional
-        Correction factor for the relaxation decay, by default 1
-    rec_tau : float, optional
-        Recommended tau2 time in us, by default None
-    
+
     Returns
     -------
     dict
@@ -1056,106 +1068,86 @@ def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
             -'tau2': in us
             -'tau3': in us, only for 5pDEER
             -'AimTime': in hours
-            -'dt': in ns
+
+    Notes
+    -----
+
+    This function will calcate the optimal DEER settings based on the avaliable relaxation data, depending on the experiment type.
+    For 4pDEER, the optimal tau1 and tau2 are calculated based on the refocused 2D data, and for 5pDEER, the optimal tau2 is calculated based on the CPdecay data or refocused 2D if CP decay data is not availiable.
+    If the optimal tau2 for 5pDEER is less than 1.5us, the function will calculate the optimal tau1 and tau2 for 4pDEER instead. This is only possible if the refocused 2D data is availiable, otherwise a non optimal tau1 of 0.4us is used.
 
     """
 
-    dt=8e-3
+    # Calculate the DEER settings from the avaliable relaxation data
+    # Move out of the GUI Code asap
 
-    if len(relaxation_data) == 0:
-        raise ValueError("No relaxation data provided")
-    
-    if "Ref2D" in relaxation_data.keys():
-        decay = relaxation_data['Ref2D']
-        tau2_est, tau_2_lb, tau_2_ub = calculate_optimal_tau(decay,target_time,target_SNR,target_step=dt,corr_factor=corr_factor)
-        tau2_4p = tau_2_lb
-        tau1_4p = decay.optimal_tau1(tau2=tau2_est)
-        V_4p = decay(tau1_4p,tau2_est,SNR=True)
+    deer_settings = {}
 
-        # Use refocused 2D data for 4pDEER
-    elif "Tm" in relaxation_data.keys():
-        # Use Hahn echo data as an estimate for 4pDEER
-        decay = relaxation_data['Tm']
-        tau2_est, tau_2_lb, tau_2_ub = calculate_optimal_tau(decay,target_time,target_SNR,target_step=dt,corr_factor=corr_factor)
-        tau2_4p = tau_2_lb
-        tau1_4p = 0.4
-        V_4p = decay(tau2_est,SNR=True)
+    if experiment == '4pDEER':
+        if Refocused2D is None:
+            raise ValueError("Refocused2D data required for 4pDEER")
+        # Calcualting a 4pDEER Sequence
+        deer_settings['ExpType'] = '4pDEER'
 
-    else:
-        # No estimate avaliable for 4pDEER
-        V_4p = 0
-        tau1_4p = 0
-        tau2_4p = 0
+        # Calculate tau1 and tau2
+        tau1,tau2 = Refocused2D.find_optimal(type='4pDEER',SNR_target=target_MNR, target_time=target_time, target_step=0.015)
+        
+        if tau2 < 2.5:
+            # 2hr dipolar evo too short for meaningful results. Using double the time instead
+            target_time *= 2
+            tau1,tau2 = Refocused2D.find_optimal(type='4pDEER',SNR_target=target_MNR, target_time=target_time, target_step=0.015)
+        
+        if tau2 < 2.5:
+            # Dipolar evo time still too short. Hardcoding a 2.5us dipolar evo time
+            tau1,tau2 = Refocused2D.optimal_tau1(tau2=2.5)
+        
 
-    if "CP" in relaxation_data.keys():
-        CPdecay = relaxation_data['CP']
-        tau_evo, tau_evo_lb, tau_evo_ub = calculate_optimal_tau(CPdecay,target_time,target_SNR,target_step=dt,corr_factor=corr_factor)
-        tau1_5p = tau_evo_lb/2
-        tau2_5p = tau_evo_lb/2
-        tau3_5p = 0.3
-        V_5p = CPdecay(tau1_5p,SNR=True)
+        deer_settings['tau1'] = round_step(tau1,waveform_precision/1e3)
+        deer_settings['tau2'] = round_step(tau2,waveform_precision/1e3)
+        deer_settings['AimTime'] = target_time
 
-    else:
-        # No CPdecay data avaliable
-        V_5p = 0
-        tau1_5p = 0
-        tau2_5p = 0
-        tau3_5p = 0 
+    elif (experiment == '5pDEER') or (experiment == 'auto'):
+        # Calculate a 5pDEER Sequence
+        if CPdecay is not None:
+            tau2hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time, target_step=0.015)
+            tau4hrs = CPdecay.find_optimal(SNR_target=target_MNR, target_time=target_time*2, target_step=0.015)
+        elif Refocused2D is not None:
+            tau2hrs = Refocused2D.find_optimal(type='5pDEER',SNR_target=20, target_time=target_time, target_step=0.015)
+            tau4hrs = Refocused2D.find_optimal(type='5pDEER',SNR_target=20, target_time=target_time*2, target_step=0.015)
+        else:
+            raise ValueError("CPdecay data required for 5pDEER")
 
-    if (V_4p == 0) and (V_5p == 0):
-        raise ValueError("No signal at either optimal")
+        
+        if (tau2hrs < 1.5) and (tau4hrs > 1.5):
+            # 2hr dipolar evo too short for meaningful results. Using 4hr number instead
+            deer_settings['tau1'] = round_step(tau4hrs,waveform_precision/1e3)
+            deer_settings['tau2'] = round_step(tau4hrs,waveform_precision/1e3)
+            deer_settings['tau3'] = round_step(0.3,waveform_precision/1e3)
+            deer_settings['ExpType'] = '5pDEER'
+            deer_settings['AimTime'] = target_time*2
 
-    # Select between five-pulse and four-pulse DEER
-    if (V_4p > V_5p * 0.9) or (tau1_5p < 1.5) or mode =='4pDEER':
-        # Use four-pulse DEER
-        deer_settings = {
-            'ExpType': '4pDEER',
-            'tau1': round_step(tau1_4p,waveform_precision/1e3),
-            'tau2': round_step(tau2_4p,waveform_precision/1e3),
-            'AimTime': target_time
-        }
-    else:
-        # Use five-pulse DEER
-        deer_settings = {
-            'ExpType': '5pDEER',
-            'tau1': round_step(tau1_5p,waveform_precision/1e3),
-            'tau2': round_step(tau2_5p,waveform_precision/1e3),
-            'tau3': round_step(tau3_5p,waveform_precision/1e3),
-            'AimTime': target_time
-        }
-
-    if rec_tau is not None:
-        if (deer_settings['ExpType'] == '4pDEER') and (deer_settings['tau2'] > rec_tau):
-            deer_settings['tau2'] = rec_tau
-            # get a new tau1 from ref2D if available
-            if "Ref2D" in relaxation_data.keys():
-                decay = relaxation_data['Ref2D']
-                deer_settings['tau1'] = decay.optimal_tau1(tau2=rec_tau)
+        elif (tau2hrs < 1.5) and (tau4hrs < 1.5):
+            # 2hr & 4hr dipolar evo too short for meaningful results. Hardcoding a 2.5us dipolar evo time, in 4pDEER and 4hrs
+            # self.raise_warning(f"2hr dipolar evo too short. Hardcoding a 2.5us dipolar evo time")
+            tau2 = 2.5
+            if Refocused2D is not None:
+                tau1 = Refocused2D.optimal_tau1(tau2=tau2)
             else:
-                deer_settings['tau1'] = 0.4
-            log.info(f"Using recommended tau2: {rec_tau}us")
+                tau1 = 0.4
+
+            deer_settings['tau1'] = round_step(tau1,waveform_precision/1e3)
+            deer_settings['tau2'] = round_step(tau2,waveform_precision/1e3)
             
-        elif (deer_settings['ExpType'] == '5pDEER') and (deer_settings['tau2']*2 > rec_tau):
-            deer_settings['tau2'] = rec_tau/2
-            deer_settings['tau1'] = rec_tau/2
-            log.info(f"Using recommended tau2: {rec_tau}us")
-
-    if deer_settings['ExpType'] == '4pDEER':
-        if deer_settings['tau2'] > 10:
-            deer_settings['dt'] = 12
-        elif deer_settings['tau2'] > 20:
-            deer_settings['dt'] = 16
+            deer_settings['ExpType'] = '4pDEER'
+            deer_settings['AimTime'] = target_time * 2
+            # self.raise_warning(f"2hr dipolar evo {tau2hrs:.2f} us, using 4pDEER")
+        
         else:
-            deer_settings['dt'] = 8
-
-    elif deer_settings['ExpType'] == '5pDEER':
-        if deer_settings['tau2']*2 > 10:
-            deer_settings['dt'] = 12
-        elif deer_settings['tau2']*2 > 20:
-            deer_settings['dt'] = 16
-        else:
-            deer_settings['dt'] = 8
-
+            # Normal case, using 2hr dipolar evo time
+            deer_settings['tau1'] = round_step(tau2hrs,waveform_precision/1e3)
+            deer_settings['tau2'] = round_step(tau2hrs,waveform_precision/1e3)
+            deer_settings['tau3'] = round_step(0.3,waveform_precision/1e3)
+            deer_settings['ExpType'] = '5pDEER'
+            deer_settings['AimTime'] = target_time
 
     return deer_settings
-    

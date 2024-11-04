@@ -11,10 +11,9 @@ import numbers
 import uuid
 import json
 import base64
-from autodeer.utils import autoEPRDecoder, round_step
+from autodeer.utils import autoEPRDecoder
 from pathlib import Path
 import logging
-from autodeer.config import get_waveform_precision
 
 # =============================================================================
 
@@ -262,9 +261,7 @@ class Parameter:
                 axis = np.arange(start=start, stop= dim*step+start,step=step)
             self.add_axis(axis=axis,axis_id=axis_id)
         
-        waveform_precision = get_waveform_precision()
 
-        self.adjust_step(waveform_precision)
 
         pass
 
@@ -283,52 +280,6 @@ class Parameter:
             return axes[0]
         else:
             return axes
-        
-    def adjust_step(self, waveform_precision, keep_dim=True):
-        """
-        Adjust the step size of the axis to be an integer multiple of the waveform precision.
-        Additionally, the value is adjusted to the nearest step. This is only applied if the units are in [ns,us,ms]
-        
-        Only has an affect on parmater with units of [ns,us,ms]
-
-        Parameters
-        ----------
-        waveform_precision : float
-            The precision of the waveform in ns
-        keep_dim : bool, optional
-            If True, the dimension of the axis is kept the same. If False, the maximum value is perserved and the dim is extended, by default True
-        """
-
-        if self.unit == "us":
-            waveform_precision = waveform_precision * 1e-3
-        elif self.unit == "ns":
-            waveform_precision = waveform_precision
-        elif self.unit == "ms":
-            waveform_precision = waveform_precision * 1e-6
-        else:
-            return self
-
-        for i in range(len(self.axis)):
-            old_axis = self.axis[i]["axis"]
-            current_step =old_axis[1] - old_axis[0]
-            # test if uniformally sampled
-            if not np.allclose(np.diff(self.axis[i]["axis"]), current_step):
-                raise ValueError("This only works for uniformaly sampled data at the moment")
-            new_step = round_step(current_step, waveform_precision)
-
-            if new_step == 0:
-                new_step = waveform_precision
-            
-            if keep_dim:
-                dim = old_axis.shape[0]
-                new_axis = np.arange(self.axis[i]["axis"][0], self.axis[i]["axis"][0]+new_step*dim, new_step)
-            else:
-                new_axis = np.arange(self.axis[i]["axis"][0], self.axis[i]["axis"][-1]+new_step, new_step)
-            self.axis[i]["axis"] = new_axis
-        
-        if isinstance(self.value, numbers.Number):
-            self.value = round_step(self.value,waveform_precision)
-        return self
     
     @property
     def dim(self):

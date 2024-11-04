@@ -11,8 +11,7 @@ import matplotlib.pyplot as plt
 import scipy.fft as fft
 from autodeer import __version__
 import copy
-from functools import reduce
-from itertools import accumulate
+
 
 class Pulse:
     """
@@ -231,7 +230,7 @@ class Pulse:
         return Parameter("amp_factor", amp_factor_value, "GHz", "Amplitude factor for the pulse")
 
     # @cached(thread_safe=False)
-    def exciteprofile_old(self, freqs=None, resonator = None):
+    def exciteprofile(self, freqs=None, resonator = None):
         """Excitation profile
 
         Generates the exciatation profiles for this pulse.
@@ -331,120 +330,6 @@ class Pulse:
             Mag[2, iOffset] = -2 * (Sz * Density.T).sum().real
         
         return Mag[0,:], Mag[1,:], Mag[2,:]
-    
-    @cached(thread_safe=False)
-    def exciteprofile(self, freqs=None, resonator=None, trajectory=False):
-        """Excitation profile
-
-        Generates the exciatation profiles for this pulse, using the two-level system model developed by Jeschke et al. [1].
-        And then optimised in the PulseShape software package by Maxx Tessmer [2], reproduced under the GNU GPL v3 license.
-
-        References:
-        +++++++++++
-        [1] Jeschke, G., Pribitzer, S. & Doll, A. 
-            Coherence Transfer by Passage Pulses in Electron Paramagnetic 
-            Resonance Spectroscopy. 
-            J. Phys. Chem. B 119, 13570-13582 (2015)
-        [2] https://github.com/mtessmer/PulseShape
-
-        Parameters
-        ----------
-        
-        freqs: np.ndarray, optional
-            The frequency axis. Caution: A larger number of points will linearly
-            increase computation time.
-        resonator: ad.ResonatorProfile, optional
-            The resonator profile to apply resonator compensation.
-        trajectory: bool, optional
-            If True, the function will return the magnetisation at each time point. Default is False.
-        
-        Returns
-        -------
-        Mag: np.ndarray
-            The magnetisation in the X, Y, and Z directions.
-        
-        """
-        self._buildFMAM(self.func)
-
-        if freqs is None:
-            fxs, fs = self._calc_fft()
-            fs = np.abs(fs)
-            points = np.argwhere(fs>(fs.max()*0.5))[:,0]
-            BW = fxs[points[-1]] - fxs[points[0]]
-            c_freq = np.mean([fxs[points[-1]], fxs[points[0]]])
-            offsets = np.linspace(-2*BW, 2*BW, 100) + c_freq
-        else:
-            offsets = freqs
-        
-        ISignal = np.real(self.complex) * self.amp_factor.value
-        QSignal = np.imag(self.complex) * self.amp_factor.value
-        
-        if resonator is not None:
-            FM = self.FM
-            amp_factor = np.interp(FM, resonator.freqs-resonator.LO_c, resonator.profile)
-            amp_factor = np.min([amp_factor,np.ones_like(amp_factor)*self.amp_factor.value],axis=0)
-            ISignal = np.real(self.complex) * amp_factor
-            QSignal = np.imag(self.complex) * amp_factor
-
-        t= self.ax
-        M0=[0, 0, 1]
-        M0 = np.asarray(M0, dtype=float)
-        if len(M0.shape) == 1:
-            Mmag = np.linalg.norm(M0)
-            M0 /= Mmag
-            M0 = np.tile(M0, (len(offsets), 1))
-            Mmag = np.array([Mmag for i in range(len(offsets))])
-        else:
-            Mmag = np.linalg.norm(M0, axis=1)
-            M0 /= Mmag[:, None]
-
-
-        Sx = sop([1/2],"x")
-        Sy = sop([1/2],"y")
-        Sz = sop([1/2],"z")
-
-        density0 = 0.5 * np.array(([[1 + M0[:, 2], M0[:, 0] - 1j * M0[:, 1]],
-                                [M0[:, 0] + 1j * M0[:, 1], 1 - M0[:, 2]]]))
-        density0 = np.moveaxis(density0, 2, 0)
-
-        dt = t[1] - t[0]
-
-        H = offsets[:, None, None] * Sz
-        H = H[:, None, :, :] + ISignal[:, None, None] * Sx + QSignal[:, None, None] * Sy
-        M = -2j * np.pi * dt * H
-        q = np.sqrt(M[:, :, 0, 0]**2 - np.abs(M[:, :, 0, 1])**2)
-
-        dUs = np.cosh(q)[:, :, None, None] * np.eye(2, dtype=complex) + (np.sinh(q) / q)[:, :, None, None] * M
-        mask = np.abs(q) < 1e-10
-        dUs[mask] = np.eye(2, dtype=complex) + M[mask]
-
-        if not trajectory:
-            Upulses = np.empty((len(dUs), 2, 2), dtype=complex)
-            for i in range(len(dUs)):
-                Upulses[i] = reduce(lambda x, y: y@x, dUs[i, :-1])
-            density = np.einsum('ijk,ikl,ilm->ijm', Upulses, density0, Upulses.conj().transpose((0, 2, 1)))
-            density = density.transpose((0, 2, 1))
-
-            Mag = np.zeros((len(offsets), 3))
-            Mag[..., 0] =  2 * density[..., 0, 1].real             # 2 * (Sx[None, :, :] * density).sum(axis=(1, 2)).real
-            Mag[..., 1] = -2 * density[..., 1, 0].imag             # 2 * (Sy[None, :, :] * density).sum(axis=(1, 2)).real
-            Mag[..., 2] =  density[..., 0, 0] - density[..., 1, 1] # 2 * (Sz[None, :, :] * density).sum(axis=(1, 2)).real
-            return np.squeeze(Mag * Mmag[:, None])
-        else:
-            Upulses = np.empty((len(dUs), len(t), 2, 2), dtype=complex)
-            for i in range(len(dUs)):
-                Upulses[i] = [np.eye(2)] +  list((accumulate(dUs[i, :-1], lambda x, y: y @ x)))
-
-            density = np.einsum('hijk,hkl,hilm->hijm', Upulses, density0, Upulses.conj().transpose((0, 1, 3, 2)))
-            density = density.transpose((0, 1, 3, 2))
-
-            Mag = np.zeros((len(offsets), len(t), 3))
-            Mag[..., 0] = 2 * density[..., 0, 1].real # 2 * (Sx[None, None, :, :] * density).sum(axis=(2, 3)).real
-            Mag[..., 1] = -2 * density[..., 1, 0].imag # 2 * (Sy[None, None, :, :] * density).sum(axis=(2, 3)).real
-            Mag[..., 2] = density[..., 0, 0] - density[..., 1, 1] # 2 * (Sz[None, None, :, :] * density).sum(axis=(2, 3)).real
-
-            return Mag
-
 
 
     def plot_fft(self):

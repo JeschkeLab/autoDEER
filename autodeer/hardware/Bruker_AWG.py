@@ -378,6 +378,23 @@ class BrukerAWG(Interface):
         
             return pulse
 
+    def tune_nutation(self, test_pulse):
+        Nutation = open.Sequence(
+            name="Nutation Tuning", B=12248.7, LO=33.970715,
+            reptime=3000, averages=1, shots=100)
+
+        pi2_pulse = open.RectPulse(t=0, tp=12, freq=0, pcyc = [0, np.pi], flipangle=np.pi/2)
+        pi_pulse = open.RectPulse(t=500, tp=12, freq=0, pcyc= [0], flipangle=np.pi)
+
+        Nutation.addPulse(test_pulse)
+        Nutation.addPulse(pi2_pulse)
+        Nutation.addPulse(pi_pulse)
+
+        Nutation.addPulse(open.Detection(t=1e3, tp=48))
+        Nutation.convert()
+        pass
+
+    
     def isrunning(self) -> bool:
         if self.tuning:
             return True

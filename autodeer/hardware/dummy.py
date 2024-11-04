@@ -238,22 +238,23 @@ def _simulate_deer(sequence,exp_type=None):
     Vsim = add_phaseshift(Vsim, 0.05)
     return t, Vsim
 
-def _simulate_CP(sequence,T_CP=5e5):
+def _simulate_CP(sequence):
 
     if isinstance(sequence, DEERSequence):
         xaxis = val_in_ns(sequence.tau2)
     elif isinstance(sequence, CarrPurcellSequence):
-        xaxis = val_in_ns(sequence.t)
+        xaxis = val_in_ns(sequence.step)
 
-    func = lambda x, a, tau, e: a*np.exp(-(x/tau)**e)
-    data = func(xaxis,1,T_CP,1.8)
+    func = lambda x, a, b, e: a*np.exp(-b*x**e)
+    
+    data = func(xaxis,1,2e-6,1.8)
     data = add_phaseshift(data, 0.05)
     return xaxis, data
 
-def _simulate_T2(sequence,ESEEM_depth, Tm=1e5):
-    func = lambda x, a, tau, e: a*np.exp(-(x/tau)**e)
+def _simulate_T2(sequence,ESEEM_depth):
+    func = lambda x, a, b, e: a*np.exp(-b*x**e)
     xaxis = val_in_ns(sequence.tau)
-    data = func(xaxis,1,Tm,1.6)
+    data = func(xaxis,1,10e-6,1.6)
     data = add_phaseshift(data, 0.05)
     if ESEEM_depth != 0:
         data *= _gen_ESEEM(xaxis, 7.842, ESEEM_depth)
@@ -283,8 +284,8 @@ def _simulate_reptimescan(sequence):
     data = add_phaseshift(data, 0.05)
     return t, data
 
-def _simulate_2D_relax(sequence,sigma = 0.8):
-    
+def _simulate_2D_relax(sequence):
+    sigma = 0.8
     func = lambda x, y: np.exp(-((x**2 + y**2 - 1*x*y) / (2*sigma**2)))
 
     xaxis = val_in_us(sequence.tau1)

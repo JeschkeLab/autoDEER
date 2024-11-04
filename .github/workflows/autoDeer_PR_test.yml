@@ -27,7 +27,7 @@ jobs:
           pip install flake8 pytest
           pip install wheel
           pip install -r requirements.txt      
-          pip install .['Dev']
+          pip install .
       - name: Test with pytest
         run: |
           pytest

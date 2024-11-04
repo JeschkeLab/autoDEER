@@ -1,8 +1,7 @@
 name: Build and Deploy Documentation using Sphinx
 
 on:
-  branches:
-      - main  # You can change this to match your default branch
+  pull_request:
   workflow_dispatch:
   
 jobs:

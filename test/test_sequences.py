@@ -36,35 +36,6 @@ def test_add_pulse_evolution():
     seq.evolution([t])
     assert seq.progTable["Variable"][0] == "t"
 
-def test_adjust_step():
-    seq=Sequence(name="name", B=12220, LO=34.0,reptime=3e3, averages=1, shots=100)
-    t = Parameter(name="t", value=-161, step=25, dim=120, unit="ns", description="The time axis")
-    pulse = RectPulse(t=t, freq=0, tp=12, flipangle=np.pi/2)
-    seq.addPulse(pulse)
-    seq.evolution([t])
-    seq.adjust_step(2)
-
-    assert np.equal(np.diff(seq.progTable["axis"][0]),24).all()
-    assert np.equal(seq.pulses[0].t.value, -160)
-
-def test_adjust_step_linked_params():
-    # check that adujst step also works with linked parameters
-    seq=Sequence(name="name", B=12220, LO=34.0,reptime=3e3, averages=1, shots=100)
-    t = Parameter(name="t", value=151, step=25, dim=120, unit="ns", description="The time axis")
-    pulse1 = RectPulse(t=t, freq=0.5, tp=12, flipangle=np.pi/2)
-    pulse2 = RectPulse(t=2*t, freq=0.5, tp=12, flipangle=np.pi/2)
-    seq.addPulse(pulse1)
-    seq.addPulse(pulse2)
-    seq.evolution([t])
-    seq.adjust_step(2)
-
-    assert np.equal(np.diff(seq.progTable["axis"][0]),24).all()
-    assert np.equal(np.diff(seq.progTable["axis"][1]),48).all()
-    assert np.equal(seq.pulses[0].t.value, 152)
-    assert np.equal(seq.pulses[1].t.value, 304)
-    assert np.equal(seq.pulses[1].freq.value, 0.5)
-
-
 @pytest.fixture
 def test_sequence():
     seq=Sequence(name="name", B=12220, LO=34.0,reptime=3e3, averages=1, shots=100)
