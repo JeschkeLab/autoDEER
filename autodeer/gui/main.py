@@ -23,6 +23,7 @@ import time
 import datetime
 import logging
 from autodeer.Logging import setup_logs, change_log_level
+from deerlab import store_pickle
 
 # main_log = logging.getLogger('autoDEER')
 from queue import Queue
@@ -246,6 +247,12 @@ class autoDEERUI(QMainWindow):
         global main_log
         main_log = logging.getLogger('autoDEER')
         main_log.info(f"Loading folder {self.current_folder}")
+
+        # create folder for saving data if it doesn't exist
+        if not os.path.exists(os.path.join(self.current_folder,'autoDEER_data')):
+            os.makedirs(os.path.join(self.current_folder,'autoDEER_data'))
+        self.data_folder = os.path.join(self.current_folder,'autoDEER_data')
+
     
     def load_epr_file(self, store_location):
 
@@ -322,7 +329,7 @@ class autoDEERUI(QMainWindow):
             elif model == 'ETH_AWG':
                 from autodeer.hardware.ETH_awg import ETH_awg_interface
                 self.spectromterInterface = ETH_awg_interface()
-                self.spectromterInterface.savefolder = self.current_folder
+                self.spectromterInterface.savefolder = self.data_folder
                 self.Bruker=False
                 self.modeTuneDialog = ModeTune(self.spectromterInterface, gyro=self.gyro, threadpool=self.threadpool, current_folder=self.current_folder)
                 self.modeTuneButton = QPushButton('Mode Tune')
@@ -433,10 +440,13 @@ class autoDEERUI(QMainWindow):
         # QDialog.about(self,'Warning!', message)
         main_log.warning(message)
 
-    def save_data(self,dataset,experiment):
+    def save_data(self,dataset,experiment,folder='data'):
         filename = create_save_name(self.userinput['sample'],experiment,True,self.userinput['project'],self.userinput['comment'])
         filename += ".h5"
-        dataset.to_netcdf(os.path.join(self.current_folder,filename),engine='h5netcdf',invalid_netcdf=True)
+        if folder == 'data':
+            dataset.to_netcdf(os.path.join(self.data_folder,filename),engine='h5netcdf',invalid_netcdf=True)
+        else:
+            dataset.to_netcdf(os.path.join(self.current_folder,filename),engine='h5netcdf',invalid_netcdf=True)
         main_log.debug(f"Saving dataset to {filename}")
 
     def fsweep_toolbar(self):
@@ -472,6 +482,7 @@ class autoDEERUI(QMainWindow):
             dataset = self.current_data['fieldsweep']
         else:
             self.current_data['fieldsweep'] = dataset
+            self.save_data(dataset,'EDFS',folder='main')
 
         fsweep_analysis = ad.FieldSweepAnalysis(dataset)
         fsweep_analysis.calc_gyro()
@@ -568,6 +579,7 @@ class autoDEERUI(QMainWindow):
             dataset = self.current_data['respro']
         else:
             self.current_data['respro'] = dataset
+            self.save_data(dataset,'ResPro',folder='main')
         
         f_lims = (self.config['Spectrometer']['Bridge']['Min Freq'], self.config['Spectrometer']['Bridge']['Max Freq'])
 
@@ -726,9 +738,11 @@ class autoDEERUI(QMainWindow):
         else:
             if 'relax' in self.current_data:
                 # attempt to merge datasets
-                self.current_data['relax'].epr.merge(dataset)
-
+                main_log.info('Merging relax datasets')
+                dataset = self.current_data['relax'].epr.merge(dataset)
+            
             self.current_data['relax'] = dataset
+            self.save_data(dataset,'CP',folder='main')
 
         worker = Worker(relax_process, dataset)
         worker.signals.result.connect(self.refresh_relax)
@@ -813,12 +827,6 @@ class autoDEERUI(QMainWindow):
         self.aim_time = 2
         self.aim_MNR = 20
         
-        # tau2hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(self.est_lambda*self.label_eff), target_time=self.aim_time, target_step=0.015)
-        # tau4hrs = fitresult.find_optimal(SNR_target=self.aim_MNR/(self.est_lambda*self.label_eff), target_time=4, target_step=0.015)
-        # max_tau = fitresult.find_optimal(SNR_target=self.priorties[self.userinput['priority']]/(self.est_lambda*self.label_eff), target_time=self.userinput['MaxTime'], target_step=0.015)
-    
-        # self.current_results['relax'].tau2hrs = tau2hrs
-
         self.initialise_deer_settings()
 
         # self.current_results['relax'].max_tau = max_tau
@@ -826,26 +834,26 @@ class autoDEERUI(QMainWindow):
         # self.DipolarEvo2hrs.setValue(tau2hrs)
         self.Tab_widget.setCurrentIndex(3)
         
-        self.check_CP(fitresult)
-        
-        if self.worker is not None:
-            # CP_decay = fitresult.func(fitresult.axis, *fitresult.fit_result[0]).data
-            CP_decay = fitresult.fit_result.evaluate(fitresult.fit_model, fitresult.axis)*fitresult.fit_result.scale
-            # Find the index when CP_decay is below 0.05
-            CP_decay = CP_decay/CP_decay[0]
-            CP_decay_bool = CP_decay < 0.05
-            CP_decay_idx = np.where(CP_decay_bool)[0]
-            if len(CP_decay_idx) == 0:
-                CP_decay_idx = len(CP_decay)
-            else:
-                CP_decay_idx = CP_decay_idx[0]
-            max_tau = fitresult.axis[CP_decay_idx]
-            max_tau = ad.round_step(max_tau,1)
-            main_log.info(f"Max tau {max_tau:.2f} us")
-            self.worker.set_2D_max_tau(max_tau*2)
+        if self.check_CP(fitresult): # CP decays passes test then it can proceed
+            
+            if self.worker is not None:
+                # CP_decay = fitresult.func(fitresult.axis, *fitresult.fit_result[0]).data
+                CP_decay = fitresult.fit_result.evaluate(fitresult.fit_model, fitresult.axis)*fitresult.fit_result.scale
+                # Find the index when CP_decay is below 0.05
+                CP_decay = CP_decay/CP_decay[0]
+                CP_decay_bool = CP_decay < 0.05
+                CP_decay_idx = np.where(CP_decay_bool)[0]
+                if len(CP_decay_idx) == 0:
+                    CP_decay_idx = len(CP_decay)
+                else:
+                    CP_decay_idx = CP_decay_idx[0]
+                max_tau = fitresult.axis[CP_decay_idx]
+                max_tau = ad.round_step(max_tau,1)
+                main_log.info(f"Max tau {max_tau:.2f} us")
+                self.worker.set_2D_max_tau(max_tau*2)
 
-        if self.waitCondition is not None: # Wake up the runner thread
-            self.waitCondition.wakeAll()
+            if self.waitCondition is not None: # Wake up the runner thread
+                self.waitCondition.wakeAll()
 
     def initialise_deer_settings(self):
         
@@ -889,6 +897,7 @@ class autoDEERUI(QMainWindow):
         dt= 8
         mod_depth = data.MNR * data.noiselvl
         remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60)) # in hours
+        main_log.debug(f"Remaining time {remaining_time:.2f} hours")
 
         if self.deer_settings['ExpType'] == '4pDEER':
             relax = self.current_results['T2_relax']
@@ -899,6 +908,7 @@ class autoDEERUI(QMainWindow):
         main_log.info(f"Correction factor {self.correction_factor:.3f}")
         MNR_target = self.priorties[self.userinput['priority']]
         SNR_target = MNR_target/(mod_depth)
+        main_log.info(f"SNR target {SNR_target:.2f}")
 
         # Assemble all relaxation data
         if (self.Exp_types.currentText() == '4pDEER'):
@@ -914,8 +924,12 @@ class autoDEERUI(QMainWindow):
         if 'relax2D' in self.current_results:
             relax_data['Ref2D'] = self.current_results['relax2D']         
 
+        #debug only, remove later
+        store_pickle(relax_data,os.path.join(self.data_folder,'relax_data.pkl'))
+
         # Calculate the optimal DEER settings using relaxation data
-        self.deer_settings = ad.calc_DEER_settings(relax_data,exp,self.aim_time,SNR_target,self.waveform_precision,rec_tau=rec_tau)
+
+        self.deer_settings = ad.calc_DEER_settings(relax_data,exp,remaining_time,SNR_target,self.waveform_precision,corr_factor=self.correction_factor,rec_tau=rec_tau)
 
         # self.deer_settings['dt'] = dt
         self.deer_settings['criteria'] = MNR_target
@@ -949,6 +963,7 @@ class autoDEERUI(QMainWindow):
             dataset = self.current_data['relax2D']
         else:
             self.current_data['relax2D'] = dataset
+            self.save_data(dataset,'2D_DEC',folder='main')
 
         # Since there is no fitting in the 2D data analysis it can be run in the main threads
 
@@ -968,7 +983,13 @@ class autoDEERUI(QMainWindow):
         if dataset is None:
             dataset = self.current_data['T2_relax']
         else:
+            if 'T2_relax' in self.current_data:
+                # attempt to merge datasets
+                main_log.info('Merging relax datasets')
+                dataset = self.current_data['T2_relax'].epr.merge(dataset)
+            
             self.current_data['T2_relax'] = dataset
+            self.save_data(dataset,'T2',folder='main')
 
         
         d_ESEEM = ad.detect_ESEEM(dataset,'deuteron')
@@ -988,7 +1009,7 @@ class autoDEERUI(QMainWindow):
 
         T2_worker = Worker(T2_process, dataset)
         T2_worker.signals.result.connect(self.refresh_T2)
-        T2_worker.signals.result.connect(self.check_T2)
+        # T2_worker.signals.result.connect(self.check_T2)
 
         self.threadpool.start(T2_worker)
 
@@ -1000,8 +1021,8 @@ class autoDEERUI(QMainWindow):
         test_dt *= 1e3
 
         if test_result == 0:
-            if self.waitCondition is not None: # Wake up the runner thread
-                self.waitCondition.wakeAll()
+            # if self.waitCondition is not None: # Wake up the runner thread
+            #     self.waitCondition.wakeAll()
                 return None
         elif test_result == -1: # The trace needs to be longer
             new_dt = ad.round_step(test_dt*2,self.waveform_precision)
@@ -1019,13 +1040,14 @@ class autoDEERUI(QMainWindow):
         # Check if the CP measurment is too short. 
 
         test_result = fitresult.check_decay()
+        main_log.debug(f"CP test result {test_result}")
 
         test_dt = fitresult.axis[1].values - fitresult.axis[0].values
         test_dt *= 1e3
         if test_result == 0:
-            if self.waitCondition is not None: # Wake up the runner thread
-                self.waitCondition.wakeAll()
-                return None
+            # if self.waitCondition is not None: # Wake up the runner thread
+            #     self.waitCondition.wakeAll()
+            return True
         elif test_result == -1: # The trace needs to be longer
             new_dt = ad.round_step(test_dt*2,self.waveform_precision)
         elif test_result == 1: # The trace needs to be shorter
@@ -1037,11 +1059,19 @@ class autoDEERUI(QMainWindow):
         
         if self.worker is not None:
             self.worker.run_CP_relax(dt=new_dt,tmin=new_tmin*2,averages=nAvgs,autoStop=False)
+            return False
+        else:
+            return True
 
 
     def refresh_T2(self, fitresult):
         self.current_results['T2_relax'] = fitresult
         self.refresh_relax_figure()
+
+        self.check_T2(fitresult)
+
+        if self.waitCondition is not None: # Wake up the runner thread
+            self.waitCondition.wakeAll()
 
         
     def advanced_mode_inputs(self):
@@ -1055,6 +1085,7 @@ class autoDEERUI(QMainWindow):
             dataset = self.current_data['quickdeer']
         else:
             self.current_data['quickdeer'] = dataset
+            self.save_data(dataset,'DEER_init',folder='main')
 
         self.Tab_widget.setCurrentIndex(4)
         self.q_DEER.current_data['quickdeer'] = dataset
@@ -1072,6 +1103,7 @@ class autoDEERUI(QMainWindow):
             dataset = self.current_data['longdeer']
         else:
             self.current_data['longdeer'] = dataset
+            self.save_data(dataset,'DEER_final',folder='main')
 
         self.Tab_widget.setCurrentIndex(4)
         self.longDEER.current_data['quickdeer'] = dataset
@@ -1088,6 +1120,7 @@ class autoDEERUI(QMainWindow):
             dataset = self.current_data['reptime']
         else:
             self.current_data['reptime'] = dataset
+            self.save_data(dataset,'reptime',folder='main')
 
         # reptime_analysis = ad.ReptimeAnalysis(dataset,dataset.sequence)
         reptime_analysis = ad.ReptimeAnalysis(dataset)

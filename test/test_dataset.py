@@ -88,7 +88,7 @@ def test_MeasurementTime(dataset_from_sequence):
     dset = dataset.epr.correctphase
     assert dset.epr.MeasurementTime == 0.6
 
-def test_merge_dataset(dataset_from_sequence):
+def test_merge_dataset():
     rng = np.random.default_rng(seed=0)
     def build_dataset(tmin):
         seq = T2RelaxationSequence(

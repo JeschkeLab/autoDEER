@@ -79,9 +79,11 @@ def calculate_optimal_tau(RelaxAnalysis, MeasTime, SNR, target_step=0.015, targe
             fit = fit_results.evaluate(RelaxAnalysis.fit_model, RelaxAnalysis.axis.values)*fit_results.scale
             R2 = fit_results.stats['R2']
             fitUncert = fit_results.propagate(RelaxAnalysis.fit_model, RelaxAnalysis.axis.values)
-            fitUncertCi = fitUncert.ci(50)*fit_results.scale
-            ub = fitUncertCi[:,1]
-            lb = fitUncertCi[:,0]
+            # fitUncertCi = fitUncert.ci(50)*fit_results.scale
+            # ub = fitUncertCi[:,1]
+            # lb = fitUncertCi[:,0]
+            ub = data + 2*noise
+            lb = data - 2*noise
         if R2 < 0.9: # Either there is no fit or the fit is bad
             # Use the data
             data = RelaxAnalysis.data
