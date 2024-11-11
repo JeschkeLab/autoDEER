@@ -1106,7 +1106,10 @@ def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
         raise ValueError("No signal at either optimal")
 
     # Select between five-pulse and four-pulse DEER
-    if (V_4p > V_5p * 0.9) or (tau1_5p < 1.5) or mode =='4pDEER':
+    if (tau2_4p >= 2*tau1_5p) and (V_4p > V_5p * 0.9):
+        mode = '4pDEER'
+
+    if (tau1_5p < 1.5) or mode =='4pDEER':
         # Use four-pulse DEER
         deer_settings = {
             'ExpType': '4pDEER',
