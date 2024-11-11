@@ -871,8 +871,11 @@ class autoDEERUI(QMainWindow):
         if 'T2_relax' in self.current_results:
             relax_data['Tm'] = self.current_results['T2_relax']
         if 'relax2D' in self.current_results:
-            relax_data['Ref2D'] = self.current_results['relax2D']   
-            
+            relax_data['Ref2D'] = self.current_results['relax2D']    
+        
+        #debug only, remove later
+        store_pickle(relax_data,os.path.join(self.data_folder,'relax_data.pkl'))
+
         self.deer_settings = ad.calc_DEER_settings(relax_data,exp,self.aim_time,aim_SNR,self.waveform_precision)
         
         self.deer_settings['criteria'] = self.aim_MNR
@@ -949,12 +952,12 @@ class autoDEERUI(QMainWindow):
         axs.cla()
         # Only supports 5pDEER expand to 4pDEER
         CP_analysis = self.current_results['relax']
-        ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[0]])
+        ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[0]],corr_factor=self.correction_factor)
 
         if 'relax2D' in self.current_results:
-            ad.plot_optimal_tau(self.current_results['relax2D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[1]])
+            ad.plot_optimal_tau(self.current_results['relax2D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[1]],corr_factor=self.correction_factor)
         elif 'T2_relax' in self.current_results:
-            ad.plot_optimal_tau(self.current_results['T2_relax'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[1]])
+            ad.plot_optimal_tau(self.current_results['T2_relax'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[1]],corr_factor=self.correction_factor)
 
         axs.set_title(labels[0])
 
