@@ -6,9 +6,9 @@ extras={
     "Matlab": ["matlabengine"],
     "Docs": ["sphinx", "furo", "sphinx-gallery", "sphinx-design","myst-parser","sphinx-copybutton","sphinx-toolbox","sphinx-autoapi","sphinxcontrib-bibtex","numpydoc"],
     "GUI": ["PyQt6","threadpoolctl", "pyinstaller"],
-    "test": ["pytest", "pytest-cov", "pytest-qt", "pytest-xdist"],
+    "test": ["pytest", "pytest-cov", "pytest-qt", "pytest-xdist", "GitPython"],
 }
-extras["Dev"] = extras["Docs"] + extras["test"] + ['GitPython']
+extras["Dev"] = extras["Docs"] + extras["test"]
 setup(
     name='autoDEER',
     version=str(__version__),
@@ -19,10 +19,10 @@ setup(
     url = "https://github.com/HKaras/autoDeer",
     python_requires=">=3.8",
     install_requires=[
-        'numpy',
+        'numpy >= 2.0',
         'scipy',
         'matplotlib',
-        'deerlab >= 1.0',
+        'deerlab >= 1.1.4',
         'pyyaml',
         'reportlab',
         'svglib',

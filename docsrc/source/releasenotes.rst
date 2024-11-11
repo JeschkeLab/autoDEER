@@ -1,8 +1,24 @@
 Release Notes
 =============
 
+Version 0.9.0 (2024-11-11):
++++++++++++++++++++++++++++
+
+- Faster implmenetation of excite profile
+- Implementation of DeerLab based fitting into relaxation traces
+- New implementation of correction factor
+- Updated MNR and SNR parameters
+- Improved versioning (including git branch for dev versions)
+- Added a button for keep running (not to automatically stop)
+- Implementation of a global waveform precision
+- Added autoextending relxation data traces
+- New save folder for raw data folder
+- Improved calc_DEER_delays function, with new plot
+
+
 Version 0.8.0 (TBA):
 +++++++++++++++++++++++++++
+
 - Major Support Update for 2D Decoherence
   - `RefocusedEcho2DSequence` reforumlated to support match normal style
   - Added 2D Decoherence to the GUI
