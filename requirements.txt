@@ -1,8 +1,0 @@
-##### These are non Version specific requirements
-numpy
-scipy
-matplotlib
-deerlab >= 1.0
-XeprAPI
-h5py
-pyyaml

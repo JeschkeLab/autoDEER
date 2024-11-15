@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate as interp
 from autodeer.colors import primary_colors
-from autodeer.Relaxation import CarrPurcellAnalysis, HahnEchoRelaxationAnalysis, RefocusedEcho2DAnalysis
+from pyepr import CarrPurcellAnalysis, HahnEchoRelaxationAnalysis
+from autodeer.ref_2D_analysis import RefocusedEcho2DAnalysis
+
 from deerlab import der_snr
 
 

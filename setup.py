@@ -16,9 +16,10 @@ setup(
     package_dir={'autodeer': 'autodeer'},
     # packages=['autodeer','autodeer'],
     packages=find_packages(),
-    url = "https://github.com/HKaras/autoDeer",
+    url = "https://github.com/JeschkeLab/autoDEER",
     python_requires=">=3.8",
     install_requires=[
+        'pyepr >= 0.9.0' 
         'numpy >= 2.0',
         'scipy',
         'matplotlib',
