@@ -818,7 +818,7 @@ def functional(f_axis,fieldsweep,A,B,filter=None,A_shift=0,B_shift=0):
 
 def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute',
                     nDEER=False, num_ref_pulses=2, full_output=False, resonator=None, **kwargs):
-    """Optimise the pulse positions to maximise the pump-exc overlap.
+    r"""Optimise the pulse positions to maximise the pump-exc overlap.
 
     Parameters
     ----------

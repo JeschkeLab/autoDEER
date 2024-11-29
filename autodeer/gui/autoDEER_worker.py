@@ -144,7 +144,7 @@ class autoDEERWorker(QtCore.QRunnable):
         reptime = self.reptime
         p90, p180 = self.interface.tune_rectpulse(tp=self.tp, LO=LO, B=LO/gyro_N, reptime = reptime,shots=int(100*self.noise_mode))
         shots = int(300*self.noise_mode)
-        shots = np.min([shots,100])
+        shots = np.max([shots,100])
         fsweep = FieldSweepSequence(
             B=LO/gyro_N, LO=LO,reptime=reptime,averages=50,shots=shots,
             Bwidth = 250, 
@@ -199,7 +199,7 @@ class autoDEERWorker(QtCore.QRunnable):
         gyro = self.gyro
         reptime = self.reptime
         shots = int(100*self.noise_mode)
-        shots = np.min([shots,25])
+        shots = np.max([shots,25])
         relax = DEERSequence(
             B=LO/gyro, LO=LO,reptime=reptime,averages=averages,shots=shots,
             tau1=tmin/2, tau2=tmin/2, tau3=0.2, dt=15,
@@ -235,7 +235,7 @@ class autoDEERWorker(QtCore.QRunnable):
         gyro = self.gyro
         reptime = self.reptime
         shots = int(100*self.noise_mode)
-        shots = np.min([shots,25])
+        shots = np.max([shots,25])
 
         seq = T2RelaxationSequence(
             B=LO/gyro, LO=LO,reptime=reptime,averages=averages,shots=shots,
@@ -388,7 +388,7 @@ class autoDEERWorker(QtCore.QRunnable):
         LO = self.LO
         p90, p180 = self.interface.tune_rectpulse(tp=self.tp, LO=LO, B=LO/self.gyro, reptime = reptime_guess,shots=int(100*self.noise_mode))
 
-        n_shots = int(np.min([int(50*self.noise_mode),50]))
+        n_shots = int(np.max([int(50*self.noise_mode),50]))
         scan = ReptimeScan(B=LO/self.gyro, LO=LO,reptime=reptime_guess, reptime_max=20e3, averages=10, shots=n_shots,
                            pi2_pulse=p90, pi_pulse=p180)
         self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",)
