@@ -74,7 +74,7 @@ class ModeTune(QDialog):
         seq.pulses[2].tp.value = 512
         seq.evolution([freq])
 
-        self.interface.launch(seq,savename="modetune",IFgain=1)
+        self.interface.launch(seq,savename="modetune")
 
         # Start thread
         self.worker = get_dataWorker(self.interface)
@@ -121,34 +121,42 @@ class ModeTune(QDialog):
         x = dataset_pc.LO + dataset_pc.pulse0_freq
         y = dataset_pc.data
 
-        def gaussian(x, A, mu, sigma):
-            return A * np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
-        popt, pcov = curve_fit(gaussian, x, y, p0=[1, dataset_pc.LO, 0.1])
-        fit_data = gaussian(x, *popt)
-        # check r^2
-        residuals = y - fit_data
-        ss_res = np.sum(residuals ** 2)
-        ss_tot = np.sum((y - np.mean(y)) ** 2)
-        R2 = 1 - (ss_res / ss_tot)
-
-        if R2 < 0.5:
-            #set QDoubleSpinBox color to red
-            self.ui.calc_freq.setStyleSheet("background-color: red")
-        elif R2 < 0.75:
-            #set QDoubleSpinBox color to yellow
-            self.ui.calc_freq.setStyleSheet("background-color: yellow")
-        else:
-            #set QDoubleSpinBox color to green
-            self.ui.calc_freq.setStyleSheet("background-color: green")
-
-        self.ui.calc_freq.setValue(popt[1])
-
-        # update plot
         self.mode_ax.cla()
-        self.mode_ax.plot(x, gaussian(x, *popt), label='fit',color=primary_colors[0])
         self.mode_ax.plot(x, y, '.', color='0.7', label='Data', ms=6)
         self.mode_ax.set_xlabel("Frequency (GHz)")
         self.mode_ax.set_ylabel("Intensity (a.u.)")
+
+        def gaussian(x, A, mu, sigma):
+            return A * np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
+        try:
+            popt, pcov = curve_fit(gaussian, x, y, p0=[1, dataset_pc.LO, 0.1])
+        except:
+            popt = None
+       
+
+        if popt is not None:
+            fit_data = gaussian(x, *popt)
+            # check r^2
+            residuals = y - fit_data
+            ss_res = np.sum(residuals ** 2)
+            ss_tot = np.sum((y - np.mean(y)) ** 2)
+            R2 = 1 - (ss_res / ss_tot)
+
+            if R2 < 0.5:
+                #set QDoubleSpinBox color to red
+                self.ui.calc_freq.setStyleSheet("background-color: red")
+            elif R2 < 0.75:
+                #set QDoubleSpinBox color to yellow
+                self.ui.calc_freq.setStyleSheet("background-color: yellow")
+            else:
+                #set QDoubleSpinBox color to green
+                self.ui.calc_freq.setStyleSheet("background-color: green")
+
+            self.ui.calc_freq.setValue(popt[1])
+            
+            self.mode_ax.plot(x, gaussian(x, *popt), label='fit',color=primary_colors[0])
+
+        # update plot
         self.mode_ax.legend()
         self.modetTunecanvas.draw()
         pass
