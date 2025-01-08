@@ -576,7 +576,7 @@ def DEERanalysis_plot_pub(results, ROI=None, fig=None, axs=None):
     
     axs[0].plot(results.t,background_func(results.t, results), '--',alpha=1,color='#42A399', lw=2)
     
-    axs[0].set_xlabel('Time / $\mu s$')
+    axs[0].set_xlabel(r'Time / $\mu s$')
     axs[0].xaxis.tick_top()
 
     axs[0].xaxis.set_label_position('top') 
@@ -1026,6 +1026,40 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
 
     return fig
 
+def calc_dt_from_tau(deer_settings):
+    """
+    Calculate the time step from the tau values in the DEER settings.
+
+    Parameters
+    ----------
+    deer_settings : dict
+        The DEER settings with keys 'tau1', 'tau2' and 'tau3' and 'ExpType'.
+    
+    Returns
+    -------
+    deer_settings : dict
+        The DEER settings with the key 'dt' added.
+    """
+    if deer_settings['ExpType'] == '4pDEER':
+        if deer_settings['tau2'] > 10:
+            deer_settings['dt'] = 12
+        elif deer_settings['tau2'] > 20:
+            deer_settings['dt'] = 16
+        else:
+            deer_settings['dt'] = 8
+
+    elif deer_settings['ExpType'] == '5pDEER':
+        if deer_settings['tau2']*2 > 10:
+            deer_settings['dt'] = 12
+        elif deer_settings['tau2']*2 > 20:
+            deer_settings['dt'] = 16
+        else:
+            deer_settings['dt'] = 8
+
+    return deer_settings
+
+
+
 
 def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
                        target_SNR=20, waveform_precision=2, corr_factor=1, rec_tau=None):
@@ -1146,22 +1180,102 @@ def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
             deer_settings['tau1'] = rec_tau/2
             log.info(f"Using recommended tau2: {rec_tau}us")
 
-    if deer_settings['ExpType'] == '4pDEER':
-        if deer_settings['tau2'] > 10:
-            deer_settings['dt'] = 12
-        elif deer_settings['tau2'] > 20:
-            deer_settings['dt'] = 16
-        else:
-            deer_settings['dt'] = 8
 
-    elif deer_settings['ExpType'] == '5pDEER':
-        if deer_settings['tau2']*2 > 10:
-            deer_settings['dt'] = 12
-        elif deer_settings['tau2']*2 > 20:
-            deer_settings['dt'] = 16
-        else:
-            deer_settings['dt'] = 8
+    calc_dt_from_tau(deer_settings)
+
 
 
     return deer_settings
     
+
+def BackgroundAnalysis(dataset,model=dl.bg_hom3d,verbosity=0,**kwargs):
+
+    Vexp:np.ndarray = dataset.data 
+
+    if np.iscomplexobj(Vexp):
+        Vexp,Vexp_im,_ = dl.correctphase(Vexp,full_output=True)
+
+    Vexp /= Vexp.max()
+
+    if 't' in dataset.coords: # If the dataset is a xarray and has sequence data
+        t = dataset['t'].data
+        if 'seq_name' in dataset.attrs:
+            if dataset.attrs['seq_name'] == "4pDEER":
+                exp_type = "4pDEER"
+                tau1 = dataset.attrs['tau1'] / 1e3
+                tau2 = dataset.attrs['tau2'] / 1e3
+            elif dataset.attrs['seq_name'] == "5pDEER":
+                exp_type = "5pDEER"
+                tau1 = dataset.attrs['tau1'] / 1e3
+                tau2 = dataset.attrs['tau2'] / 1e3
+                tau3 = dataset.attrs['tau3'] / 1e3
+            elif dataset.attrs['seq_name'] == "3pDEER":
+                exp_type = "3pDEER"
+                tau1 = dataset.attrs['tau1'] / 1e3
+        else:
+            if 'tau1' in dataset.attrs:
+                tau1 = dataset.attrs['tau1'] / 1e3
+            elif 'tau1' in kwargs:
+                tau1 = kwargs.pop('tau1')
+            else:
+                raise ValueError("tau1 not found in dataset or kwargs")
+            if 'tau2' in dataset.attrs:
+                tau2 = dataset.attrs['tau2'] / 1e3
+            elif 'tau2' in kwargs:
+                tau2 = kwargs.pop('tau2')
+            else:
+                raise ValueError("tau2 not found in dataset or kwargs")
+            if 'tau3' in dataset.attrs:
+                tau3 = dataset.attrs['tau3'] / 1e3
+                exp_type = "5pDEER"
+            elif 'tau3' in kwargs:
+                tau3 = kwargs.pop('tau3')
+                exp_type = "5pDEER"
+            else:
+                exp_type = "4pDEER"
+
+    else:
+        # Extract params from kwargs
+        if "tau1" in kwargs:
+            tau1 = kwargs.pop("tau1")
+        if "tau2" in kwargs:
+            tau2 = kwargs.pop("tau2")
+        if "tau3" in kwargs:
+            tau3 = kwargs.pop("tau3")
+        exp_type = kwargs.pop("exp_type")
+        # t = dataset.axes[0]
+        t = dataset['X']
+
+
+        if hasattr(dataset,'attrs') and "pulse0_tp" in dataset.attrs:
+            # seach over all pulses to find the longest pulse using regex
+            pulselength = np.max([dataset.attrs[i] for i in dataset.attrs if re.match(r"pulse\d*_tp", i)])
+            pulselength /= 1e3 # Convert to us
+            pulselength /= 2 # Account for the too long range permitted by deerlab
+        else:
+            if "pulselength" in kwargs:
+                pulselength = kwargs.pop("pulselength")/1e3
+            else:
+                pulselength = 16/1e3
+
+
+        if exp_type == "4pDEER":
+            pathways = [1]
+            experimentInfo = dl.ex_4pdeer(tau1=tau1,tau2=tau2,pathways=pathways,pulselength=pulselength)
+        elif exp_type == "5pDEER":
+            pathways = [1,5]
+            experimentInfo = dl.ex_fwd5pdeer(tau1=tau1,tau2=tau2,tau3=tau3,pathways=pathways,pulselength=pulselength)
+        elif exp_type == "3pDEER":
+            pathways = [1]
+            experimentInfo = dl.ex_3pdeer(tau=tau1,pathways=pathways,pulselength=pulselength)
+
+        r= np.linspace(1,8,100)
+        Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo, Pmodel=model)
+        Vmodel.pathways = pathways
+
+        
+
+
+        fit = dl.fit(Vmodel, Vexp,
+                 verbose=verbosity,
+                 **kwargs)

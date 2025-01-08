@@ -61,7 +61,10 @@ class autoDEERWorker(QtCore.QRunnable):
 
     '''
 
-    def __init__(self, interface, wait:QtCore.QWaitCondition, mutex:QtCore.QMutex,pulses:dict, results:dict, LO, gyro,AWG=True, user_inputs:dict = None, *args, **kwargs):
+    def __init__(self, interface, wait:QtCore.QWaitCondition, 
+                 mutex:QtCore.QMutex,pulses:dict, results:dict, LO, gyro, 
+                 AWG=True, user_inputs:dict = None, 
+                 operating_mode = 'auto',fixed_tau=None, *args, **kwargs):
         super(autoDEERWorker,self).__init__()
 
         # Store constructor arguments (re-used for processing)
@@ -82,6 +85,8 @@ class autoDEERWorker(QtCore.QRunnable):
         self.user_inputs = user_inputs
         self.stop_flag = False
         self.quick_deer_state = True
+        self.fixed_tau = fixed_tau
+        self.operating_mode = operating_mode
 
         self.max_tau = 3.5
         print(f"Waveform Precision is: {get_waveform_precision()}")
@@ -299,6 +304,20 @@ class autoDEERWorker(QtCore.QRunnable):
         end_signal = self.signals.longdeer_result.emit
         self.run_deer(total_crit,end_signal, dt=16,shot=50,averages=1e4)
 
+    def run_single_deer(self):
+        # Run a DEER experiment background measurement
+        self.signals.status.emit('Running DEER Background')
+        if 'autoStop' in self.deer_inputs and not self.deer_inputs['autoStop']:
+            SNR_crit = SNRCriteria(150,verbosity=2)
+            total_crit = [SNR_crit]
+        else: # autoStop is True
+            SNR_crit = SNRCriteria(150,verbosity=2)
+            total_crit = [SNR_crit, self.EndTimeCriteria]
+        end_signal = self.signals.longdeer_result.emit
+        self.run_deer(total_crit,end_signal, dt=16,shot=50,averages=1e4)
+
+
+
 
     def run_deer(self,end_criteria,signal, dt=16,shot=50,averages=1000,):
     
@@ -414,29 +433,27 @@ class autoDEERWorker(QtCore.QRunnable):
         return 'skip'
 
     def _build_methods(self):
-
-        seq = self.deer_inputs['ExpType']
-
-        if (self.deer_inputs['tau1'] == 0) and (self.deer_inputs['tau2'] == 0):
-            quick_deer = True
-        else:
-            quick_deer = False
         
         methods = [self.run_fsweep,self.run_reptime_opt,self.run_respro,self.run_fsweep,
                    self.tune_pulses]
         
-        if (seq is None) or (seq == '5pDEER'):
+        if ( self.operating_mode is None) or ( self.operating_mode == '5pDEER'):
             methods.append(self.run_CP_relax)
             methods.append(self.run_T2_relax)
-        elif (seq == '4pDEER') or (seq == 'Ref2D'):
+        
+        elif ( self.operating_mode == '4pDEER') or ( self.operating_mode == 'Ref2D'):
             methods.append(self.run_CP_relax)
             methods.append(self.run_T2_relax)
             methods.append(self.run_2D_relax)
+            if  self.operating_mode == 'Ref2D':
+                return methods
 
-        if seq == 'Ref2D':
-            return methods
+        elif  self.operating_mode == 'single':
+            methods.append(self.run_T2_relax)
+            methods.append(self.run_single_deer)
+            return methods        
 
-        if quick_deer:
+        if self.fixed_tau is None:
             methods.append(self.run_quick_deer)
         
         methods.append(self.run_long_deer)
