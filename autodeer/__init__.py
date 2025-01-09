@@ -1,5 +1,5 @@
 from ._version import __version__
-from .DEER_analysis import DEERanalysis,DEERanalysis_plot, DEERanalysis_plot_pub,IdentifyROI,optimise_pulses,plot_overlap,normalise_01, calc_DEER_settings
+from .DEER_analysis import DEERanalysis,DEERanalysis_plot, DEERanalysis_plot_pub,IdentifyROI,optimise_pulses,plot_overlap,normalise_01, calc_DEER_settings, calc_dt_from_tau
 from .delay_optimise import *
 from .sequences import *
 from .criteria import *

@@ -222,7 +222,7 @@ class autoDEERUI(QMainWindow):
         self.Min_tp=12
 
         self.deer_settings = {'ESEEM':None, 'ExpType':'5pDEER'}
-        self.priorties = {'Auto': 150, 'MNR':300, 'Distance': 80}
+        self.priorties = {'Auto': 150, 'MNR':300, 'Distance': 80, 'Single':200}
 
         self.priotityComboBox.addItems(list(self.priorties.keys()))
         self.correction_factor=1
@@ -858,13 +858,21 @@ class autoDEERUI(QMainWindow):
 
     def initialise_deer_settings(self):
         
-        aim_SNR = self.aim_MNR/(self.est_lambda*self.label_eff)
-
+        
         # Assemble all relaxation data
         if (self.Exp_types.currentText() == '4pDEER'):
             exp = '4pDEER'
         else:
             exp = 'auto'
+
+        if self.userinput['priority'].lower() == 'single':
+            exp = '4pDEER'
+            aim_SNR = self.priorties[self.userinput['priority']]
+            self.aim_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60)) # in hours
+            self.aim_MNR = aim_SNR
+        else:
+            aim_SNR = self.aim_MNR/(self.est_lambda*self.label_eff)
+            
 
         relax_data = {}
         if 'relax' in self.current_results:
@@ -910,15 +918,23 @@ class autoDEERUI(QMainWindow):
         
         self.correction_factor = ad.calc_correction_factor(relax,self.current_results['quickdeer'])
         main_log.info(f"Correction factor {self.correction_factor:.3f}")
-        MNR_target = self.priorties[self.userinput['priority']]
-        SNR_target = MNR_target/(mod_depth)
-        main_log.info(f"SNR target {SNR_target:.2f}")
 
         # Assemble all relaxation data
         if (self.Exp_types.currentText() == '4pDEER'):
             exp = '4pDEER'
         else:
             exp = 'auto'
+
+        if self.userinput['priority'].lower() == 'single':
+            SNR_target = self.priorties[self.userinput['priority']]
+            MNR_target = SNR_target
+            single_mode = True
+            exp = '4pDEER'
+        else:
+            MNR_target = self.priorties[self.userinput['priority']]
+            SNR_target = MNR_target/(mod_depth)
+        main_log.info(f"SNR target {SNR_target:.2f}")
+
 
         relax_data = {}
         if 'relax' in self.current_results:
@@ -951,9 +967,10 @@ class autoDEERUI(QMainWindow):
         fig = self.relax_canvas.figure
         axs = self.relax_ax[2]
         axs.cla()
-        # Only supports 5pDEER expand to 4pDEER
-        CP_analysis = self.current_results['relax']
-        ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[0]],corr_factor=self.correction_factor)
+        
+        if 'relax' in self.current_results:
+            CP_analysis = self.current_results['relax']
+            ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[0]],corr_factor=self.correction_factor)
 
         if 'relax2D' in self.current_results:
             ad.plot_optimal_tau(self.current_results['relax2D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
@@ -1036,6 +1053,8 @@ class autoDEERUI(QMainWindow):
         new_tmin = fitresult.axis[-1].values
         new_tmin += new_dt*1e-3
         nAvgs = fitresult.dataset.attrs['nAvgs']
+
+        self.initialise_deer_settings()
         
         if self.worker is not None:
             self.worker.run_T2_relax(dt=new_dt,tmin=new_tmin,averages=nAvgs,autoStop=False)
@@ -1109,7 +1128,7 @@ class autoDEERUI(QMainWindow):
             self.current_data['longdeer'] = dataset
             self.save_data(dataset,'DEER_final',folder='main')
 
-        self.Tab_widget.setCurrentIndex(4)
+        self.Tab_widget.setCurrentIndex(5)
         self.longDEER.current_data['quickdeer'] = dataset
         self.longDEER.update_inputs_from_dataset()
         self.longDEER.update_figure()
@@ -1191,11 +1210,21 @@ class autoDEERUI(QMainWindow):
     def RunAutoDEER(self, advanced=False):
 
         self.clear_all()
+        self.operating_mode = 'auto'
+        self.fixed_tau = None
+        
 
         if self.spectromterInterface is None or self.connected is False:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be connected first!')
             main_log.error('Could not run autoDEER. A interface needs to be connected first!')
             return None
+        
+        # Block the autoDEER buttons
+        self.FullyAutoButton.setEnabled(False)
+        self.AdvancedAutoButton.setEnabled(False)
+        self.resonatorComboBox.setEnabled(False)
+        self.fcDoubleSpinBox.setEnabled(False)
+
 
         userinput = {}
         userinput['MaxTime'] = self.MaxTime.value()
@@ -1211,13 +1240,40 @@ class autoDEERUI(QMainWindow):
 
         self.userinput = userinput
 
-        if advanced:
-            self.deer_settings['ExpType'] = self.Exp_types.currentText()
-            self.deer_settings['tau1'] = self.Tau1Value.value()
-            self.deer_settings['tau2'] = self.Tau2Value.value()
-            self.deer_settings['tau3'] = self.Tau3Value.value()
+        if self.priotityComboBox.currentText().lower() == 'single':
+            self.operating_mode = 'single'
         else:
-            self.deer_settings = {'ExpType':'5pDEER','tau1':0,'tau2':0,'tau3':0}
+            self.operating_mode = self.Exp_types.currentText()
+
+        if advanced:
+                        
+            if self.Tau1Value.value() > 0 or self.Tau2Value.value() > 0:
+                self.fixed_tau = {'tau1':self.Tau1Value.value(),'tau2':self.Tau2Value.value(),'tau3':self.Tau3Value.value()}
+                # Skip the relaxation data analysis and go straight to DEER
+                if self.Exp_types.currentText() == 'auto':
+                    self.deer_settings['ExpType'] = '5pDEER'
+                elif self.Exp_types.currentText() == 'Ref2D':
+                    print("ERROR: Ref2D not supported with fixed tau")
+                    return None
+                else:
+                    self.deer_settings['ExpType'] = self.Exp_types.currentText()
+                
+                self.deer_settings['tau1'] = self.Tau1Value.value()
+                self.deer_settings['tau2'] = self.Tau2Value.value()
+                self.deer_settings['tau3'] = self.Tau3Value.value()
+                self.deer_settings['criteria'] = self.priorties[self.userinput['priority']]
+                self.deer_settings['autoStop'] = self.Time_autoStop_checkbox.isChecked()
+                self.deer_settings = calc_dt_from_tau(self.deer_settings)
+                main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
+                main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
+                main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")
+            
+            else:
+                self.fixed_tau = None
+            
+
+        
+        
         if not 'ESEEM' in self.deer_settings:
             self.deer_settings['ESEEM'] = None
 
@@ -1226,11 +1282,6 @@ class autoDEERUI(QMainWindow):
         else:
             self.create_relax_figure(3)
 
-        # Block the autoDEER buttons
-        self.FullyAutoButton.setEnabled(False)
-        self.AdvancedAutoButton.setEnabled(False)
-        self.resonatorComboBox.setEnabled(False)
-        self.fcDoubleSpinBox.setEnabled(False)
 
         try:
             night_hours = self.config['autoDEER']['Night Hours']
@@ -1240,9 +1291,11 @@ class autoDEERUI(QMainWindow):
         self.waitCondition = QtCore.QWaitCondition()
         mutex = QtCore.QMutex()
         self.worker = autoDEERWorker(
-            self.spectromterInterface,wait=self.waitCondition,mutex=mutex,
-            pulses=self.pulses,results=self.current_results, AWG=self.AWG, LO=self.LO, gyro = self.gyro,
-            user_inputs=userinput, cores=self.cores,night_hours=night_hours)
+            self.spectromterInterface, wait=self.waitCondition, mutex=mutex,
+            pulses=self.pulses, results=self.current_results, AWG=self.AWG, LO=self.LO, gyro = self.gyro,
+            user_inputs=userinput, operating_mode = self.operating_mode, fixed_tau=self.fixed_tau,
+            cores=self.cores, night_hours=night_hours,
+            )
         
         self.starttime = time.time()
 
