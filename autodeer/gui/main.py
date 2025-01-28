@@ -26,6 +26,7 @@ import datetime
 import logging
 from autodeer.Logging import setup_logs, change_log_level
 from deerlab import store_pickle
+import deerlab as dl
 
 main_log = logging.getLogger('autoDEER')
 from queue import Queue
@@ -35,6 +36,7 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 QtCore.QDir.addSearchPath('icons', f"{package_directory}/resources")
 
 SampleConcComboBox_opts = {'Normal': 1, 'High (0.5x)':0.5, 'Low (2x)':2, 'Very Low (5x)':5}
+BackgroundModels = {'hom3D':dl.bg_hom3d, 'hom3d ex':dl.bg_hom3dex, 'hom3d frac':dl.bg_homfractal,'str exp':dl.bg_strexp}
 
 class WorkerSignals(QtCore.QObject):
     '''
@@ -1036,7 +1038,8 @@ class autoDEERUI(QMainWindow):
 
         
     def advanced_mode_inputs(self):
-        self.Exp_types.addItems(['5pDEER','4pDEER','Ref2D'])
+        self.Exp_types.addItems(['auto','5pDEER','4pDEER','Ref2D'])
+        self.bg_model_combo.addItems(list(BackgroundModels.keys()))
         self.ExcPulseSelect.addItems(['Auto', 'Rectangular','Gauss'])
         self.RefPulseSelect.addItems(['Auto', 'Rectangular', 'Gauss'])
         self.PumpPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
@@ -1052,12 +1055,13 @@ class autoDEERUI(QMainWindow):
         self.q_DEER.current_data['quickdeer'] = dataset
         self.q_DEER.update_inputs_from_dataset()
         # self.q_DEER.update_figure()
+        bg_model = BackgroundModels[self.bg_model_combo.currentText()]
         def update_func(x):
             self.current_results['quickdeer'] = x
 
             self.update_deer_settings()
 
-        self.q_DEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
+        self.q_DEER.process_deeranalysis(background_model=bg_model, wait_condition = self.waitCondition, update_func=update_func)
 
     def update_longdeer(self, dataset=None):
         if dataset is None:
