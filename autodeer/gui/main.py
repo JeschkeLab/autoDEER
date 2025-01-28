@@ -12,6 +12,7 @@ from matplotlib.gridspec import GridSpec
 
 import matplotlib.pyplot as plt
 import autodeer as ad
+import pyepr as epr
 import numpy as np
 from autodeer.gui.tools import *
 from autodeer.gui.autoDEER_worker import autoDEERWorker
@@ -109,7 +110,7 @@ def fieldsweep_fit(fsweep_analysis,fit):
     return fsweep_analysis
 
 def respro_process(dataset,f_lims, fieldsweep=None,cores=1):
-    respro = ad.ResonatorProfileAnalysis(
+    respro = epr.ResonatorProfileAnalysis(
         dataset,f_lims=f_lims
     )
     fc_guess = dataset.LO.values[dataset.LO.values.shape[0]//2]
@@ -117,7 +118,7 @@ def respro_process(dataset,f_lims, fieldsweep=None,cores=1):
         respro.fit(cores=cores,fc_guess=fc_guess)
 
     if fieldsweep is not None:
-        LO_new = fieldsweep.LO + ad.optimise_spectra_position(respro, fieldsweep)
+        LO_new = fieldsweep.LO + epr.optimise_spectra_position(respro, fieldsweep)
         return respro, LO_new
 
 
@@ -131,13 +132,13 @@ def relax_process(dataset):
     #     dataset.axes = [dataset.axes[0]]
     if dataset['tau1'].max() > 1e4:
         dataset['tau1'] /= 1e3
-    CP_data = ad.CarrPurcellAnalysis(dataset)
+    CP_data = epr.CarrPurcellAnalysis(dataset)
     CP_data.fit('auto')
 
     return CP_data
 
 def T2_process(dataset):
-    Tm_data = ad.HahnEchoRelaxationAnalysis(dataset)
+    Tm_data = epr.HahnEchoRelaxationAnalysis(dataset)
     Tm_data.fit('auto')
 
     return Tm_data
@@ -263,7 +264,7 @@ class autoDEERUI(QMainWindow):
                 path = Path(filename)
                 filename_edit = str(path)
 
-        dataset = ad.eprload(filename_edit)
+        dataset = epr.eprload(filename_edit)
         self.current_data[store_location] = dataset
 
     def load_spectrometer_config(self, filename=None):
@@ -322,12 +323,12 @@ class autoDEERUI(QMainWindow):
         
         try:
             if model == 'Dummy':
-                from autodeer.hardware.dummy import dummyInterface
+                from pyepr.hardware.dummy import dummyInterface
                 self.spectromterInterface = dummyInterface(filename_edit)
-                self.spectromterInterface._savefolder = self.current_folder
+                self.spectromterInterface.savefolder = self.current_folder
                 self.Bruker=False
             elif model == 'ETH_AWG':
-                from autodeer.hardware.ETH_awg import ETH_awg_interface
+                from pyepr.hardware.ETH_awg import ETH_awg_interface
                 self.spectromterInterface = ETH_awg_interface()
                 self.spectromterInterface.savefolder = self.data_folder
                 self.Bruker=False
@@ -338,12 +339,12 @@ class autoDEERUI(QMainWindow):
                 
 
             elif model == 'Bruker_MPFU':
-                from autodeer.hardware.Bruker_MPFU import BrukerMPFU
+                from pyepr.hardware.Bruker_MPFU import BrukerMPFU
                 self.spectromterInterface = BrukerMPFU(filename_edit)
                 self.spectromterInterface.savefolder = self.current_folder
                 self.Bruker=True
             elif model == 'Bruker_AWG':
-                from autodeer.hardware.Bruker_AWG import BrukerAWG
+                from pyepr.hardware.Bruker_AWG import BrukerAWG
                 self.spectromterInterface = BrukerAWG(filename_edit)
                 self.spectromterInterface.savefolder = self.current_folder
                 self.Bruker=True
@@ -375,8 +376,8 @@ class autoDEERUI(QMainWindow):
 
         # Set the wavefrom precision to 1/Sampling Frequency
         waveform_precision = 1/self.config['Spectrometer']['Bridge']['Sample Freq']
-        ad.set_waveform_precision(waveform_precision)
-        main_log.debug(f"Setting waveform precision to {ad.get_waveform_precision()}")
+        epr.set_waveform_precision(waveform_precision)
+        main_log.debug(f"Setting waveform precision to {epr.get_waveform_precision()}")
 
         # Get user preferences
         try:
@@ -484,7 +485,7 @@ class autoDEERUI(QMainWindow):
             self.current_data['fieldsweep'] = dataset
             self.save_data(dataset,'EDFS',folder='main')
 
-        fsweep_analysis = ad.FieldSweepAnalysis(dataset)
+        fsweep_analysis = epr.FieldSweepAnalysis(dataset)
         fsweep_analysis.calc_gyro()
         main_log.info(f"Calculated gyro {fsweep_analysis.gyro*1e3:.3f} MHz/T")
         if self.worker is not None:
@@ -659,8 +660,8 @@ class autoDEERUI(QMainWindow):
     def optimise_pulses(self, pulses=None):
         if (pulses is None) or pulses == {}:
             self.pulses = ad.build_default_pulses(self.AWG,tp = self.Min_tp)
-            # pump_pulse = ad.HSPulse(tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0, order1=6, order2=1, beta=10)
-            # exc_pulse = ad.RectPulse(tp=16, freq=0.02, flipangle=np.pi/2, scale=0)
+            # pump_pulse = epr.HSPulse(tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0, order1=6, order2=1, beta=10)
+            # exc_pulse = epr.RectPulse(tp=16, freq=0.02, flipangle=np.pi/2, scale=0)
             # ref_pulse = exc_pulse.copy(flipangle=np.pi)
         
         pump_pulse = self.pulses['pump_pulse']
@@ -695,8 +696,8 @@ class autoDEERUI(QMainWindow):
         self.respro_canvas.draw()
 
         # update the pulse parameter grid
-        type_to_pulse_hash = {ad.RectPulse:'Rect', ad.ChirpPulse:'Chirp', ad.HSPulse:'HS'}
-        if isinstance(exc_pulse, ad.RectPulse):
+        type_to_pulse_hash = {epr.RectPulse:'Rect', epr.ChirpPulse:'Chirp', epr.HSPulse:'HS'}
+        if isinstance(exc_pulse, epr.RectPulse):
             self.ExcFreqBox.setValue(param_in_MHz(exc_pulse.freq))
             self.ExcBWBox.setValue(exc_pulse.tp.value)
             self.ExcBWBox.setSuffix(' ns')
@@ -708,7 +709,7 @@ class autoDEERUI(QMainWindow):
             self.ExcBWBox.setSuffix(' MHz')
             self.ExcTypeLine.setText(type_to_pulse_hash[type(exc_pulse)])
         
-        if isinstance(ref_pulse, ad.RectPulse):
+        if isinstance(ref_pulse, epr.RectPulse):
             self.RefFreqBox.setValue(param_in_MHz(ref_pulse.freq))
             self.RefBWBox.setValue(ref_pulse.tp.value)
             self.RefBWBox.setSuffix(' ns')
@@ -720,7 +721,7 @@ class autoDEERUI(QMainWindow):
             self.RefBWBox.setSuffix(' MHz')
             self.RefTypeLine.setText(type_to_pulse_hash[type(ref_pulse)])
         
-        if isinstance(pump_pulse, ad.RectPulse):
+        if isinstance(pump_pulse, epr.RectPulse):
             self.PumpFreqBox.setValue(param_in_MHz(pump_pulse.freq))
             self.PumpBWBox.setValue(pump_pulse.tp.value)
             self.PumpBWBox.setSuffix(' ns')
@@ -804,7 +805,7 @@ class autoDEERUI(QMainWindow):
         if 'T2_relax' in self.current_results:
             relax1D_results.append(self.current_results['T2_relax'])
 
-        ad.plot_1Drelax(*relax1D_results,axs=self.relax_ax[0],fig=fig,cmap=ad.primary_colors)
+        epr.plot_1Drelax(*relax1D_results,axs=self.relax_ax[0],fig=fig,cmap=ad.primary_colors)
             
         if 'relax2D' in self.current_results:
             self.relax_ax[1].cla()
@@ -848,7 +849,7 @@ class autoDEERUI(QMainWindow):
                 else:
                     CP_decay_idx = CP_decay_idx[0]
                 max_tau = fitresult.axis[CP_decay_idx]
-                max_tau = ad.round_step(max_tau,1)
+                max_tau = epr.round_step(max_tau,1)
                 main_log.info(f"Max tau {max_tau:.2f} us")
                 self.worker.set_2D_max_tau(max_tau*2)
 
@@ -875,7 +876,7 @@ class autoDEERUI(QMainWindow):
         
         #debug only, remove later
         store_pickle(relax_data,os.path.join(self.data_folder,'relax_data.pkl'))
-
+        main_log.info(f'Calculating DEER settings with aim SNR {aim_SNR:.2f}, aim time {self.aim_time}hrs')
         self.deer_settings = ad.calc_DEER_settings(relax_data,exp,self.aim_time,aim_SNR,self.waveform_precision)
         
         self.deer_settings['criteria'] = self.aim_MNR
@@ -896,7 +897,7 @@ class autoDEERUI(QMainWindow):
         data = self.current_results['quickdeer']
         rec_tau = self.current_results['quickdeer'].rec_tau_max
         dt = self.current_results['quickdeer'].rec_dt * 1e3
-        dt = ad.round_step(dt,self.waveform_precision)
+        dt = epr.round_step(dt,self.waveform_precision)
         dt= 8
         mod_depth = data.MNR * data.noiselvl
         remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60)) # in hours
@@ -952,12 +953,12 @@ class autoDEERUI(QMainWindow):
         axs.cla()
         # Only supports 5pDEER expand to 4pDEER
         CP_analysis = self.current_results['relax']
-        ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[0]],corr_factor=self.correction_factor)
+        ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[0]],corr_factor=self.correction_factor)
 
         if 'relax2D' in self.current_results:
-            ad.plot_optimal_tau(self.current_results['relax2D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[1]],corr_factor=self.correction_factor)
+            ad.plot_optimal_tau(self.current_results['relax2D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
         elif 'T2_relax' in self.current_results:
-            ad.plot_optimal_tau(self.current_results['T2_relax'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[ad.primary_colors[1]],corr_factor=self.correction_factor)
+            ad.plot_optimal_tau(self.current_results['T2_relax'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
 
         axs.set_title(labels[0])
 
@@ -995,8 +996,8 @@ class autoDEERUI(QMainWindow):
             self.save_data(dataset,'T2',folder='main')
 
         
-        d_ESEEM = ad.detect_ESEEM(dataset,'deuteron')
-        p_ESEEM = ad.detect_ESEEM(dataset,'proton')
+        d_ESEEM = epr.detect_ESEEM(dataset,'deuteron')
+        p_ESEEM = epr.detect_ESEEM(dataset,'proton')
         d_ESEEM = False # Turn off ESEEM detection
         p_ESEEM = False
         if d_ESEEM:
@@ -1028,9 +1029,9 @@ class autoDEERUI(QMainWindow):
             #     self.waitCondition.wakeAll()
                 return None
         elif test_result == -1: # The trace needs to be longer
-            new_dt = ad.round_step(test_dt*2,self.waveform_precision)
+            new_dt = epr.round_step(test_dt*2,self.waveform_precision)
         elif test_result == 1: # The trace needs to be shorter
-            new_dt = ad.round_step(test_dt/2,self.waveform_precision)
+            new_dt = epr.round_step(test_dt/2,self.waveform_precision)
 
         new_tmin = fitresult.axis[-1].values
         new_tmin += new_dt*1e-3
@@ -1052,9 +1053,9 @@ class autoDEERUI(QMainWindow):
             #     self.waitCondition.wakeAll()
             return True
         elif test_result == -1: # The trace needs to be longer
-            new_dt = ad.round_step(test_dt*2,self.waveform_precision)
+            new_dt = epr.round_step(test_dt*2,self.waveform_precision)
         elif test_result == 1: # The trace needs to be shorter
-            new_dt = ad.round_step(test_dt/2,self.waveform_precision)
+            new_dt = epr.round_step(test_dt/2,self.waveform_precision)
 
         new_tmin = fitresult.axis[-1].values
         new_tmin += new_dt*1e-3
@@ -1125,8 +1126,8 @@ class autoDEERUI(QMainWindow):
             self.current_data['reptime'] = dataset
             self.save_data(dataset,'reptime',folder='main')
 
-        # reptime_analysis = ad.ReptimeAnalysis(dataset,dataset.sequence)
-        reptime_analysis = ad.ReptimeAnalysis(dataset)
+        # reptime_analysis = epr.ReptimeAnalysis(dataset,dataset.sequence)
+        reptime_analysis = epr.ReptimeAnalysis(dataset)
         reptime_analysis.fit()
 
         if 'ReptimeRecovery' in self.config['autoDEER']:

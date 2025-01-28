@@ -41,7 +41,7 @@ extensions = [
               'sphinx_copybutton',
               'numpydoc',
               'sphinx.ext.graphviz',
-              'myst_parser']
+              'myst_parser',]
 
 # Add any paths that contain templates here, relative to this directory.
 # Configuration of Sphinx-Autosymmary
@@ -94,6 +94,7 @@ html_theme_options = {
     "dark_logo": "autoDEER_EPR_dark.svg",
 
 }
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".

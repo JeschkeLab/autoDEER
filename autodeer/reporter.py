@@ -11,7 +11,7 @@ from functools import partial
 from datetime import date
 import matplotlib.pyplot as plt
 from autodeer.DEER_analysis import DEERanalysis_plot, plot_overlap, DEERanalysis_plot_pub
-from autodeer.Relaxation import plot_1Drelax
+from pyepr import plot_1Drelax
 
 from svglib.svglib import svg2rlg
 from io import BytesIO

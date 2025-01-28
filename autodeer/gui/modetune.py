@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QDialog
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 
-from autodeer import HahnEchoSequence,RectPulse, Parameter, Interface
+from pyepr import HahnEchoSequence, RectPulse, Parameter, Interface
 import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
 import matplotlib.pyplot as plt
@@ -10,6 +10,7 @@ import time
 import os
 from autodeer.gui.tools import WorkerSignals
 from autodeer.colors import primary_colors
+
 import datetime
 QtCore.QDir.addSearchPath('icons', 'gui/resources')
 package_directory = os.path.dirname(os.path.abspath(__file__))
