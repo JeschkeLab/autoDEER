@@ -52,14 +52,13 @@ class DEERplot(QWidget):
         super().__init__(parent)
  
         # loading the ui fsile with uic module
-        uic.loadUi(f"{package_directory}/quickdeer.ui", self)
+        uic.loadUi(f"{package_directory}/deerpanel.ui", self)
 
         self.threadpool = QtCore.QThreadPool()
         self.current_results = {}
         self.current_data = {}
         self.create_figure()
         self.setup_inputs()
-        self.toolbar()
         self.DL_params={}
 
         self.current_folder = ''
@@ -67,22 +66,6 @@ class DEERplot(QWidget):
         self.Last_updated.setText(f"Last updated: never")
         self.num_scans.setText(f"# of scans: 0")
 
-
-    def toolbar(self):
-        upload_icon = QtGui.QIcon('icons:upload.png')
-
-        def custom_load():
-            load_epr_file(self, 'quickdeer')
-            self.update_inputs_from_dataset()
-            self.update_figure()
-            
-
-        self.Loadfile.setIcon(upload_icon)
-        self.Loadfile.clicked.connect(custom_load)
-
-        refresh_icon = QtGui.QIcon('icons:refresh.png')
-        self.Refresh_analysis.setIcon(refresh_icon)
-        self.Refresh_analysis.clicked.connect(self.process_deeranalysis)
 
     def setup_inputs(self):
         self.ExperimentcomboBox.addItems(['5pDEER', '4pDEER'])
