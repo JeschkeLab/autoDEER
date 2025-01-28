@@ -42,7 +42,7 @@ def get_Vexp(dataset, tmin=0):
 def deeranalysis_process(dataset, settings, cores):
 
     with threadpool_limits(limits=cores, user_api='blas'):
-        return ad.DEERanalysis(dataset, **settings, verbosity=2)
+        return DEERanalysis(dataset, **settings, verbosity=2)
     
 
 
@@ -334,7 +334,7 @@ class DEERplot(QWidget):
 
         self._static_ax['Primary_time'].cla()
         self._static_ax['Primary_dist'].cla()
-        ad.DEERanalysis_plot(self.fitresult, background=True, ROI=self.fitresult.ROI, axs= self._static_ax, fig=self.static_canvas.figure)
+        DEERanalysis_plot(self.fitresult, background=True, ROI=self.fitresult.ROI, axs= self._static_ax, fig=self.static_canvas.figure)
         self.static_canvas.draw()
         self.update_fit_result()
 

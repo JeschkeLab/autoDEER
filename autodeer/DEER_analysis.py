@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from scipy.integrate import cumulative_trapezoid
 import logging
 import importlib
-from autodeer.Relaxation import RefocusedEcho2DAnalysis, CarrPurcellAnalysis, HahnEchoRelaxationAnalysis
+from pyepr import CarrPurcellAnalysis, HahnEchoRelaxationAnalysis, round_step
+from autodeer.ref_2D_analysis import RefocusedEcho2DAnalysis
 import scipy.fft as fft
 from deerlab import correctphase
 from scipy.interpolate import interp1d
@@ -14,8 +15,7 @@ import numbers
 import scipy.signal as sig
 from scipy.optimize import minimize,brute
 from autodeer.colors import primary_colors, ReIm_colors
-from autodeer.utils import round_step
-from autodeer.relaxation_autodeer import calculate_optimal_tau
+from autodeer.delay_optimise import calculate_optimal_tau
 import scipy.signal as signal
 
 log = logging.getLogger('autoDEER.DEER')
@@ -1109,7 +1109,10 @@ def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
     if (tau2_4p >= 2*tau1_5p) and (V_4p > V_5p * 0.9):
         mode = '4pDEER'
 
-    if (tau1_5p < 1.5) or mode =='4pDEER':
+    if (tau1_5p <1) and (tau2_4p > 0.1):
+        mode = '4pDEER'
+
+    if mode =='4pDEER':
         # Use four-pulse DEER
         deer_settings = {
             'ExpType': '4pDEER',

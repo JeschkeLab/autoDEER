@@ -1,6 +1,9 @@
 import PyQt6.QtCore as QtCore
-from autodeer import RectPulse, ChirpPulse, HSPulse, Detection, DEERCriteria, SNRCriteria, TimeCriteria, get_waveform_precision
+from autodeer import DEERCriteria
+from pyepr.sequences import *
 from autodeer.sequences import *
+from pyepr.criteria import *
+from pyepr import get_waveform_precision
 import time
 import numpy as np
 from threadpoolctl import threadpool_limits
@@ -192,7 +195,6 @@ class autoDEERWorker(QtCore.QRunnable):
         Initialise the runner function for relaxation. 
         '''
         self.signals.status.emit('Running Carr-Purcell Experiment')
-        print(f"Running Carr-Purcell Experiment with tmin: {tmin} us and dt: {dt} us")
         LO = self.LO
         gyro = self.gyro
         reptime = self.reptime
@@ -204,6 +206,8 @@ class autoDEERWorker(QtCore.QRunnable):
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
             )
+        print(f"Running Carr-Purcell Experiment with tmin: {relax.tau2.value*2} us and dt: {relax.dt} ns")
+
         relax.five_pulse(relaxation=True, re_step=dt,re_dim=500)
         if self.AWG:
             relax.select_pcyc("16step_5p")
