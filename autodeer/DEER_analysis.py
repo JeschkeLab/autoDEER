@@ -288,7 +288,11 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
   
     r_max = np.ceil(np.cbrt(t.max()*6**3/2))
-    r = np.linspace(1.5,r_max,100)
+    if r_max > 11.5:
+        nPoints = 200
+    else:
+        nPoints = 100
+    r = np.linspace(1.5,r_max,nPoints)
 
     # Default fit parameters
     defualt_fit_params = {'regparam':'bic','nnlsSolver':'qp'}
@@ -393,6 +397,8 @@ def background_func(t, fit):
     for key in Bmodel.signature:
         if key == 'lam':
             mod_depth=True
+            continue
+        if key == 't':
             continue
         Bmodel_params[key] = getattr(fit, key)
 
@@ -952,7 +958,6 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
 
     # gyro  = Fieldsweep.gyro
     # if hasattr(Fieldsweep,'results'):
-    #     fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)
     fieldsweep_fun = Fieldsweep.func_freq
     f = np.linspace(-0.3,0.3,100)
     fieldsweep_profile = fieldsweep_fun(f)
@@ -1232,7 +1237,7 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, reso
 
     if resonator is not None:
         model_norm = resonator.model / np.max(resonator.model)
-        axs.plot((resonator.model_x - Fieldsweep.LO)*1e3, model_norm,'--', label='Resonator Profile')
+        axs.plot((resonator.model_x - Fieldsweep.freq)*1e3, model_norm,'--', label='Resonator Profile')
 
     fmin = f[~np.isclose(fieldsweep_profile,0)].min()
     fmax = f[~np.isclose(fieldsweep_profile,0)].max()
