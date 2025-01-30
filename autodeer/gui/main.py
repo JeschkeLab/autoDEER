@@ -116,12 +116,12 @@ def respro_process(dataset,f_lims, fieldsweep=None,cores=1):
     respro = epr.ResonatorProfileAnalysis(
         dataset,f_lims=f_lims
     )
-    fc_guess = dataset.LO.values[dataset.LO.values.shape[0]//2]
+    fc_guess = respro.freqs[respro.freqs.shape[0]//2]
     with threadpool_limits(limits=cores, user_api='blas'):
         respro.fit(cores=cores,fc_guess=fc_guess)
 
     if fieldsweep is not None:
-        LO_new = fieldsweep.LO + epr.optimise_spectra_position(respro, fieldsweep)
+        LO_new = fieldsweep.freq + epr.optimise_spectra_position(respro, fieldsweep)
         return respro, LO_new
 
 
@@ -548,7 +548,7 @@ class autoDEERUI(QMainWindow):
             self.LO = args[0][1]
             self.LO = fitresult.results.fc
 
-            LO_sweep_width = fitresult.dataset.LO.max() - fitresult.dataset.LO.min()
+            LO_sweep_width = fitresult.freqs.max() - fitresult.freqs.min()
             LO_shift = self.LO - LO
             if np.abs(LO_shift) > LO_sweep_width:
                 if LO_shift > 0:
