@@ -64,7 +64,7 @@ class autoDEERWorker(QtCore.QRunnable):
     def __init__(self, interface, wait:QtCore.QWaitCondition, 
                  mutex:QtCore.QMutex,pulses:dict, results:dict, LO, gyro, 
                  AWG=True, user_inputs:dict = None, 
-                 operating_mode = 'auto',fixed_tau=None, *args, **kwargs):
+                 operating_mode = None,fixed_tau=None, *args, **kwargs):
         super(autoDEERWorker,self).__init__()
 
         # Store constructor arguments (re-used for processing)
@@ -437,7 +437,7 @@ class autoDEERWorker(QtCore.QRunnable):
         methods = [self.run_fsweep,self.run_reptime_opt,self.run_respro,self.run_fsweep,
                    self.tune_pulses]
         
-        if ( self.operating_mode is None) or ( self.operating_mode == '5pDEER'):
+        if ( self.operating_mode is None) or (self.operating_mode == '5pDEER') or (self.operating_mode == 'auto'):
             methods.append(self.run_CP_relax)
             methods.append(self.run_T2_relax)
         

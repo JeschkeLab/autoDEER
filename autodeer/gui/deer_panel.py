@@ -140,7 +140,7 @@ class DEERplot(QWidget):
         self.MNRDoubleSpinBox.setValue(results.MNR)
         self.Chi2DoubleSpinBox.setValue(results.stats['chi2red'])
 
-        bg_params = copy.copy(self.Bmodel.signature)
+        bg_params = copy.copy(results.Bmodel.signature)
 
         if 't' in bg_params:
             bg_params.remove('t')
@@ -151,7 +151,7 @@ class DEERplot(QWidget):
         for i,param in enumerate(bg_params):
             # create a new label and a horizontle layout taht contains a double spin box and the uncertainty
             value = getattr(results,param)
-            unit = getattr(self.Bmodel,param).unit
+            unit = getattr(results.Bmodel,param).unit
             # create the horizontal layout
             new_layout = QHBoxLayout()
 

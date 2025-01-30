@@ -155,6 +155,7 @@ class autoDEERUI(QMainWindow):
         # loading the ui file with uic module
         uic.loadUi(f"{package_directory}/gui2.ui", self)
         logo_pixmap = QtGui.QPixmap('icons:logo.png')
+        logo_pixmap.setDevicePixelRatio(1.0)
         logo_pixmap = logo_pixmap.scaledToHeight(60)
         self.logo.setPixmap(logo_pixmap)
         self.set_spectrometer_connected_light(0)
@@ -467,9 +468,9 @@ class autoDEERUI(QMainWindow):
         if self.worker is not None:
             self.worker.set_noise_mode(np.min([fsweep_analysis.calc_noise_level(),20]))
         
-        self.fsweep_ax.cla()
-        fsweep_analysis.plot(axs=self.fsweep_ax,fig=self.fsweep_canvas.figure)
-        self.fsweep_canvas.draw()
+        self.setup_plot_ax.cla()
+        fsweep_analysis.plot(axs=self.setup_plot_ax,fig=self.setup_figure_canvas.figure)
+        self.setup_figure_canvas.draw()
         self.Tab_widget.setCurrentIndex(1)
 
         # For Bruker recalculate d0
@@ -491,16 +492,19 @@ class autoDEERUI(QMainWindow):
         self.threadpool.start(worker)
 
  
-    def refresh_fieldsweep_after_fit(self, fitresult):
+    def refresh_fieldsweep_after_fit(self, fitresult=None):
 
-        self.current_results['fieldsweep'] = fitresult
+        if fitresult is None:
+            fitresult = self.current_results['fieldsweep']
+        else:
+            self.current_results['fieldsweep'] = fitresult
         self.gyro = fitresult.gyro
         
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
-        self.fsweep_ax.cla()
-        fitresult.plot(axs=self.fsweep_ax,fig=self.setup_figure_canvas.figure)
+        self.setup_plot_ax.cla()
+        fitresult.plot(axs=self.setup_plot_ax,fig=self.setup_figure_canvas.figure)
         self.setup_figure_canvas.draw()
 
         # Add fit resultss
@@ -542,9 +546,9 @@ class autoDEERUI(QMainWindow):
 
 
     def refresh_respro(self, *args):
-        if len(args[0]) == 2:
+        if (len(args)>0)and (len(args[0]) == 2):
             LO = self.LO
-            fitresult = args[0][0]
+            fitresult:epr.ResonatorProfileAnalysis = args[0][0]
             self.LO = args[0][1]
             self.LO = fitresult.results.fc
 
@@ -560,13 +564,20 @@ class autoDEERUI(QMainWindow):
                 self.worker.update_LO(self.LO)
             print(f"New LO frequency: {self.LO:.2f} GHz")
             main_log.info(f"Setting LO to {self.LO:.6f} GHz")
-        else:
+        elif (len(args)>0):
             fitresult = args[0]
+        
+        if (len(args)>0):
+            self.current_results['respro'] = fitresult
+            self.spectromterInterface.resonator = fitresult
 
-        self.current_results['respro'] = fitresult
-        self.spectromterInterface.resonator = fitresult
-        if self.waitCondition is not None: # Wake up the runner thread
-            self.waitCondition.wakeAll()
+            if self.waitCondition is not None: # Wake up the runner thread
+                self.waitCondition.wakeAll()
+            
+            optimise_pulses=True
+        else:
+            fitresult = self.current_results['respro']
+            optimise_pulses=False
             
         self.setup_plot_ax.cla()
 
@@ -584,8 +595,9 @@ class autoDEERUI(QMainWindow):
         self.qCI.setText(f"({fitresult.results.qUncert.ci(95)[0]:.2f},{fitresult.results.qUncert.ci(95)[1]:.2f})")
         self.nu1doubleSpinBox.setValue(fitresult.model.max()*1e3)
         self.Tab_widget.setCurrentIndex(1)
-        main_log.info(f"Resonator centre frequency {fitresult.results.fc:.4f} GHz")
-        self.optimise_pulses_button()
+        if optimise_pulses:
+            main_log.info(f"Resonator centre frequency {fitresult.results.fc:.4f} GHz")
+            self.optimise_pulses_button()
 
 
     def optimise_pulses_button(self):
@@ -1380,6 +1392,7 @@ if __name__ == '__main__':
     app.setApplicationDisplayName('autoDEER')
     app.setApplicationVersion(str(ad.__version__))
     apply_stylesheet(app, theme='light_purple.xml')
+    app.setDesktopFileName('autoDEER')
     window = autoDEERUI()
     window.show()
     app.exec()

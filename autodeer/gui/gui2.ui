@@ -148,7 +148,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>1</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideRight</enum>
@@ -1022,7 +1022,7 @@
                </widget>
               </item>
               <item>
-               <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,0,0,0">
+               <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,0,0,1">
                 <property name="sizeConstraint">
                  <enum>QLayout::SetDefaultConstraint</enum>
                 </property>
@@ -1031,9 +1031,15 @@
                 </property>
                 <item row="3" column="1">
                  <widget class="QDoubleSpinBox" name="RefFreqBox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>50</width>
+                    <width>100</width>
                     <height>0</height>
                    </size>
                   </property>
@@ -1076,9 +1082,15 @@
                 </item>
                 <item row="2" column="2">
                  <widget class="QDoubleSpinBox" name="PumpBWBox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>50</width>
+                    <width>100</width>
                     <height>0</height>
                    </size>
                   </property>
@@ -1127,14 +1139,14 @@
                 <item row="1" column="1">
                  <widget class="QDoubleSpinBox" name="ExcFreqBox">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
                   </property>
                   <property name="minimumSize">
                    <size>
-                    <width>50</width>
+                    <width>100</width>
                     <height>0</height>
                    </size>
                   </property>
@@ -1157,9 +1169,15 @@
                 </item>
                 <item row="2" column="1">
                  <widget class="QDoubleSpinBox" name="PumpFreqBox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>50</width>
+                    <width>100</width>
                     <height>0</height>
                    </size>
                   </property>
@@ -1211,9 +1229,15 @@
                 </item>
                 <item row="1" column="2">
                  <widget class="QDoubleSpinBox" name="ExcBWBox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>50</width>
+                    <width>100</width>
                     <height>0</height>
                    </size>
                   </property>
@@ -1246,9 +1270,15 @@
                 </item>
                 <item row="3" column="2">
                  <widget class="QDoubleSpinBox" name="RefBWBox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="minimumSize">
                    <size>
-                    <width>50</width>
+                    <width>100</width>
                     <height>0</height>
                    </size>
                   </property>
