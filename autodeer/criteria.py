@@ -82,3 +82,43 @@ class DEERCriteria(Criteria):
             return test
         
         super().__init__(name, test_func, description,**kwargs)
+
+
+# class BackgroundCriteria(Criteria):
+
+#     def __init__(self, SNR_target:float, model=None, verbosity=0, update_func=None, **kwargs)->None:
+#         """Criteria for terminating DEER background experiments.
+
+#         Parameters
+#         ----------
+#         SNR_target : float
+#             Target signal-to-noise ratio.
+
+#         Returns
+#         -------
+#         _type_
+#             _description_
+#         """
+#         name = "BackgroundCriteria"
+#         description = "Criteria for terminating background experiments."
+
+#         def test_func(data, verbosity=verbosity):
+
+#             fit = BackgroundAnalysis(data, model=model, verbosity=verbosity,lin_maxiter=50,max_nfev=100)
+            
+#             if fit.SNR < SNR_target:
+#                 test = False
+            
+#             if update_func is not None:
+#                 update_func(fit)
+
+#             test_msg = f"Test {self.name}: {test}\t - SNR:{fit.SNR}"
+#             log.debug(test_msg)
+#             if verbosity > 0:
+#                 print(test_msg)
+            
+#             return test
+
+
+
+#         super().__init__(name, test_func, description,**kwargs)
