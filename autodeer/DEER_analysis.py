@@ -14,9 +14,13 @@ import re
 import numbers
 import scipy.signal as sig
 from scipy.optimize import minimize,brute
+import scipy.optimize as opt
 from autodeer.colors import primary_colors, ReIm_colors
 from autodeer.delay_optimise import calculate_optimal_tau
 import scipy.signal as signal
+import dill
+
+opt._pickle = dill
 
 log = logging.getLogger('autoDEER.DEER')
 
@@ -576,7 +580,7 @@ def DEERanalysis_plot_pub(results, ROI=None, fig=None, axs=None):
     
     axs[0].plot(results.t,background_func(results.t, results), '--',alpha=1,color='#42A399', lw=2)
     
-    axs[0].set_xlabel('Time / $\mu s$')
+    axs[0].set_xlabel(r'Time / $\mu s$')
     axs[0].xaxis.tick_top()
 
     axs[0].xaxis.set_label_position('top') 
@@ -815,10 +819,95 @@ def functional(f_axis,fieldsweep,A,B,filter=None,A_shift=0,B_shift=0):
 
     return -1*(Aspins * Bspins)/np.sqrt(Noise)
 
+def shift_freq(pulse,shift):
+    # shift the frequency of a pulse by a given amount
+    if hasattr(pulse,'freq'):
+        pulse.freq.value += shift
+    else:
+        pulse.init_freq.value += shift
+        pulse.final_freq.value += shift
+
+def Functional_basic(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses):
+    """
+    Parameters
+    ----------
+    x : list
+        The frequency shifts of the pump and excitation pulses.
+    pump_pulse : ad.Pulse
+        The pump pulse object
+    exc_pulse : ad.Pulse
+        The excitation pulse object
+    ref_pulse : ad.Pulse
+        The refocusing pulse object 
+    Fieldsweep : ad.FieldSweepAnalysis
+        The FieldSweep analysis object
+    resonator : ad.ResonatorProfile
+        The resonator profile
+    num_ref_pulses : int
+        The number of refocusing pulses
+    
+    Returns
+    -------
+    float
+        The functional value after optimisation
+    
+    """
+    pump_freq = x[0]
+    obs_freq = x[1]
+    tmp_pump = pump_pulse.copy()
+    tmp_exc = exc_pulse.copy()
+    tmp_ref = ref_pulse.copy()
+
+    shift_freq(tmp_pump, pump_freq)
+    shift_freq(tmp_exc, obs_freq)
+    shift_freq(tmp_ref, obs_freq)
+
+    return calc_functional(Fieldsweep, tmp_pump, tmp_exc, tmp_ref, resonator=resonator, num_ref_pulses=num_ref_pulses)
+
+def Functional_spectrum_shift(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses):
+    pump_freq = x[0]
+    obs_freq = x[1]
+    spectrum_shift = x[2]
+
+    tmp_pump = pump_pulse.copy()
+    tmp_exc = exc_pulse.copy()
+    tmp_ref = ref_pulse.copy()
+
+    shift_freq(tmp_pump, pump_freq)
+    shift_freq(tmp_exc, obs_freq)
+    shift_freq(tmp_ref, obs_freq)
+
+    return calc_functional(Fieldsweep, tmp_pump, tmp_exc, tmp_ref, resonator=resonator, num_ref_pulses=num_ref_pulses, spectrum_shift=spectrum_shift)
+
+
+
+def optimise_pulses2(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, resonator=None, num_ref_pulses=2, verbosity=0, method='basic', **kwargs):
+
+    if method == 'basic':
+        res = minimize(lambda x: -Functional_basic(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses), [0, 0], bounds=[(-0.15, 0.05), (-0.05, 0.1)])
+    
+    elif method == 'spectrum_shift':
+        res = minimize(lambda x: -Functional_spectrum_shift(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses), [0, 0, 0], bounds=[(-0.15, 0.05), (-0.05, 0.1), (-0.02, 0)])
+    
+    if verbosity > 0:
+        print(f"Functional: {res.fun:.3f} \t Pump shift: {res.x[0]*1e3:.1f}MHz \t Exc/Ref shift: {res.x[1]*1e3:.1f}MHz")
+        if len(res.x) > 2:
+            print(f"Spectrum shift: {res.x[2]*1e3:.1f}MHz")
+        print(f"Number of function evaluations: {res.nfev}")
+
+    new_pump = pump_pulse.copy()
+    new_exc = exc_pulse.copy()
+    new_ref = ref_pulse.copy()
+    shift_freq(new_pump, res.x[0])
+    shift_freq(new_exc, res.x[1])
+    shift_freq(new_ref, res.x[1])
+
+    return {'pump_pulse': new_pump, 'exc_pulse': new_exc, 'ref_pulse': new_ref}, res.fun
+
 
 def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=None, verbosity=0, method='brute',
                     nDEER=False, num_ref_pulses=2, full_output=False, resonator=None, **kwargs):
-    """Optimise the pulse positions to maximise the pump-exc overlap.
+    r"""Optimise the pulse positions to maximise the pump-exc overlap.
 
     Parameters
     ----------
@@ -945,9 +1034,147 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
             return new_pump_pulse, new_exc_pulse, new_ref_pulse, funct, grid, Jout
         else:
             return new_pump_pulse, new_exc_pulse, new_ref_pulse,
+def shift_m11_01(x):
+    """
+    Shifts the input array from the range [-1, 1] to the range [0, 1].
+
+    Parameters:
+    x (numpy.ndarray): Input array to be shifted.
+
+    Returns:
+    numpy.ndarray: Shifted array in the range [0, 1].
+    """
+    return (-x + 1) / 2
+def build_profile(pulses,freqs=None,resonator=None):
+
+    if freqs is None:
+        freqs = np.linspace(-0.3,0.3,100)
+
+    excite_profile = np.ones_like(freqs)
+
+    if isinstance(pulses, list):
+        for pulse in pulses:
+            tmp_excite_profile = pulse.exciteprofile(freqs=freqs,resonator=resonator)[:,2].real
+            if pulse.flipangle.value == np.pi:
+                tmp_excite_profile = shift_m11_01(tmp_excite_profile)
+            elif pulse.flipangle.value == np.pi/2:
+                tmp_excite_profile = -1*tmp_excite_profile+ 1
+            excite_profile *= tmp_excite_profile
+    else:
+        excite_profile = pulses.exciteprofile(freqs=freqs,resonator=resonator)[:,2].real
+        if pulses.flipangle.value == np.pi:
+            excite_profile = shift_m11_01(excite_profile)
+        elif pulses.flipangle.value == np.pi/2:
+            excite_profile = -1*excite_profile+ 1
+
+    return excite_profile
+
+def calc_functional(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,resonator=None, num_ref_pulses=2, spec_shift=0,**kwargs):
+    """
+        
+    Parameters
+    ----------
+    Fieldsweep : ad.FieldSweepAnalysis
+        The FieldSweep analysis object
+    pump_pulse : ad.Pulse
+        The pump pulse object
+    exc_pulse : ad.Pulse
+        The excitation pulse object
+    ref_pulse : ad.Pulse
+        The refocusing pulse object
+    respro : ad.ResonatorProfileAnalysis, optional
+        The resonator profile, by default None
+    num_ref_pulses : int, optional
+        The total number of refocusing pulses, by default 2
+
+    Returns
+    -------
+    float
+        The estimated modulation depth
+    """
+    if 'respro' in kwargs:
+        resonator = kwargs['respro']
+        print('Warning: respro is deprecated, use resonator instead')
+
+    fieldsweep_fun = Fieldsweep.func_freq
+    f = np.linspace(-0.3,0.3,100)
+    fieldsweep_profile = fieldsweep_fun(f)
+
+    fieldsweep_profile = resample_and_shift_vector(fieldsweep_profile, f, spec_shift)
+    fieldsweep_profile /= np.trapz(fieldsweep_profile,f) # normalise the fieldsweep profile
 
 
-def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, respro=None, num_ref_pulses=2, axs=None, fig=None):
+    obs_sequence = [exc_pulse]
+    for i in range(num_ref_pulses):
+        obs_sequence.append(ref_pulse)
+
+    pump_profile = build_profile(pump_pulse,f,resonator) 
+    exc_profile = build_profile(obs_sequence,f,resonator)
+    dead_profile = pump_profile * exc_profile
+    pump_profile -= dead_profile
+    exc_profile -= dead_profile
+    pump_profile[pump_profile <0] = 0
+    exc_profile[exc_profile <0] = 0
+
+    P_pump = np.trapz(pump_profile*fieldsweep_profile,f) / np.trapz(fieldsweep_profile,f)
+    P_obs = np.trapz(exc_profile*fieldsweep_profile,f) / np.trapz(fieldsweep_profile,f)
+    P_none = 1 - P_pump - P_obs
+
+    return 2*P_pump*P_obs
+
+def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,respro=None, num_ref_pulses=2):
+    """
+    Calculate the estimated modulation depth from the EPR spectrum, the pulses and the resonator profile.
+
+    .. math::
+        \lambda = \frac{p_{\text{mod}}}{p_{\text{mod}}+p_{\text{un-mod}}} = \frac{2p_{\text{pump}}p_{\text{obs}}}{2p_{\text{pump}}p_{\text{obs}}+2p_{\text{obs}}p_{\text{none}} +p_{\text{obs}}^2 }
+
+    
+    Parameters
+    ----------
+    Fieldsweep : ad.FieldSweepAnalysis
+        The FieldSweep analysis object
+    pump_pulse : ad.Pulse
+        The pump pulse object
+    exc_pulse : ad.Pulse
+        The excitation pulse object
+    ref_pulse : ad.Pulse
+        The refocusing pulse object
+    respro : ad.ResonatorProfileAnalysis, optional
+        The resonator profile, by default None
+    num_ref_pulses : int, optional
+        The total number of refocusing pulses, by default 2
+
+    Returns
+    -------
+    float
+        The estimated modulation depth
+    """
+    resonator = respro
+    fieldsweep_fun = Fieldsweep.func_freq
+    f = np.linspace(-0.3,0.3,100)
+    fieldsweep_profile = fieldsweep_fun(f)
+
+    obs_sequence = [exc_pulse]
+    for i in range(num_ref_pulses):
+        obs_sequence.append(ref_pulse)
+
+    pump_profile = build_profile(pump_pulse,f,resonator) 
+    exc_profile = build_profile(obs_sequence,f,resonator)
+    dead_profile = pump_profile * exc_profile
+    pump_profile -= dead_profile
+    exc_profile -= dead_profile
+    pump_profile[pump_profile <0] = 0
+    exc_profile[exc_profile <0] = 0
+
+    P_pump = np.trapz(pump_profile*fieldsweep_profile,f) / np.trapz(fieldsweep_profile,f)
+    P_obs = np.trapz(exc_profile*fieldsweep_profile,f) / np.trapz(fieldsweep_profile,f)
+    P_none = 1 - P_pump - P_obs
+
+    return (2*P_pump*P_obs)/(2*P_pump*P_obs + P_obs**2 + 2*P_obs*P_none)
+
+
+def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resonator=None, num_ref_pulses=2, axs=None, fig=None,**kwargs):
     """Plots the pump and excitation profiles as well as the fieldsweep and filter profile.
 
     Parameters
@@ -961,10 +1188,7 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
         The excitation pulse object
     ref_pulse : ad.Pulse, optional 
         The refocusing pulse object, by default None
-    filter : str or number, optional
-        The filter profile if applicable, by default None. If it is a number a filter is generated with this cutoff frequency.
-        If the string 'Matched' is used a matched filter is used.
-    respro : ad.ResonatorProfileAnalysis, optional
+    resonator : ad.ResonatorProfileAnalysis, optional
         The resonator profile for fitting, by default None. The resonator profile must include the fit.
     num_ref_pulses : int, optional
         The total number of refocusing pulses, by default 2
@@ -975,47 +1199,43 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     
     """
 
+    if 'respro' in kwargs:
+        resonator = kwargs['respro']
+        print('Warning: respro is deprecated, use resonator instead')
 
-    gyro  = Fieldsweep.gyro
+    if filter is not None:
+        print('Warning: filter is deprecated, ignoring input')
+    
     fieldsweep_fun = Fieldsweep.func_freq
-    f = np.linspace(-0.4,0.4,100)
-
+    f = np.linspace(-0.3,0.3,100)
     fieldsweep_profile = fieldsweep_fun(f)
 
-        
-    pump_Mz = normalise_01(-1*pump_pulse.exciteprofile(freqs=f)[:,2].real)
-    exc_Mz = normalise_01(-1*exc_pulse.exciteprofile(freqs=f)[:,2].real)
+    obs_sequence = [exc_pulse]
+    for i in range(num_ref_pulses):
+        obs_sequence.append(ref_pulse)
 
-    if ref_pulse is not None:
-        for i in range(num_ref_pulses):
-            exc_Mz *= normalise_01(-1*ref_pulse.exciteprofile(freqs=f)[:,2].real)
-    
-
-    if filter == 'Matched':
-        # Matched filter
-        filter_profile  = lambda f_new: np.interp(f_new,f,exc_Mz)
-    elif isinstance(filter, numbers.Number):
-        filter_profile = build__lowpass_butter_filter(filter)
+    pump_profile = build_profile(pump_pulse,f,resonator) 
+    exc_profile = build_profile(obs_sequence,f,resonator)
+    dead_profile = pump_profile * exc_profile
+    pump_profile -= dead_profile
+    exc_profile -= dead_profile
+    pump_profile[pump_profile <0] = 0
+    exc_profile[exc_profile <0] = 0
 
     if axs is None and fig is None:
         fig, axs = plt.subplots(1,1,figsize=(5,5), layout='constrained')
     elif axs is None:
-        axs = fig.subplots(1,1,subplot_kw={},gridspec_kw={'hspace':0}
-                           )
-        
-    # Normalise the fieldsweep profile
-    fieldsweep_profile /= np.abs(fieldsweep_profile).max()
-    
-    # Plot the profiles
-    axs.plot(f*1e3,fieldsweep_profile, label = 'Fieldsweep', c='k')
-    axs.fill_between(f*1e3,pump_Mz*fieldsweep_profile, label = 'Pump Profile', alpha=0.5,color='#D95B6F')
-    axs.fill_between(f*1e3,exc_Mz*fieldsweep_profile, label = 'Observer Profile',alpha=0.5,color='#42A399')
-    if filter is not None:
-        axs.plot(f*1e3,filter_profile(f),'--', label = 'Filter')
+        axs = fig.subplots(1,1,subplot_kw={},gridspec_kw={'hspace':0})
 
-    if respro is not None:
-        model_norm = respro.model / np.max(respro.model)
-        axs.plot((respro.model_x - Fieldsweep.LO)*1e3, model_norm,'--', label='Resonator Profile')
+    fieldsweep_profile /= np.abs(fieldsweep_profile).max()
+
+    axs.plot(f*1e3,fieldsweep_profile, label = 'Fieldsweep', c='k')
+    axs.fill_between(f*1e3,pump_profile*fieldsweep_profile, label = 'Pump Profile', alpha=0.5,color=primary_colors[0])
+    axs.fill_between(f*1e3,exc_profile*fieldsweep_profile, label = 'Observer Profile',alpha=0.5,color=primary_colors[1])
+
+    if resonator is not None:
+        model_norm = resonator.model / np.max(resonator.model)
+        axs.plot((resonator.model_x - Fieldsweep.LO)*1e3, model_norm,'--', label='Resonator Profile')
 
     fmin = f[~np.isclose(fieldsweep_profile,0)].min()
     fmax = f[~np.isclose(fieldsweep_profile,0)].max()
@@ -1025,6 +1245,40 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, resp
     axs.set_xlabel('Frequency / MHz')
 
     return fig
+
+def calc_dt_from_tau(deer_settings):
+    """
+    Calculate the time step from the tau values in the DEER settings.
+
+    Parameters
+    ----------
+    deer_settings : dict
+        The DEER settings with keys 'tau1', 'tau2' and 'tau3' and 'ExpType'.
+    
+    Returns
+    -------
+    deer_settings : dict
+        The DEER settings with the key 'dt' added.
+    """
+    if deer_settings['ExpType'] == '4pDEER':
+        if deer_settings['tau2'] > 10:
+            deer_settings['dt'] = 12
+        elif deer_settings['tau2'] > 20:
+            deer_settings['dt'] = 16
+        else:
+            deer_settings['dt'] = 8
+
+    elif deer_settings['ExpType'] == '5pDEER':
+        if deer_settings['tau2']*2 > 10:
+            deer_settings['dt'] = 12
+        elif deer_settings['tau2']*2 > 20:
+            deer_settings['dt'] = 16
+        else:
+            deer_settings['dt'] = 8
+
+    return deer_settings
+
+
 
 
 def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
@@ -1146,22 +1400,102 @@ def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
             deer_settings['tau1'] = rec_tau/2
             log.info(f"Using recommended tau2: {rec_tau}us")
 
-    if deer_settings['ExpType'] == '4pDEER':
-        if deer_settings['tau2'] > 10:
-            deer_settings['dt'] = 12
-        elif deer_settings['tau2'] > 20:
-            deer_settings['dt'] = 16
-        else:
-            deer_settings['dt'] = 8
 
-    elif deer_settings['ExpType'] == '5pDEER':
-        if deer_settings['tau2']*2 > 10:
-            deer_settings['dt'] = 12
-        elif deer_settings['tau2']*2 > 20:
-            deer_settings['dt'] = 16
-        else:
-            deer_settings['dt'] = 8
+    calc_dt_from_tau(deer_settings)
+
 
 
     return deer_settings
     
+
+def BackgroundAnalysis(dataset,model=dl.bg_hom3d,verbosity=0,**kwargs):
+
+    Vexp:np.ndarray = dataset.data 
+
+    if np.iscomplexobj(Vexp):
+        Vexp,Vexp_im,_ = dl.correctphase(Vexp,full_output=True)
+
+    Vexp /= Vexp.max()
+
+    if 't' in dataset.coords: # If the dataset is a xarray and has sequence data
+        t = dataset['t'].data
+        if 'seq_name' in dataset.attrs:
+            if dataset.attrs['seq_name'] == "4pDEER":
+                exp_type = "4pDEER"
+                tau1 = dataset.attrs['tau1'] / 1e3
+                tau2 = dataset.attrs['tau2'] / 1e3
+            elif dataset.attrs['seq_name'] == "5pDEER":
+                exp_type = "5pDEER"
+                tau1 = dataset.attrs['tau1'] / 1e3
+                tau2 = dataset.attrs['tau2'] / 1e3
+                tau3 = dataset.attrs['tau3'] / 1e3
+            elif dataset.attrs['seq_name'] == "3pDEER":
+                exp_type = "3pDEER"
+                tau1 = dataset.attrs['tau1'] / 1e3
+        else:
+            if 'tau1' in dataset.attrs:
+                tau1 = dataset.attrs['tau1'] / 1e3
+            elif 'tau1' in kwargs:
+                tau1 = kwargs.pop('tau1')
+            else:
+                raise ValueError("tau1 not found in dataset or kwargs")
+            if 'tau2' in dataset.attrs:
+                tau2 = dataset.attrs['tau2'] / 1e3
+            elif 'tau2' in kwargs:
+                tau2 = kwargs.pop('tau2')
+            else:
+                raise ValueError("tau2 not found in dataset or kwargs")
+            if 'tau3' in dataset.attrs:
+                tau3 = dataset.attrs['tau3'] / 1e3
+                exp_type = "5pDEER"
+            elif 'tau3' in kwargs:
+                tau3 = kwargs.pop('tau3')
+                exp_type = "5pDEER"
+            else:
+                exp_type = "4pDEER"
+
+    else:
+        # Extract params from kwargs
+        if "tau1" in kwargs:
+            tau1 = kwargs.pop("tau1")
+        if "tau2" in kwargs:
+            tau2 = kwargs.pop("tau2")
+        if "tau3" in kwargs:
+            tau3 = kwargs.pop("tau3")
+        exp_type = kwargs.pop("exp_type")
+        # t = dataset.axes[0]
+        t = dataset['X']
+
+
+        if hasattr(dataset,'attrs') and "pulse0_tp" in dataset.attrs:
+            # seach over all pulses to find the longest pulse using regex
+            pulselength = np.max([dataset.attrs[i] for i in dataset.attrs if re.match(r"pulse\d*_tp", i)])
+            pulselength /= 1e3 # Convert to us
+            pulselength /= 2 # Account for the too long range permitted by deerlab
+        else:
+            if "pulselength" in kwargs:
+                pulselength = kwargs.pop("pulselength")/1e3
+            else:
+                pulselength = 16/1e3
+
+
+        if exp_type == "4pDEER":
+            pathways = [1]
+            experimentInfo = dl.ex_4pdeer(tau1=tau1,tau2=tau2,pathways=pathways,pulselength=pulselength)
+        elif exp_type == "5pDEER":
+            pathways = [1,5]
+            experimentInfo = dl.ex_fwd5pdeer(tau1=tau1,tau2=tau2,tau3=tau3,pathways=pathways,pulselength=pulselength)
+        elif exp_type == "3pDEER":
+            pathways = [1]
+            experimentInfo = dl.ex_3pdeer(tau=tau1,pathways=pathways,pulselength=pulselength)
+
+        r= np.linspace(1,8,100)
+        Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo, Pmodel=model)
+        Vmodel.pathways = pathways
+
+        
+
+
+        fit = dl.fit(Vmodel, Vexp,
+                 verbose=verbosity,
+                 **kwargs)
