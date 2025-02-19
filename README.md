@@ -35,4 +35,4 @@ At this time autoDEER is only avaliable from source. A packaged release will com
 AutoDEER is licensed under the GNU GPLv3 public license, and is released without
 warrenty or liability. Comercial use is allowed, however it is advised to contact the authors for support.
 
-Copyright © 2021-2024: Hugo Karas, Stefan Stoll, and Gunnar Jeschke
+Copyright © 2021-2025: Hugo Karas, Stefan Stoll, and Gunnar Jeschke

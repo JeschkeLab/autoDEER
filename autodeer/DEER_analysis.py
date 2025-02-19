@@ -113,7 +113,7 @@ def val_in_us(Param):
 
 # =============================================================================
 def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pDEER', verbosity=0,
-                 remove_crossing=True, **kwargs):
+                 remove_crossing=True, bg_model=dl.bg_hom3d, **kwargs):
 
 
     Vexp:np.ndarray = dataset.data 
@@ -288,7 +288,11 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
   
     r_max = np.ceil(np.cbrt(t.max()*6**3/2))
-    r = np.linspace(1.5,r_max,100)
+    if r_max > 11.5:
+        nPoints = 200
+    else:
+        nPoints = 100
+    r = np.linspace(1.5,r_max,nPoints)
 
     # Default fit parameters
     defualt_fit_params = {'regparam':'bic','nnlsSolver':'qp'}
@@ -306,7 +310,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     if 'Vmodel' in kwargs:
         Vmodel = kwargs['Vmodel']
     else:
-        Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo, Pmodel=model,parametrization=parametrization)
+        Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo, Pmodel=model,Bmodel=bg_model,parametrization=parametrization)
         Vmodel.pathways = pathways
 
     if compactness:
@@ -320,7 +324,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
 
     # Cleanup extra args
-    extra_args = ['tau1','tau2','tau3','exp_type','model','compactness','ROI','verbosity','pulselength','Vmodel','parametrization']
+    extra_args = ['tau1','tau2','tau3','exp_type','model','bg_model','compactness','ROI','verbosity','pulselength','Vmodel','parametrization']
     for arg in extra_args:
         if arg in kwargs:
             kwargs.pop(arg)
@@ -348,6 +352,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
 
     fit.Vmodel = Vmodel
+    fit.Bmodel = bg_model
     fit.dataset = dataset
     fit.r = r
     fit.Vexp = Vexp
@@ -383,8 +388,20 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     
 def background_func(t, fit):
     Vmodel = fit.Vmodel
+    Bmodel = fit.Bmodel
     pathways = Vmodel.pathways
-    conc = fit.conc
+    
+    # Extract the parameters from the background model
+    Bmodel_params = {}
+    mod_depth=False
+    for key in Bmodel.signature:
+        if key == 'lam':
+            mod_depth=True
+            continue
+        if key == 't':
+            continue
+        Bmodel_params[key] = getattr(fit, key)
+
     prod = 1
     scale = 1
     if len(pathways) > 1:
@@ -395,17 +412,27 @@ def background_func(t, fit):
                 scale += -1 * lam
                 for j in i:
                     reftime = getattr(fit, f"reftime{pathways.index(j)+1}")
-                    prod *= dl.bg_hom3d(t-reftime, conc, lam)
+                    if mod_depth:
+                        prod *= Bmodel(t=t-reftime,lam=lam,**Bmodel_params)
+                    else:
+                        prod *= Bmodel(t=t-reftime, **Bmodel_params)
 
             else:
                 reftime = getattr(fit, f"reftime{i}")
                 lam = getattr(fit, f"lam{i}")
-                prod *= dl.bg_hom3d(t-reftime, conc, lam)
+                if mod_depth:
+                    prod *= Bmodel(t=t-reftime,lam=lam,**Bmodel_params)
+                else:
+                    prod *= Bmodel(t=t-reftime, **Bmodel_params)
+
                 scale += -1 * lam
     else:
         reftime = getattr(fit, f"reftime")
         lam = getattr(fit, f"mod")
-        prod *= dl.bg_hom3d(t-reftime, conc, lam)
+        if mod_depth:
+            prod *= Bmodel(t=t-reftime,lam=lam,**Bmodel_params)
+        else:
+            prod *= Bmodel(t=t-reftime, **Bmodel_params)
         scale += -1 * lam
     
     if hasattr(fit,'P_scale'):
@@ -414,30 +441,6 @@ def background_func(t, fit):
         scale *= fit.scale
 
     return scale * prod
-
-# def calc_correction_factor(fit_result,aim_MNR=25,aim_time=2):
-#     """
-#     Calculate the correction factor for the number of averages required to achieve a given MNR in a given time.
-#     Parameters
-#     ----------
-#     fit_result : Deerlab.FitResult
-#         The fit result from the DEER analysis.
-#     aim_MNR : float, optional
-#         The desired MNR, by default 25
-#     aim_time : float, optional
-#         The desired time in hours, by default 2
-#     Returns
-#     -------
-#     float
-#         The correction factor for the number of averages.
-#     """
-
-#     dataset = fit_result.dataset
-#     runtime_s = dataset.nAvgs * dataset.nPcyc * dataset.shots * dataset.reptime * dataset.t.shape[0] * 1e-6
-#     aim_time *= 3600
-#     factor = fit_result.MNR /aim_MNR * aim_time/runtime_s
-#     # factor = fit_result.MNR /aim_MNR * np.sqrt(aim_time/runtime_s)
-#     return factor
 
 def DEERanalysis_plot(fit, background:bool, ROI=None, axs=None, fig=None, text=True):
     """DEERanalysis_plot Generates a figure showing both the time domain and
@@ -955,7 +958,6 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
 
     # gyro  = Fieldsweep.gyro
     # if hasattr(Fieldsweep,'results'):
-    #     fieldsweep_fun = lambda x: Fieldsweep.results.evaluate(Fieldsweep.model,(x+Fieldsweep.LO) /gyro*1e-1)
     fieldsweep_fun = Fieldsweep.func_freq
     f = np.linspace(-0.3,0.3,100)
     fieldsweep_profile = fieldsweep_fun(f)
@@ -1235,7 +1237,7 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, reso
 
     if resonator is not None:
         model_norm = resonator.model / np.max(resonator.model)
-        axs.plot((resonator.model_x - Fieldsweep.LO)*1e3, model_norm,'--', label='Resonator Profile')
+        axs.plot((resonator.model_x - Fieldsweep.freq)*1e3, model_norm,'--', label='Resonator Profile')
 
     fmin = f[~np.isclose(fieldsweep_profile,0)].min()-0.02
     fmax = f[~np.isclose(fieldsweep_profile,0)].max()+0.02

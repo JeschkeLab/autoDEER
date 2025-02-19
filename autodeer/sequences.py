@@ -10,7 +10,7 @@ class DEERSequence(Sequence):
     """
 
     def __init__(
-        self, *, tau1, tau2, tau3 = None, tau4=None, dt, B, LO, reptime,
+        self, *, tau1, tau2, tau3 = None, tau4=None, dt, B, freq, reptime,
         averages, shots, ESEEM_avg=None, **kwargs) -> None:
         """Build a DEER sequence using rectangular pulses
 
@@ -24,8 +24,8 @@ class DEERSequence(Sequence):
             The time step for DEER measurment in ns
         B : int or float
             The B0 field, in Guass
-        LO : int or float
-            The LO frequency in GHz
+        freq : int or float
+            The freq frequency in GHz
         reptime : _type_
             The shot repetition time in us
         averages : int
@@ -77,7 +77,7 @@ class DEERSequence(Sequence):
         self.add_ESEEM_avg(None)
 
         super().__init__(
-            name=name, B=B, LO=LO, reptime=reptime, averages=averages,
+            name=name, B=B, freq=freq, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
 
         if "exc_pulse" in kwargs:
@@ -677,7 +677,7 @@ class RefocusedEcho2DSequence(Sequence):
     """
     Represents a 2D Refocused-echo Sequence. 
     """
-    def __init__(self, *, B, LO, reptime, averages, shots,
+    def __init__(self, *, B, freq, reptime, averages, shots,
             tau, dim=100, **kwargs) -> None:
         """Build a 2D Refocused-echo sequence using either 
         rectangular pulses or specified pulses.
@@ -686,8 +686,8 @@ class RefocusedEcho2DSequence(Sequence):
         ----------
         B : int or float
             The B0 field, in Guass
-        LO : int or float
-            The LO frequency in GHz
+        freq : int or float
+            The freq frequency in GHz
         reptime : _type_
             The shot repetition time in us
         averages : int
@@ -712,7 +712,7 @@ class RefocusedEcho2DSequence(Sequence):
 
         name = "RefocusedEcho2D"
         super().__init__(
-            name=name, B=B, LO=LO, reptime=reptime, averages=averages,
+            name=name, B=B, freq=freq, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
         
         tau_init = 400
