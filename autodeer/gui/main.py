@@ -200,7 +200,7 @@ class autoDEERUI(QMainWindow):
         self.actionConnect.triggered.connect(self.connect_spectrometer)
         self.actionSaveReport.triggered.connect(self.create_report)
         
-        self.show_respro.clicked.connect(lambda: self.refresh_respro())
+        self.show_respro.clicked.connect(lambda: self.resonatorProfileFigure())
         self.show_EDFS.clicked.connect(lambda: self.refresh_fieldsweep_after_fit())
         self.OptimisePulsesButton.clicked.connect(lambda: self.optimise_pulses_button())
 
@@ -421,6 +421,13 @@ class autoDEERUI(QMainWindow):
         self.LO = self.fcDoubleSpinBox.value()
         main_log.info(f"Setting LO to {self.LO} GHz")
 
+    @property
+    def remaining_time(self):
+        """
+        Returns the remaining time in hours
+        """
+        return self.userinput['MaxTime']*3600 - (time.time() - self.starttime)
+
     def connect_spectrometer(self):
         if self.spectromterInterface is None:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be loaded first!')
@@ -560,25 +567,54 @@ class autoDEERUI(QMainWindow):
                 else:
                     self.LO - LO_sweep_width/2
 
-            if self.worker is not None:
-                self.worker.update_LO(self.LO)
-            print(f"New LO frequency: {self.LO:.2f} GHz")
-            main_log.info(f"Setting LO to {self.LO:.6f} GHz")
-        elif (len(args)>0):
-            fitresult = args[0]
-        
-        if (len(args)>0):
-            self.current_results['respro'] = fitresult
-            self.spectromterInterface.resonator = fitresult
+        self.current_results['respro'] = fitresult
+        self.spectromterInterface.resonator = fitresult
 
-            if self.waitCondition is not None: # Wake up the runner thread
-                self.waitCondition.wakeAll()
+
+        if self.worker is not None:
+            print(f"New center frequency: {self.LO:.2f} GHz")
+            main_log.info(f"Setting center frequency to {self.LO:.6f} GHz")
+
+            if LO_shift > 0.1:
+                main_log.info(f"New center frequency is more than 100 MHz from previous value, repeating resonator profile")
+                self.worker.update_freq(self.LO,repeat=True)
+                optimise_pulses=False
+                
+            elif ('fieldsweep' in self.current_results) and (np.abs(self.current_results['fieldsweep'].freq - self.LO) > 0.025): # check if the last last field sweep was measured close the centre frequency
+                main_log.info(f"Centre frequency is more than 25 MHz from last field sweep, repeating field sweep")
+                self.worker.repeat_fieldsweep()
+                optimise_pulses= True
+            else:    
+                self.worker.update_freq(self.LO,repeat=False)
+                optimise_pulses=True
+
             
-            optimise_pulses=True
-        else:
+
+        self.Tab_widget.setCurrentIndex(1)    
+        self.resonatorProfileFigure()
+        # Add fit results
+
+        self.centreFrequencyDoubleSpinBox.setValue(fitresult.results.fc)
+        self.centreFrequencyCI.setText(f"({fitresult.results.fcUncert.ci(95)[0]:.2f},{fitresult.results.fcUncert.ci(95)[1]:.2f})")
+        self.qDoubleSpinBox.setValue(fitresult.results.q)
+        self.qCI.setText(f"({fitresult.results.qUncert.ci(95)[0]:.2f},{fitresult.results.qUncert.ci(95)[1]:.2f})")
+        self.nu1doubleSpinBox.setValue(fitresult.model.max()*1e3)
+        
+        if optimise_pulses:
+            main_log.info(f"Resonator centre frequency {fitresult.results.fc:.4f} GHz")
+            self.optimise_pulses_button()
+
+        if self.waitCondition is not None: # Wake up the runner thread
+            self.waitCondition.wakeAll()
+
+
+    def resonatorProfileFigure(self):
+        if 'respro' in self.current_results:
             fitresult = self.current_results['respro']
-            optimise_pulses=False
-            
+        else:
+            main_log.error('No resonator profile data found')
+            return None
+
         self.setup_plot_ax.cla()
 
         if 'fieldsweep'in self.current_results:
@@ -587,17 +623,7 @@ class autoDEERUI(QMainWindow):
             fitresult.plot(axs=self.setup_plot_ax,fig=self.setup_figure_canvas.figure)
 
         self.setup_figure_canvas.draw()
-        # Add fit results
 
-        self.centreFrequencyDoubleSpinBox.setValue(fitresult.results.fc)
-        self.centreFrequencyCI.setText(f"({fitresult.results.fcUncert.ci(95)[0]:.2f},{fitresult.results.fcUncert.ci(95)[1]:.2f})")
-        self.qDoubleSpinBox.setValue(fitresult.results.q)
-        self.qCI.setText(f"({fitresult.results.qUncert.ci(95)[0]:.2f},{fitresult.results.qUncert.ci(95)[1]:.2f})")
-        self.nu1doubleSpinBox.setValue(fitresult.model.max()*1e3)
-        self.Tab_widget.setCurrentIndex(1)
-        if optimise_pulses:
-            main_log.info(f"Resonator centre frequency {fitresult.results.fc:.4f} GHz")
-            self.optimise_pulses_button()
 
 
     def optimise_pulses_button(self):
@@ -737,18 +763,6 @@ class autoDEERUI(QMainWindow):
 
     def refresh_relax_figure(self):
     
-        # if 'relax2D' in self.current_results:
-            
-        #     fig, axs  = plt.subplots(2,1,figsize=(12.5, 6.28),layout='constrained',height_ratios=[2,1])
-        #     relax_canvas = FigureCanvas(fig)
-        #     self.relax_canvas.figure.clear()
-        #     self.relax_v_left.replaceWidget(self.relax_canvas,relax_canvas)
-        #     self.relax_canvas = relax_canvas
-        #     self.relax_ax = axs
-
-        #     self.current_results['relax2D'].plot2D(axs=self.relax_ax[0],fig=fig)
-        #     self.current_results['relax2D'].plot1D(axs=self.relax_ax[1],fig=fig)        
-        # else:
         fig = self.relax_canvas.figure
         self.relax_ax[0].cla()
         relax1D_results = []
@@ -770,9 +784,6 @@ class autoDEERUI(QMainWindow):
     def refresh_relax(self, fitresult):
         self.current_results['relax'] = fitresult
 
-        # self.relax_ax.cla()
-        # fitresult.plot(axs=self.relax_ax,fig=self.relax_canvas.figure)
-        # self.relax_canvas.draw()
 
         self.refresh_relax_figure()
         self.label_eff = self.userinput['label_eff'] / 100
@@ -852,7 +863,7 @@ class autoDEERUI(QMainWindow):
 
         return self.deer_settings
 
-    def update_deer_settings(self):
+    def update_deer_settings(self,remaining_time=None):
         
         data = self.current_results['quickdeer']
         rec_tau = self.current_results['quickdeer'].rec_tau_max
@@ -860,8 +871,12 @@ class autoDEERUI(QMainWindow):
         dt = epr.round_step(dt,self.waveform_precision)
         dt= 8
         mod_depth = data.MNR * data.noiselvl
-        remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60)) # in hours
-        main_log.debug(f"Remaining time {remaining_time:.2f} hours")
+        if remaining_time is None:
+            remaining_time = self.remaining_time
+            main_log.debug(f"Remaining time {remaining_time:.2f} hours")
+        else:
+            remaining_time = remaining_time
+            main_log.debug(f"Measuring DEER for {remaining_time:.2f} hours")
 
         if self.deer_settings['ExpType'] == '4pDEER':
             relax = self.current_results['T2_relax']
@@ -1068,10 +1083,21 @@ class autoDEERUI(QMainWindow):
         self.q_DEER.update_inputs_from_dataset()
         # self.q_DEER.update_figure()
         bg_model = BackgroundModels[self.bg_model_combo.currentText()]
-        def update_func(x):
+        def update_func(x): # This function is called after the DEER analysis is complete
             self.current_results['quickdeer'] = x
+            
+            if x.MNR < 4:
+                main_log.critical(f"QuickDEER MNR is far too low {x.MNR:.2f}, stopping DEER analysis")
+                self.worker.stop()
+                return None
+            elif x.MNR < 10:
+                main_log.warning(f"QuickDEER MNR is too low {x.MNR:.2f}, repeating initial DEER with a shorter tau")
+                time = np.min([self.aim_time,self.remaining_time])
+                self.worker.repeat_quickdeer()
+            else:
+                time = None
 
-            self.update_deer_settings()
+            self.update_deer_settings(time=time)
 
         self.q_DEER.process_deeranalysis(background_model=bg_model, wait_condition = self.waitCondition, update_func=update_func)
 
@@ -1244,7 +1270,7 @@ class autoDEERUI(QMainWindow):
         mutex = QtCore.QMutex()
         self.worker = autoDEERWorker(
             self.spectromterInterface, wait=self.waitCondition, mutex=mutex,
-            pulses=self.pulses, results=self.current_results, AWG=self.AWG, LO=self.LO, gyro = self.gyro,
+            pulses=self.pulses, results=self.current_results, AWG=self.AWG, freq=self.LO, gyro = self.gyro,
             user_inputs=userinput, operating_mode = self.operating_mode, fixed_tau=self.fixed_tau,
             cores=self.cores, night_hours=night_hours,
             )
