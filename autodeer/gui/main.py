@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, 
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
+from qt_material import apply_stylesheet
 from pathlib import Path
 import sys, traceback, os
 from threadpoolctl import threadpool_limits
@@ -16,7 +17,7 @@ import pyepr as epr
 import numpy as np
 from autodeer.gui.tools import *
 from autodeer.gui.autoDEER_worker import autoDEERWorker
-from autodeer.gui.quickdeer import DEERplot
+from autodeer.gui.deer_panel import DEERplot
 from autodeer.gui.log import LogDialog
 from autodeer.gui.modetune import ModeTune
 import yaml
@@ -25,8 +26,9 @@ import datetime
 import logging
 from autodeer.Logging import setup_logs, change_log_level
 from deerlab import store_pickle
+import deerlab as dl
 
-# main_log = logging.getLogger('autoDEER')
+main_log = logging.getLogger('autoDEER')
 from queue import Queue
 
 package_directory = os.path.dirname(os.path.abspath(__file__))
@@ -34,6 +36,7 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 QtCore.QDir.addSearchPath('icons', f"{package_directory}/resources")
 
 SampleConcComboBox_opts = {'Normal': 1, 'High (0.5x)':0.5, 'Low (2x)':2, 'Very Low (5x)':5}
+BackgroundModels = {'hom3D':dl.bg_hom3d, 'hom3d ex':dl.bg_hom3dex, 'hom3d frac':dl.bg_homfractal,'str exp':dl.bg_strexp}
 
 class WorkerSignals(QtCore.QObject):
     '''
@@ -113,12 +116,12 @@ def respro_process(dataset,f_lims, fieldsweep=None,cores=1):
     respro = epr.ResonatorProfileAnalysis(
         dataset,f_lims=f_lims
     )
-    fc_guess = dataset.LO.values[dataset.LO.values.shape[0]//2]
+    fc_guess = respro.freqs[respro.freqs.shape[0]//2]
     with threadpool_limits(limits=cores, user_api='blas'):
         respro.fit(cores=cores,fc_guess=fc_guess)
 
     if fieldsweep is not None:
-        LO_new = fieldsweep.LO + epr.optimise_spectra_position(respro, fieldsweep)
+        LO_new = fieldsweep.freq + epr.optimise_spectra_position(respro, fieldsweep)
         return respro, LO_new
 
 
@@ -152,6 +155,7 @@ class autoDEERUI(QMainWindow):
         # loading the ui file with uic module
         uic.loadUi(f"{package_directory}/gui2.ui", self)
         logo_pixmap = QtGui.QPixmap('icons:logo.png')
+        logo_pixmap.setDevicePixelRatio(1.0)
         logo_pixmap = logo_pixmap.scaledToHeight(60)
         self.logo.setPixmap(logo_pixmap)
         self.set_spectrometer_connected_light(0)
@@ -166,12 +170,8 @@ class autoDEERUI(QMainWindow):
         self.longDEER = self.lDEER_tab.layout().itemAt(0).widget()
 
 
-        self.fsweep_toolbar()
-        self.respro_toolbar()
-        self.relax_toolbar()
-        self.create_respro_figure()
+        self.create_setup_figure()
         self.create_relax_figure()
-        self.create_fieldsweep_figure()
         self.advanced_mode_inputs()
 
         self.threadpool = QtCore.QThreadPool()
@@ -199,7 +199,9 @@ class autoDEERUI(QMainWindow):
         self.actionLoadConfig.triggered.connect(lambda : self.load_spectrometer_config(None))
         self.actionConnect.triggered.connect(self.connect_spectrometer)
         self.actionSaveReport.triggered.connect(self.create_report)
-        self.show_respro.clicked.connect(lambda: self.update_respro())
+        
+        self.show_respro.clicked.connect(lambda: self.resonatorProfileFigure())
+        self.show_EDFS.clicked.connect(lambda: self.refresh_fieldsweep_after_fit())
         self.OptimisePulsesButton.clicked.connect(lambda: self.optimise_pulses_button())
 
         self.SampleConcComboBox.addItems(list(SampleConcComboBox_opts.keys()))
@@ -419,6 +421,13 @@ class autoDEERUI(QMainWindow):
         self.LO = self.fcDoubleSpinBox.value()
         main_log.info(f"Setting LO to {self.LO} GHz")
 
+    @property
+    def remaining_time(self):
+        """
+        Returns the remaining time in hours
+        """
+        return self.userinput['MaxTime']*3600 - (time.time() - self.starttime)
+
     def connect_spectrometer(self):
         if self.spectromterInterface is None:
             QMessageBox.about(self,'ERORR!', 'A interface needs to be loaded first!')
@@ -450,32 +459,7 @@ class autoDEERUI(QMainWindow):
             dataset.to_netcdf(os.path.join(self.current_folder,filename),engine='h5netcdf',invalid_netcdf=True)
         main_log.debug(f"Saving dataset to {filename}")
 
-    def fsweep_toolbar(self):
-        upload_icon = QtGui.QIcon('icons:upload.png')
-        self.Load_button.setIcon(upload_icon)
-        self.Load_button.clicked.connect(lambda x: self.load_epr_file('fieldsweep'))
 
-        refresh_icon = QtGui.QIcon('icons:refresh.png')
-        self.Refresh_button.setIcon(refresh_icon)
-        self.Refresh_button.clicked.connect(lambda: self.update_fieldsweep())
-
-    def respro_toolbar(self):
-        upload_icon = QtGui.QIcon('icons:upload.png')
-        self.respro_Load_button.setIcon(upload_icon)
-        self.respro_Load_button.clicked.connect(lambda: self.load_epr_file('respro'))
-
-        refresh_icon = QtGui.QIcon('icons:refresh.png')
-        self.respro_Refresh_button.setIcon(refresh_icon)
-        self.respro_Refresh_button.clicked.connect(lambda: self.update_respro())
-
-    def relax_toolbar(self):
-        upload_icon = QtGui.QIcon('icons:upload.png')
-        self.relax_Load_button.setIcon(upload_icon)
-        self.relax_Load_button.clicked.connect(lambda: self.load_epr_file('relax'))
-
-        refresh_icon = QtGui.QIcon('icons:refresh.png')
-        self.relax_Refresh_button.setIcon(refresh_icon)
-        self.relax_Refresh_button.clicked.connect(lambda: self.update_relax())
 
     def update_fieldsweep(self, dataset=None):
 
@@ -491,9 +475,9 @@ class autoDEERUI(QMainWindow):
         if self.worker is not None:
             self.worker.set_noise_mode(np.min([fsweep_analysis.calc_noise_level(),20]))
         
-        self.fsweep_ax.cla()
-        fsweep_analysis.plot(axs=self.fsweep_ax,fig=self.fsweep_canvas.figure)
-        self.fsweep_canvas.draw()
+        self.setup_plot_ax.cla()
+        fsweep_analysis.plot(axs=self.setup_plot_ax,fig=self.setup_figure_canvas.figure)
+        self.setup_figure_canvas.draw()
         self.Tab_widget.setCurrentIndex(1)
 
         # For Bruker recalculate d0
@@ -514,58 +498,25 @@ class autoDEERUI(QMainWindow):
         
         self.threadpool.start(worker)
 
-    def create_fieldsweep_figure(self):
-        fig, axs  = plt.subplots(1,1,figsize=(12.5, 6.28))
-        self.fsweep_canvas = FigureCanvas(fig)
-        self.fsweep_v_left.addWidget(self.fsweep_canvas)
-        Navbar = NavigationToolbar2QT(self.fsweep_canvas, self)
-        Navbar.setMaximumHeight(24)
-        self.fsweep_v_left.addWidget(Navbar)
-        self.fsweep_ax = axs
  
-    def refresh_fieldsweep_after_fit(self, fitresult):
+    def refresh_fieldsweep_after_fit(self, fitresult=None):
 
-        self.current_results['fieldsweep'] = fitresult
+        if fitresult is None:
+            fitresult = self.current_results['fieldsweep']
+        else:
+            self.current_results['fieldsweep'] = fitresult
         self.gyro = fitresult.gyro
         
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
-        self.fsweep_ax.cla()
-        fitresult.plot(axs=self.fsweep_ax,fig=self.fsweep_canvas.figure)
-        self.fsweep_canvas.draw()
+        self.setup_plot_ax.cla()
+        fitresult.plot(axs=self.setup_plot_ax,fig=self.setup_figure_canvas.figure)
+        self.setup_figure_canvas.draw()
 
         # Add fit resultss
 
-        if hasattr(fitresult,'results'): # Has been fit
-            self.gyroSpinBox.setValue(fitresult.gyro*1e3)
-            self.gxSpinBox.setValue(-0.0025 * fitresult.results.az + 2.0175)
-            self.gySpinBox.setValue(fitresult.results.gy)
-            self.gzSpinBox.setValue(fitresult.results.gz)
-            self.AxSpinBox.setValue(fitresult.results.axy*28.0328)
-            self.AySpinBox.setValue(fitresult.results.axy*28.0328)
-            self.AzSpinBox.setValue(fitresult.results.az*28.0328)
-            self.GBSpinBox.setValue(fitresult.results.GB)
-            self.BoffsetSpinBox.setValue(fitresult.results.Boffset)
-
-            gxCI = -0.0025 *fitresult.results.azUncert.ci(95)+ 2.0175
-            self.gxCI.setText(f"({gxCI[0]:.4f},{gxCI[1]:.4f})")
-            self.gyCI.setText(getCIstring(fitresult.results.gyUncert))
-            self.gzCI.setText(getCIstring(fitresult.results.gzUncert))
-        else:
-            self.gyroSpinBox.setValue(fitresult.gyro*1e3)
-            self.gxSpinBox.setValue(0)
-            self.gySpinBox.setValue(0)
-            self.gzSpinBox.setValue(0)
-            self.AxSpinBox.setValue(0)
-            self.AySpinBox.setValue(0)
-            self.AzSpinBox.setValue(0)
-            self.GBSpinBox.setValue(0)
-            self.BoffsetSpinBox.setValue(0)
-
-            self.gxCI.setText('(-,-)')
-            self.gyCI.setText('(-,-)')
-            self.gzCI.setText('(-,-)')
+        self.gyroSpinBox.setValue(fitresult.gyro*1e3)
         
         self.Tab_widget.setCurrentIndex(1)
 
@@ -591,24 +542,24 @@ class autoDEERUI(QMainWindow):
 
         self.threadpool.start(worker)
 
-    def create_respro_figure(self):
+    def create_setup_figure(self):
         fig, axs  = plt.subplots(1,1,figsize=(12.5, 6.28))
-        self.respro_canvas = FigureCanvas(fig)
-        Navbar = NavigationToolbar2QT(self.respro_canvas, self)
+        self.setup_figure_canvas = FigureCanvas(fig)
+        Navbar = NavigationToolbar2QT(self.setup_figure_canvas, self)
         Navbar.setMaximumHeight(24)
-        self.respro_v_left.addWidget(self.respro_canvas)
+        self.respro_v_left.addWidget(self.setup_figure_canvas)
         self.respro_v_left.addWidget(Navbar)
-        self.respro_ax = axs
+        self.setup_plot_ax = axs
 
 
     def refresh_respro(self, *args):
-        if len(args[0]) == 2:
+        if (len(args)>0)and (len(args[0]) == 2):
             LO = self.LO
-            fitresult = args[0][0]
+            fitresult:epr.ResonatorProfileAnalysis = args[0][0]
             self.LO = args[0][1]
             self.LO = fitresult.results.fc
 
-            LO_sweep_width = fitresult.dataset.LO.max() - fitresult.dataset.LO.min()
+            LO_sweep_width = fitresult.freqs.max() - fitresult.freqs.min()
             LO_shift = self.LO - LO
             if np.abs(LO_shift) > LO_sweep_width:
                 if LO_shift > 0:
@@ -616,26 +567,31 @@ class autoDEERUI(QMainWindow):
                 else:
                     self.LO - LO_sweep_width/2
 
-            if self.worker is not None:
-                self.worker.update_LO(self.LO)
-            print(f"New LO frequency: {self.LO:.2f} GHz")
-            main_log.info(f"Setting LO to {self.LO:.6f} GHz")
-        else:
-            fitresult = args[0]
-
         self.current_results['respro'] = fitresult
         self.spectromterInterface.resonator = fitresult
-        if self.waitCondition is not None: # Wake up the runner thread
-            self.waitCondition.wakeAll()
+
+
+        if self.worker is not None:
+            print(f"New center frequency: {self.LO:.2f} GHz")
+            main_log.info(f"Setting center frequency to {self.LO:.6f} GHz")
+
+            if LO_shift > 0.1:
+                main_log.info(f"New center frequency is more than 100 MHz from previous value, repeating resonator profile")
+                self.worker.update_freq(self.LO,repeat=True)
+                optimise_pulses=False
+                
+            elif ('fieldsweep' in self.current_results) and (np.abs(self.current_results['fieldsweep'].freq - self.LO) > 0.025): # check if the last last field sweep was measured close the centre frequency
+                main_log.info(f"Centre frequency is more than 25 MHz from last field sweep, repeating field sweep")
+                self.worker.repeat_fieldsweep()
+                optimise_pulses= True
+            else:    
+                self.worker.update_freq(self.LO,repeat=False)
+                optimise_pulses=True
+
             
-        self.respro_ax.cla()
 
-        if 'fieldsweep'in self.current_results:
-            fitresult.plot(fieldsweep=self.current_results['fieldsweep'],axs=self.respro_ax,fig=self.respro_canvas.figure);
-        else:
-            fitresult.plot(axs=self.respro_ax,fig=self.respro_canvas.figure)
-
-        self.respro_canvas.draw()
+        self.Tab_widget.setCurrentIndex(1)    
+        self.resonatorProfileFigure()
         # Add fit results
 
         self.centreFrequencyDoubleSpinBox.setValue(fitresult.results.fc)
@@ -643,9 +599,31 @@ class autoDEERUI(QMainWindow):
         self.qDoubleSpinBox.setValue(fitresult.results.q)
         self.qCI.setText(f"({fitresult.results.qUncert.ci(95)[0]:.2f},{fitresult.results.qUncert.ci(95)[1]:.2f})")
         self.nu1doubleSpinBox.setValue(fitresult.model.max()*1e3)
-        self.Tab_widget.setCurrentIndex(2)
-        main_log.info(f"Resonator centre frequency {fitresult.results.fc:.4f} GHz")
-        self.optimise_pulses_button()
+        
+        if optimise_pulses:
+            main_log.info(f"Resonator centre frequency {fitresult.results.fc:.4f} GHz")
+            self.optimise_pulses_button()
+
+        if self.waitCondition is not None: # Wake up the runner thread
+            self.waitCondition.wakeAll()
+
+
+    def resonatorProfileFigure(self):
+        if 'respro' in self.current_results:
+            fitresult = self.current_results['respro']
+        else:
+            main_log.error('No resonator profile data found')
+            return None
+
+        self.setup_plot_ax.cla()
+
+        if 'fieldsweep'in self.current_results:
+            fitresult.plot(fieldsweep=self.current_results['fieldsweep'],axs=self.setup_plot_ax,fig=self.setup_figure_canvas.figure);
+        else:
+            fitresult.plot(axs=self.setup_plot_ax,fig=self.setup_figure_canvas.figure)
+
+        self.setup_figure_canvas.draw()
+
 
 
     def optimise_pulses_button(self):
@@ -684,16 +662,16 @@ class autoDEERUI(QMainWindow):
             self.waitCondition.wakeAll()
 
         self.update_optimise_pulses_figure()
-        self.Tab_widget.setCurrentIndex(2)
+        self.Tab_widget.setCurrentIndex(1)
     
     def update_optimise_pulses_figure(self):
         pump_pulse = self.pulses['pump_pulse']
         exc_pulse = self.pulses['exc_pulse']
         ref_pulse = self.pulses['ref_pulse']
 
-        self.respro_ax.cla()
-        ad.plot_overlap(self.current_results['fieldsweep'], pump_pulse, exc_pulse,ref_pulse, axs=self.respro_ax,fig=self.respro_canvas.figure, respro=self.current_results['respro'])
-        self.respro_canvas.draw()
+        self.setup_plot_ax.cla()
+        ad.plot_overlap(self.current_results['fieldsweep'], pump_pulse, exc_pulse,ref_pulse, axs=self.setup_plot_ax,fig=self.setup_figure_canvas.figure, respro=self.current_results['respro'])
+        self.setup_figure_canvas.draw()
 
         # update the pulse parameter grid
         type_to_pulse_hash = {epr.RectPulse:'Rect', epr.ChirpPulse:'Chirp', epr.HSPulse:'HS'}
@@ -785,18 +763,6 @@ class autoDEERUI(QMainWindow):
 
     def refresh_relax_figure(self):
     
-        # if 'relax2D' in self.current_results:
-            
-        #     fig, axs  = plt.subplots(2,1,figsize=(12.5, 6.28),layout='constrained',height_ratios=[2,1])
-        #     relax_canvas = FigureCanvas(fig)
-        #     self.relax_canvas.figure.clear()
-        #     self.relax_v_left.replaceWidget(self.relax_canvas,relax_canvas)
-        #     self.relax_canvas = relax_canvas
-        #     self.relax_ax = axs
-
-        #     self.current_results['relax2D'].plot2D(axs=self.relax_ax[0],fig=fig)
-        #     self.current_results['relax2D'].plot1D(axs=self.relax_ax[1],fig=fig)        
-        # else:
         fig = self.relax_canvas.figure
         self.relax_ax[0].cla()
         relax1D_results = []
@@ -818,9 +784,6 @@ class autoDEERUI(QMainWindow):
     def refresh_relax(self, fitresult):
         self.current_results['relax'] = fitresult
 
-        # self.relax_ax.cla()
-        # fitresult.plot(axs=self.relax_ax,fig=self.relax_canvas.figure)
-        # self.relax_canvas.draw()
 
         self.refresh_relax_figure()
         self.label_eff = self.userinput['label_eff'] / 100
@@ -833,7 +796,7 @@ class autoDEERUI(QMainWindow):
         # self.current_results['relax'].max_tau = max_tau
         # self.DipolarEvoMax.setValue(max_tau)
         # self.DipolarEvo2hrs.setValue(tau2hrs)
-        self.Tab_widget.setCurrentIndex(3)
+        self.Tab_widget.setCurrentIndex(2)
         
         if self.check_CP(fitresult): # CP decays passes test then it can proceed
             
@@ -900,7 +863,7 @@ class autoDEERUI(QMainWindow):
 
         return self.deer_settings
 
-    def update_deer_settings(self):
+    def update_deer_settings(self,remaining_time=None):
         
         data = self.current_results['quickdeer']
         rec_tau = self.current_results['quickdeer'].rec_tau_max
@@ -908,8 +871,12 @@ class autoDEERUI(QMainWindow):
         dt = epr.round_step(dt,self.waveform_precision)
         dt= 8
         mod_depth = data.MNR * data.noiselvl
-        remaining_time = self.MaxTime.value() - ((time.time() - self.starttime) / (60*60)) # in hours
-        main_log.debug(f"Remaining time {remaining_time:.2f} hours")
+        if remaining_time is None:
+            remaining_time = self.remaining_time
+            main_log.debug(f"Remaining time {remaining_time:.2f} hours")
+        else:
+            remaining_time = remaining_time
+            main_log.debug(f"Measuring DEER for {remaining_time:.2f} hours")
 
         if self.deer_settings['ExpType'] == '4pDEER':
             relax = self.current_results['T2_relax']
@@ -1098,7 +1065,8 @@ class autoDEERUI(QMainWindow):
 
         
     def advanced_mode_inputs(self):
-        self.Exp_types.addItems(['5pDEER','4pDEER','Ref2D'])
+        self.Exp_types.addItems(['auto','5pDEER','4pDEER','Ref2D'])
+        self.bg_model_combo.addItems(list(BackgroundModels.keys()))
         self.ExcPulseSelect.addItems(['Auto', 'Rectangular','Gauss'])
         self.RefPulseSelect.addItems(['Auto', 'Rectangular', 'Gauss'])
         self.PumpPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
@@ -1110,16 +1078,28 @@ class autoDEERUI(QMainWindow):
             self.current_data['quickdeer'] = dataset
             self.save_data(dataset,'DEER_init',folder='main')
 
-        self.Tab_widget.setCurrentIndex(4)
+        self.Tab_widget.setCurrentIndex(3)
         self.q_DEER.current_data['quickdeer'] = dataset
         self.q_DEER.update_inputs_from_dataset()
         # self.q_DEER.update_figure()
-        def update_func(x):
+        bg_model = BackgroundModels[self.bg_model_combo.currentText()]
+        def update_func(x): # This function is called after the DEER analysis is complete
             self.current_results['quickdeer'] = x
+            
+            if x.MNR < 4:
+                main_log.critical(f"QuickDEER MNR is far too low {x.MNR:.2f}, stopping DEER analysis")
+                self.worker.stop()
+                return None
+            elif x.MNR < 10:
+                main_log.warning(f"QuickDEER MNR is too low {x.MNR:.2f}, repeating initial DEER with a shorter tau")
+                time = np.min([self.aim_time,self.remaining_time])
+                self.worker.repeat_quickdeer()
+            else:
+                time = None
 
-            self.update_deer_settings()
+            self.update_deer_settings(time=time)
 
-        self.q_DEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
+        self.q_DEER.process_deeranalysis(background_model=bg_model, wait_condition = self.waitCondition, update_func=update_func)
 
     def update_longdeer(self, dataset=None):
         if dataset is None:
@@ -1194,10 +1174,8 @@ class autoDEERUI(QMainWindow):
         self.longDEER.current_data = {}
 
         # Clear the figures
-        self.fsweep_ax.cla()
-        self.fsweep_canvas.draw()
-        self.respro_ax.cla()
-        self.respro_canvas.draw()
+        self.setup_plot_ax.cla()
+        self.setup_figure_canvas.draw()
         if isinstance(self.relax_ax, (list,tuple,np.ndarray)):
             for ax in self.relax_ax:
                 ax.cla()
@@ -1292,7 +1270,7 @@ class autoDEERUI(QMainWindow):
         mutex = QtCore.QMutex()
         self.worker = autoDEERWorker(
             self.spectromterInterface, wait=self.waitCondition, mutex=mutex,
-            pulses=self.pulses, results=self.current_results, AWG=self.AWG, LO=self.LO, gyro = self.gyro,
+            pulses=self.pulses, results=self.current_results, AWG=self.AWG, freq=self.LO, gyro = self.gyro,
             user_inputs=userinput, operating_mode = self.operating_mode, fixed_tau=self.fixed_tau,
             cores=self.cores, night_hours=night_hours,
             )
@@ -1439,6 +1417,8 @@ if __name__ == '__main__':
     app.setApplicationName('autoDEER')
     app.setApplicationDisplayName('autoDEER')
     app.setApplicationVersion(str(ad.__version__))
+    apply_stylesheet(app, theme='light_purple.xml')
+    app.setDesktopFileName('autoDEER')
     window = autoDEERUI()
     window.show()
     app.exec()

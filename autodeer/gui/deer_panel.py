@@ -1,11 +1,12 @@
 
-from PyQt6.QtWidgets import QApplication, QWidget,QLabel,QDoubleSpinBox,QGridLayout,QAbstractSpinBox
+from PyQt6.QtWidgets import QApplication, QWidget,QLabel,QDoubleSpinBox,QGridLayout,QAbstractSpinBox, QHBoxLayout, QFormLayout
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
 from pathlib import Path
 from threadpoolctl import threadpool_limits
 import os
+import copy
 
 from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
 from matplotlib.figure import Figure
@@ -52,14 +53,13 @@ class DEERplot(QWidget):
         super().__init__(parent)
  
         # loading the ui fsile with uic module
-        uic.loadUi(f"{package_directory}/quickdeer.ui", self)
+        uic.loadUi(f"{package_directory}/deerpanel.ui", self)
 
         self.threadpool = QtCore.QThreadPool()
         self.current_results = {}
         self.current_data = {}
         self.create_figure()
         self.setup_inputs()
-        self.toolbar()
         self.DL_params={}
 
         self.current_folder = ''
@@ -67,22 +67,6 @@ class DEERplot(QWidget):
         self.Last_updated.setText(f"Last updated: never")
         self.num_scans.setText(f"# of scans: 0")
 
-
-    def toolbar(self):
-        upload_icon = QtGui.QIcon('icons:upload.png')
-
-        def custom_load():
-            load_epr_file(self, 'quickdeer')
-            self.update_inputs_from_dataset()
-            self.update_figure()
-            
-
-        self.Loadfile.setIcon(upload_icon)
-        self.Loadfile.clicked.connect(custom_load)
-
-        refresh_icon = QtGui.QIcon('icons:refresh.png')
-        self.Refresh_analysis.setIcon(refresh_icon)
-        self.Refresh_analysis.clicked.connect(self.process_deeranalysis)
 
     def setup_inputs(self):
         self.ExperimentcomboBox.addItems(['5pDEER', '4pDEER'])
@@ -155,8 +139,36 @@ class DEERplot(QWidget):
 
         self.MNRDoubleSpinBox.setValue(results.MNR)
         self.Chi2DoubleSpinBox.setValue(results.stats['chi2red'])
-        self.conc_value.setValue(results.conc)
-        self.conc_uncert.setText(getCIstring(results.concUncert))
+
+        bg_params = copy.copy(results.Bmodel.signature)
+
+        if 't' in bg_params:
+            bg_params.remove('t')
+        if 'lam' in bg_params:
+            bg_params.remove('lam')
+
+        layout:QFormLayout = self.GlobalFitLayout
+        for i,param in enumerate(bg_params):
+            # create a new label and a horizontle layout taht contains a double spin box and the uncertainty
+            value = getattr(results,param)
+            unit = getattr(results.Bmodel,param).unit
+            # create the horizontal layout
+            new_layout = QHBoxLayout()
+
+            spin_box = QDoubleSpinBox()
+            spin_box.setValue(value)
+            spin_box.setSuffix(' ' + unit)
+            spin_box.setReadOnly(True)
+            spin_box.setButtonSymbols(QAbstractSpinBox.ButtonSymbols(2))
+            new_layout.addWidget(spin_box)
+            new_layout.addWidget(QLabel(getCIstring(getattr(results, f"{param}Uncert"))))
+
+            layout.addRow(QLabel(param), new_layout)
+
+
+
+        # self.conc_value.setValue(results.conc)
+        # self.conc_uncert.setText(getCIstring(results.concUncert))
 
         try:
             self.regparamDoubleSpinBox.setValue(results.regparam)
@@ -260,8 +272,8 @@ class DEERplot(QWidget):
 
         self.MNRDoubleSpinBox.setValue(0)
         self.Chi2DoubleSpinBox.setValue(0)
-        self.conc_value.setValue(0)
-        self.conc_uncert.setText('(-,-)')
+        # self.conc_value.setValue(0)
+        # self.conc_uncert.setText('(-,-)')
         self.regparamDoubleSpinBox.setValue(0)
         self.Total_mod_value.setValue(0)
         self.Total_mod_uncert.setText('(-,-)')
@@ -273,7 +285,7 @@ class DEERplot(QWidget):
 
         
 
-    def process_deeranalysis(self,wait_condition=None, update_func=None):
+    def process_deeranalysis(self,background_model= dl.bg_hom3d, wait_condition=None, update_func=None):
 
         settings = {'ROI':True}
         settings['exp_type'] = self.ExperimentcomboBox.currentText()
@@ -285,6 +297,8 @@ class DEERplot(QWidget):
         settings['pathways'] = str_to_list_type(self.PathwayslineEdit.text(), int)
         settings['compactness'] = self.CompactnessradioButton.isChecked()
         settings['pulselength'] = self.PulseLengthdoubleSpinBox.value()
+
+        settings['bg_model'] = background_model
 
         dataset= self.current_data['quickdeer']
 
@@ -312,6 +326,8 @@ class DEERplot(QWidget):
             settings['model'] = dl.dd_rice3
         else:
             settings['model'] = None
+
+        
 
 
         worker = Worker(deeranalysis_process, dataset, settings, self.cores)
