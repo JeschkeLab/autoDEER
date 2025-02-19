@@ -251,9 +251,9 @@ def combo_figure(EDFS, respro, pulses:dict, relaxation:list, init_deer, long_dee
     
     Parameters
     ----------
-    EDFS: ad.FieldSweepAnalysis
+    EDFS: epr.FieldSweepAnalysis
         The Echo-Detected Field Sweep analysis.
-    respro: ad.ResonatorProfileAnalysis
+    respro: epr.ResonatorProfileAnalysis
         The resonator profile analysis
     pulses: dict
         A dictionary containing the optimised pulses.

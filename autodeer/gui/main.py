@@ -657,18 +657,31 @@ class autoDEERUI(QMainWindow):
             self.update_optimise_pulses_figure()
         
 
-    def optimise_pulses(self, pulses=None):
-        if (pulses is None) or pulses == {}:
-            self.pulses = ad.build_default_pulses(self.AWG,tp = self.Min_tp)
-            # pump_pulse = epr.HSPulse(tp=120, init_freq=-0.25, final_freq=-0.03, flipangle=np.pi, scale=0, order1=6, order2=1, beta=10)
-            # exc_pulse = epr.RectPulse(tp=16, freq=0.02, flipangle=np.pi/2, scale=0)
-            # ref_pulse = exc_pulse.copy(flipangle=np.pi)
+    def optimise_pulses(self):
+        if self.pulses == {}: # No pulses have been created yet
+            # self.pulses = ad.build_default_pulses(self.AWG,tp = self.Min_tp)
+            resonator = self.current_results['respro']
+            spectrum = self.current_results['fieldsweep']
+            self.pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum)
+        else: # Reoptimise pulses
+            if 'quickdeer' in self.current_results:
+                r_min = 4.0
+                max_tp = 256 # TODO
+                pump_pulse_tp = self.pulses['pump_pulse'].tp.value
+                if pump_pulse_tp > max_tp:
+                    self.pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum,r_min=r_min)
+                else:
+                    main_log.info(f"Pulse are already optimised")
+                    if self.waitCondition is not None: # Wake up the runner thread
+                        self.waitCondition.wakeAll()
+                    self.update_optimise_pulses_figure()
+                    self.Tab_widget.setCurrentIndex(1)
+
         
         pump_pulse = self.pulses['pump_pulse']
         ref_pulse = self.pulses['ref_pulse']
         exc_pulse = self.pulses['exc_pulse']
 
-        pump_pulse, exc_pulse, ref_pulse = ad.optimise_pulses(self.current_results['fieldsweep'], pump_pulse, exc_pulse, ref_pulse)
         
         # self.pulses = {'pump_pulse':pump_pulse, 'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse}    
         self.pulses['pump_pulse'] = pump_pulse
