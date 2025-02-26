@@ -220,6 +220,7 @@ class autoDEERUI(QMainWindow):
 
         self.LO = 0
         self.gyro = 0.002803632236095
+        self.gyro = 0.002808859721083
         self.cores = 1
         self.Min_tp=12
 
@@ -228,6 +229,7 @@ class autoDEERUI(QMainWindow):
 
         self.priotityComboBox.addItems(list(self.priorties.keys()))
         self.correction_factor=1
+        self.est_lambda = None
 
     def set_spectrometer_connected_light(self, state):
         if state == 0:
@@ -336,7 +338,7 @@ class autoDEERUI(QMainWindow):
                 self.Bruker=False
                 self.modeTuneDialog = ModeTune(self.spectromterInterface, gyro=self.gyro, threadpool=self.threadpool, current_folder=self.current_folder)
                 self.modeTuneButton = QPushButton('Mode Tune')
-                self.Resonator_layout.addWidget(self.modeTuneButton)
+                self.formLayout_2.addWidget(self.modeTuneButton)
                 self.modeTuneButton.clicked.connect(self.modeTuneDialog.show)
                 
 
@@ -377,7 +379,10 @@ class autoDEERUI(QMainWindow):
         self.AWG = self.config['Spectrometer']['AWG']
 
         # Set the wavefrom precision to 1/Sampling Frequency
-        waveform_precision = 1/self.config['Spectrometer']['Bridge']['Sample Freq']
+        if 'Waveform Precision' in self.config['Spectrometer']:
+            waveform_precision = self.config['Spectrometer']['Waveform Precision']
+        else:
+            waveform_precision = 1/self.config['Spectrometer']['Bridge']['Sample Freq']
         epr.set_waveform_precision(waveform_precision)
         main_log.debug(f"Setting waveform precision to {epr.get_waveform_precision()}")
 
@@ -501,8 +506,10 @@ class autoDEERUI(QMainWindow):
  
     def refresh_fieldsweep_after_fit(self, fitresult=None):
 
-        if fitresult is None:
+        if (fitresult is None) and 'fieldsweep' in self.current_results:
             fitresult = self.current_results['fieldsweep']
+        elif fitresult is None:
+            return None
         else:
             self.current_results['fieldsweep'] = fitresult
         self.gyro = fitresult.gyro
@@ -636,12 +643,12 @@ class autoDEERUI(QMainWindow):
         
 
     def optimise_pulses(self):
-        if self.pulses == {}: # No pulses have been created yet
+        resonator = self.current_results['respro']
+        spectrum = self.current_results['fieldsweep']
+        if self.pulses == {}:  # No pulses have been created yet
             # self.pulses = ad.build_default_pulses(self.AWG,tp = self.Min_tp)
-            resonator = self.current_results['respro']
-            spectrum = self.current_results['fieldsweep']
             self.pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum)
-        else: # Reoptimise pulses
+        else:  # Reoptimise pulses
             if 'quickdeer' in self.current_results:
                 r_min = 4.0
                 max_tp = 256 # TODO
@@ -654,7 +661,8 @@ class autoDEERUI(QMainWindow):
                         self.waitCondition.wakeAll()
                     self.update_optimise_pulses_figure()
                     self.Tab_widget.setCurrentIndex(1)
-
+        
+        self.est_lambda = ad.calc_est_modulation_depth(spectrum, **self.pulses, respro=resonator)
         
         pump_pulse = self.pulses['pump_pulse']
         ref_pulse = self.pulses['ref_pulse']
@@ -728,13 +736,14 @@ class autoDEERUI(QMainWindow):
         if dataset is None:
             dataset = self.current_data['relax']
         else:
+            dataset = dataset.epr.correctphasefull
             if 'relax' in self.current_data:
                 # attempt to merge datasets
                 main_log.info('Merging relax datasets')
                 dataset = self.current_data['relax'].epr.merge(dataset)
             
             self.current_data['relax'] = dataset
-            self.save_data(dataset,'CP',folder='main')
+            self.save_data(dataset, 'CP', folder='main')
 
         worker = Worker(relax_process, dataset)
         worker.signals.result.connect(self.refresh_relax)
@@ -800,7 +809,9 @@ class autoDEERUI(QMainWindow):
 
         self.refresh_relax_figure()
         self.label_eff = self.userinput['label_eff'] / 100
-        self.est_lambda = 0.4 
+
+        if self.est_lambda is None:
+            self.est_lambda = 0.4 
         self.aim_time = 2
         self.aim_MNR = 20
         
@@ -1113,7 +1124,7 @@ class autoDEERUI(QMainWindow):
             else:
                 time = None
 
-            self.update_deer_settings(time=time)
+            self.update_deer_settings(remaining_time=time)
 
         self.q_DEER.process_deeranalysis(background_model=bg_model, wait_condition = self.waitCondition, update_func=update_func)
 
