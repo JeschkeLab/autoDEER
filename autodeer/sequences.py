@@ -797,3 +797,122 @@ class RefocusedEcho2DSequence(Sequence):
         data = add_phaseshift(data, 0.05)
         return [xaxis, yaxis], data
 
+
+class RefocusedEcho1DSequence(Sequence):
+    """
+    Represents a 1D Refocused-echo Sequence. 
+    """
+
+    def __init__(self, *, B, freq, reptime, averages, shots,
+            tau1, start=400, step=50, dim=100, **kwargs) -> None:
+        """Build a 2D Refocused-echo sequence using either
+        rectangular pulses or specified pulses.
+
+        Parameters
+        ----------
+        B : int or float
+            The B0 field, in Guass
+        freq : int or float
+            The freq frequency in GHz
+        reptime : _type_
+            The shot repetition time in us
+        averages : int
+            The number of scans.
+        shots : int
+            The number of shots per point
+        tau1 : float
+            The tau1 value in ns
+        start : float
+            The starting value of tau2 in ns
+        step : float
+            The step value of tau2 in ns
+        dim: int
+            The number of points in both the X and Y axis
+    
+
+        Optional Parameters
+        -------------------
+        pi2_pulse : Pulse
+            An autoEPR Pulse object describing the excitation pi/2 pulse. If
+            not specified a RectPulse will be created instead.
+        pi_pulse : Pulse
+            An autoEPR Pulse object describing the refocusing pi pulses. If
+            not specified a RectPulse will be created instead.
+        """
+
+        self.tau1 = Parameter(name="tau1", value=tau1, unit="ns",
+            description="1st interpulse delay" ,virtual=True)
+        self.tau2 = Parameter(name="tau2", value=start, dim=dim, step=step, 
+            unit="ns", description="2nd interpulse delay", virtual=True)
+
+
+        if "pi_pulse" in kwargs:
+            self.pi_pulse = kwargs["pi_pulse"]
+        if "pi2_pulse" in kwargs:
+            self.pi2_pulse = kwargs["pi2_pulse"]
+        if "det_event" in kwargs:
+            self.det_event = kwargs["det_event"]
+
+        self._build_sequence()
+
+    def _build_sequence(self):
+
+        if hasattr(self, "pi2_pulse"):
+            self.addPulse(self.pi2_pulse.copy(
+                t=0, pcyc={"phases": [0, np.pi], "dets": [1, -1]}))
+        else:
+            self.addPulse(RectPulse(  # pi/2
+                t=0, tp=16, freq=0, flipangle=np.pi/2,
+                pcyc={"phases": [0, np.pi], "dets": [1, -1]}
+            ))
+
+        if hasattr(self, "pi_pulse"):
+            self.addPulse(self.pi_pulse.copy(
+                t=self.tau1, pcyc={"phases":[0, np.pi/2, np.pi, -np.pi/2], "dets": [1,-1,1,-1]}))
+        else:
+            self.addPulse(RectPulse(
+                t=self.tau1, tp=32, freq=0, flipangle=np.pi,
+                pcyc={"phases":[0, np.pi/2, np.pi, -np.pi/2], "dets": [1,-1,1,-1]}
+            ))
+
+        if hasattr(self, "pi_pulse"):
+            self.addPulse(self.pi_pulse.copy(
+                t=2*self.tau1 + self.tau2, pcyc={"phases":[0, np.pi], "dets": [1,1]}))
+        else:
+            self.addPulse(RectPulse(
+                t=2*self.tau1 + self.tau2, tp=32, freq=0, flipangle=np.pi,
+                pcyc={"phases":[0, np.pi], "dets": [1,1]}
+            ))
+        
+        if hasattr(self, "det_event"):
+            self.addPulse(self.det_event.copy(t=2*(self.tau1 + self.tau2)))
+        else:
+            self.addPulse(Detection(t=2*(self.tau1 + self.tau2), tp=512))
+
+        self.evolution([self.tau2])
+
+    def simulate(self, sigma=0.8):
+        """
+        Simulates the Refocused-echo 2D sequence using this function.
+        .. math::
+            V(tau1, tau2) = e^{-(tau1^2 + tau2^2 - tau1*tau2)/(2*sigma^2)}
+        
+        Parameters
+        ----------
+        sigma : float
+            The decay rate, by default 0.8 us
+        
+        Returns
+        -------
+        tau1, tau2 : list[np.ndarray]
+            The two time axis in us
+        data : np.ndarray
+            The simulated 2D data
+        """
+        func = lambda x, y: np.exp(-((x**2 + y**2 - 1*x*y) / (2*sigma**2)))
+
+        x = val_in_us(self.tau1)
+        yaxis = val_in_us(self.tau2)
+        data = func(x, yaxis)
+        data = add_phaseshift(data, 0.05)
+        return [yaxis], data
