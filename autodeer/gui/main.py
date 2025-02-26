@@ -20,6 +20,7 @@ from autodeer.gui.autoDEER_worker import autoDEERWorker
 from autodeer.gui.deer_panel import DEERplot
 from autodeer.gui.log import LogDialog
 from autodeer.gui.modetune import ModeTune
+from autodeer.gui.constants import *
 import yaml
 import time
 import datetime
@@ -129,16 +130,29 @@ def respro_process(dataset,f_lims, fieldsweep=None,cores=1):
 
 def relax_process(dataset):
 
-    # if dataset.axes[0].max()>500:
-    #     dataset.axes = [dataset.axes[0]/1e3]
-    # else:
-    #     dataset.axes = [dataset.axes[0]]
-    if dataset['tau1'].max() > 1e4:
-        dataset['tau1'] /= 1e3
-    CP_data = epr.CarrPurcellAnalysis(dataset)
-    CP_data.fit('auto')
+    seq_name = dataset.seq_name
 
-    return CP_data
+    if (seq_name == 'CarrPurcellSequence') :
+        if dataset['tau1'].max() > 1e4:
+            dataset['tau1'] /= 1e3
+        CP_data = epr.CarrPurcellAnalysis(dataset)
+        CP_data.fit('auto')
+        return CP_data
+    
+    elif seq_name == 'T2RelaxationSequence':
+        Tm_data = epr.HahnEchoRelaxationAnalysis(dataset)
+        Tm_data.fit('auto')
+
+        return Tm_data
+    
+    elif seq_name == 'RefocusedEcho1DSequence':
+        Tm_data = ad.RefocusedEcho1DAnalysis(dataset)
+        Tm_data.fit('auto')
+
+        return Tm_data
+
+
+    
 
 def T2_process(dataset):
     Tm_data = epr.HahnEchoRelaxationAnalysis(dataset)
@@ -610,9 +624,9 @@ class autoDEERUI(QMainWindow):
         if optimise_pulses:
             main_log.info(f"Resonator centre frequency {fitresult.results.fc:.4f} GHz")
             self.optimise_pulses_button()
-
-        if self.waitCondition is not None: # Wake up the runner thread
-            self.waitCondition.wakeAll()
+        else:
+            if self.waitCondition is not None: # Wake up the runner thread
+                self.waitCondition.wakeAll()
 
 
     def resonatorProfileFigure(self):
@@ -643,52 +657,65 @@ class autoDEERUI(QMainWindow):
         
 
     def optimise_pulses(self):
+        worker = Worker(self._optimise_pulses_in_background)
+        worker.signals.result.connect(self.update_pulses)
+        self.threadpool.start(worker)
+
+    def _optimise_pulses_in_background(self):
         resonator = self.current_results['respro']
         spectrum = self.current_results['fieldsweep']
         if self.pulses == {}:  # No pulses have been created yet
             # self.pulses = ad.build_default_pulses(self.AWG,tp = self.Min_tp)
-            self.pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum)
+            pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum)
         else:  # Reoptimise pulses
             if 'quickdeer' in self.current_results:
                 r_min = 4.0
                 max_tp = 256 # TODO
                 pump_pulse_tp = self.pulses['pump_pulse'].tp.value
                 if pump_pulse_tp > max_tp:
-                    self.pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum,r_min=r_min)
+                    pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum,r_min=r_min)
                 else:
-                    main_log.info(f"Pulse are already optimised")
-                    if self.waitCondition is not None: # Wake up the runner thread
-                        self.waitCondition.wakeAll()
-                    self.update_optimise_pulses_figure()
-                    self.Tab_widget.setCurrentIndex(1)
+                    return None
         
-        self.est_lambda = ad.calc_est_modulation_depth(spectrum, **self.pulses, respro=resonator)
-        
-        pump_pulse = self.pulses['pump_pulse']
-        ref_pulse = self.pulses['ref_pulse']
-        exc_pulse = self.pulses['exc_pulse']
+        est_lambda = ad.calc_est_modulation_depth(spectrum, **pulses, respro=resonator)
+        return pulses, est_lambda
 
+    def update_pulses(self,*args):
+        if len(args[0]) == 2:
+            pulses, est_lambda = args[0]
+            self.pulses = pulses
+            self.est_lambda = est_lambda
         
-        # self.pulses = {'pump_pulse':pump_pulse, 'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse}    
-        self.pulses['pump_pulse'] = pump_pulse
-        self.pulses['ref_pulse'] = ref_pulse
-        self.pulses['exc_pulse'] = exc_pulse
-        self.pulses['det_event'].freq = exc_pulse.freq
-        self.pulses['det_event'].tp.value = 2*np.max([exc_pulse.tp.value,ref_pulse.tp.value])
-        main_log.info(f"Optimised pulses")
-        if self.worker is not None:
-            self.worker.new_pulses(self.pulses)
+            pump_pulse = self.pulses['pump_pulse']
+            ref_pulse = self.pulses['ref_pulse']
+            exc_pulse = self.pulses['exc_pulse']
+
+            
+            # self.pulses = {'pump_pulse':pump_pulse, 'exc_pulse':exc_pulse, 'ref_pulse':ref_pulse}    
+            self.pulses['pump_pulse'] = pump_pulse
+            self.pulses['ref_pulse'] = ref_pulse
+            self.pulses['exc_pulse'] = exc_pulse
+            self.pulses['det_event'].freq = exc_pulse.freq
+            self.pulses['det_event'].tp.value = 2*np.max([exc_pulse.tp.value,ref_pulse.tp.value])
+            main_log.info(f"Optimised pulses")
+            if self.worker is not None:
+                self.worker.new_pulses(self.pulses)
         
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
 
         self.update_optimise_pulses_figure()
         self.Tab_widget.setCurrentIndex(1)
+
     
     def update_optimise_pulses_figure(self):
-        pump_pulse = self.pulses['pump_pulse']
-        exc_pulse = self.pulses['exc_pulse']
-        ref_pulse = self.pulses['ref_pulse']
+        try:
+            pump_pulse = self.pulses['pump_pulse']
+            exc_pulse = self.pulses['exc_pulse']
+            ref_pulse = self.pulses['ref_pulse']
+        except KeyError:
+            main_log.error('No pulses found')
+            return None
 
         self.setup_plot_ax.cla()
         ad.plot_overlap(self.current_results['fieldsweep'], pump_pulse, exc_pulse,ref_pulse, axs=self.setup_plot_ax,fig=self.setup_figure_canvas.figure, respro=self.current_results['respro'])
@@ -732,24 +759,6 @@ class autoDEERUI(QMainWindow):
             self.PumpBWBox.setSuffix(' MHz')
             self.PumpTypeLine.setText(type_to_pulse_hash[type(pump_pulse)])
 
-    def update_relax(self, dataset=None):
-        if dataset is None:
-            dataset = self.current_data['relax']
-        else:
-            dataset = dataset.epr.correctphasefull
-            if 'relax' in self.current_data:
-                # attempt to merge datasets
-                main_log.info('Merging relax datasets')
-                dataset = self.current_data['relax'].epr.merge(dataset)
-            
-            self.current_data['relax'] = dataset
-            self.save_data(dataset, 'CP', folder='main')
-
-        worker = Worker(relax_process, dataset)
-        worker.signals.result.connect(self.refresh_relax)
-
-        self.threadpool.start(worker)
-
     def create_relax_figure(self,n_plots=3):
         # if hasattr(self,'relax_canvas'):
         #     self.relax_v_left :QVBoxLayout
@@ -788,64 +797,66 @@ class autoDEERUI(QMainWindow):
         fig = self.relax_canvas.figure
         self.relax_ax[0].cla()
         relax1D_results = []
-        if 'relax' in self.current_results:
-            relax1D_results.append(self.current_results['relax'])
-        if 'T2_relax' in self.current_results:
-            relax1D_results.append(self.current_results['T2_relax'])
+        if 'CP-relax' in self.current_results:
+            relax1D_results.append(self.current_results['CP-relax'])
+        if 'Tm-relax' in self.current_results:
+            relax1D_results.append(self.current_results['Tm-relax'])
+        if '1D-ref-relax' in self.current_results:
+            relax1D_results.append(self.current_results['1D-ref-relax'])
 
         epr.plot_1Drelax(*relax1D_results, axs=self.relax_ax[0], fig=fig, cmap=ad.primary_colors)
             
-        if 'relax2D' in self.current_results:
+        if '2D-ref-relax' in self.current_results:
             self.relax_ax[1].cla()
-            self.current_results['relax2D'].plot2D(axs=self.relax_ax[3], fig=fig)
+            self.current_results['2D-ref-relax'].plot2D(axs=self.relax_ax[3], fig=fig)
 
         self.relax_canvas.draw()
 
+      
+    # def refresh_relax(self, fitresult):
+    #     self.current_results['CP-relax'] = fitresult
 
+
+    #     self.refresh_relax_figure()
         
-    def refresh_relax(self, fitresult):
-        self.current_results['relax'] = fitresult
+        
+    #     self.initialise_deer_settings()
 
+    #     # self.current_results['CP-relax'].max_tau = max_tau
+    #     # self.DipolarEvoMax.setValue(max_tau)
+    #     # self.DipolarEvo2hrs.setValue(tau2hrs)
+    #     self.Tab_widget.setCurrentIndex(2)
+        
+    #     if self.check_CP(fitresult): # CP decays passes test then it can proceed
+            
+    #         if self.worker is not None:
+    #             # CP_decay = fitresult.func(fitresult.axis, *fitresult.fit_result[0]).data
+    #             CP_decay = fitresult.fit_result.evaluate(fitresult.fit_model, fitresult.axis)*fitresult.fit_result.scale
+    #             # Find the index when CP_decay is below 0.05
+    #             CP_decay = CP_decay/CP_decay[0]
+    #             CP_decay_bool = CP_decay < 0.05
+    #             CP_decay_idx = np.where(CP_decay_bool)[0]
+    #             if len(CP_decay_idx) == 0:
+    #                 CP_decay_idx = len(CP_decay)
+    #             else:
+    #                 CP_decay_idx = CP_decay_idx[0]
+    #             max_tau = fitresult.axis[CP_decay_idx]
+    #             max_tau = epr.round_step(max_tau,1)
+    #             main_log.info(f"Max tau {max_tau:.2f} us")
+    #             self.worker.set_2D_max_tau(max_tau*2)
 
-        self.refresh_relax_figure()
+    #         if self.waitCondition is not None: # Wake up the runner thread
+    #             self.waitCondition.wakeAll()
+
+    def initialise_deer_settings(self):
+        
         self.label_eff = self.userinput['label_eff'] / 100
 
         if self.est_lambda is None:
             self.est_lambda = 0.4 
         self.aim_time = 2
         self.aim_MNR = 20
-        
-        self.initialise_deer_settings()
 
-        # self.current_results['relax'].max_tau = max_tau
-        # self.DipolarEvoMax.setValue(max_tau)
-        # self.DipolarEvo2hrs.setValue(tau2hrs)
-        self.Tab_widget.setCurrentIndex(2)
-        
-        if self.check_CP(fitresult): # CP decays passes test then it can proceed
-            
-            if self.worker is not None:
-                # CP_decay = fitresult.func(fitresult.axis, *fitresult.fit_result[0]).data
-                CP_decay = fitresult.fit_result.evaluate(fitresult.fit_model, fitresult.axis)*fitresult.fit_result.scale
-                # Find the index when CP_decay is below 0.05
-                CP_decay = CP_decay/CP_decay[0]
-                CP_decay_bool = CP_decay < 0.05
-                CP_decay_idx = np.where(CP_decay_bool)[0]
-                if len(CP_decay_idx) == 0:
-                    CP_decay_idx = len(CP_decay)
-                else:
-                    CP_decay_idx = CP_decay_idx[0]
-                max_tau = fitresult.axis[CP_decay_idx]
-                max_tau = epr.round_step(max_tau,1)
-                main_log.info(f"Max tau {max_tau:.2f} us")
-                self.worker.set_2D_max_tau(max_tau*2)
-
-            if self.waitCondition is not None: # Wake up the runner thread
-                self.waitCondition.wakeAll()
-
-    def initialise_deer_settings(self):
-        
-        
         # Assemble all relaxation data
         if (self.Exp_types.currentText() == '4pDEER'):
             exp = '4pDEER'
@@ -862,12 +873,14 @@ class autoDEERUI(QMainWindow):
             
 
         relax_data = {}
-        if 'relax' in self.current_results:
-            relax_data['CP'] = self.current_results['relax']
-        if 'T2_relax' in self.current_results:
-            relax_data['Tm'] = self.current_results['T2_relax']
-        if 'relax2D' in self.current_results:
-            relax_data['Ref2D'] = self.current_results['relax2D']    
+        if 'CP-relax' in self.current_results:
+            relax_data['CP'] = self.current_results['CP-relax']
+        if '1D-ref-relax' in self.current_results:
+            relax_data['Tm'] = self.current_results['1D-ref-relax']
+        elif 'Tm-relax' in self.current_results:
+            relax_data['Tm'] = self.current_results['Tm-relax']
+        if '2D-ref-relax' in self.current_results:
+            relax_data['Ref2D'] = self.current_results['2D-ref-relax']    
         
         #debug only, remove later
         store_pickle(relax_data,os.path.join(self.data_folder,'relax_data.pkl'))
@@ -903,9 +916,9 @@ class autoDEERUI(QMainWindow):
             main_log.debug(f"Measuring DEER for {remaining_time:.2f} hours")
 
         if self.deer_settings['ExpType'] == '4pDEER':
-            relax = self.current_results['T2_relax']
+            relax = self.current_results['Tm-relax']
         elif self.deer_settings['ExpType'] == '5pDEER':
-            relax = self.current_results['relax']
+            relax = self.current_results['CP-relax']
         
         self.correction_factor = ad.calc_correction_factor(relax,self.current_results['quickdeer'])
         main_log.info(f"Correction factor {self.correction_factor:.3f}")
@@ -928,12 +941,15 @@ class autoDEERUI(QMainWindow):
 
 
         relax_data = {}
-        if 'relax' in self.current_results:
-            relax_data['CP'] = self.current_results['relax']
-        if 'T2_relax' in self.current_results:
-            relax_data['Tm'] = self.current_results['T2_relax']
-        if 'relax2D' in self.current_results:
-            relax_data['Ref2D'] = self.current_results['relax2D']         
+        if 'CP-relax' in self.current_results:
+            relax_data['CP'] = self.current_results['CP-relax']
+        if '1D-ref-relax' in self.current_results:
+            relax_data['Tm'] = self.current_results['1D-ref-relax']
+        elif 'Tm-relax' in self.current_results:
+            relax_data['Tm'] = self.current_results['Tm-relax']
+        if '2D-ref-relax' in self.current_results:
+            relax_data['Ref2D'] = self.current_results['2D-ref-relax']    
+         
 
         #debug only, remove later
         store_pickle(relax_data,os.path.join(self.data_folder,'relax_data.pkl'))
@@ -959,28 +975,28 @@ class autoDEERUI(QMainWindow):
         axs = self.relax_ax[2]
         axs.cla()
         
-        if 'relax' in self.current_results:
-            CP_analysis = self.current_results['relax']
+        if 'CP-relax' in self.current_results:
+            CP_analysis = self.current_results['CP-relax']
             ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[0]],corr_factor=self.correction_factor)
 
-        if 'relax2D' in self.current_results:
-            ad.plot_optimal_tau(self.current_results['relax2D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
-        elif 'T2_relax' in self.current_results:
-            ad.plot_optimal_tau(self.current_results['T2_relax'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
+        if '2D-ref-relax' in self.current_results:
+            ad.plot_optimal_tau(self.current_results['2D-ref-relax'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
+        elif 'Tm-relax' in self.current_results:
+            ad.plot_optimal_tau(self.current_results['Tm-relax'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
 
         axs.set_title(labels[0])
 
     def update_relax2D(self, dataset=None):
         if dataset is None:
-            dataset = self.current_data['relax2D']
+            dataset = self.current_data['2D-ref-relax']
         else:
-            self.current_data['relax2D'] = dataset
+            self.current_data['2D-ref-relax'] = dataset
             self.save_data(dataset,'2D_DEC',folder='main')
 
         # Since there is no fitting in the 2D data analysis it can be run in the main threads
 
         relax2DAnalysis = ad.RefocusedEcho2DAnalysis(dataset)
-        self.current_results['relax2D'] = relax2DAnalysis
+        self.current_results['2D-ref-relax'] = relax2DAnalysis
 
         self.refresh_relax_figure()
 
@@ -989,107 +1005,160 @@ class autoDEERUI(QMainWindow):
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
+    def update_relax(self, dataset):
+        # Recieves dataset from the worker thread and updates the relax figure
+        
+        dataset = dataset.epr.correctphasefull # Correct the phase of the dataset
 
-    
-    def update_T2(self,dataset=None):
-        if dataset is None:
-            dataset = self.current_data['T2_relax']
-        else:
-            dataset = dataset.epr.correctphasefull
-            if 'T2_relax' in self.current_data:
-                # attempt to merge datasets
-                main_log.info('Merging relax datasets')
-                dataset = self.current_data['T2_relax'].epr.merge(dataset)
-            
-            self.current_data['T2_relax'] = dataset
-            self.save_data(dataset,'T2',folder='main')
+        short_name = short_name_dict[dataset.seq_name]
 
         
-        d_ESEEM = epr.detect_ESEEM(dataset,'deuteron')
-        p_ESEEM = epr.detect_ESEEM(dataset,'proton')
-        d_ESEEM = False # Turn off ESEEM detection
-        p_ESEEM = False
-        if d_ESEEM:
-            self.deer_settings['ESEEM'] = 'deuteron'
-            main_log.info(f"Detected deuteron ESEEM")
-        elif p_ESEEM:
-            self.deer_settings['ESEEM'] = 'proton'
-            main_log.info(f"Detected proton ESEEM")
-        else:
-            self.deer_settings['ESEEM'] = None
-            main_log.info(f"No ESEEM detected")
-        # Since the T2 values are not used for anything there is no need pausing the spectrometer    
+        # check if the relaxation data is being merged
 
-        T2_worker = Worker(T2_process, dataset)
-        T2_worker.signals.result.connect(self.refresh_T2)
-        # T2_worker.signals.result.connect(self.check_T2)
+        if short_name in self.current_data:
+            # attempt to merge datasets
+            main_log.info(f'Merging {short_name} datasets')
+            dataset = self.current_data[short_name].epr.merge(dataset)
 
-        self.threadpool.start(T2_worker)
+        self.current_data[short_name] = dataset
+        self.save_data(dataset,short_name,folder='main')
 
-    def check_T2(self, fitresult):
-        # Check if the T2 measurment is too short. 
+        # Process the relaxation data
+
+        relax_process_worker = Worker(relax_process, dataset)
+        relax_process_worker.signals.result.connect(self.post_process_relax)
+
+        self.threadpool.start(relax_process_worker)
+
+    def post_process_relax(self, fitresult):
+        
+        seq_name = fitresult.dataset.seq_name
+        short_name = short_name_dict[seq_name]
+        self.current_results[short_name] = fitresult
 
         test_result = fitresult.check_decay()
         test_dt = fitresult.axis[1].values - fitresult.axis[0].values
         test_dt *= 1e3
 
-        if test_result == 0:
-            # if self.waitCondition is not None: # Wake up the runner thread
-            #     self.waitCondition.wakeAll()
-            return True
-        
-        elif test_result == -1:  # The trace needs to be longer
-            new_dt = epr.round_step(test_dt*2, self.waveform_precision)
-        elif test_result == 1:  # The trace needs to be shorter
-            new_dt = epr.round_step(test_dt/2, self.waveform_precision)
+        if test_result != 0:
+            if test_result == -1:  # The trace needs to be longer
+                new_dt = epr.round_step(test_dt*2, self.waveform_precision)
+            elif test_result == 1:  # The trace needs to be shorter
+                new_dt = epr.round_step(test_dt/2, self.waveform_precision)
 
-        new_tmin = fitresult.axis[-1].values
-        new_tmin += new_dt*1e-3
-        nAvgs = fitresult.dataset.attrs['nAvgs']
+            new_tmin = fitresult.axis[-1].values
+            new_tmin += new_dt*1e-3
+            nAvgs = fitresult.dataset.attrs['nAvgs']
 
-        self.initialise_deer_settings()
-        
-        if self.worker is not None:
-            self.worker.run_T2_relax(dt=new_dt, tmin=new_tmin, averages=nAvgs, autoStop=False)
-            return False
+            if self.worker is not None:
+                self.worker.rerun_relax(short_name,dt=new_dt, tmin=new_tmin*2, averages=nAvgs, autoStop=False)
+
         else:
-            return True
+            self.initialise_deer_settings()
 
-    def check_CP(self, fitresult):
-        # Check if the CP measurment is too short. 
+        if self.waitCondition is not None:  # Wake up the runner thread
+                self.waitCondition.wakeAll()
 
-        test_result = fitresult.check_decay()
-        main_log.debug(f"CP test result {test_result}")
-
-        test_dt = fitresult.axis[1].values - fitresult.axis[0].values
-        test_dt *= 1e3
-        if test_result == 0:
-            # if self.waitCondition is not None: # Wake up the runner thread
-            #     self.waitCondition.wakeAll()
-            return True
-        elif test_result == -1: # The trace needs to be longer
-            new_dt = epr.round_step(test_dt*2, self.waveform_precision)
-        elif test_result == 1: # The trace needs to be shorter
-            new_dt = epr.round_step(test_dt/2, self.waveform_precision)
-
-        new_tmin = fitresult.axis[-1].values
-        new_tmin += new_dt*1e-3
-        nAvgs = fitresult.dataset.attrs['nAvgs']
-        
-        if self.worker is not None:
-            self.worker.run_CP_relax(dt=new_dt, tmin=new_tmin*2, averages=nAvgs, autoStop=False)
-            return False
-        else:
-            return True
-
-    def refresh_T2(self, fitresult):
-        self.current_results['T2_relax'] = fitresult
         self.refresh_relax_figure()
 
-        if self.check_T2(fitresult):
 
-            if self.waitCondition is not None:  # Wake up the runner thread
-                self.waitCondition.wakeAll()
+
+    # def update_T2(self,dataset=None):
+    #     if dataset is None:
+    #         dataset = self.current_data['Tm-relax']
+    #     else:
+    #         dataset = dataset.epr.correctphasefull
+    #         if 'Tm-relax' in self.current_data:
+    #             # attempt to merge datasets
+    #             main_log.info('Merging relax datasets')
+    #             dataset = self.current_data['Tm-relax'].epr.merge(dataset)
+            
+    #         self.current_data['Tm-relax'] = dataset
+    #         self.save_data(dataset,'T2',folder='main')
+
+        
+    #     d_ESEEM = epr.detect_ESEEM(dataset,'deuteron')
+    #     p_ESEEM = epr.detect_ESEEM(dataset,'proton')
+    #     d_ESEEM = False # Turn off ESEEM detection
+    #     p_ESEEM = False
+    #     if d_ESEEM:
+    #         self.deer_settings['ESEEM'] = 'deuteron'
+    #         main_log.info(f"Detected deuteron ESEEM")
+    #     elif p_ESEEM:
+    #         self.deer_settings['ESEEM'] = 'proton'
+    #         main_log.info(f"Detected proton ESEEM")
+    #     else:
+    #         self.deer_settings['ESEEM'] = None
+    #         main_log.info(f"No ESEEM detected")
+    #     # Since the T2 values are not used for anything there is no need pausing the spectrometer    
+
+    #     T2_worker = Worker(T2_process, dataset)
+    #     T2_worker.signals.result.connect(self.refresh_T2)
+    #     # T2_worker.signals.result.connect(self.check_T2)
+
+    #     self.threadpool.start(T2_worker)
+
+    # def check_T2(self, fitresult):
+    #     # Check if the T2 measurment is too short. 
+
+    #     test_result = fitresult.check_decay()
+    #     test_dt = fitresult.axis[1].values - fitresult.axis[0].values
+    #     test_dt *= 1e3
+
+    #     if test_result == 0:
+    #         return True
+    #     elif test_result == -1:  # The trace needs to be longer
+    #         new_dt = epr.round_step(test_dt*2, self.waveform_precision)
+    #     elif test_result == 1:  # The trace needs to be shorter
+    #         new_dt = epr.round_step(test_dt/2, self.waveform_precision)
+
+    #     new_tmin = fitresult.axis[-1].values
+    #     new_tmin += new_dt*1e-3
+    #     nAvgs = fitresult.dataset.attrs['nAvgs']
+
+    #     self.initialise_deer_settings()
+        
+    #     if self.worker is not None:
+    #         self.worker.run_T2_relax(dt=new_dt, tmin=new_tmin, averages=nAvgs, autoStop=False)
+    #         return False
+    #     else:
+    #         return True
+
+    # def check_CP(self, fitresult):
+    #     # Check if the CP measurment is too short. 
+
+    #     test_result = fitresult.check_decay()
+    #     main_log.debug(f"CP test result {test_result}")
+
+    #     test_dt = fitresult.axis[1].values - fitresult.axis[0].values
+    #     test_dt *= 1e3
+    #     if test_result == 0:
+    #         # if self.waitCondition is not None: # Wake up the runner thread
+    #         #     self.waitCondition.wakeAll()
+    #         return True
+    #     elif test_result == -1: # The trace needs to be longer
+    #         new_dt = epr.round_step(test_dt*2, self.waveform_precision)
+    #     elif test_result == 1: # The trace needs to be shorter
+    #         new_dt = epr.round_step(test_dt/2, self.waveform_precision)
+
+    #     new_tmin = fitresult.axis[-1].values
+    #     new_tmin += new_dt*1e-3
+    #     nAvgs = fitresult.dataset.attrs['nAvgs']
+        
+    #     if self.worker is not None:
+    #         self.worker.run_CP_relax(dt=new_dt, tmin=new_tmin*2, averages=nAvgs, autoStop=False)
+    #         return False
+    #     else:
+    #         return True
+
+    # def refresh_T2(self, fitresult):
+    #     self.current_results['Tm-relax'] = fitresult
+    #     self.refresh_relax_figure()
+
+    #     if self.check_T2(fitresult):
+
+    #         if self.waitCondition is not None:  # Wake up the runner thread
+    #             self.waitCondition.wakeAll()
 
     def advanced_mode_inputs(self):
         self.Exp_types.addItems(['auto', '5pDEER', '4pDEER', 'Ref2D'])
@@ -1315,7 +1384,7 @@ class autoDEERUI(QMainWindow):
         # self.worker.signals.optimise_pulses.connect(self.optimise_pulses)
         self.worker.signals.relax_result.connect(self.update_relax)
         self.worker.signals.relax_result.connect(lambda x: self.save_data(x,'CP'))
-        self.worker.signals.T2_result.connect(self.update_T2)
+        self.worker.signals.T2_result.connect(self.update_relax)
         self.worker.signals.T2_result.connect(lambda x: self.save_data(x,'T2'))
 
         self.worker.signals.Relax2D_result.connect(self.update_relax2D)
@@ -1413,12 +1482,12 @@ class autoDEERUI(QMainWindow):
             report.add_code_block('pulses', pump_pulse.__str__(), title='Pump Pulse')
 
 
-        if 'relax' in self.current_results:
+        if 'CP-relax' in self.current_results:
             report.add_new_section('relax',' Relaxation')
             report.add_figure('relax', self.relax_canvas.figure)
-            if hasattr(self.current_results['relax'], 'results'):
+            if hasattr(self.current_results['CP-relax'], 'results'):
                 report.add_space('relax')
-                report.add_code_block('relax', self.current_results['relax'].results.__str__(), title='Fit Results')
+                report.add_code_block('relax', self.current_results['CP-relax'].results.__str__(), title='Fit Results')
             report.add_page_break('relax') 
 
 

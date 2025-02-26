@@ -302,7 +302,7 @@ class DEERSequence(Sequence):
 
         if relaxation:
             self.evolution([self.tau1])
-
+            self.name = 'CarrPurcellSequence'
         else:
             self.evolution([self.t])
 
@@ -710,7 +710,7 @@ class RefocusedEcho2DSequence(Sequence):
             not specified a RectPulse will be created instead. 
         """
 
-        name = "RefocusedEcho2D"
+        name = "RefocusedEcho2DSequence"
         super().__init__(
             name=name, B=B, freq=freq, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
@@ -839,7 +839,11 @@ class RefocusedEcho1DSequence(Sequence):
             An autoEPR Pulse object describing the refocusing pi pulses. If
             not specified a RectPulse will be created instead.
         """
-
+        name = "RefocusedEcho1DSequence"
+        super().__init__(
+            name=name, B=B, freq=freq, reptime=reptime, averages=averages,
+            shots=shots, **kwargs)
+        
         self.tau1 = Parameter(name="tau1", value=tau1, unit="ns",
             description="1st interpulse delay" ,virtual=True)
         self.tau2 = Parameter(name="tau2", value=start, dim=dim, step=step, 
@@ -852,6 +856,10 @@ class RefocusedEcho1DSequence(Sequence):
             self.pi2_pulse = kwargs["pi2_pulse"]
         if "det_event" in kwargs:
             self.det_event = kwargs["det_event"]
+        if "pump_pulse" in kwargs:
+            self.pump_pulse = kwargs["pump_pulse"]
+        else:
+            self.pump_pulse = None
 
         self._build_sequence()
 
@@ -874,6 +882,9 @@ class RefocusedEcho1DSequence(Sequence):
                 t=self.tau1, tp=32, freq=0, flipangle=np.pi,
                 pcyc={"phases":[0, np.pi/2, np.pi, -np.pi/2], "dets": [1,-1,1,-1]}
             ))
+        
+        if self.pump_pulse is not None:
+            self.addPulse(self.pump_pulse.copy(t=2*self.tau1,pcyc = {"phases":[0,np.pi/2, np.pi,3*np.pi/2], "dets": [1,1,1,1]}))
 
         if hasattr(self, "pi_pulse"):
             self.addPulse(self.pi_pulse.copy(

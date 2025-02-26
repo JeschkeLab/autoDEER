@@ -262,7 +262,6 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.T2_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('T2relax experiment complete')
 
-
     def run_2D_relax(self):
         self.signals.status.emit('Running 2D decoherence experiment')
         freq = self.freq
@@ -283,7 +282,34 @@ class autoDEERWorker(QtCore.QRunnable):
             time.sleep(self.updaterate)
         self.signals.Relax2D_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('2D decoherence experiment complete')
-    
+
+    def run_1D_refocused_echo(self,dt=10,tmin=0.7,averages=30,autoStop=True,autoIFGain=True,*kwargs):
+
+        self.signals.status.emit('Running 1D refocused echo experiment')
+        freq = self.freq
+        gyro = self.gyro
+        reptime = self.reptime
+        shots = int(100*self.noise_mode)
+        shots = np.max([shots,25])
+
+        seq = RefocusedEcho1DSequence(
+            B=freq/gyro, freq=freq,reptime=reptime,averages=averages,shots=shots,
+            tau1=400, start=tmin*1e3, step=dt, dim=500,
+            pi2_pulse=self.pulses['exc_pulse'], pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'], pump_pulse=self.pulses['pump_pulse']
+        )
+
+        if not autoIFGain:
+            autoIFGain = self.interface.IFgain
+
+        self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=autoIFGain)
+
+        if autoStop:
+            self.interface.terminate_at(SNRCriteria(50),test_interval=self.test_interval,verbosity=2)
+        while self.interface.isrunning():
+            time.sleep(self.updaterate)
+        self.signals.T2_result.emit(self.interface.acquire_dataset())
+        self.signals.status.emit('1D refocused echo experiment experiment complete')
+
     def run_quick_deer(self):
 
         if not self.quick_deer_state:
@@ -443,10 +469,12 @@ class autoDEERWorker(QtCore.QRunnable):
         
         if ( self.operating_mode is None) or (self.operating_mode == '5pDEER') or (self.operating_mode == 'auto'):
             methods.append(self.run_CP_relax)
+            methods.append(self.run_1D_refocused_echo)
             methods.append(self.run_T2_relax)
         
         elif ( self.operating_mode == '4pDEER') or ( self.operating_mode == 'Ref2D'):
             methods.append(self.run_CP_relax)
+            methods.append(self.run_1D_refocused_echo)
             methods.append(self.run_T2_relax)
             methods.append(self.run_2D_relax)
             if  self.operating_mode == 'Ref2D':
@@ -534,4 +562,15 @@ class autoDEERWorker(QtCore.QRunnable):
 
     def repeat_quickdeer(self):
         self.methods.appendleft(self.run_quick_deer)
+
+    def rerun_relax(self,experiment,**kwargs):
+        if experiment == 'CP-relax':
+            method = lambda: self.run_CP_relax(**kwargs)
+        elif experiment == 'Tm-relax':
+            method = lambda: self.run_T2_relax(**kwargs)
+        elif experiment == '2D-ref-relax':
+            method = lambda: self.run_2D_relax(**kwargs)
+        elif experiment == '1D-ref-relax':
+            method = lambda: self.run_1D_refocused_echo(**kwargs)
+        self.methods.appendleft(method)
 
