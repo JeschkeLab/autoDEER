@@ -63,10 +63,8 @@ class DEERCriteria(Criteria):
             #     tau1, tau2, tau3, num_points=100,
             #     compactness=True, precision="Speed", plot=False)
 
-
-
             fit = DEERanalysis(
-                data, compactness=True, model=model, regparamrange=regparamrange,verbosity=verbosity,lin_maxiter=50,max_nfev=100
+                data, compactness=True, model=model, regparamrange=regparamrange, verbosity=verbosity, lin_maxiter=50, max_nfev=100
             )
             test = True
             if fit.MNR < MNR_threshold:
@@ -81,7 +79,7 @@ class DEERCriteria(Criteria):
             
             return test
         
-        super().__init__(name, test_func, description,**kwargs)
+        super().__init__(name, test_func, description, **kwargs)
 
 
 # class BackgroundCriteria(Criteria):

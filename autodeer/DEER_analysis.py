@@ -789,7 +789,7 @@ def functional(f_axis,fieldsweep,A,B,filter=None,A_shift=0,B_shift=0):
     ----------
     f_axis : np.ndarray
         The frequency axis of the field sweep in GHz
-    fieldsweep : ad.FieldSweepAnalysis
+    fieldsweep : epr.FieldSweepAnalysis
         The FieldSweep analysis object
     A : np.ndarray
         The pump pulse profile
@@ -836,15 +836,15 @@ def Functional_basic(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator,
     ----------
     x : list
         The frequency shifts of the pump and excitation pulses.
-    pump_pulse : ad.Pulse
+    pump_pulse : epr.Pulse
         The pump pulse object
-    exc_pulse : ad.Pulse
+    exc_pulse : epr.Pulse
         The excitation pulse object
-    ref_pulse : ad.Pulse
+    ref_pulse : epr.Pulse
         The refocusing pulse object 
-    Fieldsweep : ad.FieldSweepAnalysis
+    Fieldsweep : epr.FieldSweepAnalysis
         The FieldSweep analysis object
-    resonator : ad.ResonatorProfile
+    resonator : epr.ResonatorProfile
         The resonator profile
     num_ref_pulses : int
         The number of refocusing pulses
@@ -914,13 +914,13 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
 
     Parameters
     ----------
-    Fieldsweep : ad.FieldSweepAnalysis
+    Fieldsweep : epr.FieldSweepAnalysis
         The FieldSweep analysis object
-    pump_pulse : ad.Pulse
+    pump_pulse : epr.Pulse
         The pump pulse object
-    exc_pulse : ad.Pulse
+    exc_pulse : epr.Pulse
         The excitation pulse object
-    ref_pulse : ad.Pulse, optional
+    ref_pulse : epr.Pulse, optional
         The refocusing pulse object\, by default None
     filter : str or number or list, optional
         The filter profile if applicable, by default None. If it is a number a filter is generated with this cutoff frequency.
@@ -935,15 +935,15 @@ def optimise_pulses(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, filter=No
         The total number of refocusing pulses, by default 2
     full_output : bool, optional
         Return the full output, by default False
-    resonator : ad.ResonatorProfile, optional
+    resonator : epr.ResonatorProfile, optional
         The resonator profile, by default None
     Returns
     -------
-    ad.Pulse
+    epr.Pulse
         The optimised pump pulse
-    ad.Pulse
+    epr.Pulse
         The optimised excitation pulse
-    ad.Pulse
+    epr.Pulse
         The optimised refocusing pulse
     str or number
         The best filter, only if a list of filters is provided
@@ -1076,15 +1076,15 @@ def calc_functional(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,resonator=None,
         
     Parameters
     ----------
-    Fieldsweep : ad.FieldSweepAnalysis
+    Fieldsweep : epr.FieldSweepAnalysis
         The FieldSweep analysis object
-    pump_pulse : ad.Pulse
+    pump_pulse : epr.Pulse
         The pump pulse object
-    exc_pulse : ad.Pulse
+    exc_pulse : epr.Pulse
         The excitation pulse object
-    ref_pulse : ad.Pulse
+    ref_pulse : epr.Pulse
         The refocusing pulse object
-    respro : ad.ResonatorProfileAnalysis, optional
+    respro : epr.ResonatorProfileAnalysis, optional
         The resonator profile, by default None
     num_ref_pulses : int, optional
         The total number of refocusing pulses, by default 2
@@ -1124,7 +1124,7 @@ def calc_functional(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,resonator=None,
 
     return 2*P_pump*P_obs
 
-def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,respro=None, num_ref_pulses=2):
+def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, num_ref_pulses=2, **kwargs):
     """
     Calculate the estimated modulation depth from the EPR spectrum, the pulses and the resonator profile.
 
@@ -1134,15 +1134,15 @@ def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,respr
     
     Parameters
     ----------
-    Fieldsweep : ad.FieldSweepAnalysis
+    Fieldsweep : epr.FieldSweepAnalysis
         The FieldSweep analysis object
-    pump_pulse : ad.Pulse
+    pump_pulse : epr.Pulse
         The pump pulse object
-    exc_pulse : ad.Pulse
+    exc_pulse : epr.Pulse
         The excitation pulse object
-    ref_pulse : ad.Pulse
+    ref_pulse : epr.Pulse
         The refocusing pulse object
-    respro : ad.ResonatorProfileAnalysis, optional
+    respro : epr.ResonatorProfileAnalysis, optional
         The resonator profile, by default None
     num_ref_pulses : int, optional
         The total number of refocusing pulses, by default 2
@@ -1182,15 +1182,15 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, reso
     Parameters
     ----------
 
-    Fieldsweep : ad.FieldSweepAnalysis
+    Fieldsweep : epr.FieldSweepAnalysis
         The FieldSweep analysis object
-    pump_pulse : ad.Pulse
+    pump_pulse : epr.Pulse
         The pump pulse object
-    exc_pulse : ad.Pulse
+    exc_pulse : epr.Pulse
         The excitation pulse object
-    ref_pulse : ad.Pulse, optional 
+    ref_pulse : epr.Pulse, optional 
         The refocusing pulse object, by default None
-    resonator : ad.ResonatorProfileAnalysis, optional
+    resonator : epr.ResonatorProfileAnalysis, optional
         The resonator profile for fitting, by default None. The resonator profile must include the fit.
     num_ref_pulses : int, optional
         The total number of refocusing pulses, by default 2
@@ -1239,8 +1239,8 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, filter=None, reso
         model_norm = resonator.model / np.max(resonator.model)
         axs.plot((resonator.model_x - Fieldsweep.freq)*1e3, model_norm,'--', label='Resonator Profile')
 
-    fmin = f[~np.isclose(fieldsweep_profile,0)].min()
-    fmax = f[~np.isclose(fieldsweep_profile,0)].max()
+    fmin = f[~np.isclose(fieldsweep_profile,0)].min()-0.02
+    fmax = f[~np.isclose(fieldsweep_profile,0)].max()+0.02
     axs.set_xlim(fmin*1e3,fmax*1e3)
 
     axs.legend()
