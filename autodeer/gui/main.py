@@ -784,11 +784,11 @@ class autoDEERUI(QMainWindow):
         if 'T2_relax' in self.current_results:
             relax1D_results.append(self.current_results['T2_relax'])
 
-        epr.plot_1Drelax(*relax1D_results,axs=self.relax_ax[0],fig=fig,cmap=ad.primary_colors)
+        epr.plot_1Drelax(*relax1D_results, axs=self.relax_ax[0], fig=fig, cmap=ad.primary_colors)
             
         if 'relax2D' in self.current_results:
             self.relax_ax[1].cla()
-            self.current_results['relax2D'].plot2D(axs=self.relax_ax[3],fig=fig)
+            self.current_results['relax2D'].plot2D(axs=self.relax_ax[3], fig=fig)
 
         self.relax_canvas.draw()
 
@@ -861,7 +861,7 @@ class autoDEERUI(QMainWindow):
         #debug only, remove later
         store_pickle(relax_data,os.path.join(self.data_folder,'relax_data.pkl'))
         main_log.info(f'Calculating DEER settings with aim SNR {aim_SNR:.2f}, aim time {self.aim_time}hrs')
-        self.deer_settings = ad.calc_DEER_settings(relax_data,exp,self.aim_time,aim_SNR,self.waveform_precision)
+        self.deer_settings = ad.calc_DEER_settings(relax_data,exp, self.aim_time, aim_SNR,self.waveform_precision)
         
         self.deer_settings['criteria'] = self.aim_MNR
 
@@ -984,6 +984,7 @@ class autoDEERUI(QMainWindow):
         if dataset is None:
             dataset = self.current_data['T2_relax']
         else:
+            dataset = dataset.epr.correctphasefull
             if 'T2_relax' in self.current_data:
                 # attempt to merge datasets
                 main_log.info('Merging relax datasets')
@@ -1024,11 +1025,12 @@ class autoDEERUI(QMainWindow):
         if test_result == 0:
             # if self.waitCondition is not None: # Wake up the runner thread
             #     self.waitCondition.wakeAll()
-                return None
-        elif test_result == -1: # The trace needs to be longer
-            new_dt = epr.round_step(test_dt*2,self.waveform_precision)
-        elif test_result == 1: # The trace needs to be shorter
-            new_dt = epr.round_step(test_dt/2,self.waveform_precision)
+            return True
+        
+        elif test_result == -1:  # The trace needs to be longer
+            new_dt = epr.round_step(test_dt*2, self.waveform_precision)
+        elif test_result == 1:  # The trace needs to be shorter
+            new_dt = epr.round_step(test_dt/2, self.waveform_precision)
 
         new_tmin = fitresult.axis[-1].values
         new_tmin += new_dt*1e-3
@@ -1037,7 +1039,10 @@ class autoDEERUI(QMainWindow):
         self.initialise_deer_settings()
         
         if self.worker is not None:
-            self.worker.run_T2_relax(dt=new_dt,tmin=new_tmin,averages=nAvgs,autoStop=False)
+            self.worker.run_T2_relax(dt=new_dt, tmin=new_tmin, averages=nAvgs, autoStop=False)
+            return False
+        else:
+            return True
 
     def check_CP(self, fitresult):
         # Check if the CP measurment is too short. 
@@ -1052,37 +1057,35 @@ class autoDEERUI(QMainWindow):
             #     self.waitCondition.wakeAll()
             return True
         elif test_result == -1: # The trace needs to be longer
-            new_dt = epr.round_step(test_dt*2,self.waveform_precision)
+            new_dt = epr.round_step(test_dt*2, self.waveform_precision)
         elif test_result == 1: # The trace needs to be shorter
-            new_dt = epr.round_step(test_dt/2,self.waveform_precision)
+            new_dt = epr.round_step(test_dt/2, self.waveform_precision)
 
         new_tmin = fitresult.axis[-1].values
         new_tmin += new_dt*1e-3
         nAvgs = fitresult.dataset.attrs['nAvgs']
         
         if self.worker is not None:
-            self.worker.run_CP_relax(dt=new_dt,tmin=new_tmin*2,averages=nAvgs,autoStop=False)
+            self.worker.run_CP_relax(dt=new_dt, tmin=new_tmin*2, averages=nAvgs, autoStop=False)
             return False
         else:
             return True
-
 
     def refresh_T2(self, fitresult):
         self.current_results['T2_relax'] = fitresult
         self.refresh_relax_figure()
 
-        self.check_T2(fitresult)
+        if self.check_T2(fitresult):
 
-        if self.waitCondition is not None: # Wake up the runner thread
-            self.waitCondition.wakeAll()
+            if self.waitCondition is not None:  # Wake up the runner thread
+                self.waitCondition.wakeAll()
 
-        
     def advanced_mode_inputs(self):
-        self.Exp_types.addItems(['auto','5pDEER','4pDEER','Ref2D'])
+        self.Exp_types.addItems(['auto', '5pDEER', '4pDEER', 'Ref2D'])
         self.bg_model_combo.addItems(list(BackgroundModels.keys()))
-        self.ExcPulseSelect.addItems(['Auto', 'Rectangular','Gauss'])
+        self.ExcPulseSelect.addItems(['Auto', 'Rectangular', 'Gauss'])
         self.RefPulseSelect.addItems(['Auto', 'Rectangular', 'Gauss'])
-        self.PumpPulseSelect.addItems(['Auto', 'Rectangular','Chirp','HS', 'Gauss'])
+        self.PumpPulseSelect.addItems(['Auto', 'Rectangular', 'Chirp', 'HS', 'Gauss'])
 
     def update_quickdeer(self, dataset=None):
         if dataset is None:
@@ -1424,7 +1427,7 @@ class autoDEERUI(QMainWindow):
         report._build()
         pass
 
-if __name__ == '__main__':
+def main():
     app = QApplication([])
     app.setWindowIcon(QtGui.QIcon('icons:Square_logo.png'))
     app.setApplicationName('autoDEER')
@@ -1435,3 +1438,7 @@ if __name__ == '__main__':
     window = autoDEERUI()
     window.show()
     app.exec()
+
+if __name__ == '__main__':
+    main()
+    

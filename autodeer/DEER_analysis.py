@@ -1124,7 +1124,7 @@ def calc_functional(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,resonator=None,
 
     return 2*P_pump*P_obs
 
-def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,respro=None, num_ref_pulses=2):
+def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, num_ref_pulses=2, **kwargs):
     """
     Calculate the estimated modulation depth from the EPR spectrum, the pulses and the resonator profile.
 

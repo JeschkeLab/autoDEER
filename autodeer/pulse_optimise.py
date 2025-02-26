@@ -117,6 +117,7 @@ def create_pulses_rect(resonatorProfile, r_min=3.5, max_bandwidth=0.1, same_powe
 
     return pulses 
 
+
 def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3, test_pulse_shapes=None):
     """
     Creates the optimal chirped shaped pulses for DEER using the resonator profile as a guide for the necessary power. r_max is used to set a maximum length.
@@ -202,5 +203,7 @@ def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3
 
     best_pulse_type = max(FunctionalResults,key=FunctionalResults.get)
 
-    return PulseResults[best_pulse_type]
-
+    results = PulseResults[best_pulse_type]
+    det_event = Detection(tp=exc_pulse_length*2, freq=0)
+    results['det_event'] = det_event
+    return results
