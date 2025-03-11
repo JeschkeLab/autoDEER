@@ -199,7 +199,7 @@ class autoDEERWorker(QtCore.QRunnable):
             
 
 
-    def run_CP_relax(self,dt=10,tmin=0.7,averages=30,autoStop=True,autoIFGain=True,*kwargs):
+    def run_CP_relax(self,dt=10,tmin=0.5,averages=30,autoStop=True,autoIFGain=True,*kwargs):
         '''
         Initialise the runner function for relaxation. 
         '''
@@ -211,13 +211,13 @@ class autoDEERWorker(QtCore.QRunnable):
         shots = np.max([shots,25])
         relax = DEERSequence(
             B=freq/gyro, freq=freq,reptime=reptime,averages=averages,shots=shots,
-            tau1=tmin/2, tau2=tmin/2, tau3=0.3, dt=15,
+            tau1=tmin, tau2=tmin, tau3=0.3, dt=dt,
             exc_pulse=self.pulses['exc_pulse'], ref_pulse=self.pulses['ref_pulse'],
             pump_pulse=self.pulses['pump_pulse'], det_event=self.pulses['det_event']
             )
         print(f"Running Carr-Purcell Experiment with tmin: {relax.tau2.value*2} us and dt: {relax.dt} ns")
 
-        relax.five_pulse(relaxation=True, re_step=dt, re_dim=500)
+        relax.five_pulse(relaxation=True, re_step=dt, re_dim=250)
         if self.AWG:
             relax.select_pcyc("16step_5p")
         else:
@@ -232,13 +232,13 @@ class autoDEERWorker(QtCore.QRunnable):
 
         self.interface.launch(relax, savename=self.savename("CP"), IFgain=autoIFGain)
         if autoStop:
-            self.interface.terminate_at(SNRCriteria(50, verbosity=2), test_interval=self.test_interval, verbosity=2)
+            self.interface.terminate_at(SNRCriteria(30, verbosity=2), test_interval=self.test_interval, verbosity=2)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.relax_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('Carr-Purcell experiment complete')
         
-    def run_T2_relax(self,dt=10,tmin=0.5,averages=30,autoStop=True,autoIFGain=True,*kwargs):
+    def run_T2_relax(self,dt=10,tmin=0.4,averages=30,autoStop=True,autoIFGain=True,*kwargs):
         self.signals.status.emit('Running T2 experiment')
         freq = self.freq
         gyro = self.gyro
@@ -248,7 +248,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
         seq = T2RelaxationSequence(
             B=freq/gyro, freq=freq,reptime=reptime,averages=averages,shots=shots,
-            start=tmin*1e3,step=dt,dim=500,pi2_pulse=self.pulses['exc_pulse'],
+            start=tmin*1e3,step=dt,dim=250,pi2_pulse=self.pulses['exc_pulse'],
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
         if not autoIFGain:
@@ -256,7 +256,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
         self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=autoIFGain)
         if autoStop:
-            self.interface.terminate_at(SNRCriteria(50),test_interval=self.test_interval,verbosity=2)
+            self.interface.terminate_at(SNRCriteria(30),test_interval=self.test_interval,verbosity=2)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.T2_result.emit(self.interface.acquire_dataset())
@@ -283,7 +283,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.Relax2D_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('2D decoherence experiment complete')
 
-    def run_1D_refocused_echo(self,dt=10,tmin=0.7,averages=30,autoStop=True,autoIFGain=True,*kwargs):
+    def run_1D_refocused_echo(self,dt=10,tmin=0.4,averages=30,autoStop=True,autoIFGain=True,*kwargs):
 
         self.signals.status.emit('Running 1D refocused echo experiment')
         freq = self.freq
@@ -294,17 +294,17 @@ class autoDEERWorker(QtCore.QRunnable):
 
         seq = RefocusedEcho1DSequence(
             B=freq/gyro, freq=freq,reptime=reptime,averages=averages,shots=shots,
-            tau1=400, start=tmin*1e3, step=dt, dim=500,
+            tau1=400, start=tmin*1e3, step=dt, dim=250,
             pi2_pulse=self.pulses['exc_pulse'], pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'], pump_pulse=self.pulses['pump_pulse']
         )
 
         if not autoIFGain:
             autoIFGain = self.interface.IFgain
 
-        self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=autoIFGain)
+        self.interface.launch(seq,savename=self.savename("1DRefEcho"),IFgain=autoIFGain)
 
         if autoStop:
-            self.interface.terminate_at(SNRCriteria(50),test_interval=self.test_interval,verbosity=2)
+            self.interface.terminate_at(SNRCriteria(30),test_interval=self.test_interval,verbosity=2)
         while self.interface.isrunning():
             time.sleep(self.updaterate)
         self.signals.T2_result.emit(self.interface.acquire_dataset())
@@ -465,7 +465,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
     def _build_methods(self):
         
-        methods = deque([self.run_fsweep,self.run_reptime_opt,self.run_respro,self.tune_pulses])
+        methods = deque([self.run_fsweep,self.run_reptime_opt,self.run_respro])
         
         if ( self.operating_mode is None) or (self.operating_mode == '5pDEER') or (self.operating_mode == 'auto'):
             methods.append(self.run_CP_relax)
@@ -528,6 +528,7 @@ class autoDEERWorker(QtCore.QRunnable):
 
     def new_pulses(self, pulses):
         self.pulses = pulses
+        self.methods.appendleft(self.tune_pulses)
 
 
     def update_reptime(self,reptime):
@@ -568,9 +569,9 @@ class autoDEERWorker(QtCore.QRunnable):
             method = lambda: self.run_CP_relax(**kwargs)
         elif experiment == 'Tm-relax':
             method = lambda: self.run_T2_relax(**kwargs)
-        elif experiment == '2D-ref-relax':
+        elif experiment == 'RefEcho2D':
             method = lambda: self.run_2D_relax(**kwargs)
-        elif experiment == '1D-ref-relax':
+        elif experiment == 'RefEcho1D':
             method = lambda: self.run_1D_refocused_echo(**kwargs)
         self.methods.appendleft(method)
 

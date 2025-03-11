@@ -71,7 +71,7 @@ class DEERSequence(Sequence):
             self.tau4 = tau4 * 1e3
 
         self.dt = dt
-        self.deadtime = 200
+        self.deadtime = 150
         self.ESEEM = False
         self.relaxation = False
         self.add_ESEEM_avg(None)
@@ -196,10 +196,12 @@ class DEERSequence(Sequence):
             self.addPulse(RectPulse(t=self.tau1, tp=tp, freq=0, flipangle=np.pi))
         
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=self.tau1 + self.t))
+            pump_tp = self.pump_pulse.tp.value
+            t = self.tau1 + self.t - pump_tp/2
+            self.addPulse(self.pump_pulse.copy(t=t))
         else:
-            self.addPulse(RectPulse(t=2*self.tau1 + self.t,
-                                    tp=tp, freq=0, flipangle=np.pi))
+            t = self.tau1 + self.t - tp/2
+            self.addPulse(RectPulse(t=t, tp=tp, flipangle=np.pi))
 
 
         if hasattr(self,"ref_pulse"): # Ref 2 pulse
@@ -262,6 +264,8 @@ class DEERSequence(Sequence):
                 dim=dim, unit="ns", description="The time axis", virtual=True)
             self.relaxation = False
 
+        # PULSE 0: Excitation pulse
+
         if hasattr(self,"exc_pulse"): # Exc pulse
             self.addPulse(self.exc_pulse.copy(t=0))
         else:
@@ -269,30 +273,47 @@ class DEERSequence(Sequence):
                 t=0, tp=tp, freq=0, flipangle=np.pi/2
             ))
 
+        # PULSE 1: Pump pulse 1
+        
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=self.tau1 - self.tau3))
+            pump_tp = self.pump_pulse.tp.value
+            t = self.tau1 - self.tau3 - pump_tp/2
+            self.addPulse(self.pump_pulse.copy(t=t))
         else:
+            t = self.tau1 - self.tau3 - tp/2
             self.addPulse(RectPulse(t=self.tau1 - self.tau3,
                                     tp=tp, freq=0, flipangle=np.pi))
 
+        pump_tp = self.pulses[1].tp.value
+
+        # PULSE 2: Refocusing pulse 1
         if hasattr(self,"ref_pulse"): # Ref 1 pulse
             self.addPulse(self.ref_pulse.copy(t=self.tau1))
         else:
             self.addPulse(RectPulse(t=self.tau1, tp=tp, freq=0,
                                     flipangle=np.pi))
+            
+        ref_tp = self.pulses[2].tp.value
         
-        if hasattr(self,"pump_pulse"): # Pump 2 pulse
-            self.addPulse(self.pump_pulse.copy(t=self.tau1 + self.t))
-        else:
-            self.addPulse(RectPulse(t=self.tau1 + self.t, tp=tp, freq=0,
-                                    flipangle=np.pi))
+        # PULSE 3: Pump pulse 2
 
+        t = self.tau1 + self.t - (pump_tp/2) + (ref_tp/2)
+
+        if hasattr(self,"pump_pulse"): # Pump 2 pulse
+            self.addPulse(self.pump_pulse.copy(t=t))
+        else:
+            self.addPulse(RectPulse(t=t, tp=tp, freq=0,
+                                    flipangle=np.pi))
+        self.pulses[3].flip()
+
+        # PULSE 4: Refocusing pulse 2
         if hasattr(self,"ref_pulse"): # Ref 2 pulse
             self.addPulse(self.ref_pulse.copy(t=2*self.tau1 + self.tau2))
         else:
             self.addPulse(RectPulse(t=2*self.tau1 + self.tau2, tp=tp, freq=0,
                                     flipangle=np.pi))
 
+        # PULSE 5: Detection event
         if hasattr(self, "det_event"):
             self.addPulse(self.det_event.copy(t=2*(self.tau1+self.tau2)))
         else:
