@@ -71,7 +71,7 @@ class DEERSequence(Sequence):
             self.tau4 = tau4 * 1e3
 
         self.dt = dt
-        self.deadtime = 200
+        self.deadtime = 150
         self.ESEEM = False
         self.relaxation = False
         self.add_ESEEM_avg(None)
@@ -196,10 +196,12 @@ class DEERSequence(Sequence):
             self.addPulse(RectPulse(t=self.tau1, tp=tp, freq=0, flipangle=np.pi))
         
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=self.tau1 + self.t))
+            pump_tp = self.pump_pulse.tp.value
+            t = self.tau1 + self.t - pump_tp/2
+            self.addPulse(self.pump_pulse.copy(t=t))
         else:
-            self.addPulse(RectPulse(t=2*self.tau1 + self.t,
-                                    tp=tp, freq=0, flipangle=np.pi))
+            t = self.tau1 + self.t - tp/2
+            self.addPulse(RectPulse(t=t, tp=tp, flipangle=np.pi))
 
 
         if hasattr(self,"ref_pulse"): # Ref 2 pulse
@@ -262,6 +264,8 @@ class DEERSequence(Sequence):
                 dim=dim, unit="ns", description="The time axis", virtual=True)
             self.relaxation = False
 
+        # PULSE 0: Excitation pulse
+
         if hasattr(self,"exc_pulse"): # Exc pulse
             self.addPulse(self.exc_pulse.copy(t=0))
         else:
@@ -269,30 +273,47 @@ class DEERSequence(Sequence):
                 t=0, tp=tp, freq=0, flipangle=np.pi/2
             ))
 
+        # PULSE 1: Pump pulse 1
+        
         if hasattr(self,"pump_pulse"): # Pump 1 pulse
-            self.addPulse(self.pump_pulse.copy(t=self.tau1 - self.tau3))
+            pump_tp = self.pump_pulse.tp.value
+            t = self.tau1 - self.tau3 - pump_tp/2
+            self.addPulse(self.pump_pulse.copy(t=t))
         else:
+            t = self.tau1 - self.tau3 - tp/2
             self.addPulse(RectPulse(t=self.tau1 - self.tau3,
                                     tp=tp, freq=0, flipangle=np.pi))
 
+        pump_tp = self.pulses[1].tp.value
+
+        # PULSE 2: Refocusing pulse 1
         if hasattr(self,"ref_pulse"): # Ref 1 pulse
             self.addPulse(self.ref_pulse.copy(t=self.tau1))
         else:
             self.addPulse(RectPulse(t=self.tau1, tp=tp, freq=0,
                                     flipangle=np.pi))
+            
+        ref_tp = self.pulses[2].tp.value
         
-        if hasattr(self,"pump_pulse"): # Pump 2 pulse
-            self.addPulse(self.pump_pulse.copy(t=self.tau1 + self.t))
-        else:
-            self.addPulse(RectPulse(t=self.tau1 + self.t, tp=tp, freq=0,
-                                    flipangle=np.pi))
+        # PULSE 3: Pump pulse 2
 
+        t = self.tau1 + self.t - (pump_tp/2) + (ref_tp/2)
+
+        if hasattr(self,"pump_pulse"): # Pump 2 pulse
+            self.addPulse(self.pump_pulse.copy(t=t))
+        else:
+            self.addPulse(RectPulse(t=t, tp=tp, freq=0,
+                                    flipangle=np.pi))
+        self.pulses[3].flip()
+
+        # PULSE 4: Refocusing pulse 2
         if hasattr(self,"ref_pulse"): # Ref 2 pulse
             self.addPulse(self.ref_pulse.copy(t=2*self.tau1 + self.tau2))
         else:
             self.addPulse(RectPulse(t=2*self.tau1 + self.tau2, tp=tp, freq=0,
                                     flipangle=np.pi))
 
+        # PULSE 5: Detection event
         if hasattr(self, "det_event"):
             self.addPulse(self.det_event.copy(t=2*(self.tau1+self.tau2)))
         else:
@@ -302,7 +323,7 @@ class DEERSequence(Sequence):
 
         if relaxation:
             self.evolution([self.tau1])
-
+            self.name = 'CarrPurcellSequence'
         else:
             self.evolution([self.t])
 
@@ -710,7 +731,7 @@ class RefocusedEcho2DSequence(Sequence):
             not specified a RectPulse will be created instead. 
         """
 
-        name = "RefocusedEcho2D"
+        name = "RefocusedEcho2DSequence"
         super().__init__(
             name=name, B=B, freq=freq, reptime=reptime, averages=averages,
             shots=shots, **kwargs)
@@ -797,3 +818,133 @@ class RefocusedEcho2DSequence(Sequence):
         data = add_phaseshift(data, 0.05)
         return [xaxis, yaxis], data
 
+
+class RefocusedEcho1DSequence(Sequence):
+    """
+    Represents a 1D Refocused-echo Sequence. 
+    """
+
+    def __init__(self, *, B, freq, reptime, averages, shots,
+            tau1, start=400, step=50, dim=100, **kwargs) -> None:
+        """Build a 2D Refocused-echo sequence using either
+        rectangular pulses or specified pulses.
+
+        Parameters
+        ----------
+        B : int or float
+            The B0 field, in Guass
+        freq : int or float
+            The freq frequency in GHz
+        reptime : _type_
+            The shot repetition time in us
+        averages : int
+            The number of scans.
+        shots : int
+            The number of shots per point
+        tau1 : float
+            The tau1 value in ns
+        start : float
+            The starting value of tau2 in ns
+        step : float
+            The step value of tau2 in ns
+        dim: int
+            The number of points in both the X and Y axis
+    
+
+        Optional Parameters
+        -------------------
+        pi2_pulse : Pulse
+            An autoEPR Pulse object describing the excitation pi/2 pulse. If
+            not specified a RectPulse will be created instead.
+        pi_pulse : Pulse
+            An autoEPR Pulse object describing the refocusing pi pulses. If
+            not specified a RectPulse will be created instead.
+        """
+        name = "RefocusedEcho1DSequence"
+        super().__init__(
+            name=name, B=B, freq=freq, reptime=reptime, averages=averages,
+            shots=shots, **kwargs)
+        
+        self.tau1 = Parameter(name="tau1", value=tau1, unit="ns",
+            description="1st interpulse delay" ,virtual=True)
+        self.tau2 = Parameter(name="tau2", value=start, dim=dim, step=step, 
+            unit="ns", description="2nd interpulse delay", virtual=True)
+
+
+        if "pi_pulse" in kwargs:
+            self.pi_pulse = kwargs["pi_pulse"]
+        if "pi2_pulse" in kwargs:
+            self.pi2_pulse = kwargs["pi2_pulse"]
+        if "det_event" in kwargs:
+            self.det_event = kwargs["det_event"]
+        if "pump_pulse" in kwargs:
+            self.pump_pulse = kwargs["pump_pulse"]
+        else:
+            self.pump_pulse = None
+
+        self._build_sequence()
+
+    def _build_sequence(self):
+
+        if hasattr(self, "pi2_pulse"):
+            self.addPulse(self.pi2_pulse.copy(
+                t=0, pcyc={"phases": [0, np.pi], "dets": [1, -1]}))
+        else:
+            self.addPulse(RectPulse(  # pi/2
+                t=0, tp=16, freq=0, flipangle=np.pi/2,
+                pcyc={"phases": [0, np.pi], "dets": [1, -1]}
+            ))
+
+        if hasattr(self, "pi_pulse"):
+            self.addPulse(self.pi_pulse.copy(
+                t=self.tau1, pcyc={"phases":[0, np.pi/2, np.pi, -np.pi/2], "dets": [1,-1,1,-1]}))
+        else:
+            self.addPulse(RectPulse(
+                t=self.tau1, tp=32, freq=0, flipangle=np.pi,
+                pcyc={"phases":[0, np.pi/2, np.pi, -np.pi/2], "dets": [1,-1,1,-1]}
+            ))
+        
+        if self.pump_pulse is not None:
+            self.addPulse(self.pump_pulse.copy(t=2*self.tau1,pcyc = {"phases":[0,np.pi/2, np.pi,3*np.pi/2], "dets": [1,1,1,1]}))
+
+        if hasattr(self, "pi_pulse"):
+            self.addPulse(self.pi_pulse.copy(
+                t=2*self.tau1 + self.tau2, pcyc={"phases":[0, np.pi], "dets": [1,1]}))
+        else:
+            self.addPulse(RectPulse(
+                t=2*self.tau1 + self.tau2, tp=32, freq=0, flipangle=np.pi,
+                pcyc={"phases":[0, np.pi], "dets": [1,1]}
+            ))
+        
+        if hasattr(self, "det_event"):
+            self.addPulse(self.det_event.copy(t=2*(self.tau1 + self.tau2)))
+        else:
+            self.addPulse(Detection(t=2*(self.tau1 + self.tau2), tp=512))
+
+        self.evolution([self.tau2])
+
+    def simulate(self, sigma=0.8):
+        """
+        Simulates the Refocused-echo 2D sequence using this function.
+        .. math::
+            V(tau1, tau2) = e^{-(tau1^2 + tau2^2 - tau1*tau2)/(2*sigma^2)}
+        
+        Parameters
+        ----------
+        sigma : float
+            The decay rate, by default 0.8 us
+        
+        Returns
+        -------
+        tau1, tau2 : list[np.ndarray]
+            The two time axis in us
+        data : np.ndarray
+            The simulated 2D data
+        """
+        func = lambda x, y: np.exp(-((x**2 + y**2 - 1*x*y) / (2*sigma**2)))
+
+        x = val_in_us(self.tau1)
+        yaxis = val_in_us(self.tau2)
+        data = func(x, yaxis)
+        data = add_phaseshift(data, 0.05)
+        return [yaxis], data

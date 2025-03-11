@@ -245,7 +245,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
             if est_MNR < 40:
                 pathways = [1]
             else:
-                pathways = [1,2,3]
+                pathways = [1,2,3,4]
         elif exp_type == '5pDEER':
             if est_MNR < 40:
                 pathways = [1,5]
@@ -265,19 +265,17 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
         print(f"Experiment type: {exp_type}, pathways: {pathways}")
         print(f"Experimental Parameters set to: tau1 {tau1:.2f} us \t tau2 {tau2:.2f} us")
 
-
-    if hasattr(dataset,"sequence"):
-        pulselength = tp
+    if "pulselength" in kwargs:
+        pulselength = kwargs.pop("pulselength")/1e3
+    elif hasattr(dataset,"sequence"):
+        pulselength = tp/4
     elif hasattr(dataset,'attrs') and "pulse0_tp" in dataset.attrs:
         # seach over all pulses to find the longest pulse using regex
         pulselength = np.max([dataset.attrs[i] for i in dataset.attrs if re.match(r"pulse\d*_tp", i)])
         pulselength /= 1e3 # Convert to us
-        pulselength /= 2 # Account for the too long range permitted by deerlab
+        pulselength /= 4 # The automated procedure does not require such broad allowances
     else:
-        if "pulselength" in kwargs:
-            pulselength = kwargs.pop("pulselength")/1e3
-        else:
-            pulselength = 16/1e3
+        pulselength = 16/1e3
         
     if exp_type == "4pDEER":
         experimentInfo = dl.ex_4pdeer(tau1=tau1,tau2=tau2,pathways=pathways,pulselength=pulselength)
@@ -286,13 +284,16 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     elif exp_type == "3pDEER":
         experimentInfo = dl.ex_3pdeer(tau=tau1,pathways=pathways,pulselength=pulselength)
 
-  
-    r_max = np.ceil(np.cbrt(t.max()*6**3/2))
-    if r_max > 11.5:
-        nPoints = 200
+    if 'r' in kwargs:
+        r = kwargs.pop('r')
+        r_max = r.max()
     else:
-        nPoints = 100
-    r = np.linspace(1.5,r_max,nPoints)
+        r_max = np.ceil(np.cbrt(t.max()*6**3/2))
+        if r_max > 11.5:
+            nPoints = 200
+        else:
+            nPoints = 100
+        r = np.linspace(1.5,r_max,nPoints)
 
     # Default fit parameters
     defualt_fit_params = {'regparam':'bic','nnlsSolver':'qp'}
@@ -312,6 +313,8 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     else:
         Vmodel = dl.dipolarmodel(t, r, experiment=experimentInfo, Pmodel=model,Bmodel=bg_model,parametrization=parametrization)
         Vmodel.pathways = pathways
+        Vmodel.experimentInfo = experimentInfo
+        Vmodel.pulselength = pulselength
 
     if compactness:
         compactness_penalty = dl.dipolarpenalty(model, r, 'compactness', 'icc')
@@ -368,8 +371,8 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
         # tau_max = lambda r: (r**3) *(3/4**3)
         tau_max = lambda r:  (r/3)**3 * 2
         fit.ROI = IdentifyROI(fit.P, r, criterion=0.90, method="gauss")
-        if fit.ROI[0] < 1:
-            fit.ROI[0] = 1
+        if fit.ROI[0] < r.min():
+            fit.ROI[0] = r.min()
         rec_tau_max = tau_max(fit.ROI[1])
         fit.rec_tau_max = rec_tau_max
         dt_rec = lambda r: (r**3 *0.85)/(4*52.04)
@@ -402,13 +405,32 @@ def background_func(t, fit):
             continue
         Bmodel_params[key] = getattr(fit, key)
 
+    # get all reftimes
+    if hasattr(fit, 'reftime') or hasattr(fit, 'reftime1'):
+        if len(pathways) > 1:
+            reftimes = []
+            for i in pathways:
+                if isinstance(i, list):
+                    # linked pathway
+                    for j in i:
+                        reftimes.append(getattr(fit, f"reftime{pathways.index(j)+1}"))
+                else:
+                    reftimes.append(getattr(fit, f"reftime{i}"))
+        else:
+            reftimes = [getattr(fit, "reftime")]
+    elif hasattr(fit, 'tau1'):
+        expInfo = Vmodel.experimentInfo
+        taus_names = expInfo.reftimes.__code__.co_varnames[:expInfo.reftimes.__code__.co_argcount]
+        taus = {i:getattr(fit, i) for i in taus_names}
+        reftimes = expInfo.reftimes(**taus)
+
     prod = 1
     scale = 1
     if len(pathways) > 1:
-        for i in pathways:
-            if isinstance(i, list):
+        for i,p_id in enumerate(pathways):
+            if isinstance(p_id, list):
                 # linked pathway
-                lam = getattr(fit, f"lam{i[0]}{i[1]}")
+                lam = getattr(fit, f"lam{p_id[0]}{p_id[1]}")
                 scale += -1 * lam
                 for j in i:
                     reftime = getattr(fit, f"reftime{pathways.index(j)+1}")
@@ -418,8 +440,9 @@ def background_func(t, fit):
                         prod *= Bmodel(t=t-reftime, **Bmodel_params)
 
             else:
-                reftime = getattr(fit, f"reftime{i}")
-                lam = getattr(fit, f"lam{i}")
+                reftime = reftimes[i]
+                # reftime = getattr(fit, f"reftime{i}")
+                lam = getattr(fit, f"lam{p_id}")
                 if mod_depth:
                     prod *= Bmodel(t=t-reftime,lam=lam,**Bmodel_params)
                 else:
@@ -427,7 +450,8 @@ def background_func(t, fit):
 
                 scale += -1 * lam
     else:
-        reftime = getattr(fit, f"reftime")
+        # reftime = getattr(fit, f"reftime")
+        reftime = reftimes[0]
         lam = getattr(fit, f"mod")
         if mod_depth:
             prod *= Bmodel(t=t-reftime,lam=lam,**Bmodel_params)
@@ -1321,14 +1345,21 @@ def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
     if len(relaxation_data) == 0:
         raise ValueError("No relaxation data provided")
     
-    if "Ref2D" in relaxation_data.keys():
-        decay = relaxation_data['Ref2D']
+    if "RefEcho2D" in relaxation_data.keys():
+        decay = relaxation_data['RefEcho2D']
         tau2_est, tau_2_lb, tau_2_ub = calculate_optimal_tau(decay,target_time,target_SNR,target_step=dt,corr_factor=corr_factor)
         tau2_4p = tau_2_lb
         tau1_4p = decay.optimal_tau1(tau2=tau2_est)
         V_4p = decay(tau1_4p,tau2_est,SNR=True)
 
         # Use refocused 2D data for 4pDEER
+    elif "RefEcho1D" in relaxation_data.keys():
+        decay = relaxation_data['RefEcho1D']
+        tau2_est, tau_2_lb, tau_2_ub = calculate_optimal_tau(decay,target_time,target_SNR,target_step=dt,corr_factor=corr_factor)
+        tau2_4p = tau_2_lb
+        tau1_4p = 0.4
+        V_4p = decay(tau2_est,SNR=True)
+
     elif "Tm" in relaxation_data.keys():
         # Use Hahn echo data as an estimate for 4pDEER
         decay = relaxation_data['Tm']
@@ -1389,9 +1420,9 @@ def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
     if rec_tau is not None:
         if (deer_settings['ExpType'] == '4pDEER') and (deer_settings['tau2'] > rec_tau):
             deer_settings['tau2'] = rec_tau
-            # get a new tau1 from ref2D if available
-            if "Ref2D" in relaxation_data.keys():
-                decay = relaxation_data['Ref2D']
+            # get a new tau1 from RefEcho2D if available
+            if "RefEcho2D" in relaxation_data.keys():
+                decay = relaxation_data['RefEcho2D']
                 deer_settings['tau1'] = decay.optimal_tau1(tau2=rec_tau)
             else:
                 deer_settings['tau1'] = 0.4
