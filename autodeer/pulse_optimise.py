@@ -54,12 +54,37 @@ def build_default_pulses(AWG=True,SPFU=False,tp=12):
 
     return pulses
 
-def check_pulses_max_length(pulses, r_min=3.5):
-    D = 52.04 # MHz nm^3
+def check_pulses_max_length(pulses, r_min=3.5, D = 52.04):
+    """
+    Checks all the pulses in either a dictionary or list to see if the maximum pulse length is exceeded.
+
+    Equation:
+
+    .. math::
+        t_p = \\frac{1000}{4D/r_{min}^3}
+
+
+    Parameters
+    ----------
+    pulses : dict or list
+        Dictionary or list of pulses to check.
+    r_min : float, optional
+        Minimum distance to detect, this is used to calculate the maximum pulse length, by default 3.5nm
+    D : float, optional
+        Dipolar coupling constant in MHz nm^3, by default 52.04
+
+    Returns
+    -------
+    bool
+        True if the maximum pulse length is not exceeded, False otherwise.
+    """
     max_length = 1000/(4*D/r_min**3) # maximum pulse length in ns
 
+    if isinstance(pulses,dict):
+        pulses = pulses.values()
+
     for pulse in pulses:
-        if pulse.tp > max_length:
+        if pulse.tp.value > max_length:
             return False
     
 

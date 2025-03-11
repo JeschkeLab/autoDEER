@@ -67,7 +67,7 @@ class ModeTune(QDialog):
             "B",((center_freq)/gyro_ratio), start=-(scan_range/2)/gyro_ratio, step=scan_step/gyro_ratio, dim=n_points,
             unit="Guass",link=freq,description="B0 Field" )
         
-        seq = HahnEchoSequence(LO=center_freq, B = B, tau=500, reptime=3e3, shots=100, averages = 1, pi2_pulse=pi2_pulse, pi_pulse=pi_pulse)
+        seq = HahnEchoSequence(freq=center_freq, B = B, tau=500, reptime=3e3, shots=100, averages = 1, pi2_pulse=pi2_pulse, pi_pulse=pi_pulse)
         seq.pulses[0].freq = freq
         seq.pulses[1].freq = freq
         seq.pulses[2].freq = freq
@@ -106,7 +106,7 @@ class ModeTune(QDialog):
         dataset_pc = phasecorrect_all_points(dataset)
         dataset_pc /= np.max(dataset_pc.data)
         self.mode_ax.set_ylim(0,1)
-        self.mode_ax.plot(dataset_pc.LO + dataset_pc.pulse0_freq, dataset_pc.data)
+        self.mode_ax.plot(dataset_pc.freq + dataset_pc.pulse0_freq, dataset_pc.data)
         self.mode_ax.set_xlabel("Frequency (GHz)")
         self.mode_ax.set_ylabel("Intensity (a.u.)")
         save_data(dataset,"modetune",folder=self.current_folder)
@@ -118,7 +118,7 @@ class ModeTune(QDialog):
         dataset_pc /= np.max(dataset_pc.data)
 
         # fit with gaussian
-        x = dataset_pc.LO + dataset_pc.pulse0_freq
+        x = dataset_pc.freq + dataset_pc.pulse0_freq
         y = dataset_pc.data
 
         self.mode_ax.cla()
@@ -129,7 +129,7 @@ class ModeTune(QDialog):
         def gaussian(x, A, mu, sigma):
             return A * np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
         try:
-            popt, pcov = curve_fit(gaussian, x, y, p0=[1, dataset_pc.LO, 0.1])
+            popt, pcov = curve_fit(gaussian, x, y, p0=[1, dataset_pc.freq, 0.1])
         except:
             popt = None
        

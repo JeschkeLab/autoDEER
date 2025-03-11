@@ -31,7 +31,7 @@ gitpython = "^3.1.43"
 ipykernel = "^6.29.5"
 
 [tool.poetry.scripts]
-gui = "autodeer.gui:__main__"
+gui = "autodeer.gui.main:main"
 
 [build-system]
 requires = ["poetry-core"]
