@@ -151,19 +151,24 @@ class DEERplot(QWidget):
         for i,param in enumerate(bg_params):
             # create a new label and a horizontle layout taht contains a double spin box and the uncertainty
             value = getattr(results,param)
+            existing_widget = self.findChild(QDoubleSpinBox, param)
             unit = getattr(results.Bmodel,param).unit
-            # create the horizontal layout
-            new_layout = QHBoxLayout()
 
-            spin_box = QDoubleSpinBox()
-            spin_box.setValue(value)
-            spin_box.setSuffix(' ' + unit)
-            spin_box.setReadOnly(True)
-            spin_box.setButtonSymbols(QAbstractSpinBox.ButtonSymbols(2))
-            new_layout.addWidget(spin_box)
-            new_layout.addWidget(QLabel(getCIstring(getattr(results, f"{param}Uncert"))))
-
-            layout.addRow(QLabel(param), new_layout)
+            if existing_widget:
+                existing_widget.setValue(value)
+                existing_widget.setSuffix(' ' + unit)
+            else:
+                # create the horizontal layout
+                new_layout = QHBoxLayout()
+                spin_box = QDoubleSpinBox()
+                spin_box.setObjectName(param)
+                spin_box.setValue(value)
+                spin_box.setSuffix(' ' + unit)
+                spin_box.setReadOnly(True)
+                spin_box.setButtonSymbols(QAbstractSpinBox.ButtonSymbols(2))
+                new_layout.addWidget(spin_box)
+                new_layout.addWidget(QLabel(getCIstring(getattr(results, f"{param}Uncert")))) 
+                layout.addRow(QLabel(param), new_layout)
 
 
 
@@ -200,6 +205,32 @@ class DEERplot(QWidget):
             self.Pathways_Box.addWidget(QLabel(f"mod"),i+1,0,1,1)
             self.Pathways_Box.addWidget(QDoubleSpinBox(value=lam, suffix='', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i+1,1,1,1)
             self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"modUncert"))),i+1,2,1,1)
+        elif 'tau1' in results.paramlist:
+            for i,param in enumerate(results.paramlist):
+                # Search for parameters that start with 'reftime' and record the number
+                if param.startswith('tau'):
+                    val = getattr(results,param)
+                    self.Pathways_Box.addWidget(QLabel(param),i,0,1,1)
+                    self.Pathways_Box.addWidget(QDoubleSpinBox(value=val, suffix=' us', readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
+                    self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"{param}Uncert"))),i,2,1,1)
+                elif param.startswith('lam'):
+                    val = getattr(results,param)
+
+                    if total_mod_uncert_covmat is not None:
+                        total_mod_uncert_covmat += np.sqrt(getattr(results,f"{param}Uncert").covmat)
+                    else:
+                        total_mod_uncert_covmat = np.sqrt(getattr(results,f"{param}Uncert").covmat)
+                    total_mod_lb += getattr(results,f"{param}Uncert")._UQResult__lb
+                    total_mod_ub += getattr(results,f"{param}Uncert")._UQResult__ub
+                    total_mod += val
+                    self.Pathways_Box.addWidget(QLabel(param),i,0,1,1)
+                    self.Pathways_Box.addWidget(QDoubleSpinBox(value=val, suffix='', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
+                    self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"{param}Uncert"))),i,2,1,1)
+                elif param.startswith('mod'):
+                    val = getattr(results,param)
+                    self.Pathways_Box.addWidget(QLabel(param),i,0,1,1)
+                    self.Pathways_Box.addWidget(QDoubleSpinBox(value=val, suffix='', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
+                    self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"{param}Uncert"))),i,2,1,1)
 
         else:
             for param in results.paramlist:
@@ -297,6 +328,8 @@ class DEERplot(QWidget):
         settings['pathways'] = str_to_list_type(self.PathwayslineEdit.text(), int)
         settings['compactness'] = self.CompactnessradioButton.isChecked()
         settings['pulselength'] = self.PulseLengthdoubleSpinBox.value()
+        settings['regparam'] ='bic'
+        settings['nnlsSolver'] ='qp'
 
         settings['bg_model'] = background_model
 
@@ -327,7 +360,7 @@ class DEERplot(QWidget):
         else:
             settings['model'] = None
 
-        
+        settings['parametrization'] = 'delays'
 
 
         worker = Worker(deeranalysis_process, dataset, settings, self.cores)
@@ -349,6 +382,7 @@ class DEERplot(QWidget):
         
 
         self._static_ax['Primary_time'].cla()
+
         self._static_ax['Primary_dist'].cla()
         DEERanalysis_plot(self.fitresult, background=True, ROI=self.fitresult.ROI, axs= self._static_ax, fig=self.static_canvas.figure)
         self.static_canvas.draw()
