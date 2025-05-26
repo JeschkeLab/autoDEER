@@ -897,15 +897,19 @@ class RefocusedEcho1DSequence(Sequence):
 
         if hasattr(self, "pi_pulse"):
             self.addPulse(self.pi_pulse.copy(
-                t=self.tau1, pcyc={"phases":[0, np.pi/2, np.pi, -np.pi/2], "dets": [1,-1,1,-1]}))
+                t=self.tau1, pcyc={"phases":[0, np.pi], "dets": [1,1]}))
         else:
             self.addPulse(RectPulse(
                 t=self.tau1, tp=32, freq=0, flipangle=np.pi,
-                pcyc={"phases":[0, np.pi/2, np.pi, -np.pi/2], "dets": [1,-1,1,-1]}
+                pcyc={"phases":[0, np.pi], "dets": [1,1]}
             ))
+
+        ref_tp = self.pulses[-1].tp.value
         
         if self.pump_pulse is not None:
-            self.addPulse(self.pump_pulse.copy(t=2*self.tau1,pcyc = {"phases":[0,np.pi/2, np.pi,3*np.pi/2], "dets": [1,1,1,1]}))
+            tp = self.pump_pulse.tp.value
+            t = 2*self.tau1 - tp/2 + (ref_tp/2)
+            self.addPulse(self.pump_pulse.copy(t=t,pcyc = {"phases":[0,np.pi/2, np.pi,3*np.pi/2], "dets": [1,1,1,1]}))
 
         if hasattr(self, "pi_pulse"):
             self.addPulse(self.pi_pulse.copy(

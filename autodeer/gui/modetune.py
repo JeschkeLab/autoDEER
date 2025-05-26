@@ -31,6 +31,7 @@ def phasecorrect_all_points(dataset):
     return new_dataset
 
 class ModeTune(QDialog):
+    dataUpdated = QtCore.pyqtSignal(dict)
 
     def __init__(self, interface: Interface, gyro:float = 0.002803632236095, threadpool= None,current_folder=''):
         super().__init__()
@@ -141,6 +142,11 @@ class ModeTune(QDialog):
             ss_res = np.sum(residuals ** 2)
             ss_tot = np.sum((y - np.mean(y)) ** 2)
             R2 = 1 - (ss_res / ss_tot)
+            fc = popt[1]
+            sigma = popt[2]
+            Q = fc / sigma
+            self.fc = fc
+            self.Q = Q
 
             if R2 < 0.5:
                 #set QDoubleSpinBox color to red
@@ -153,13 +159,22 @@ class ModeTune(QDialog):
                 self.ui.calc_freq.setStyleSheet("background-color: green")
 
             self.ui.calc_freq.setValue(popt[1])
-            
+            self.ui.qDoubleSpinBox.setValue(Q)
             self.mode_ax.plot(x, gaussian(x, *popt), label='fit',color=primary_colors[0])
 
         # update plot
         self.mode_ax.legend()
         self.modetTunecanvas.draw()
         pass
+   
+    def send_data_to_main(self):
+        # Prepare the data to send
+        data = {
+            "fc": self.fc,
+            "Q": self.Q,
+        }
+        # Emit the signal with the data
+        self.dataUpdated.emit(data)
 
 class get_dataWorker(QtCore.QRunnable):
 

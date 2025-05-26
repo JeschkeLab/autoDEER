@@ -86,6 +86,7 @@ def check_pulses_max_length(pulses, r_min=3.5, D = 52.04):
     for pulse in pulses:
         if pulse.tp.value > max_length:
             return False
+    return True
     
 
 def create_pulses_rect(resonatorProfile, r_min=3.5, max_bandwidth=0.1, same_power=False):

@@ -67,7 +67,11 @@ class DEERCriteria(Criteria):
                 data, compactness=True, model=model, regparamrange=regparamrange, verbosity=verbosity, lin_maxiter=50, max_nfev=100
             )
             test = True
-            if fit.MNR < MNR_threshold:
+            lam = fit.MNR * fit.noiselvl
+            if lam > 1.0:
+                lam = 1.0
+            MNR = lam / fit.noiselvl
+            if MNR < MNR_threshold:
                 test = False
             
             if update_func is not None:

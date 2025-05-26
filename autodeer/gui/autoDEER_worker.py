@@ -137,6 +137,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.test_interval = 0.5
         # # Add the callback to our kwargs
         # self.kwargs['progress_callback'] = self.signals.progress
+
     def pause_and_wait(self):
         self.mutex.lock()
         self.wait.wait(self.mutex)
@@ -177,9 +178,10 @@ class autoDEERWorker(QtCore.QRunnable):
         p90, p180 = self.interface.tune_rectpulse(tp=self.tp, freq=freq, B=freq/gyro, reptime = reptime,shots=int(100*self.noise_mode))
         shots = int(200*self.noise_mode)
         shots = np.max([shots,50])
+        dtp = np.max([1, int(np.round(get_waveform_precision()))])
         RPseq = ResonatorProfileSequence(
             B=freq/gyro, freq=freq,reptime=reptime,averages=10,shots=shots,
-            pi2_pulse=p90, pi_pulse=p180,fwidth=0.15
+            pi2_pulse=p90, pi_pulse=p180, fwidth=0.30, dtp=dtp,
         )
 
         self.interface.launch(RPseq,savename=self.savename("ResPro"),)
@@ -199,7 +201,7 @@ class autoDEERWorker(QtCore.QRunnable):
             
 
 
-    def run_CP_relax(self,dt=10,tmin=0.5,averages=30,autoStop=True,autoIFGain=True,*kwargs):
+    def run_CP_relax(self,dt=20,tmin=0.5,averages=30,autoStop=True,autoIFGain=True,*kwargs):
         '''
         Initialise the runner function for relaxation. 
         '''
@@ -229,6 +231,8 @@ class autoDEERWorker(QtCore.QRunnable):
         # relax.pulses[3].scale.value = 0
         if not autoIFGain:
             autoIFGain = self.interface.IFgain
+        else:
+            autoIFGain = None
 
         self.interface.launch(relax, savename=self.savename("CP"), IFgain=autoIFGain)
         if autoStop:
@@ -238,7 +242,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.relax_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('Carr-Purcell experiment complete')
         
-    def run_T2_relax(self,dt=10,tmin=0.4,averages=30,autoStop=True,autoIFGain=True,*kwargs):
+    def run_T2_relax(self,dt=20,tmin=0.4,averages=30,autoStop=True,autoIFGain=True,*kwargs):
         self.signals.status.emit('Running T2 experiment')
         freq = self.freq
         gyro = self.gyro
@@ -253,6 +257,8 @@ class autoDEERWorker(QtCore.QRunnable):
         
         if not autoIFGain:
             autoIFGain = self.interface.IFgain
+        else:
+            autoIFGain = None
 
         self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=autoIFGain)
         if autoStop:
@@ -283,14 +289,14 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.Relax2D_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('2D decoherence experiment complete')
 
-    def run_1D_refocused_echo(self,dt=10,tmin=0.4,averages=30,autoStop=True,autoIFGain=True,*kwargs):
+    def run_1D_refocused_echo(self,dt=20,tmin=0.4,averages=30,autoStop=True,autoIFGain=True,*kwargs):
 
         self.signals.status.emit('Running 1D refocused echo experiment')
         freq = self.freq
         gyro = self.gyro
         reptime = self.reptime
-        shots = int(100*self.noise_mode)
-        shots = np.max([shots,25])
+        shots = int(25*self.noise_mode)
+        shots = np.max([shots,5])
 
         seq = RefocusedEcho1DSequence(
             B=freq/gyro, freq=freq,reptime=reptime,averages=averages,shots=shots,
@@ -300,6 +306,8 @@ class autoDEERWorker(QtCore.QRunnable):
 
         if not autoIFGain:
             autoIFGain = self.interface.IFgain
+        else:
+            autoIFGain = None
 
         self.interface.launch(seq,savename=self.savename("1DRefEcho"),IFgain=autoIFGain)
 
@@ -457,7 +465,14 @@ class autoDEERWorker(QtCore.QRunnable):
         exc_pulse = self.interface.tune_pulse(exc_pulse, mode="amp_nut", B=self.freq/self.gyro,freq=self.freq,reptime=self.reptime,shots=int(100*self.noise_mode))
         ref_pulse = self.interface.tune_pulse(ref_pulse, mode="amp_nut", B=self.freq/self.gyro,freq=self.freq,reptime=self.reptime,shots=int(100*self.noise_mode))
         if isinstance(pump_pulse, epr.FrequencySweptPulse):  # A frequency swept pump pulse's optinmal power is max
-            pump_pulse.scale.value = 1
+            amp_factor = pump_pulse.amp_factor.value
+            freq_range = np.linspace(pump_pulse.init_freq.value, pump_pulse.final_freq.value, 100) + self.freq
+            B1 = self.interface.resonator.model_func(freq_range)
+
+            scale = amp_factor/np.max(B1)
+            if scale > 1:
+                scale = 1
+            pump_pulse.scale.value = scale
         else:
             pump_pulse = self.interface.tune_pulse(pump_pulse, mode="amp_nut", B=self.freq/self.gyro,freq=self.freq,reptime=self.reptime,shots=int(100*self.noise_mode))
 
