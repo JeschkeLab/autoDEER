@@ -372,11 +372,12 @@ class autoDEERUI(QMainWindow):
                 self.spectromterInterface.savefolder = self.current_folder
                 self.Bruker=True
                 self.pump_pulses = [epr.RectPulse,epr.ChirpPulse]
-        except ImportError:
+        except ImportError as e:
             QMessageBox.about(self,'ERORR!', 
                               'The spectrometer interface could not be loaded!\n'+
                               'Please check that the correct packages are installed!\n'+
                               'See the documentation for more information.')
+            print(e)
             main_log.error('The spectrometer interface could not be loaded!')
             return None
 
