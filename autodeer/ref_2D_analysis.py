@@ -408,11 +408,11 @@ class RefocusedEcho1DAnalysis(CarrPurcellAnalysis):
             # decay = self.func(self.axis, *self.fit_result[0]).data
             x = self.axis
             decay = self.fit_result.evaluate(self.fit_model, x)*self.fit_result.scale
-            if (decay[:int(n_points*0.50)].min() < level) and (decay[:int(n_points*0.25)].min() > level):
+            if (decay[:int(n_points*0.75)].min() < level) and (decay[:int(n_points*0.25)].min() > level):
                 return 0
             elif decay[:int(n_points*0.25)].min() < level:
                 return 1
-            elif decay[:int(n_points*0.50)].min() > level:
+            elif decay[:int(n_points*0.75)].min() > level:
                 return -1
         else:
             raise ValueError("No fit result found")
