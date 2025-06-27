@@ -578,10 +578,10 @@ class autoDEERUI(QMainWindow):
 
         # For Bruker recalculate d0
         skip_recalc_d0 = kwargs.get('skip_recalc_d0',False)
-        if self.Bruker and not skip_recalc_d0:
-            main_log.info("Calculating d0 from Hahn Echo")
-            B = self.LO/fsweep_analysis.gyro
-            self.spectromterInterface.calc_d0_from_Hahn_Echo(B=B, freq=self.LO)
+        # if self.Bruker and not skip_recalc_d0:
+        #     main_log.info("Calculating d0 from Hahn Echo")
+        #     B = self.LO/fsweep_analysis.gyro
+        #     self.spectromterInterface.calc_d0_from_Hahn_Echo(B=B, freq=self.LO)
 
         if self.worker is not None:
             self.worker.update_gyro(fsweep_analysis.gyro)
