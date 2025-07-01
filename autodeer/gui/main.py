@@ -1625,7 +1625,7 @@ class autoDEERUI(QMainWindow):
                 self.deer_settings['tau3'] = self.Tau3Value.value()
                 self.deer_settings['criteria'] = self.priorties[self.userinput['priority']]
                 self.deer_settings['autoStop'] = self.Time_autoStop_checkbox.isChecked()
-                self.deer_settings = calc_dt_from_tau(self.deer_settings)
+                self.deer_settings = ad.calc_dt_from_tau(self.deer_settings)
                 main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
                 main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
                 main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")

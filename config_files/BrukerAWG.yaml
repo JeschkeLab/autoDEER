@@ -20,6 +20,7 @@ Spectrometer:
     Det res: 8  #bit
     Video BW: 125 #MHz on VAMP-III this changes the time base
     On Board Pcyc: False
+    On Board Pcyc (EDFS): True
 
 Resonators:
   D2 :
