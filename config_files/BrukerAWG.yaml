@@ -11,20 +11,20 @@ Spectrometer:
   Bridge:
     Min Freq: 33 #GHz
     Max Freq: 35 #GHz
-    Digital Source: True
+    Digital Source: False # Analogue or Digital Source
     d0: 650 #ns
+    Sample Freq: 1 # GSa/s
+    DutyCycle: 3 # %
     Pulse dt: 2  #ns
     Det dt: 0.5  #ns
     Det res: 8  #bit
-    Video BW: 20
+    Video BW: 125 #MHz on VAMP-III this changes the time base
+    On Board Pcyc: False
 
 Resonators:
-  Holder 5 :
-    Center Freq: 34.265 #GHz
-    Q: 80
-  Three Loop-gap:
-    Center Freq: 33.976 #GHz
-    Q: 80
+  D2 :
+    Center Freq: 33.87 #GHz
+    Q: 160
 
 autoDEER:
   logging:
@@ -43,3 +43,6 @@ autoDEER:
   Refresh_time: 0.5  # mins Default: 3
   cores: 3
   Min_tp: 16
+  ReptimeRecovery: 0.8 # Default: 0.8
+  FieldSweep:
+    Fit: False # Default: False

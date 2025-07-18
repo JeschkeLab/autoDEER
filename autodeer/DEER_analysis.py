@@ -1307,7 +1307,7 @@ def calc_dt_from_tau(deer_settings):
 
 
 
-def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
+def calc_DEER_settings(relaxation_data,autoDEERmode='auto', target_time=2,
                        target_SNR=20, waveform_precision=2, corr_factor=1, rec_tau=None):
     """
     Calculates the optimal DEER settings based on the avaliable relaxation data.
@@ -1394,12 +1394,12 @@ def calc_DEER_settings(relaxation_data,mode='auto', target_time=2,
 
     # Select between five-pulse and four-pulse DEER
     if (tau2_4p >= 2*tau1_5p) and (V_4p > V_5p * 0.9):
-        mode = '4pDEER'
+        autoDEERmode = '4pDEER'
 
     if (tau1_5p <1) and (tau2_4p > 0.1):
-        mode = '4pDEER'
+        autoDEERmode = '4pDEER'
 
-    if mode =='4pDEER':
+    if autoDEERmode =='4pDEER':
         # Use four-pulse DEER
         deer_settings = {
             'ExpType': '4pDEER',
