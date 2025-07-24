@@ -148,7 +148,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>2</number>
+         <number>0</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideRight</enum>
@@ -399,6 +399,9 @@
                    <height>0</height>
                   </size>
                  </property>
+                 <property name="editable">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
                <item row="7" column="1">
@@ -559,6 +562,21 @@
                <property name="formAlignment">
                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="reuseSetupLabel">
+                 <property name="text">
+                  <string>Reuse Setup</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QCheckBox" name="reuseSetupCheckBox">
+                 <property name="toolTip">
+                  <string>When selected autoDEER will search the current folder for the latest setup measurements and use these instead of re-running everything. 
+It is not recommened that this is used between measurement sessions or when the pulse shapes have changed. </string>
+                 </property>
+                </widget>
+               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_7">
                  <property name="text">
@@ -568,6 +586,29 @@
                </item>
                <item row="1" column="1">
                 <widget class="QComboBox" name="Exp_types">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>150</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label">
+                 <property name="text">
+                  <string>Background Model</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QComboBox" name="bg_model_combo">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -699,46 +740,6 @@
                    <width>150</width>
                    <height>0</height>
                   </size>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="1">
-                <widget class="QComboBox" name="SampleConcComboBox">
-                 <property name="minimumSize">
-                  <size>
-                   <width>150</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="0">
-                <widget class="QLabel" name="label_29">
-                 <property name="text">
-                  <string>Sample Conc. (# scans)</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QComboBox" name="bg_model_combo">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>150</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="label">
-                 <property name="text">
-                  <string>Background Model</string>
                  </property>
                 </widget>
                </item>
