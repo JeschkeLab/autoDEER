@@ -600,13 +600,13 @@ class DEERSequence(Sequence):
 
             
         elif option == "16step_5p":
-            self.pulses[0]._addPhaseCycle([0],[1])
-            self.pulses[1]._addPhaseCycle([0],[1])
+            self.pulses[0]._addPhaseCycle([0],[1])                  # Exc 
+            self.pulses[1]._addPhaseCycle([0],[1])                  # pump 1
             self.pulses[2]._addPhaseCycle(
-                [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])
+                [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])      # Ref 1
             self.pulses[3]._addPhaseCycle(
-                [0, np.pi/2, np.pi, -np.pi/2], [1, 1, 1, 1])
-            self.pulses[4]._addPhaseCycle([0],[1])
+                [0, np.pi/2, np.pi, -np.pi/2], [1, 1, 1, 1])        # Pump 2
+            self.pulses[4]._addPhaseCycle([0],[1])                  # Ref 2
 
         elif option =="32step_7p":
             self.pulses[0]._addPhaseCycle([0],[1])                  # Exc

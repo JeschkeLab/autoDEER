@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog, QPushButton,QVBoxLayout, QLineEdit
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog, QPushButton,QVBoxLayout, QLineEdit,QHBoxLayout, QLabel, QProgressDialog
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
@@ -350,7 +350,7 @@ class autoDEERUI(QMainWindow):
                 self.pump_pulses = [epr.RectPulse,epr.ChirpPulse,epr.HSPulse]
             elif model == 'ETH_AWG':
                 from pyepr.hardware.ETH_awg import ETH_awg_interface
-                self.spectromterInterface = ETH_awg_interface()
+                self.spectromterInterface = ETH_awg_interface(self.config)
                 self.spectromterInterface.savefolder = self.data_folder
                 self.Bruker=False
                 self.modeTuneDialog = ModeTune(self.spectromterInterface, gyro=self.gyro, threadpool=self.threadpool, current_folder=self.current_folder)
@@ -358,7 +358,7 @@ class autoDEERUI(QMainWindow):
                 self.modeTuneButton = QPushButton('Mode Tune')
                 self.formLayout_2.addWidget(self.modeTuneButton)
                 self.modeTuneButton.clicked.connect(self.modeTuneDialog.show)
-                self.pump_pulses = [epr.RectPulse,epr.ChirpPulse,epr.HSPulse]
+                self.pump_pulses = [epr.RectPulse,epr.ChirpPulse]
 
             elif model == 'Bruker_MPFU':
                 from pyepr.hardware.Bruker_MPFU import BrukerMPFU
@@ -464,27 +464,127 @@ class autoDEERUI(QMainWindow):
                 Tm_data.append(file)
 
         # TODO: Add dialog warning box with files that are being loaded and ask if they should be. 
-        skip_list = []
-        if EFDS_files != []:
-            self.update_fieldsweep(epr.eprload(os.path.join(self.current_folder,EFDS_files[-1])),threaded=False,skip_recalc_d0=True)
-            skip_list.append('run_fsweep')
-        if Resonator_files != []:
-            self.update_respro(epr.eprload(os.path.join(self.current_folder,Resonator_files[-1])),threaded=False)
-            skip_list.append('run_respro')
-        if SRT_scan_files != []:
-            self.update_reptime(epr.eprload(os.path.join(self.current_folder,SRT_scan_files[-1])),threaded=False)
-            skip_list.append('run_reptime_opt')
-        if CP_data != []:
-            self.update_relax(epr.eprload(os.path.join(self.current_folder,CP_data[-1])),threaded=False)
-            skip_list.append('run_CP_relax')
-        if Ref1D_data != []:
-            self.update_relax(epr.eprload(os.path.join(self.current_folder,Ref1D_data[-1])),threaded=False)
-            skip_list.append('run_1D_refocused_echo')
-        if Tm_data != []:
-            self.update_relax(epr.eprload(os.path.join(self.current_folder,Tm_data[-1])),threaded=False)
-            skip_list.append('run_T2_relax')
-        if worker is not None:
-            self.worker.update_skip_list(skip_list)
+        # Create a dialog to ask the user which files to skip
+        if any([EFDS_files, Resonator_files, SRT_scan_files, CP_data, Ref1D_data, Tm_data]):
+            dialog = QDialog(self)
+            dialog.setWindowTitle("Detected Previous Experiments")
+            layout = QVBoxLayout()
+            dialog.setLayout(layout)
+            
+            label = QLabel("<h2>Select experiments to skip:</h2>")
+            label.setTextFormat(QtCore.Qt.TextFormat.RichText)
+            layout.addWidget(label)
+            
+            checkboxes = {}
+            
+            if EFDS_files:
+                cb = QPushButton(f"Field Sweep ({EFDS_files[-1]})")
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_fsweep'] = cb
+                layout.addWidget(cb)
+            
+            if Resonator_files:
+                cb = QPushButton(f"Resonator Profile ({Resonator_files[-1]})")
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_respro'] = cb
+                layout.addWidget(cb)
+            
+            if SRT_scan_files:
+                cb = QPushButton(f"Shot Repetition Time ({SRT_scan_files[-1]})")
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_reptime_opt'] = cb
+                layout.addWidget(cb)
+            
+            if CP_data:
+                cb = QPushButton(f"Carr-Purcell Relaxation ({CP_data[-1]})")
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_CP_relax'] = cb
+                layout.addWidget(cb)
+            
+            if Ref1D_data:
+                cb = QPushButton(f"Refocused Echo 1D ({Ref1D_data[-1]})")
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_1D_refocused_echo'] = cb
+                layout.addWidget(cb)
+            
+            if Tm_data:
+                cb = QPushButton(f"T2 Relaxation ({Tm_data[-1]})")
+
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_T2_relax'] = cb
+                layout.addWidget(cb)
+            
+            buttons = QHBoxLayout()
+            ok_button = QPushButton("Skip Selected")
+            ok_button.clicked.connect(dialog.accept)
+            cancel_button = QPushButton("Skip None")
+            cancel_button.clicked.connect(dialog.reject)
+            buttons.addWidget(cancel_button)
+            buttons.addWidget(ok_button)
+            layout.addLayout(buttons)
+            
+            result = dialog.exec()
+
+                        
+            if result == 1:
+                skip_list = [key for key, checkbox in checkboxes.items() if checkbox.isChecked()]
+
+                progress = QProgressDialog("Processing Skipped Experiments...", None, 0, len(skip_list), self)
+                progress.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
+                progress.setValue(0)                
+                # Load the selected data files
+                if 'run_fsweep' in skip_list and EFDS_files:
+                    self.update_fieldsweep(epr.eprload(os.path.join(self.current_folder, EFDS_files[-1])), threaded=False, skip_recalc_d0=True)
+                    progress.setValue(progress.value() + 1)
+                if 'run_respro' in skip_list and Resonator_files:
+                    self.update_respro(epr.eprload(os.path.join(self.current_folder, Resonator_files[-1])), threaded=False)
+                    progress.setValue(progress.value() + 1)
+                if 'run_reptime_opt' in skip_list and SRT_scan_files:
+                    self.update_reptime(epr.eprload(os.path.join(self.current_folder, SRT_scan_files[-1])), threaded=False)
+                    progress.setValue(progress.value() + 1)
+                if 'run_CP_relax' in skip_list and CP_data:
+                    self.update_relax(epr.eprload(os.path.join(self.current_folder, CP_data[-1])), threaded=False)
+                    progress.setValue(progress.value() + 1)
+                if 'run_1D_refocused_echo' in skip_list and Ref1D_data:
+                    self.update_relax(epr.eprload(os.path.join(self.current_folder, Ref1D_data[-1])), threaded=False)
+                    progress.setValue(progress.value() + 1)
+                if 'run_T2_relax' in skip_list and Tm_data:
+                    self.update_relax(epr.eprload(os.path.join(self.current_folder, Tm_data[-1])), threaded=False)
+                    progress.setValue(progress.value() + 1)
+
+                progress.close()
+                if worker is not None:
+                    self.worker.update_skip_list(skip_list)
+
+
+
+        # skip_list = []
+        # if EFDS_files != []:
+        #     self.update_fieldsweep(epr.eprload(os.path.join(self.current_folder,EFDS_files[-1])),threaded=False,skip_recalc_d0=True)
+        #     skip_list.append('run_fsweep')
+        # if Resonator_files != []:
+        #     self.update_respro(epr.eprload(os.path.join(self.current_folder,Resonator_files[-1])),threaded=False)
+        #     skip_list.append('run_respro')
+        # if SRT_scan_files != []:
+        #     self.update_reptime(epr.eprload(os.path.join(self.current_folder,SRT_scan_files[-1])),threaded=False)
+        #     skip_list.append('run_reptime_opt')
+        # if CP_data != []:
+        #     self.update_relax(epr.eprload(os.path.join(self.current_folder,CP_data[-1])),threaded=False)
+        #     skip_list.append('run_CP_relax')
+        # if Ref1D_data != []:
+        #     self.update_relax(epr.eprload(os.path.join(self.current_folder,Ref1D_data[-1])),threaded=False)
+        #     skip_list.append('run_1D_refocused_echo')
+        # if Tm_data != []:
+        #     self.update_relax(epr.eprload(os.path.join(self.current_folder,Tm_data[-1])),threaded=False)
+        #     skip_list.append('run_T2_relax')
+        # if worker is not None:
+        #     self.worker.update_skip_list(skip_list)
 
          
 
@@ -776,6 +876,7 @@ class autoDEERUI(QMainWindow):
                     return None
         
         est_lambda = ad.calc_est_modulation_depth(spectrum, **pulses, respro=resonator)
+        main_log.info(f"Estimated modulation depth from pulses: {est_lambda:.3f}")
         return pulses, est_lambda
     
 
@@ -1071,10 +1172,13 @@ class autoDEERUI(QMainWindow):
             ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[0]],corr_factor=self.correction_factor)
 
         if 'RefEcho2D' in self.current_results:
+            main_log.debug('Using RefEcho2D for optimal tau calculation')
             ad.plot_optimal_tau(self.current_results['RefEcho2D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
         elif 'RefEcho1D' in self.current_results:
+            main_log.debug('Using RefEcho1D for optimal tau calculation')
             ad.plot_optimal_tau(self.current_results['RefEcho1D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
         elif 'Tm-relax' in self.current_results:
+            main_log.debug('Using Tm-relax for optimal tau calculation')
             ad.plot_optimal_tau(self.current_results['Tm-relax'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
 
         axs.set_title(labels[0])
@@ -1148,17 +1252,20 @@ class autoDEERUI(QMainWindow):
             self.threadpool.start(relax_process_worker)
         else:
             # pass
-            self.post_process_relax(relax_process(dataset))
+            self.post_process_relax(relax_process(dataset),test_length=False)
 
-    def post_process_relax(self, fitresult):
+    def post_process_relax(self, fitresult, test_length=True):
         
         seq_name = fitresult.dataset.seq_name
         short_name = short_name_dict[seq_name]
         self.current_results[short_name] = fitresult
 
-        test_result = fitresult.check_decay()
-        test_dt = fitresult.axis[1].values - fitresult.axis[0].values
-        test_dt *= 1e3
+        if test_length:
+            test_result = fitresult.check_decay()
+            test_dt = fitresult.axis[1].values - fitresult.axis[0].values
+            test_dt *= 1e3
+        else:
+            test_result = 0
 
         if test_result != 0:
             if test_result == -1:  # The trace needs to be longer
@@ -1445,7 +1552,7 @@ class autoDEERUI(QMainWindow):
         self.worker.signals.finished.connect(lambda: self.resonatorComboBox.setEnabled(True))
         self.worker.signals.finished.connect(lambda: self.fcDoubleSpinBox.setEnabled(True))
 
-        self.stopButton.clicked.connect(self.worker.stop)
+        self.stopButton.clicked.connect(self.stopExperiment)
 
         self.detect_recent_experiments(self.worker)
         time.sleep(2)
@@ -1461,6 +1568,14 @@ class autoDEERUI(QMainWindow):
 
     def RunAdvancedAutoDEER(self):
         return self.RunAutoDEER(advanced=True)
+    
+    def stopExperiment(self):
+        
+        if hasattr(self, 'spectromterInterface') and self.spectromterInterface is not None:
+            self.spectromterInterface.terminate()
+
+        if hasattr(self, 'worker') and self.worker is not None:
+            self.worker.stop()
 
     def create_report(self):
         save_path = QFileDialog.getSaveFileName(self, 'Save File', self.current_folder, ".pdf")
