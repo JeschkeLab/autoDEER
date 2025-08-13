@@ -336,7 +336,10 @@ class autoDEERUI(QMainWindow):
             elif spectrometer['MPFU']:
                 model = 'Bruker_MPFU'
         elif spectrometer['Manufacturer'] == 'ETH':
-            model = 'ETH_AWG'
+            if spectrometer['Model'] == 'PyEPR':
+                model = 'PyEPR'
+            else:
+                model = 'ETH_AWG'
         elif spectrometer['Manufacturer'] == 'Dummy':
             model = 'Dummy'
         
@@ -356,6 +359,12 @@ class autoDEERUI(QMainWindow):
                 self.modeTuneButton = QPushButton('Mode Tune')
                 self.formLayout_2.addWidget(self.modeTuneButton)
                 self.modeTuneButton.clicked.connect(self.modeTuneDialog.show)
+                self.pump_pulses = [epr.RectPulse,epr.ChirpPulse,epr.HSPulse]
+            elif model == 'PyEPR':
+                from pyepr.hardware.PyEPR_control import PyEPRControlInterface
+                self.spectromterInterface = PyEPRControlInterface(spectrometer['ConfigFile'])
+                self.spectromterInterface.savefolder = self.data_folder
+                self.Bruker=False
                 self.pump_pulses = [epr.RectPulse,epr.ChirpPulse,epr.HSPulse]
 
             elif model == 'Bruker_MPFU':

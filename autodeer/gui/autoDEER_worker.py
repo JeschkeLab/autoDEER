@@ -228,6 +228,7 @@ class autoDEERWorker(QtCore.QRunnable):
         # relax.pulses[1].scale.value = 0
         # relax.pulses[3].scale.value = 0
         if not autoIFGain:
+            print(f"Using manual IF Gain. IF Gain: {self.interface.IFgain}")
             autoIFGain = self.interface.IFgain
 
         self.interface.launch(relax, savename=self.savename("CP"), IFgain=autoIFGain)
@@ -252,6 +253,7 @@ class autoDEERWorker(QtCore.QRunnable):
             pi_pulse=self.pulses['ref_pulse'], det_event=self.pulses['det_event'])
         
         if not autoIFGain:
+            print(f"Using manual IF Gain. IF Gain: {self.interface.IFgain}")
             autoIFGain = self.interface.IFgain
 
         self.interface.launch(seq,savename=self.savename("T2_Q"),IFgain=autoIFGain)

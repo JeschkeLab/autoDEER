@@ -74,7 +74,7 @@ class ModeTune(QDialog):
         seq.pulses[2].tp.value = 512
         seq.evolution([freq])
 
-        self.interface.launch(seq,savename="modetune")
+        self.interface._launch(seq,savename="modetune",IFgain=0,mode='tune')
 
         # Start thread
         self.worker = get_dataWorker(self.interface)

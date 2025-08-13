@@ -1,0 +1,46 @@
+Spectrometer:
+  Type: Complete Spectrometer
+  Manufacturer: ETH
+  Model: PyEPR
+  Local Name: F236_Ka
+
+  AWG: True
+
+  Bridge:
+    Min Freq: 30 #GHz
+    Max Freq: 31 #GHz
+    Sample Freq: 1.25 # GSa/s
+    Det Freq: 2.5 #GSa/s
+    Det Res: 12  #bit
+
+  ConfigFile: C:\Users\UWB_teststation\Documents\HUKA\Spec_dev\2025-04-01-Mq460Test\Ka_Config.yaml
+
+Resonators:
+  Pent Loop-gap:
+    Center Freq: 30.25 #GHz
+    Q: 100
+
+autoDEER:
+  logging:
+    autoDEER: 'DEBUG' # Default: 'INFO
+    interface: 'DEBUG' # Default: 'INFO'
+  
+  DeerLab:
+    nnlsSolver: 'cvx'  # Default: 'cvx'
+    xtol: 1e-4  # Default: 1e-8
+    ftol: 1e-4  # Default: 1e-8
+    max_nfev: 1e8  # Default: 1e8
+    lin_maxiter: 1e4  # Default: 1e4
+    lin_tol: 1e-15  # Default: 1e-15
+    regparam: 'bic' # Default: 'aic'
+
+  Refresh_time: 0.5  # mins Default: 3
+  cores: 8
+  Night Hours: [18,8]
+  ReptimeRecovery: 0.8 # Default: 0.75
+  FieldSweep:
+    Fit: False # Default: False
+  Min_tp: 16
+    
+
+
