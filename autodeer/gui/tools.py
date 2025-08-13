@@ -154,6 +154,14 @@ def test_SNR(Application, data):
         return False
     else:
         return True    
+    
+def save_cache(filepath):
+    """Saves the last loaded config file path to a cache file into a file in AppData.
+    """
+    
+
+
+
 # =============================================================================
 #
 #   Multi-threading functions and classes

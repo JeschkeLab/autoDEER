@@ -1,11 +1,14 @@
+import importlib.metadata
 import toml
 import importlib.util
 import os.path
 MODULE_DIR = importlib.util.find_spec('pyepr').submodule_search_locations[0]
 
-with open(os.path.join(MODULE_DIR,"../pyproject.toml"), "r") as f:
-    config = toml.load(f)
-    __version__ = config["tool"]["poetry"]["version"]
+# with open(os.path.join(MODULE_DIR,"../pyproject.toml"), "r") as f:
+#     config = toml.load(f)
+#     __version__ = config["tool"]["poetry"]["version"]
+
+__version__ = importlib.metadata.version('autoDEER')
 
 try: 
     import git

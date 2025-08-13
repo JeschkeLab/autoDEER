@@ -600,13 +600,13 @@ class DEERSequence(Sequence):
 
             
         elif option == "16step_5p":
-            self.pulses[0]._addPhaseCycle([0],[1])
-            self.pulses[1]._addPhaseCycle([0],[1])
+            self.pulses[0]._addPhaseCycle([0],[1])                  # Exc 
+            self.pulses[1]._addPhaseCycle([0],[1])                  # pump 1
             self.pulses[2]._addPhaseCycle(
-                [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])
+                [0, np.pi/2, np.pi, -np.pi/2], [1, -1, 1, -1])      # Ref 1
             self.pulses[3]._addPhaseCycle(
-                [0, np.pi/2, np.pi, -np.pi/2], [1, 1, 1, 1])
-            self.pulses[4]._addPhaseCycle([0],[1])
+                [0, np.pi/2, np.pi, -np.pi/2], [1, 1, 1, 1])        # Pump 2
+            self.pulses[4]._addPhaseCycle([0],[1])                  # Ref 2
 
         elif option =="32step_7p":
             self.pulses[0]._addPhaseCycle([0],[1])                  # Exc
@@ -897,15 +897,19 @@ class RefocusedEcho1DSequence(Sequence):
 
         if hasattr(self, "pi_pulse"):
             self.addPulse(self.pi_pulse.copy(
-                t=self.tau1, pcyc={"phases":[0, np.pi/2, np.pi, -np.pi/2], "dets": [1,-1,1,-1]}))
+                t=self.tau1, pcyc={"phases":[0, np.pi], "dets": [1,1]}))
         else:
             self.addPulse(RectPulse(
                 t=self.tau1, tp=32, freq=0, flipangle=np.pi,
-                pcyc={"phases":[0, np.pi/2, np.pi, -np.pi/2], "dets": [1,-1,1,-1]}
+                pcyc={"phases":[0, np.pi], "dets": [1,1]}
             ))
+
+        ref_tp = self.pulses[-1].tp.value
         
         if self.pump_pulse is not None:
-            self.addPulse(self.pump_pulse.copy(t=2*self.tau1,pcyc = {"phases":[0,np.pi/2, np.pi,3*np.pi/2], "dets": [1,1,1,1]}))
+            tp = self.pump_pulse.tp.value
+            t = 2*self.tau1 - tp/2 + (ref_tp/2)
+            self.addPulse(self.pump_pulse.copy(t=t,pcyc = {"phases":[0,np.pi/2, np.pi,3*np.pi/2], "dets": [1,1,1,1]}))
 
         if hasattr(self, "pi_pulse"):
             self.addPulse(self.pi_pulse.copy(

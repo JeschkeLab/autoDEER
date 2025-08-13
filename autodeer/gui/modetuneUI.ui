@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>469</width>
-    <height>407</height>
+    <width>695</width>
+    <height>509</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -148,15 +148,18 @@
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
+        <layout class="QFormLayout" name="formLayout_2">
+         <property name="formAlignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+         <item row="0" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
             <string>Dip Freq.</string>
            </property>
           </widget>
          </item>
-         <item>
+         <item row="0" column="1">
           <widget class="QDoubleSpinBox" name="calc_freq">
            <property name="readOnly">
             <bool>true</bool>
@@ -169,7 +172,37 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="QSpinBoxLabel">
+           <property name="text">
+            <string>Q</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="qDoubleSpinBox">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="buttonSymbols">
+            <enum>QAbstractSpinBox::NoButtons</enum>
+           </property>
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <double>1000.000000000000000</double>
+           </property>
+          </widget>
+         </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="applyButton">
+         <property name="text">
+          <string>Apply</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog, QPushButton,QVBoxLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog, QPushButton,QVBoxLayout, QLineEdit,QHBoxLayout, QLabel, QProgressDialog
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
@@ -36,7 +36,6 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 
 QtCore.QDir.addSearchPath('icons', f"{package_directory}/resources")
 
-SampleConcComboBox_opts = {'Normal': 1, 'High (0.5x)':0.5, 'Low (2x)':2, 'Very Low (5x)':5}
 BackgroundModels = {'hom3D':dl.bg_hom3d, 'hom3d ex':dl.bg_hom3dex, 'hom3d frac':dl.bg_homfractal,'str exp':dl.bg_strexp}
 
 class WorkerSignals(QtCore.QObject):
@@ -217,8 +216,6 @@ class autoDEERUI(QMainWindow):
         self.show_respro.clicked.connect(lambda: self.resonatorProfileFigure())
         self.show_EDFS.clicked.connect(lambda: self.refresh_fieldsweep_after_fit())
         self.OptimisePulsesButton.clicked.connect(lambda: self.optimise_pulses_button())
-
-        self.SampleConcComboBox.addItems(list(SampleConcComboBox_opts.keys()))
         
 
         self.Tab_widget.setCurrentIndex(0)
@@ -233,6 +230,7 @@ class autoDEERUI(QMainWindow):
         self.userinput = {'label_eff':100,'MaxTime':24}
 
         self.LO = 0
+        self.Q = 0
         self.gyro = 0.002803632236095
         self.gyro = 0.002808859721083
         self.cores = 1
@@ -352,14 +350,15 @@ class autoDEERUI(QMainWindow):
                 self.pump_pulses = [epr.RectPulse,epr.ChirpPulse,epr.HSPulse]
             elif model == 'ETH_AWG':
                 from pyepr.hardware.ETH_awg import ETH_awg_interface
-                self.spectromterInterface = ETH_awg_interface()
+                self.spectromterInterface = ETH_awg_interface(self.config)
                 self.spectromterInterface.savefolder = self.data_folder
                 self.Bruker=False
                 self.modeTuneDialog = ModeTune(self.spectromterInterface, gyro=self.gyro, threadpool=self.threadpool, current_folder=self.current_folder)
+                self.modeTuneDialog.dataUpdated.connect(self.update_resonator_info)
                 self.modeTuneButton = QPushButton('Mode Tune')
                 self.formLayout_2.addWidget(self.modeTuneButton)
                 self.modeTuneButton.clicked.connect(self.modeTuneDialog.show)
-                self.pump_pulses = [epr.RectPulse,epr.ChirpPulse,epr.HSPulse]
+                self.pump_pulses = [epr.RectPulse,epr.ChirpPulse]
             elif model == 'PyEPR':
                 from pyepr.hardware.PyEPR_control import PyEPRControlInterface
                 self.spectromterInterface = PyEPRControlInterface(spectrometer['ConfigFile'])
@@ -379,11 +378,12 @@ class autoDEERUI(QMainWindow):
                 self.spectromterInterface.savefolder = self.current_folder
                 self.Bruker=True
                 self.pump_pulses = [epr.RectPulse,epr.ChirpPulse]
-        except ImportError:
+        except ImportError as e:
             QMessageBox.about(self,'ERORR!', 
                               'The spectrometer interface could not be loaded!\n'+
                               'Please check that the correct packages are installed!\n'+
                               'See the documentation for more information.')
+            print(e)
             main_log.error('The spectrometer interface could not be loaded!')
             return None
 
@@ -442,12 +442,176 @@ class autoDEERUI(QMainWindow):
             self.waveform_precision = 1 
 
 
+    def detect_recent_experiments(self,worker=None):
+        # To cut down on runtime the current folder is checked for recent experiments
+
+        all_files = os.listdir(self.current_folder)
+        all_files.sort()
+        EFDS_files = []
+        Resonator_files = []
+        SRT_scan_files = []
+        CP_data = []
+        Ref1D_data = []
+        Tm_data = []
+        for file in all_files:
+            if not file.endswith('h5'):
+                continue
+            if 'EDFS' in file:
+                EFDS_files.append(file)
+            elif 'ResPro' in file:
+                Resonator_files.append(file)
+            elif 'reptime' in file:
+                SRT_scan_files.append(file)
+            elif 'CarrPurcellSequence' in file:
+                CP_data.append(file)
+            elif 'RefocusedEcho1DSequence' in file:
+                Ref1D_data.append(file)
+            elif 'T2RelaxationSequence' in file:
+                Tm_data.append(file)
+
+        # TODO: Add dialog warning box with files that are being loaded and ask if they should be. 
+        # Create a dialog to ask the user which files to skip
+        if any([EFDS_files, Resonator_files, SRT_scan_files, CP_data, Ref1D_data, Tm_data]):
+            dialog = QDialog(self)
+            dialog.setWindowTitle("Detected Previous Experiments")
+            layout = QVBoxLayout()
+            dialog.setLayout(layout)
+            
+            label = QLabel("<h2>Select experiments to skip:</h2>")
+            label.setTextFormat(QtCore.Qt.TextFormat.RichText)
+            layout.addWidget(label)
+            
+            checkboxes = {}
+            
+            if EFDS_files:
+                cb = QPushButton(f"Field Sweep ({EFDS_files[-1]})")
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_fsweep'] = cb
+                layout.addWidget(cb)
+            
+            if Resonator_files:
+                cb = QPushButton(f"Resonator Profile ({Resonator_files[-1]})")
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_respro'] = cb
+                layout.addWidget(cb)
+            
+            if SRT_scan_files:
+                cb = QPushButton(f"Shot Repetition Time ({SRT_scan_files[-1]})")
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_reptime_opt'] = cb
+                layout.addWidget(cb)
+            
+            if CP_data:
+                cb = QPushButton(f"Carr-Purcell Relaxation ({CP_data[-1]})")
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_CP_relax'] = cb
+                layout.addWidget(cb)
+            
+            if Ref1D_data:
+                cb = QPushButton(f"Refocused Echo 1D ({Ref1D_data[-1]})")
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_1D_refocused_echo'] = cb
+                layout.addWidget(cb)
+            
+            if Tm_data:
+                cb = QPushButton(f"T2 Relaxation ({Tm_data[-1]})")
+
+                cb.setCheckable(True)
+                cb.setChecked(True)
+                checkboxes['run_T2_relax'] = cb
+                layout.addWidget(cb)
+            
+            buttons = QHBoxLayout()
+            ok_button = QPushButton("Skip Selected")
+            ok_button.clicked.connect(dialog.accept)
+            cancel_button = QPushButton("Skip None")
+            cancel_button.clicked.connect(dialog.reject)
+            buttons.addWidget(cancel_button)
+            buttons.addWidget(ok_button)
+            layout.addLayout(buttons)
+            
+            result = dialog.exec()
+
+                        
+            if result == 1:
+                skip_list = [key for key, checkbox in checkboxes.items() if checkbox.isChecked()]
+
+                progress = QProgressDialog("Processing Skipped Experiments...", None, 0, len(skip_list), self)
+                progress.setWindowModality(QtCore.Qt.WindowModality.WindowModal)
+                progress.setValue(0)                
+                # Load the selected data files
+                if 'run_fsweep' in skip_list and EFDS_files:
+                    self.update_fieldsweep(epr.eprload(os.path.join(self.current_folder, EFDS_files[-1])), threaded=False, skip_recalc_d0=True)
+                    progress.setValue(progress.value() + 1)
+                if 'run_respro' in skip_list and Resonator_files:
+                    self.update_respro(epr.eprload(os.path.join(self.current_folder, Resonator_files[-1])), threaded=False)
+                    progress.setValue(progress.value() + 1)
+                if 'run_reptime_opt' in skip_list and SRT_scan_files:
+                    self.update_reptime(epr.eprload(os.path.join(self.current_folder, SRT_scan_files[-1])), threaded=False)
+                    progress.setValue(progress.value() + 1)
+                if 'run_CP_relax' in skip_list and CP_data:
+                    self.update_relax(epr.eprload(os.path.join(self.current_folder, CP_data[-1])), threaded=False)
+                    progress.setValue(progress.value() + 1)
+                if 'run_1D_refocused_echo' in skip_list and Ref1D_data:
+                    self.update_relax(epr.eprload(os.path.join(self.current_folder, Ref1D_data[-1])), threaded=False)
+                    progress.setValue(progress.value() + 1)
+                if 'run_T2_relax' in skip_list and Tm_data:
+                    self.update_relax(epr.eprload(os.path.join(self.current_folder, Tm_data[-1])), threaded=False)
+                    progress.setValue(progress.value() + 1)
+
+                progress.close()
+                if worker is not None:
+                    self.worker.update_skip_list(skip_list)
+
+
+
+        # skip_list = []
+        # if EFDS_files != []:
+        #     self.update_fieldsweep(epr.eprload(os.path.join(self.current_folder,EFDS_files[-1])),threaded=False,skip_recalc_d0=True)
+        #     skip_list.append('run_fsweep')
+        # if Resonator_files != []:
+        #     self.update_respro(epr.eprload(os.path.join(self.current_folder,Resonator_files[-1])),threaded=False)
+        #     skip_list.append('run_respro')
+        # if SRT_scan_files != []:
+        #     self.update_reptime(epr.eprload(os.path.join(self.current_folder,SRT_scan_files[-1])),threaded=False)
+        #     skip_list.append('run_reptime_opt')
+        # if CP_data != []:
+        #     self.update_relax(epr.eprload(os.path.join(self.current_folder,CP_data[-1])),threaded=False)
+        #     skip_list.append('run_CP_relax')
+        # if Ref1D_data != []:
+        #     self.update_relax(epr.eprload(os.path.join(self.current_folder,Ref1D_data[-1])),threaded=False)
+        #     skip_list.append('run_1D_refocused_echo')
+        # if Tm_data != []:
+        #     self.update_relax(epr.eprload(os.path.join(self.current_folder,Tm_data[-1])),threaded=False)
+        #     skip_list.append('run_T2_relax')
+        # if worker is not None:
+        #     self.worker.update_skip_list(skip_list)
+
+         
+
+
     def select_resonator(self):
         key = self.resonatorComboBox.currentText()
         main_log.info(f"Selecting resonator {key}")
         self.LO = self.config['Resonators'][key]['Center Freq']
+        self.Q = self.config['Resonators'][key]['Q']
         self.fcDoubleSpinBox.setValue(self.LO)
         main_log.info(f"Setting LO to {self.LO} GHz")
+
+    def update_resonator_info(self, kwargs):
+        if 'fc' in kwargs:
+            self.fcDoubleSpinBox.setValue(kwargs['fc'])
+            self.LO = kwargs['fc']
+            main_log.info(f"Setting LO to {self.LO} GHz")
+        if 'q' in kwargs:
+            self.qDoubleSpinBox.setValue(kwargs['q'])
+            self.Q = kwargs['q']
+            main_log.info(f"Setting Q to {kwargs['q']}")
     
     def change_LO(self):
         self.LO = self.fcDoubleSpinBox.value()
@@ -486,6 +650,9 @@ class autoDEERUI(QMainWindow):
     def save_data(self,dataset,experiment=None,folder='data'):
         if experiment is None:
             experiment = dataset.seq_name
+        # add user_inputs to attributes
+        # dataset.attrs.update(self.userinput)
+
         filename = create_save_name(self.userinput['sample'],experiment,True,self.userinput['project'],self.userinput['comment'])
         filename += ".h5"
         if folder == 'data':
@@ -496,7 +663,7 @@ class autoDEERUI(QMainWindow):
 
 
 
-    def update_fieldsweep(self, dataset=None):
+    def update_fieldsweep(self, dataset=None, threaded=True,**kwargs):
 
         if dataset is None:
             dataset = self.current_data['fieldsweep']
@@ -508,7 +675,7 @@ class autoDEERUI(QMainWindow):
         fsweep_analysis.calc_gyro()
         main_log.info(f"Calculated gyro {fsweep_analysis.gyro*1e3:.3f} MHz/T")
         if self.worker is not None:
-            self.worker.set_noise_mode(np.min([fsweep_analysis.calc_noise_level(),20]))
+            self.worker.set_noise_mode(np.min([fsweep_analysis.calc_noise_level(SNR_target=10),20]))
         
         self.setup_plot_ax.cla()
         fsweep_analysis.plot(axs=self.setup_plot_ax,fig=self.setup_figure_canvas.figure)
@@ -516,10 +683,11 @@ class autoDEERUI(QMainWindow):
         self.Tab_widget.setCurrentIndex(1)
 
         # For Bruker recalculate d0
-        if self.Bruker:
-            main_log.info("Calculating d0 from Hahn Echo")
-            B = self.LO/fsweep_analysis.gyro
-            self.spectromterInterface.calc_d0_from_Hahn_Echo(B=B, LO=self.LO)
+        skip_recalc_d0 = kwargs.get('skip_recalc_d0',False)
+        # if self.Bruker and not skip_recalc_d0:
+        #     main_log.info("Calculating d0 from Hahn Echo")
+        #     B = self.LO/fsweep_analysis.gyro
+        #     self.spectromterInterface.calc_d0_from_Hahn_Echo(B=B, freq=self.LO)
 
         if self.worker is not None:
             self.worker.update_gyro(fsweep_analysis.gyro)
@@ -528,10 +696,15 @@ class autoDEERUI(QMainWindow):
         except KeyError:
             fit = False
         
-        worker = Worker(fieldsweep_fit, fsweep_analysis,fit)
-        worker.signals.result.connect(self.refresh_fieldsweep_after_fit)
-        
-        self.threadpool.start(worker)
+        if threaded:
+            worker = Worker(fieldsweep_fit, fsweep_analysis,fit)
+            worker.signals.result.connect(self.refresh_fieldsweep_after_fit)
+            
+            self.threadpool.start(worker)
+        else:
+            fit_result = fieldsweep_fit(fsweep_analysis,fit)
+            self.refresh_fieldsweep_after_fit(fit_result)
+
 
  
     def refresh_fieldsweep_after_fit(self, fitresult=None):
@@ -562,7 +735,7 @@ class autoDEERUI(QMainWindow):
 
 
 
-    def update_respro(self, dataset=None):
+    def update_respro(self, dataset=None, threaded=True):
 
         if dataset is None:
             dataset = self.current_data['respro']
@@ -571,13 +744,17 @@ class autoDEERUI(QMainWindow):
             self.save_data(dataset,'ResPro',folder='main')
         
         f_lims = (self.config['Spectrometer']['Bridge']['Min Freq'], self.config['Spectrometer']['Bridge']['Max Freq'])
+        if threaded:
 
-        # worker = Worker(respro_process, dataset, f_axis,self.current_results['fieldsweep'], cores=self.cores)
-        worker = Worker(respro_process, dataset,f_lims, self.current_results['fieldsweep'], cores=self.cores)
+            # worker = Worker(respro_process, dataset, f_axis,self.current_results['fieldsweep'], cores=self.cores)
+            worker = Worker(respro_process, dataset,f_lims, self.current_results['fieldsweep'], cores=self.cores)
 
-        worker.signals.result.connect(self.refresh_respro)
+            worker.signals.result.connect(self.refresh_respro)
 
-        self.threadpool.start(worker)
+            self.threadpool.start(worker)
+        else:
+            self.refresh_respro(respro_process(dataset,f_lims, self.current_results['fieldsweep'], cores=self.cores),threaded=False)
+
 
     def create_setup_figure(self):
         fig, axs  = plt.subplots(1,1,figsize=(12.5, 6.28))
@@ -589,7 +766,7 @@ class autoDEERUI(QMainWindow):
         self.setup_plot_ax = axs
 
 
-    def refresh_respro(self, *args):
+    def refresh_respro(self, *args,threaded=True):
         if (len(args)>0)and (len(args[0]) == 2):
             LO = self.LO
             fitresult:epr.ResonatorProfileAnalysis = args[0][0]
@@ -639,7 +816,7 @@ class autoDEERUI(QMainWindow):
         
         if optimise_pulses:
             main_log.info(f"Resonator centre frequency {fitresult.results.fc:.4f} GHz")
-            self.optimise_pulses_button()
+            self.optimise_pulses_button(threaded)
         else:
             if self.waitCondition is not None: # Wake up the runner thread
                 self.waitCondition.wakeAll()
@@ -663,19 +840,23 @@ class autoDEERUI(QMainWindow):
 
 
 
-    def optimise_pulses_button(self):
+    def optimise_pulses_button(self,threaded=True):
         if (self.pulses is None) or (self.pulses == {}):
-            self.optimise_pulses()
+            self.optimise_pulses(threaded=threaded)
         elif self.pulses['pump_pulse'] is None:
-            self.optimise_pulses()
+            self.optimise_pulses(threaded=threaded)
         else:
             self.update_optimise_pulses_figure()
         
 
-    def optimise_pulses(self):
-        worker = Worker(self._optimise_pulses_in_background)
-        worker.signals.result.connect(self.update_pulses)
-        self.threadpool.start(worker)
+    def optimise_pulses(self,threaded=True):
+        if threaded:
+            worker = Worker(self._optimise_pulses_in_background)
+            worker.signals.result.connect(self.update_pulses)
+            self.threadpool.start(worker)
+        else:
+            self.update_pulses(self._optimise_pulses_in_background())
+
 
     def _optimise_pulses_in_background(self):
         resonator = self.current_results['respro']
@@ -685,14 +866,23 @@ class autoDEERUI(QMainWindow):
             pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum, test_pulse_shapes=self.pump_pulses)
         else:  # Reoptimise pulses
             if 'quickdeer' in self.current_results:
-                r_min = self.current_results['quickdeer'].ROI[0]
-                if ad.check_pulses_max_length(self.pulses.values(), r_min):
+                ROI = self.current_results['quickdeer'].ROI
+                r_min = ROI[0]
+                ROI_width = ROI[1] - ROI[0]
+                if (not ad.check_pulses_max_length(self.pulses.values(), r_min)) and (ROI_width < 4):
                     pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum,r_min=r_min, test_pulse_shapes=self.pump_pulses)
                     main_log.info(f"Pulse lenths adjusted, setting new pulses")
+                elif (not ad.check_pulses_max_length(self.pulses.values(), r_min)):
+                    main_log.info(f"ROI is detected to be broad, not adjusting pulse lengths. Potentially not optimal")
+                    pulses  =self.pulses
+                    return None
                 else:
+                    main_log.info(f"Pulse lenths are ok for ROI, not adjusting pulse lengths")
+                    pulses  =self.pulses
                     return None
         
         est_lambda = ad.calc_est_modulation_depth(spectrum, **pulses, respro=resonator)
+        main_log.info(f"Estimated modulation depth from pulses: {est_lambda:.3f}")
         return pulses, est_lambda
     
 
@@ -717,6 +907,10 @@ class autoDEERUI(QMainWindow):
             main_log.info(f"Optimised pulses")
             if self.worker is not None:
                 self.worker.new_pulses(self.pulses)
+            else:
+                main_log.error(f"Can't send new pulses to worker as worker not found ")
+        else:
+            main_log.error("Incorrect inputs to update pulses")
         
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
@@ -742,38 +936,47 @@ class autoDEERUI(QMainWindow):
         type_to_pulse_hash = {epr.RectPulse:'Rect', epr.ChirpPulse:'Chirp', epr.HSPulse:'HS'}
         if isinstance(exc_pulse, epr.RectPulse):
             self.ExcFreqBox.setValue(param_in_MHz(exc_pulse.freq))
-            self.ExcBWBox.setValue(exc_pulse.tp.value)
-            self.ExcBWBox.setSuffix(' ns')
+            est_BW = 1/(2*exc_pulse.tp.value) *1e3
+            self.ExcBWBox.setValue(est_BW)
+            # self.ExcBWBox.setSuffix(' ns')
+            self.ExcLengthBox.setValue(exc_pulse.tp.value)
             self.ExcTypeLine.setText('Rect')
         else:
             center_freq = (param_in_MHz(exc_pulse.final_freq) + param_in_MHz(exc_pulse.init_freq))/2
             self.ExcFreqBox.setValue(center_freq)
             self.ExcBWBox.setValue(param_in_MHz(exc_pulse.bandwidth))
-            self.ExcBWBox.setSuffix(' MHz')
+            # self.ExcBWBox.setSuffix(' MHz')
+            self.ExcLengthBox.setValue(exc_pulse.tp.value)
             self.ExcTypeLine.setText(type_to_pulse_hash[type(exc_pulse)])
         
         if isinstance(ref_pulse, epr.RectPulse):
             self.RefFreqBox.setValue(param_in_MHz(ref_pulse.freq))
-            self.RefBWBox.setValue(ref_pulse.tp.value)
-            self.RefBWBox.setSuffix(' ns')
+            est_BW = 1/(2*ref_pulse.tp.value) *1e3
+            self.RefBWBox.setValue(est_BW)
+            # self.RefBWBox.setSuffix(' ns')
+            self.RefLengthBox.setValue(ref_pulse.tp.value)
             self.RefTypeLine.setText('Rect')
         else:
             center_freq = (param_in_MHz(ref_pulse.final_freq) + param_in_MHz(ref_pulse.init_freq))/2
             self.RefFreqBox.setValue(center_freq)
             self.RefBWBox.setValue(param_in_MHz(ref_pulse.bandwidth))
-            self.RefBWBox.setSuffix(' MHz')
+            # self.RefBWBox.setSuffix(' MHz')
+            self.RefLengthBox.setValue(ref_pulse.tp.value)
             self.RefTypeLine.setText(type_to_pulse_hash[type(ref_pulse)])
         
         if isinstance(pump_pulse, epr.RectPulse):
             self.PumpFreqBox.setValue(param_in_MHz(pump_pulse.freq))
-            self.PumpBWBox.setValue(pump_pulse.tp.value)
-            self.PumpBWBox.setSuffix(' ns')
+            est_BW = 1/(2*pump_pulse.tp.value) *1e3
+            self.PumpBWBox.setValue(est_BW)
+            # self.PumpBWBox.setSuffix(' ns')
+            self.PumpLengthBox.setValue(pump_pulse.tp.value)
             self.PumpTypeLine.setText('Rect')
         else:
             center_freq = (param_in_MHz(pump_pulse.final_freq) + param_in_MHz(pump_pulse.init_freq))/2
             self.PumpFreqBox.setValue(center_freq)
             self.PumpBWBox.setValue(param_in_MHz(pump_pulse.bandwidth))
-            self.PumpBWBox.setSuffix(' MHz')
+            # self.PumpBWBox.setSuffix(' MHz')
+            self.PumpLengthBox.setValue(pump_pulse.tp.value)
             self.PumpTypeLine.setText(type_to_pulse_hash[type(pump_pulse)])
 
     def create_relax_figure(self,n_plots=3):
@@ -866,12 +1069,24 @@ class autoDEERUI(QMainWindow):
         store_pickle(relax_data,os.path.join(self.data_folder,'relax_data.pkl'))
         main_log.info(f'Calculating DEER settings with aim SNR {aim_SNR:.2f}, aim time {self.aim_time}hrs')
         self.deer_settings = ad.calc_DEER_settings(relax_data,exp, self.aim_time, aim_SNR,self.waveform_precision)
-        
+                
+        main_log.debug('Calculated DEER Settings')
         self.deer_settings['criteria'] = self.aim_MNR
 
         self.deer_settings['autoStop'] = self.Time_autoStop_checkbox.isChecked()
-        self.worker.update_deersettings(self.deer_settings)
+        main_log.debug('Updating DEER Settings')
+        
+        # self.worker.update_deersettings(self.deer_settings)
+        self.worker.signals.update_deer_settings.emit(self.deer_settings)
+        main_log.debug('Updating Figure')
         self.update_tau_delays_figure([aim_SNR],[self.aim_time],labels=[f"MNR = {self.aim_MNR}"])
+        self.OptimalExperiment.setText(self.deer_settings['ExpType'])
+        if self.deer_settings['ExpType'] == '4pDEER':
+            tau_evo = self.deer_settings['tau2']
+        elif self.deer_settings['ExpType'] == '5pDEER':
+            tau_evo = self.deer_settings['tau1'] + self.deer_settings['tau2']
+        
+        self.DipolarEvo2hrs.setValue(tau_evo)
 
         
         main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
@@ -888,6 +1103,8 @@ class autoDEERUI(QMainWindow):
         dt = epr.round_step(dt,self.waveform_precision)
         dt= 8
         mod_depth = data.MNR * data.noiselvl
+        if mod_depth > 1.0:
+            mod_depth = 1.0
         if remaining_time is None:
             remaining_time = self.remaining_time
             main_log.debug(f"Remaining time {remaining_time:.2f} hours")
@@ -942,7 +1159,8 @@ class autoDEERUI(QMainWindow):
         self.deer_settings['criteria'] = MNR_target
         
         self.deer_settings['autoStop'] = self.Time_autoStop_checkbox.isChecked()
-        self.worker.update_deersettings(self.deer_settings)
+        # self.worker.update_deersettings(self.deer_settings)
+        self.worker.signals.update_deer_settings.emit(self.deer_settings)
         self.update_tau_delays_figure([SNR_target],[remaining_time],labels=[f"MNR = {MNR_target}"])
         
         main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
@@ -960,10 +1178,13 @@ class autoDEERUI(QMainWindow):
             ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[0]],corr_factor=self.correction_factor)
 
         if 'RefEcho2D' in self.current_results:
+            main_log.debug('Using RefEcho2D for optimal tau calculation')
             ad.plot_optimal_tau(self.current_results['RefEcho2D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
         elif 'RefEcho1D' in self.current_results:
+            main_log.debug('Using RefEcho1D for optimal tau calculation')
             ad.plot_optimal_tau(self.current_results['RefEcho1D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
         elif 'Tm-relax' in self.current_results:
+            main_log.debug('Using Tm-relax for optimal tau calculation')
             ad.plot_optimal_tau(self.current_results['Tm-relax'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
 
         axs.set_title(labels[0])
@@ -987,7 +1208,7 @@ class autoDEERUI(QMainWindow):
         if self.waitCondition is not None: # Wake up the runner thread
             self.waitCondition.wakeAll()
         
-    def update_relax(self, dataset):
+    def update_relax(self, dataset, threaded=True):
         # Recieves dataset from the worker thread and updates the relax figure
         
         dataset = dataset.epr.correctphasefull # Correct the phase of the dataset
@@ -998,44 +1219,78 @@ class autoDEERUI(QMainWindow):
         # check if the relaxation data is being merged
 
         if short_name in self.current_data:
-            # attempt to merge datasets
-            main_log.info(f'Merging {short_name} datasets')
-            dataset = self.current_data[short_name].epr.merge(dataset)
+            # attempt to merge datasets only if the new first datapoint is > than the last old datapoint else replace the old dataset
+            if 'tau' in dataset.coords:
+                axis_label = 'tau'
+            elif 't' in dataset.coords:
+                axis_label = 't'
+            elif 'tau_1' in dataset.coords:
+                axis_label = 'tau_1'
+            elif 'tau_2' in dataset.coords:
+                axis_label = 'tau_2'
+            elif "tau1" in dataset.coords:
+                axis_label = 'tau1'
+            elif "tau2" in dataset.coords:
+                axis_label = 'tau2'
+            else:
+                axis_label = 'X'
+
+            new_dataset_first = getattr(dataset,axis_label).values[0]
+            old_dataset_last = getattr(self.current_data[short_name],axis_label).values[-1]
+            main_log.debug(f"New dataset first {new_dataset_first:.2f}, old dataset last {old_dataset_last:.2f}")
+
+            if new_dataset_first >= (old_dataset_last - 1e-2):  # Allows for a small error
+                main_log.info(f'Merging {short_name} datasets')
+                dataset = self.current_data[short_name].epr.merge(dataset)
+            else:
+                main_log.info(f'Replacing {short_name} dataset')
+                self.current_data[short_name] = dataset
 
         self.current_data[short_name] = dataset
-        self.save_data(dataset,short_name,folder='main')
+        # self.save_data(dataset,short_name,folder='main')
 
         # Process the relaxation data
+        if threaded:
 
-        relax_process_worker = Worker(relax_process, dataset)
-        relax_process_worker.signals.result.connect(self.post_process_relax)
+            relax_process_worker = Worker(relax_process, dataset)
+            relax_process_worker.signals.result.connect(self.post_process_relax)
 
-        self.threadpool.start(relax_process_worker)
+            self.threadpool.start(relax_process_worker)
+        else:
+            # pass
+            self.post_process_relax(relax_process(dataset),test_length=False)
 
-    def post_process_relax(self, fitresult):
+    def post_process_relax(self, fitresult, test_length=True):
         
         seq_name = fitresult.dataset.seq_name
         short_name = short_name_dict[seq_name]
         self.current_results[short_name] = fitresult
 
-        test_result = fitresult.check_decay()
-        test_dt = fitresult.axis[1].values - fitresult.axis[0].values
-        test_dt *= 1e3
+        if test_length:
+            test_result = fitresult.check_decay()
+            test_dt = fitresult.axis[1].values - fitresult.axis[0].values
+            test_dt *= 1e3
+        else:
+            test_result = 0
 
         if test_result != 0:
             if test_result == -1:  # The trace needs to be longer
                 new_dt = epr.round_step(test_dt*2, self.waveform_precision)
+                new_tmin = fitresult.axis[-1].values
+                new_tmin += new_dt*1e-3
+                main_log.info(f"Relaxation trace needs to be longer, setting new dt {new_dt:.2f} ns")
             elif test_result == 1:  # The trace needs to be shorter
                 new_dt = epr.round_step(test_dt/2, self.waveform_precision)
+                new_tmin = fitresult.axis[0].values
+                main_log.info(f"Relaxation trace needs to be shorter, setting new dt {new_dt:.2f} ns")
 
-            new_tmin = fitresult.axis[-1].values
-            new_tmin += new_dt*1e-3
             nAvgs = fitresult.dataset.attrs['nAvgs']
 
             if self.worker is not None:
-                self.worker.rerun_relax(short_name,dt=new_dt, tmin=new_tmin, averages=nAvgs, autoStop=False)
+                self.worker.rerun_relax(short_name,dt=new_dt, tmin=new_tmin, averages=nAvgs, autoStop=False, autoIFGain=False)
 
         else:
+            self.save_data(fitresult.dataset,folder='main')
             self.initialise_deer_settings()
 
         if self.waitCondition is not None:  # Wake up the runner thread
@@ -1101,7 +1356,7 @@ class autoDEERUI(QMainWindow):
         
         self.longDEER.process_deeranalysis(wait_condition = self.waitCondition,update_func=update_func)
 
-    def update_reptime(self, dataset=None):
+    def update_reptime(self, dataset=None,threaded = True):
         if dataset is None:
             dataset = self.current_data['reptime']
         else:
@@ -1115,7 +1370,7 @@ class autoDEERUI(QMainWindow):
         if 'ReptimeRecovery' in self.config['autoDEER']:
             ReptimeRecovery = self.config['autoDEER']['ReptimeRecovery']
         else:
-            ReptimeRecovery = 0.75
+            ReptimeRecovery = 0.8
         opt_reptime = reptime_analysis.calc_optimal_reptime(ReptimeRecovery)
 
         if (opt_reptime*1e-3 > 8) or (opt_reptime*1e-3 < 0.5):
@@ -1123,8 +1378,11 @@ class autoDEERUI(QMainWindow):
             opt_reptime = 3e3
 
         self.current_results['reptime'] = reptime_analysis
+       
         if self.worker is not None:
             self.worker.update_reptime(opt_reptime)
+       
+        self.SRTBox.setValue(opt_reptime*1e-3)
         main_log.info(f"Reptime {opt_reptime*1e-3:.2g} ms")
         self.update_reptime_figure()
         if self.waitCondition is not None: # Wake up the runner thread
@@ -1198,7 +1456,6 @@ class autoDEERUI(QMainWindow):
         userinput['label_eff'] = self.LabellingEffSpinBox.value()
         userinput['Temp'] = self.TempValue.value()
         userinput['DEER_update_func'] = self.q_DEER.refresh_deer
-        userinput['SampleConc'] = SampleConcComboBox_opts[self.SampleConcComboBox.currentText()]
         userinput['tp'] = self.Min_tp
 
         self.userinput = userinput
@@ -1263,9 +1520,12 @@ class autoDEERUI(QMainWindow):
             cores=self.cores, night_hours=night_hours,
             )
         
+
+        self.worker.setQ(self.Q)
         
 
-        self.worker.update_deersettings(self.deer_settings)
+        # self.worker.update_deersettings(self.deer_settings)
+        self.worker.signals.update_deer_settings.emit(self.deer_settings)
     
         self.worker.signals.status.connect(self.msgbar.setText)
         self.worker.signals.status.connect(main_log.info)
@@ -1297,7 +1557,10 @@ class autoDEERUI(QMainWindow):
         self.worker.signals.finished.connect(lambda: self.resonatorComboBox.setEnabled(True))
         self.worker.signals.finished.connect(lambda: self.fcDoubleSpinBox.setEnabled(True))
 
-        self.stopButton.clicked.connect(self.worker.stop)
+        self.stopButton.clicked.connect(self.stopExperiment)
+
+        self.detect_recent_experiments(self.worker)
+        time.sleep(2)
 
 
         self.threadpool.start(self.worker)
@@ -1310,6 +1573,14 @@ class autoDEERUI(QMainWindow):
 
     def RunAdvancedAutoDEER(self):
         return self.RunAutoDEER(advanced=True)
+    
+    def stopExperiment(self):
+        
+        if hasattr(self, 'spectromterInterface') and self.spectromterInterface is not None:
+            self.spectromterInterface.terminate()
+
+        if hasattr(self, 'worker') and self.worker is not None:
+            self.worker.stop()
 
     def create_report(self):
         save_path = QFileDialog.getSaveFileName(self, 'Save File', self.current_folder, ".pdf")
@@ -1400,6 +1671,8 @@ class autoDEERUI(QMainWindow):
         pass
 
 def main():
+
+
     app = QApplication([])
     app.setWindowIcon(QtGui.QIcon('icons:Square_logo.png'))
     app.setApplicationName('autoDEER')

@@ -86,6 +86,7 @@ def check_pulses_max_length(pulses, r_min=3.5, D = 52.04):
     for pulse in pulses:
         if pulse.tp.value > max_length:
             return False
+    return True
     
 
 def create_pulses_rect(resonatorProfile, r_min=3.5, max_bandwidth=0.1, same_power=False):
@@ -189,7 +190,7 @@ def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3
     max_nu = resonatorProfile.model.max()
     exc_pulse_length = 1/(2*max_nu*0.90)
     # Adjust the pulse length to be < 50% of availiable bandwidth
-    bw_min_length = 1/(0.5*np.min([resonator_bandwidth,spectum_bandwidth]))
+    bw_min_length = 1/(0.4*np.min([resonator_bandwidth,spectum_bandwidth]))
     if exc_pulse_length < bw_min_length:
         exc_pulse_length = bw_min_length
     
@@ -209,13 +210,13 @@ def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3
     FunctionalResults = {}
     ModDepthResults = {}
     for pump_pulse_type in test_pulse_shapes:
-        exc_pulse = ExcPulseShape(tp=exc_pulse_length,flipangle=np.pi/2)
-        ref_pulse = ExcPulseShape(tp=exc_pulse_length,flipangle=np.pi)
+        exc_pulse = ExcPulseShape(tp=exc_pulse_length,flipangle=np.pi/2,scale=None)
+        ref_pulse = ExcPulseShape(tp=exc_pulse_length,flipangle=np.pi,scale=None)
 
         if pump_pulse_type == RectPulse:
-            pump_pulse = pump_pulse_type(tp=exc_pulse_length,flipangle=np.pi,freq = -exc_bandwidth/2)
+            pump_pulse = pump_pulse_type(tp=exc_pulse_length,flipangle=np.pi,freq = -exc_bandwidth/2,scale=None)
         else:
-            pump_pulse = pump_pulse_type(tp=max_length,flipangle=np.pi,init_freq=(-exc_bandwidth/2-pump_bandwidth),final_freq=-exc_bandwidth/2)
+            pump_pulse = pump_pulse_type(tp=max_length,flipangle=np.pi,init_freq=(-exc_bandwidth/2-pump_bandwidth),final_freq=-exc_bandwidth/2,scale=None)
             
 
         optimised_pulses,_ = optimise_pulses2(spectrum,pump_pulse,exc_pulse,ref_pulse,resonator=resonatorProfile,method = 'spectrum_shift',verbosity=1)
