@@ -1085,8 +1085,67 @@ class autoDEERUI(QMainWindow):
         main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")
 
         return self.deer_settings
+    
+    def update_deer_settings(self, remaining_time=None, threaded=False):
+        """
+        Update DEER settings based on the current results and user input.
+        If remaining_time is provided, it will use that instead of the calculated remaining time.
+        """
+        if self.userinput['priority'].lower() == 'single':
+            func = self._update_single_deer_settings_and_pulses
+        else:
+            func = self._update_deer_settings_and_pulses
+        
+        main_log.info("Updating DEER settings")
+        if threaded:
+            worker = Worker(func, remaining_time)
+            worker.signals.result.connect(self.update_pulses)
+            self.threadpool.start(worker)
+        else:
+            self.update_pulses(func(remaining_time))
+        
 
-    def update_deer_settings(self,remaining_time=None):
+    def _update_single_deer_settings_and_pulses(self, remaining_time=None):
+        """
+        Update DEER settings for single mode based on the current results and user input.
+        If remaining_time is provided, it will use that instead of the calculated remaining time.
+        """
+        main_log.info("Updating DEER settings for single mode")
+
+        if self.userinput['priority'].lower() == 'single':
+            SNR_target = self.priorties[self.userinput['priority']]
+            MNR_target = SNR_target
+            single_mode = True
+            exp = '4pDEER'
+
+        relax_data = {}
+        if 'CP-relax' in self.current_results:
+            relax_data['CP'] = self.current_results['CP-relax']
+        if 'RefEcho1D' in self.current_results:
+            relax_data['Tm'] = self.current_results['RefEcho1D']
+        elif 'Tm-relax' in self.current_results:
+            relax_data['Tm'] = self.current_results['Tm-relax']
+        if 'RefEcho2D' in self.current_results:
+            relax_data['Ref2D'] = self.current_results['RefEcho2D']
+                 
+        #debug only, remove later
+        store_pickle(relax_data,os.path.join(self.data_folder,'relax_data.pkl'))
+
+        self.deer_settings = ad.calc_DEER_settings(relax_data,exp,remaining_time,SNR_target,self.waveform_precision,corr_factor=self.correction_factor)
+        
+        self.deer_settings['criteria'] = MNR_target
+        
+        self.deer_settings['autoStop'] = self.Time_autoStop_checkbox.isChecked()
+        # self.worker.update_deersettings(self.deer_settings)
+        self.worker.signals.update_deer_settings.emit(self.deer_settings)
+        self.update_tau_delays_figure([SNR_target],[remaining_time],labels=[f"MNR = {MNR_target}"])
+        
+        main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
+        main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
+        main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")
+        
+
+    def _update_deer_settings_and_pulses(self,remaining_time=None):
         
         data = self.current_results['quickdeer']
         rec_tau = self.current_results['quickdeer'].rec_tau_max
@@ -1096,6 +1155,10 @@ class autoDEERUI(QMainWindow):
         mod_depth = data.MNR * data.noiselvl
         if mod_depth > 1.0:
             mod_depth = 1.0
+
+        mod_depth_correction = mod_depth/ self.est_lambda
+        main_log.info(f"Modulation depth correction factor {mod_depth_correction:.3f}")
+
         if remaining_time is None:
             remaining_time = self.remaining_time
             main_log.debug(f"Remaining time {remaining_time:.2f} hours")
@@ -1117,15 +1180,7 @@ class autoDEERUI(QMainWindow):
         else:
             exp = 'auto'
 
-        if self.userinput['priority'].lower() == 'single':
-            SNR_target = self.priorties[self.userinput['priority']]
-            MNR_target = SNR_target
-            single_mode = True
-            exp = '4pDEER'
-        else:
-            MNR_target = self.priorties[self.userinput['priority']]
-            SNR_target = MNR_target/(mod_depth)
-        main_log.info(f"SNR target {SNR_target:.2f}")
+        MNR_target = self.priorties[self.userinput['priority']]
 
 
         relax_data = {}
@@ -1136,15 +1191,75 @@ class autoDEERUI(QMainWindow):
         elif 'Tm-relax' in self.current_results:
             relax_data['Tm'] = self.current_results['Tm-relax']
         if 'RefEcho2D' in self.current_results:
-            relax_data['Ref2D'] = self.current_results['RefEcho2D']    
+            relax_data['Ref2D'] = self.current_results['RefEcho2D']
+        
+        EDFS_analysis = self.current_results['fieldsweep']
+        ResProAnalysis = self.current_results['respro']
          
-
         #debug only, remove later
         store_pickle(relax_data,os.path.join(self.data_folder,'relax_data.pkl'))
+        
 
         # Calculate the optimal DEER settings using relaxation data
 
-        self.deer_settings = ad.calc_DEER_settings(relax_data,exp,remaining_time,SNR_target,self.waveform_precision,corr_factor=self.correction_factor,rec_tau=rec_tau)
+        ROI = self.current_results['quickdeer'].ROI
+        r_min = ROI[0]
+
+        # Check 4p DEER with 1 pump vs 5p DEER with 2 pumps
+        if exp == '4pDEER' or exp =='auto':
+            optimal_pulses_4p = ad.create_pulses_shape(ResProAnalysis,EDFS_analysis,n_pump_pulses=1,test_pulse_shapes=self.pump_pulses,verbosity=0,r_min=r_min)
+            functional_4p = ad.calc_functional(EDFS_analysis,**optimal_pulses_4p,resonator=ResProAnalysis,n_pump_pulses=1)
+            mod_depth_4p = ad.calc_est_modulation_depth(EDFS_analysis,**optimal_pulses_4p,resonator=ResProAnalysis,n_pump_pulses=1)
+
+            SNR_target = MNR_target/(mod_depth_4p * mod_depth_correction)
+            main_log.info(f"4p DEER, mod_depth = {mod_depth_4p:.2f}, SNR target {SNR_target:.2f}")
+            deer_settings_4p = ad.calc_DEER_settings(relax_data,'4pDEER',remaining_time,SNR_target,self.waveform_precision,corr_factor=self.correction_factor,rec_tau=rec_tau)
+            tau2_4p = deer_settings_4p['tau2']
+
+        else:
+            deer_settings_4p = {}
+            tau2_4p=0
+            functional_4p = 0
+
+        if exp == '5pDEER' or exp == 'auto':
+            optimal_pulses_5p = ad.create_pulses_shape(ResProAnalysis,EDFS_analysis,n_pump_pulses=2,test_pulse_shapes=self.pump_pulses,verbosity=0,r_min=r_min)
+            functional_5p = ad.calc_functional(EDFS_analysis,**optimal_pulses_5p,resonator=ResProAnalysis,n_pump_pulses=2)
+            mod_depth_5p = ad.calc_est_modulation_depth(EDFS_analysis,**optimal_pulses_5p,resonator=ResProAnalysis,n_pump_pulses=2)
+
+            SNR_target = MNR_target/(mod_depth_5p * mod_depth_correction)
+            main_log.info(f"5p DEER, mod_depth = {mod_depth_5p:.2f}, SNR target {SNR_target:.2f}")
+            deer_settings_5p = ad.calc_DEER_settings(relax_data,'5pDEER',remaining_time,SNR_target,self.waveform_precision,corr_factor=self.correction_factor,rec_tau=rec_tau)
+            tau1_5p = deer_settings_5p['tau1']
+        else:
+            deer_settings_5p = {}
+            tau1_5p = 0
+            functional_5p = 0
+
+        main_log.debug(f"4p DEER:  F= {functional_4p:.3f} tau_evo={tau2_4p}; \t 5p DEER : F= {functional_5p:.3f} tau_evo={deer_settings_5p['tau1'] + deer_settings_5p['tau2']:.3f}")
+        
+        if deer_settings_4p == {} and deer_settings_5p == {}:
+            main_log.error("No DEER settings found")
+            return None
+
+        # Select between five-pulse and four-pulse DEER
+        if (tau2_4p >= 2*tau1_5p) and (functional_4p > functional_5p * 0.9):
+            autoDEERmode = '4pDEER'
+        else:
+            autoDEERmode = '5pDEER'
+        if (tau1_5p <1) and (tau2_4p > 0.1):
+            autoDEERmode = '4pDEER'
+        main_log.info(f"AutoDEER mode set to {autoDEERmode}")
+
+        if autoDEERmode == '4pDEER':
+            self.deer_settings = deer_settings_4p
+            new_pulses = optimal_pulses_4p
+            new_est_lambda = mod_depth_4p * mod_depth_correction
+        elif autoDEERmode == '5pDEER':
+            self.deer_settings = deer_settings_5p
+            new_pulses = optimal_pulses_5p
+            new_est_lambda = mod_depth_5p * mod_depth_correction
+
+        # self.deer_settings = ad.calc_DEER_settings(relax_data,exp,remaining_time,SNR_target,self.waveform_precision,corr_factor=self.correction_factor,rec_tau=rec_tau)
 
         # self.deer_settings['dt'] = dt
         self.deer_settings['criteria'] = MNR_target
@@ -1157,6 +1272,8 @@ class autoDEERUI(QMainWindow):
         main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
         main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
         main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")
+
+        return new_pulses, new_est_lambda
 
     def update_tau_delays_figure(self, SNRs, MeasTimes, labels=None):
 
@@ -1326,7 +1443,7 @@ class autoDEERUI(QMainWindow):
                 time = None
 
             self.update_deer_settings(remaining_time=time)
-            self.update_pulses(self._optimise_pulses_in_background()) #reoptimse pulses in background
+            # self.update_pulses(self._optimise_pulses_in_background()) #reoptimse pulses in background
 
         self.q_DEER.process_deeranalysis(background_model=bg_model, wait_condition = self.waitCondition, update_func=update_func)
 
