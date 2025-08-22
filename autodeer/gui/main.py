@@ -36,7 +36,6 @@ package_directory = os.path.dirname(os.path.abspath(__file__))
 
 QtCore.QDir.addSearchPath('icons', f"{package_directory}/resources")
 
-SampleConcComboBox_opts = {'Normal': 1, 'High (0.5x)':0.5, 'Low (2x)':2, 'Very Low (5x)':5}
 BackgroundModels = {'hom3D':dl.bg_hom3d, 'hom3d ex':dl.bg_hom3dex, 'hom3d frac':dl.bg_homfractal,'str exp':dl.bg_strexp}
 
 class WorkerSignals(QtCore.QObject):
@@ -217,8 +216,6 @@ class autoDEERUI(QMainWindow):
         self.show_respro.clicked.connect(lambda: self.resonatorProfileFigure())
         self.show_EDFS.clicked.connect(lambda: self.refresh_fieldsweep_after_fit())
         self.OptimisePulsesButton.clicked.connect(lambda: self.optimise_pulses_button())
-
-        self.SampleConcComboBox.addItems(list(SampleConcComboBox_opts.keys()))
         
 
         self.Tab_widget.setCurrentIndex(0)
@@ -1106,7 +1103,7 @@ class autoDEERUI(QMainWindow):
         if 'ReptimeRecovery' in self.config['autoDEER']:
             ReptimeRecovery = self.config['autoDEER']['ReptimeRecovery']
         else:
-            ReptimeRecovery = 0.75
+            ReptimeRecovery = 0.8
         opt_reptime = reptime_analysis.calc_optimal_reptime(ReptimeRecovery)
 
         if (opt_reptime*1e-3 > 8) or (opt_reptime*1e-3 < 0.5):
@@ -1189,7 +1186,6 @@ class autoDEERUI(QMainWindow):
         userinput['label_eff'] = self.LabellingEffSpinBox.value()
         userinput['Temp'] = self.TempValue.value()
         userinput['DEER_update_func'] = self.q_DEER.refresh_deer
-        userinput['SampleConc'] = SampleConcComboBox_opts[self.SampleConcComboBox.currentText()]
         userinput['tp'] = self.Min_tp
 
         self.userinput = userinput

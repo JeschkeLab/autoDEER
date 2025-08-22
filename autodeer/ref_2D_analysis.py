@@ -1,4 +1,4 @@
-from pyepr import Sequence, CarrPurcellAnalysis
+from pyepr import Sequence, HahnEchoRelaxationAnalysis
 import numpy as np
 from deerlab import noiselevel
 from scipy.linalg import svd
@@ -262,7 +262,7 @@ class RefocusedEcho2DAnalysis():
 
         return V
 
-class RefocusedEcho1DAnalysis(CarrPurcellAnalysis):
+class RefocusedEcho1DAnalysis(HahnEchoRelaxationAnalysis):
      
     def __init__(self, dataset) -> None:
         """Analysis, fitting and plotting for the HahnEchoRelaxation Sequence. 
@@ -314,7 +314,11 @@ class RefocusedEcho1DAnalysis(CarrPurcellAnalysis):
         monoModel = dl.bg_strexp
         monoModel.name = 'Stretched exponential'
         doubleModel = dl.bg_sumstrexp
-        doubleModel.weight1.ub = 200
+        doubleModel.weight1.ub = 1
+        doubleModel.decay1.ub = 1e3
+        doubleModel.decay2.ub = 1e3
+        doubleModel.decay1.lb = 1e-2
+        doubleModel.decay2.lb = 1e-2
         doubleModel.name = "Sum of two stretched exponentials"
 
         testModels = []

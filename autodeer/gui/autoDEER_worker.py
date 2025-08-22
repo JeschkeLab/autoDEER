@@ -107,13 +107,8 @@ class autoDEERWorker(QtCore.QRunnable):
                 else:
                     return f"({self.project})_({self.samplename})_({exp})"
         self.savename = savename
-        
 
-        if 'SampleConc' in self.user_inputs:
-            self.noise_mode = self.user_inputs['SampleConc']
-        else:
-            self.noise_mode = 1
-        
+        self.noise_mode = 1
 
         if not 'DEER_update_func' in self.user_inputs:
             self.user_inputs['DEER_update_func'] = None
