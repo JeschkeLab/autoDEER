@@ -1291,7 +1291,7 @@ def calc_est_signal(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, n
 
     return (2*P_pump*P_obs + P_obs**2 + 2*P_obs*P_none)
 
-def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, num_ref_pulses=2, **kwargs):
+def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, num_ref_pulses=2,n_pump_pulses=1, **kwargs):
     """
     Calculate the estimated modulation depth from the EPR spectrum, the pulses and the resonator profile.
 
@@ -1349,7 +1349,7 @@ def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, resp
     return (2*P_pump*P_obs)/(2*P_pump*P_obs + P_obs**2 + 2*P_obs*P_none)
 
 
-def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, filter=None, resonator=None, num_ref_pulses=2, axs=None, fig=None,**kwargs):
+def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, filter=None, resonator=None, num_ref_pulses=2,n_pump_pulses=1, axs=None, fig=None,**kwargs):
     """Plots the pump and excitation profiles as well as the fieldsweep and filter profile.
 
     The 0 MHz point is the centre of resonator profile.
