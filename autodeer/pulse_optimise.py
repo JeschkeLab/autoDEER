@@ -144,7 +144,7 @@ def create_pulses_rect(resonatorProfile, r_min=3.5, max_bandwidth=0.1, same_powe
     return pulses 
 
 
-def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3, test_pulse_shapes=None):
+def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3, test_pulse_shapes=None, n_pump_pulses=1,verbosity=0):
     """
     Creates the optimal chirped shaped pulses for DEER using the resonator profile as a guide for the necessary power. r_max is used to set a maximum length.
 
@@ -190,7 +190,7 @@ def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3
     max_nu = resonatorProfile.model.max()
     exc_pulse_length = 1/(2*max_nu*0.90)
     # Adjust the pulse length to be < 50% of availiable bandwidth
-    bw_min_length = 1/(0.4*np.min([resonator_bandwidth,spectum_bandwidth]))
+    bw_min_length = 1/(2*0.4*np.min([resonator_bandwidth,spectum_bandwidth]))
     if exc_pulse_length < bw_min_length:
         exc_pulse_length = bw_min_length
     
@@ -218,10 +218,13 @@ def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3
         else:
             pump_pulse = pump_pulse_type(tp=max_length,flipangle=np.pi,init_freq=(-exc_bandwidth/2-pump_bandwidth),final_freq=-exc_bandwidth/2,scale=None)
             
-
-        optimised_pulses,_ = optimise_pulses2(spectrum,pump_pulse,exc_pulse,ref_pulse,resonator=resonatorProfile,method = 'spectrum_shift',verbosity=1)
-        mod = calc_est_modulation_depth(spectrum,**optimised_pulses,respro=resonatorProfile)
-        F = calc_functional(spectrum,**optimised_pulses,resonator=resonatorProfile)
+        if verbosity > 0:
+            print(f"Optimising pulses for {pump_pulse_type.__name__} with exc pulse length {exc_pulse_length:.2f} ns and pump bandwidth {pump_bandwidth:.3f} GHz")
+        optimised_pulses,_ = optimise_pulses2(spectrum,pump_pulse,exc_pulse,ref_pulse,resonator=resonatorProfile,method = 'spectrum_shift',verbosity=verbosity,n_pump_pulses=n_pump_pulses)
+        mod = calc_est_modulation_depth(spectrum,**optimised_pulses,respro=resonatorProfile,n_pump_pulses=n_pump_pulses)
+        F = calc_functional(spectrum,**optimised_pulses,resonator=resonatorProfile,n_pump_pulses=n_pump_pulses)
+        if verbosity > 0:
+            print(f"Functional value for {pump_pulse_type.__name__}: {F:.4f}, Modulation depth: {mod:.4f}")
         
         PulseResults[pump_pulse_type] = optimised_pulses
         FunctionalResults[pump_pulse_type] = F

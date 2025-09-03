@@ -353,9 +353,9 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
     else:
         r_max = np.ceil(np.cbrt(t.max()*6**3/2))
         if r_max > 11.5:
-            nPoints = 200
+            nPoints = 300
         else:
-            nPoints = 100
+            nPoints = 150
         r = np.linspace(1.5,r_max,nPoints)
 
     # Default fit parameters
@@ -943,7 +943,7 @@ def shift_freq(pulse,shift):
         pulse.init_freq.value += shift
         pulse.final_freq.value += shift
 
-def Functional_basic(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses):
+def Functional_basic(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses,n_pump_pulses=1):
     """
     Parameters
     ----------
@@ -978,9 +978,9 @@ def Functional_basic(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator,
     shift_freq(tmp_exc, obs_freq)
     shift_freq(tmp_ref, obs_freq)
 
-    return calc_functional(Fieldsweep, tmp_pump, tmp_exc, tmp_ref, resonator=resonator, num_ref_pulses=num_ref_pulses)
+    return calc_functional(Fieldsweep, tmp_pump, tmp_exc, tmp_ref, resonator=resonator, num_ref_pulses=num_ref_pulses, n_pump_pulses=n_pump_pulses)
 
-def Functional_spectrum_shift(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses):
+def Functional_spectrum_shift(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses,n_pump_pulses=1):
     pump_freq = x[0]
     obs_freq = x[1]
     spectrum_shift = x[2]
@@ -993,17 +993,17 @@ def Functional_spectrum_shift(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, r
     shift_freq(tmp_exc, obs_freq)
     shift_freq(tmp_ref, obs_freq)
 
-    return calc_functional(Fieldsweep, tmp_pump, tmp_exc, tmp_ref, resonator=resonator, num_ref_pulses=num_ref_pulses, spectrum_shift=spectrum_shift)
+    return calc_functional(Fieldsweep, tmp_pump, tmp_exc, tmp_ref, resonator=resonator, num_ref_pulses=num_ref_pulses, spectrum_shift=spectrum_shift,n_pump_pulses=n_pump_pulses)
 
 
 
-def optimise_pulses2(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, resonator=None, num_ref_pulses=2, verbosity=0, method='basic', **kwargs):
+def optimise_pulses2(Fieldsweep, pump_pulse, exc_pulse, ref_pulse=None, resonator=None, num_ref_pulses=2, verbosity=0, method='basic', n_pump_pulses=1, **kwargs):
 
     if method == 'basic':
-        res = minimize(lambda x: -Functional_basic(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses), [0, 0], bounds=[(-0.15, 0.05), (-0.05, 0.1)])
+        res = minimize(lambda x: -Functional_basic(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses,n_pump_pulses), [0, 0], bounds=[(-0.15, 0.05), (-0.05, 0.1)])
     
     elif method == 'spectrum_shift':
-        res = minimize(lambda x: -Functional_spectrum_shift(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses), [0, 0, 0], bounds=[(-0.15, 0.05), (-0.05, 0.1), (-0.02, 0)])
+        res = minimize(lambda x: -Functional_spectrum_shift(x, pump_pulse, exc_pulse, ref_pulse, Fieldsweep, resonator, num_ref_pulses,n_pump_pulses), [0, 0, 0], bounds=[(-0.15, 0.05), (-0.05, 0.1), (-0.02, 0)])
     
     if verbosity > 0:
         print(f"Functional: {res.fun:.3f} \t Pump shift: {res.x[0]*1e3:.1f}MHz \t Exc/Ref shift: {res.x[1]*1e3:.1f}MHz")
@@ -1184,7 +1184,7 @@ def build_profile(pulses,freqs=None,resonator=None):
 
     return excite_profile
 
-def calc_functional(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,resonator=None, num_ref_pulses=2, spec_shift=0,**kwargs):
+def calc_functional(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,resonator=None, num_ref_pulses=2, spec_shift=0,n_pump_pulses=1,**kwargs):
     """
         
     Parameters
@@ -1201,6 +1201,8 @@ def calc_functional(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,resonator=None,
         The resonator profile, by default None
     num_ref_pulses : int, optional
         The total number of refocusing pulses, by default 2
+    n_pump_pulses : int, optional
+        The total number of pump pulses, by default 1
 
     Returns
     -------
@@ -1222,8 +1224,12 @@ def calc_functional(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,resonator=None,
     obs_sequence = [exc_pulse]
     for i in range(num_ref_pulses):
         obs_sequence.append(ref_pulse)
+    if n_pump_pulses > 1:
+        pump_sequence = [pump_pulse] * n_pump_pulses
+    else:
+        pump_sequence = pump_pulse
 
-    pump_profile = build_profile(pump_pulse,f,resonator) 
+    pump_profile = build_profile(pump_sequence,f,resonator) 
     exc_profile = build_profile(obs_sequence,f,resonator)
     dead_profile = pump_profile * exc_profile
     pump_profile -= dead_profile
@@ -1285,7 +1291,7 @@ def calc_est_signal(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, n
 
     return (2*P_pump*P_obs + P_obs**2 + 2*P_obs*P_none)
 
-def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, num_ref_pulses=2, **kwargs):
+def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, num_ref_pulses=2,n_pump_pulses=1, **kwargs):
     """
     Calculate the estimated modulation depth from the EPR spectrum, the pulses and the resonator profile.
 
@@ -1307,6 +1313,8 @@ def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, resp
         The resonator profile, by default None
     num_ref_pulses : int, optional
         The total number of refocusing pulses, by default 2
+    n_pump_pulses : int, optional  
+        The total number of pump pulses, by default 1
 
     Returns
     -------
@@ -1321,8 +1329,12 @@ def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, resp
     obs_sequence = [exc_pulse]
     for i in range(num_ref_pulses):
         obs_sequence.append(ref_pulse)
+    if n_pump_pulses > 1:
+        pump_sequence = [pump_pulse] * n_pump_pulses
+    else:
+        pump_sequence = pump_pulse
 
-    pump_profile = build_profile(pump_pulse,f,resonator) 
+    pump_profile = build_profile(pump_sequence,f,resonator) 
     exc_profile = build_profile(obs_sequence,f,resonator)
     dead_profile = pump_profile * exc_profile
     pump_profile -= dead_profile
@@ -1337,7 +1349,7 @@ def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, resp
     return (2*P_pump*P_obs)/(2*P_pump*P_obs + P_obs**2 + 2*P_obs*P_none)
 
 
-def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, filter=None, resonator=None, num_ref_pulses=2, axs=None, fig=None,**kwargs):
+def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, filter=None, resonator=None, num_ref_pulses=2,n_pump_pulses=1, axs=None, fig=None,**kwargs):
     """Plots the pump and excitation profiles as well as the fieldsweep and filter profile.
 
     The 0 MHz point is the centre of resonator profile.
@@ -1360,6 +1372,8 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, 
         The resonator profile for fitting, by default None. The resonator profile must include the fit.
     num_ref_pulses : int, optional
         The total number of refocusing pulses, by default 2
+    n_pump_pulses : int, optional  
+        The total number of pump pulses, by default 1
     axs : matplotlib.axes, optional
         The axes to plot on, by default None
     fig : matplotlib.figure, optional
@@ -1381,8 +1395,12 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, 
     obs_sequence = [exc_pulse]
     for i in range(num_ref_pulses):
         obs_sequence.append(ref_pulse)
+    if n_pump_pulses > 1:
+        pump_sequence = [pump_pulse] * n_pump_pulses
+    else:
+        pump_sequence = pump_pulse
 
-    pump_profile = build_profile(pump_pulse,f,resonator) 
+    pump_profile = build_profile(pump_sequence,f,resonator) 
     exc_profile = build_profile(obs_sequence,f,resonator)
     dead_profile = pump_profile * exc_profile
     pump_profile -= dead_profile
