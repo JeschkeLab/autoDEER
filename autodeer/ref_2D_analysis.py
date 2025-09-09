@@ -289,10 +289,11 @@ class RefocusedEcho1DAnalysis(HahnEchoRelaxationAnalysis):
             self.axis = dataset['step'] 
         else:
             self.axis = dataset['X']
-        
-        dataset = dataset.epr.correctphasefull
-        self.data = dataset.data.real
-        self.dataset = dataset
+
+        # Copy dataset to avoid modifying original
+        self.dataset = dataset.copy()
+        self.dataset = self.dataset.epr.correctphasefull
+        self.data = self.dataset.real.copy().values
 
         data = self.data / np.max(self.data)
         self.noise = noiselevel(data)
