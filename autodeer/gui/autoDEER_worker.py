@@ -278,7 +278,7 @@ class autoDEERWorker(QtCore.QRunnable):
         self.signals.T2_result.emit(self.interface.acquire_dataset())
         self.signals.status.emit('T2relax experiment complete')
 
-    def run_2D_relax(self):
+    def run_2D_refocused_echo(self):
         self.signals.status.emit('Running 2D decoherence experiment')
         freq = self.freq
         gyro = self.gyro
@@ -479,7 +479,9 @@ class autoDEERWorker(QtCore.QRunnable):
             freq_range = np.linspace(pump_pulse.init_freq.value, pump_pulse.final_freq.value, 100) + self.freq
             B1 = self.interface.resonator.model_func(freq_range)
 
+            amp_factor*= 1.1 # Add a 10% margin to the scale factor, go slightly beyond Qcrit
             scale = amp_factor/np.max(B1)
+            scale = self.interface.rescale(scale)
             if scale > 1:
                 scale = 1
             pump_pulse.scale.value = scale
@@ -501,7 +503,7 @@ class autoDEERWorker(QtCore.QRunnable):
             methods.append(self.run_CP_relax)
             methods.append(self.run_1D_refocused_echo)
             methods.append(self.run_T2_relax)
-            methods.append(self.run_2D_relax)
+            methods.append(self.run_2D_refocused_echo)
             if  self.operating_mode == 'Ref2D':
                 return methods
 
@@ -605,7 +607,7 @@ class autoDEERWorker(QtCore.QRunnable):
         elif experiment == 'Tm-relax':
             method = lambda: self.run_T2_relax(**kwargs)
         elif experiment == 'RefEcho2D':
-            method = lambda: self.run_2D_relax(**kwargs)
+            method = lambda: self.run_2D_refocused_echo(**kwargs)
         elif experiment == 'RefEcho1D':
             method = lambda: self.run_1D_refocused_echo(**kwargs)
         self.methods.appendleft(method)
