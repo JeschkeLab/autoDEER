@@ -1,10 +1,8 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QTableWidgetItem, QMessageBox
-from PyQt6 import uic
 import PyQt6.QtCore as QtCore
-import PyQt6.QtGui as QtGui
 from pathlib import Path
 import sys, traceback
-import autodeer as ad
+import pyepr as epr
 import numbers
 import numpy as np
 import datetime
@@ -40,7 +38,7 @@ def load_epr_file(Object, store_location):
                 path = Path(filename)
                 filename_edit = str(path)
 
-        dataset = ad.eprload(filename_edit)
+        dataset = epr.eprload(filename_edit)
         Object.current_data[store_location] = dataset
 
 
@@ -49,11 +47,11 @@ def get_sequence_rows(Sequence, names:list):
     rows = []
     for param in names:
         attr = getattr(Sequence, param)
-        if isinstance(attr, ad.Parameter):
+        if isinstance(attr, epr.Parameter):
             unit = attr.unit
         else:
             unit = None
-        if isinstance(attr, ad.Parameter):
+        if isinstance(attr, epr.Parameter):
             rows.append({"Parameter":param, "Value":f"{attr.value:.2f}", "Unit":unit})
         else:
             rows.append({"Parameter":param, "Value":f"{attr:.2f}", "Unit":None})
@@ -124,7 +122,7 @@ def pyqt_table_from_dict(table, dict):
     fill_table(table, headers, rows)
 
 def param_in_us(param):
-    if not isinstance(param, ad.Parameter):
+    if not isinstance(param, epr.Parameter):
         raise TypeError(f"Expected Parameter, got {type(param)}")
     if param.unit == 'us':
         return param.value
@@ -132,7 +130,7 @@ def param_in_us(param):
         return param.value/1000
     
 def param_in_MHz(param):
-    if not isinstance(param, ad.Parameter):
+    if not isinstance(param, epr.Parameter):
         raise TypeError(f"Expected Parameter, got {type(param)}")
     if param.unit == 'MHz':
         return param.value
@@ -156,6 +154,14 @@ def test_SNR(Application, data):
         return False
     else:
         return True    
+    
+def save_cache(filepath):
+    """Saves the last loaded config file path to a cache file into a file in AppData.
+    """
+    
+
+
+
 # =============================================================================
 #
 #   Multi-threading functions and classes
@@ -228,4 +234,3 @@ class Worker(QtCore.QRunnable):
             self.signals.result.emit(result)  # Return the result of the processing
         finally:
             self.signals.finished.emit()  # Done
-

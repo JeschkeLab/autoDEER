@@ -1,6 +1,38 @@
+[tool.poetry]
+name = "autodeer"
+version = "1.0.0"
+description = "A Python based software package for running automated DEER experiments on a variety of hardware developed by the Jeschke Lab @ ETH"
+authors = ["Hugo Karas <hkaras@ethz.ch>"]
+license = "GPL3"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+deerlab = "^1.1.4"
+matplotlib = "^3.9.2"
+pyyaml = "^6.0.2"
+reportlab = "^4.2.5"
+svglib = "^1.5.1"
+xarray = ">2024.10.0"
+h5netcdf = "^1.4.0"
+pyqt6 = "^6.7.1"
+threadpoolctl = "^3.5.0"
+quadprog = "^0.1.13"
+pyepr = {path = "../PyEPR", develop = true}
+qt-material = "^2.14"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+pytest-cov = "^6.0.0"
+pytest-qt = "^4.4.0"
+pytest-xdist = "^3.6.1"
+gitpython = "^3.1.43"
+ipykernel = "^6.29.5"
+
+[tool.poetry.scripts]
+gui = "autodeer.gui.main:main"
+
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
-]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

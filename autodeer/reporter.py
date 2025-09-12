@@ -10,8 +10,10 @@ from reportlab.platypus.frames import Frame
 from functools import partial
 from datetime import date
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
+
 from autodeer.DEER_analysis import DEERanalysis_plot, plot_overlap, DEERanalysis_plot_pub
-from autodeer.Relaxation import plot_1Drelax
+from pyepr import plot_1Drelax
 
 from svglib.svglib import svg2rlg
 from io import BytesIO
@@ -241,7 +243,7 @@ def create_report(save_path, Results:dict, SpectrometerInfo:dict=None, UserInput
         report._build()
         pass
 
-def combo_figure(EDFS, respro, pulses:dict, relaxation:list, init_deer, long_deer ,title=None):
+def combo_figure(EDFS, respro, pulses:dict, relaxation:list, init_deer, long_deer ,title=None, fig=None):
     """
     Creates a 2x2 summary figure. 
         - The top left plot is the EDFS and resonator profile, overlapped with the optimised pulses. 
@@ -251,9 +253,9 @@ def combo_figure(EDFS, respro, pulses:dict, relaxation:list, init_deer, long_dee
     
     Parameters
     ----------
-    EDFS: ad.FieldSweepAnalysis
+    EDFS: epr.FieldSweepAnalysis
         The Echo-Detected Field Sweep analysis.
-    respro: ad.ResonatorProfileAnalysis
+    respro: epr.ResonatorProfileAnalysis
         The resonator profile analysis
     pulses: dict
         A dictionary containing the optimised pulses.
@@ -268,20 +270,44 @@ def combo_figure(EDFS, respro, pulses:dict, relaxation:list, init_deer, long_dee
     
     
     """
-    figure = plt.figure(figsize=(10, 10),constrained_layout=True)
-    figs = figure.subfigures(2, 2, height_ratios=(4,6), width_ratios=(1,1),wspace=.12)
+    if fig is None:
+        fig = plt.figure(figsize=(10, 10),constrained_layout=True)
+    subfigs = fig.subfigures(2, 2, height_ratios=(4,6), width_ratios=(1,1),wspace=.0)
+    subfigs = subfigs.flatten()
+    gs1 = subfigs[0].add_gridspec(1, 1, left=0.2, right=0.8, bottom=0.2, top=0.9)
+    gs2 = subfigs[1].add_gridspec(1, 1, left=0.2, right=0.8, bottom=0.2, top=0.9)
+    gs3 = subfigs[2].add_gridspec(2, 1, left=0.2, right=0.8, bottom=0.2, top=0.9)
+    gs4 = subfigs[3].add_gridspec(2, 1, left=0.2, right=0.8, bottom=0.2, top=0.9)
+
+    ax1 = subfigs[0].add_subplot(gs1[0, 0])
+    ax2 = subfigs[1].add_subplot(gs2[0, 0])
+    ax3a = subfigs[2].add_subplot(gs3[0, 0])
+    ax3b = subfigs[2].add_subplot(gs3[1, 0])
+    ax3 = [ax3a, ax3b]
+    ax4a = subfigs[3].add_subplot(gs4[0, 0])
+    ax4b = subfigs[3].add_subplot(gs4[1, 0])
+    ax4 = [ax4a, ax4b]
+
 
     if title is not None:
-        figure.suptitle(title,size=20)
+        fig.suptitle(title,size=20)
     
-    figs[0,0].suptitle('a. EDFS',size=15)
-    plot_overlap(EDFS, pulses['pump_pulse'], pulses['exc_pulse'],pulses['ref_pulse'],respro=respro,fig=figs[0,0]);
-    figs[0,0].axes[0].set_xlim(-300,100)
-    figs[0,1].suptitle('b. Relaxation',size=15)
-    plot_1Drelax(*relaxation,fig=figs[0,1])
-    figs[1,0].suptitle('c. Intial DEER',size=15)
-    DEERanalysis_plot_pub(init_deer[0],ROI=init_deer[0].ROI,fig=figs[1,0]);
-    figs[1,1].suptitle('d. Final DEER',size=15)
-    DEERanalysis_plot_pub(long_deer,fig=figs[1,1]);
+    subfigs[0].suptitle('Pulse Setup',size=15)
+    plot_overlap(EDFS, pulses['pump_pulse'], pulses['exc_pulse'],pulses['ref_pulse'],respro=respro,axs=ax1,fig=subfigs[0]);
+    subfigs[0].get_axes()[0].set_ylabel(' ',labelpad=8)
+    subfigs[0].axes[0].set_xlim(-300,100)
+    subfigs[1].suptitle('Relaxation',size=15)
+    plot_1Drelax(*relaxation,axs=ax2,fig=subfigs[1]);
+    subfigs[2].suptitle('Intial DEER',size=15)
+    DEERanalysis_plot_pub(init_deer[0],ROI=init_deer[0].ROI,axs=ax3,fig=subfigs[2]);
+    subfigs[3].suptitle('Final DEER',size=15)
+    DEERanalysis_plot_pub(long_deer,axs=ax4,fig=subfigs[3]);
 
-    return figure
+    subfigs[0].get_axes()[0].set_ylabel(' ',labelpad=8)
+    subfigs[0].get_axes()[0].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    subfigs[1].get_axes()[0].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    subfigs[2].get_axes()[0].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    subfigs[3].get_axes()[0].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+
+
+    return fig

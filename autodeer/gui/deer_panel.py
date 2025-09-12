@@ -1,11 +1,12 @@
 
-from PyQt6.QtWidgets import QApplication, QWidget,QLabel,QDoubleSpinBox,QGridLayout,QAbstractSpinBox
+from PyQt6.QtWidgets import QApplication, QWidget,QLabel,QDoubleSpinBox,QGridLayout,QAbstractSpinBox, QHBoxLayout, QFormLayout
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
 from pathlib import Path
 from threadpoolctl import threadpool_limits
 import os
+import copy
 
 from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
 from matplotlib.figure import Figure
@@ -42,7 +43,7 @@ def get_Vexp(dataset, tmin=0):
 def deeranalysis_process(dataset, settings, cores):
 
     with threadpool_limits(limits=cores, user_api='blas'):
-        return ad.DEERanalysis(dataset, **settings, verbosity=2)
+        return DEERanalysis(dataset, **settings, verbosity=2)
     
 
 
@@ -52,14 +53,13 @@ class DEERplot(QWidget):
         super().__init__(parent)
  
         # loading the ui fsile with uic module
-        uic.loadUi(f"{package_directory}/quickdeer.ui", self)
+        uic.loadUi(f"{package_directory}/deerpanel.ui", self)
 
         self.threadpool = QtCore.QThreadPool()
         self.current_results = {}
         self.current_data = {}
         self.create_figure()
         self.setup_inputs()
-        self.toolbar()
         self.DL_params={}
 
         self.current_folder = ''
@@ -67,22 +67,6 @@ class DEERplot(QWidget):
         self.Last_updated.setText(f"Last updated: never")
         self.num_scans.setText(f"# of scans: 0")
 
-
-    def toolbar(self):
-        upload_icon = QtGui.QIcon('icons:upload.png')
-
-        def custom_load():
-            load_epr_file(self, 'quickdeer')
-            self.update_inputs_from_dataset()
-            self.update_figure()
-            
-
-        self.Loadfile.setIcon(upload_icon)
-        self.Loadfile.clicked.connect(custom_load)
-
-        refresh_icon = QtGui.QIcon('icons:refresh.png')
-        self.Refresh_analysis.setIcon(refresh_icon)
-        self.Refresh_analysis.clicked.connect(self.process_deeranalysis)
 
     def setup_inputs(self):
         self.ExperimentcomboBox.addItems(['5pDEER', '4pDEER'])
@@ -155,8 +139,41 @@ class DEERplot(QWidget):
 
         self.MNRDoubleSpinBox.setValue(results.MNR)
         self.Chi2DoubleSpinBox.setValue(results.stats['chi2red'])
-        self.conc_value.setValue(results.conc)
-        self.conc_uncert.setText(getCIstring(results.concUncert))
+
+        bg_params = copy.copy(results.Bmodel.signature)
+
+        if 't' in bg_params:
+            bg_params.remove('t')
+        if 'lam' in bg_params:
+            bg_params.remove('lam')
+
+        layout:QFormLayout = self.GlobalFitLayout
+        for i,param in enumerate(bg_params):
+            # create a new label and a horizontle layout taht contains a double spin box and the uncertainty
+            value = getattr(results,param)
+            existing_widget = self.findChild(QDoubleSpinBox, param)
+            unit = getattr(results.Bmodel,param).unit
+
+            if existing_widget:
+                existing_widget.setValue(value)
+                existing_widget.setSuffix(' ' + unit)
+            else:
+                # create the horizontal layout
+                new_layout = QHBoxLayout()
+                spin_box = QDoubleSpinBox()
+                spin_box.setObjectName(param)
+                spin_box.setValue(value)
+                spin_box.setSuffix(' ' + unit)
+                spin_box.setReadOnly(True)
+                spin_box.setButtonSymbols(QAbstractSpinBox.ButtonSymbols(2))
+                new_layout.addWidget(spin_box)
+                new_layout.addWidget(QLabel(getCIstring(getattr(results, f"{param}Uncert")))) 
+                layout.addRow(QLabel(param), new_layout)
+
+
+
+        # self.conc_value.setValue(results.conc)
+        # self.conc_uncert.setText(getCIstring(results.concUncert))
 
         try:
             self.regparamDoubleSpinBox.setValue(results.regparam)
@@ -188,6 +205,32 @@ class DEERplot(QWidget):
             self.Pathways_Box.addWidget(QLabel(f"mod"),i+1,0,1,1)
             self.Pathways_Box.addWidget(QDoubleSpinBox(value=lam, suffix='', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i+1,1,1,1)
             self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"modUncert"))),i+1,2,1,1)
+        elif 'tau1' in results.paramlist:
+            for i,param in enumerate(results.paramlist):
+                # Search for parameters that start with 'reftime' and record the number
+                if param.startswith('tau'):
+                    val = getattr(results,param)
+                    self.Pathways_Box.addWidget(QLabel(param),i,0,1,1)
+                    self.Pathways_Box.addWidget(QDoubleSpinBox(value=val, suffix=' us', readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
+                    self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"{param}Uncert"))),i,2,1,1)
+                elif param.startswith('lam'):
+                    val = getattr(results,param)
+
+                    if total_mod_uncert_covmat is not None:
+                        total_mod_uncert_covmat += np.sqrt(getattr(results,f"{param}Uncert").covmat)
+                    else:
+                        total_mod_uncert_covmat = np.sqrt(getattr(results,f"{param}Uncert").covmat)
+                    total_mod_lb += getattr(results,f"{param}Uncert")._UQResult__lb
+                    total_mod_ub += getattr(results,f"{param}Uncert")._UQResult__ub
+                    total_mod += val
+                    self.Pathways_Box.addWidget(QLabel(param),i,0,1,1)
+                    self.Pathways_Box.addWidget(QDoubleSpinBox(value=val, suffix='', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
+                    self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"{param}Uncert"))),i,2,1,1)
+                elif param.startswith('mod'):
+                    val = getattr(results,param)
+                    self.Pathways_Box.addWidget(QLabel(param),i,0,1,1)
+                    self.Pathways_Box.addWidget(QDoubleSpinBox(value=val, suffix='', decimals=3, readOnly=True, buttonSymbols=QAbstractSpinBox.ButtonSymbols(2)),i,1,1,1)
+                    self.Pathways_Box.addWidget(QLabel(getCIstring(getattr(results,f"{param}Uncert"))),i,2,1,1)
 
         else:
             for param in results.paramlist:
@@ -260,8 +303,8 @@ class DEERplot(QWidget):
 
         self.MNRDoubleSpinBox.setValue(0)
         self.Chi2DoubleSpinBox.setValue(0)
-        self.conc_value.setValue(0)
-        self.conc_uncert.setText('(-,-)')
+        # self.conc_value.setValue(0)
+        # self.conc_uncert.setText('(-,-)')
         self.regparamDoubleSpinBox.setValue(0)
         self.Total_mod_value.setValue(0)
         self.Total_mod_uncert.setText('(-,-)')
@@ -273,7 +316,7 @@ class DEERplot(QWidget):
 
         
 
-    def process_deeranalysis(self,wait_condition=None, update_func=None):
+    def process_deeranalysis(self,background_model= dl.bg_hom3d, wait_condition=None, update_func=None):
 
         settings = {'ROI':True}
         settings['exp_type'] = self.ExperimentcomboBox.currentText()
@@ -285,6 +328,10 @@ class DEERplot(QWidget):
         settings['pathways'] = str_to_list_type(self.PathwayslineEdit.text(), int)
         settings['compactness'] = self.CompactnessradioButton.isChecked()
         settings['pulselength'] = self.PulseLengthdoubleSpinBox.value()
+        settings['regparam'] ='bic'
+        settings['nnlsSolver'] ='qp'
+
+        settings['bg_model'] = background_model
 
         dataset= self.current_data['quickdeer']
 
@@ -313,6 +360,8 @@ class DEERplot(QWidget):
         else:
             settings['model'] = None
 
+        settings['parametrization'] = 'delays'
+
 
         worker = Worker(deeranalysis_process, dataset, settings, self.cores)
         worker.signals.result.connect(partial(self.refresh_deer, wait_condition=wait_condition,update_func=update_func))
@@ -333,8 +382,9 @@ class DEERplot(QWidget):
         
 
         self._static_ax['Primary_time'].cla()
+
         self._static_ax['Primary_dist'].cla()
-        ad.DEERanalysis_plot(self.fitresult, background=True, ROI=self.fitresult.ROI, axs= self._static_ax, fig=self.static_canvas.figure)
+        DEERanalysis_plot(self.fitresult, background=True, ROI=self.fitresult.ROI, axs= self._static_ax, fig=self.static_canvas.figure)
         self.static_canvas.draw()
         self.update_fit_result()
 

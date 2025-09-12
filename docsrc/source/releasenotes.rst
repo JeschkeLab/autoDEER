@@ -1,7 +1,28 @@
 Release Notes
 =============
 
-Version 0.9.0 (2024-11-11):
+Version 1.0.0 (2025-09-12):
+++++++++++++++++++++++++++++
+- All references to `LO` have been changed to `freq` in the frequency object and related.
+- Moved to a Material UI theme for GUI.
+- Improved pulse optimisation and optimisation.
+- Added 1D refocused experiments.
+- Fully tested protocol, details in the paper.
+
+
+Version 0.10.0 (2024-12-01):
++++++++++++++++++++++++++++
+
+- Split of PyEPR into a separate package
+  - autoDEER now uses PyEPR as a dependency
+  - Many functions and classes have been moved to PyEPR
+  - Some paths have been changed to reflect the new package structure
+- All sequences now have a simulate method that is used by the dummy interface.
+- Move to Poetry for package management, and the default installation method
+- Version numbering now stored in pyproject.toml
+
+
+Version 0.9.0 (2024-11-11) (with PyEPR):
 +++++++++++++++++++++++++++
 
 - Faster implmenetation of excite profile
@@ -16,7 +37,7 @@ Version 0.9.0 (2024-11-11):
 - Improved calc_DEER_delays function, with new plot
 
 
-Version 0.8.0 (TBA):
+Version 0.8.0 (TBA) (with PyEPR):
 +++++++++++++++++++++++++++
 
 - Major Support Update for 2D Decoherence
@@ -29,7 +50,7 @@ Version 0.8.0 (TBA):
 
 
 
-Version 0.7.0 (2024-04-01):
+Version 0.7.0 (2024-04-01) (with PyEPR):
 +++++++++++++++++++++++++++
 
 - Added Graphical User Interface (GUI)
