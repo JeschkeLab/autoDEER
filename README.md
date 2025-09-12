@@ -1,5 +1,9 @@
 # autoDEER
 
+
+[![DOI](https://zenodo.org/badge/423790513.svg)](https://doi.org/10.5281/zenodo.17107364)
+
+
 ## About
 autoDEER is a Python based software package for running automated DEER experiments on a variety of hardware developed by the Jeschke Lab @ ETH. It is built on top of PyEPR, a general purpose EPR data processing and simulation library also developed by the Jeschke Lab @ ETH.
 
