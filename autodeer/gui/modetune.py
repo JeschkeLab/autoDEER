@@ -62,8 +62,8 @@ class ModeTune(QDialog):
         scan_step  = scan_range/n_points
 
         freq = Parameter("freq", -scan_range/2, step=scan_step,dim=n_points, unit="GHz")
-        pi2_pulse = RectPulse(tp=16,freq=freq, scale=0.1,flipangle=np.pi/2)
-        pi_pulse = RectPulse(tp=32,freq=freq, scale=0.1,flipangle=np.pi)
+        pi2_pulse = RectPulse(tp=64,freq=freq, scale=0.025,flipangle=np.pi/2)
+        pi_pulse = RectPulse(tp=128,freq=freq, scale=0.025,flipangle=np.pi)
         B = Parameter(
             "B",((center_freq)/gyro_ratio), start=-(scan_range/2)/gyro_ratio, step=scan_step/gyro_ratio, dim=n_points,
             unit="Guass",link=freq,description="B0 Field" )
