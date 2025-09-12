@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "autodeer"
-version = "0.10.0"
+version = "1.0.0"
 description = "A Python based software package for running automated DEER experiments on a variety of hardware developed by the Jeschke Lab @ ETH"
 authors = ["Hugo Karas <hkaras@ethz.ch>"]
 license = "GPL3"
