@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+Version 1.0.0 (2025-09-12):
+++++++++++++++++++++++++++++
+- All references to `LO` have been changed to `freq` in the frequency object and related.
+- Moved to a Material UI theme for GUI.
+- Improved pulse optimisation and optimisation.
+- Added 1D refocused experiments.
+- Fully tested protocol, details in the paper.
+
+
 Version 0.10.0 (2024-12-01):
 +++++++++++++++++++++++++++
 
