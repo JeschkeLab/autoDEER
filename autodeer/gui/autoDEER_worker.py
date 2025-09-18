@@ -352,7 +352,7 @@ class autoDEERWorker(QtCore.QRunnable):
             DEER_crit = DEERCriteria(mode="high",verbosity=2,update_func=self.signals.longdeer_update.emit)
             total_crit = [DEER_crit, self.EndTimeCriteria]
         end_signal = self.signals.longdeer_result.emit
-        self.run_deer(total_crit,end_signal, dt=16,shot=50,averages=1e3)
+        self.run_deer(total_crit,end_signal, dt=16,shot=50,averages=1000)
 
     def run_single_deer(self):
         # Run a DEER experiment background measurement
@@ -364,7 +364,7 @@ class autoDEERWorker(QtCore.QRunnable):
             SNR_crit = SNRCriteria(150,verbosity=2)
             total_crit = [SNR_crit, self.EndTimeCriteria]
         end_signal = self.signals.longdeer_result.emit
-        self.run_deer(total_crit,end_signal, dt=16,shot=50,averages=1e3)
+        self.run_deer(total_crit,end_signal, dt=16,shot=50,averages=1000)
 
     def run_deer(self, end_criteria, signal, dt=16, shot=50, averages=1000,):
     
