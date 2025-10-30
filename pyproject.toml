@@ -18,8 +18,8 @@ h5netcdf = "^1.4.0"
 pyqt6 = "^6.7.1"
 threadpoolctl = "^3.5.0"
 quadprog = "^0.1.13"
-pyepr = {path = "../PyEPR", develop = true}
 qt-material = "^2.14"
+pyepr-esr = "^1.0"
 
 
 [tool.poetry.group.dev.dependencies]
