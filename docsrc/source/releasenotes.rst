@@ -1,5 +1,9 @@
 Release Notes
 =============
+Version 1.0.1 (2025-11-23):
+++++++++++++++++++++++++++++
+- Fixed the definition of the exciation probabiklity profile for pi/2 pulses to be the transverse component (sqrt(Mx^2 + My^2)) rather than (-Mz + 1), which was incorrect.
+- 
 
 Version 1.0.0 (2025-09-12):
 ++++++++++++++++++++++++++++

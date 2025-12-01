@@ -680,13 +680,17 @@ def DEERanalysis_plot_pub(results, ROI=None, fig=None, axs=None,title=None,cmap=
         axs = fig.subplots(*subplots,subplot_kw={},gridspec_kw={'hspace':0})
 
     for i,result in enumerate(results):
+        # resale so that model max is 1
+        rescale_factor = result.model.max()
+        result.model /= rescale_factor
+        result.Vexp /= rescale_factor
         axs[0].plot(result.t,result.Vexp, '.',alpha=0.5,color=cmap[i],mec='none')
         axs[0].plot(result.t,result.model, '-',alpha=1,color=cmap[i], lw=2)
         if n_datasets > 1:
             c = cmap[i]
         else:
             c= cmap[1]
-        axs[0].plot(result.t,background_func(result.t, result), '--',alpha=1,color=c, lw=2)
+        axs[0].plot(result.t,background_func(result.t, result)/rescale_factor, '--',alpha=1,color=c, lw=2)
     
     axs[0].set_xlabel(r'Time / $\mu s$')
     if orientation.lower() == 'vertical':
@@ -1161,6 +1165,11 @@ def shift_m11_01(x):
     """
     return (-x + 1) / 2
 def build_profile(pulses,freqs=None,resonator=None):
+    """
+    Builds the excitation probability profile for a product of a given set of pulses. 
+
+    For pi pulses, the Mz component (rescaled to 0-1) is used, while for pi/2 pulses, the transverse component (sqrt(Mx^2 + My^2)) is used.
+    """
 
     if freqs is None:
         freqs = np.linspace(-0.3,0.3,100)
@@ -1176,11 +1185,12 @@ def build_profile(pulses,freqs=None,resonator=None):
                 tmp_excite_profile = -1*tmp_excite_profile+ 1
             excite_profile *= tmp_excite_profile
     else:
-        excite_profile = pulses.exciteprofile(freqs=freqs,resonator=resonator)[:,2].real
         if pulses.flipangle.value == np.pi:
+            excite_profile = pulses.exciteprofile(freqs=freqs,resonator=resonator)[:,2].real
             excite_profile = shift_m11_01(excite_profile)
         elif pulses.flipangle.value == np.pi/2:
-            excite_profile = -1*excite_profile+ 1
+            excite_profile_M = pulses.exciteprofile(freqs=freqs,resonator=resonator)[:,2]
+            excite_profile = np.sqrt(excite_profile_M[:,0].real**2 + excite_profile_M[:,1].real**2) # transverse component, sqrt(Mx^2 + My^2)
 
     return excite_profile
 
@@ -1219,6 +1229,7 @@ def calc_functional(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,resonator=None,
 
     fieldsweep_profile = resample_and_shift_vector(fieldsweep_profile, f, spec_shift)
     fieldsweep_profile /= np.trapz(fieldsweep_profile,f) # normalise the fieldsweep profile
+    resonator_profile = np.interp(f, resonator.freqs-resonator.freq_c, resonator.profile)
 
 
     obs_sequence = [exc_pulse]
@@ -1241,9 +1252,34 @@ def calc_functional(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,resonator=None,
     P_obs = np.trapz(exc_profile*fieldsweep_profile,f) / np.trapz(fieldsweep_profile,f)
     P_none = 1 - P_pump - P_obs
 
-    return 2*P_pump*P_obs
+    # coupling_factor = np.trapz(resonator_profile*exc_profile,f)/np.trapz(exc_profile,f)
 
-def calc_est_signal(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, num_ref_pulses=2, **kwargs):
+    return 2*P_pump*P_obs #* coupling_factor
+
+def calc_coupling_factor(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro,num_ref_pulses=2,**kwargs):
+    resonator = respro
+    fieldsweep_fun = Fieldsweep.func_freq
+    f = np.linspace(-0.3,0.3,100)
+    fieldsweep_profile = fieldsweep_fun(f)
+    
+    obs_sequence = [exc_pulse]
+    for i in range(num_ref_pulses):
+        obs_sequence.append(ref_pulse)
+
+    pump_profile = build_profile(pump_pulse,f,resonator) 
+    exc_profile = build_profile(obs_sequence,f,resonator)
+    dead_profile = pump_profile * exc_profile
+    pump_profile -= dead_profile
+    exc_profile -= dead_profile
+    pump_profile[pump_profile <0] = 0
+    exc_profile[exc_profile <0] = 0
+
+    resonator_profile = np.interp(f, resonator.freqs-resonator.freq_c, resonator.profile)
+    coupling_factor = np.trapz(resonator_profile*exc_profile,f)/np.trapz(exc_profile,f)
+    return coupling_factor
+    
+
+def calc_est_signal(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, num_ref_pulses=2,n_pump_pulses=1, **kwargs):
     """
     Calculate the estimated total signal from the EPR spectrum, the pulses and the resonator profile.
     
@@ -1272,12 +1308,19 @@ def calc_est_signal(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, n
     fieldsweep_fun = Fieldsweep.func_freq
     f = np.linspace(-0.3,0.3,100)
     fieldsweep_profile = fieldsweep_fun(f)
+    if resonator is not None:
+        resonator_profile = np.interp(f, resonator.freqs-resonator.freq_c, resonator.profile)
 
     obs_sequence = [exc_pulse]
     for i in range(num_ref_pulses):
         obs_sequence.append(ref_pulse)
+    
+    if n_pump_pulses > 1:
+        pump_sequence = [pump_pulse] * n_pump_pulses
+    else:
+        pump_sequence = pump_pulse
 
-    pump_profile = build_profile(pump_pulse,f,resonator) 
+    pump_profile = build_profile(pump_sequence,f,resonator) 
     exc_profile = build_profile(obs_sequence,f,resonator)
     dead_profile = pump_profile * exc_profile
     pump_profile -= dead_profile
@@ -1289,7 +1332,12 @@ def calc_est_signal(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, n
     P_obs = np.trapz(exc_profile*fieldsweep_profile,f) / np.trapz(fieldsweep_profile,f)
     P_none = 1 - P_pump - P_obs
 
-    return (2*P_pump*P_obs + P_obs**2 + 2*P_obs*P_none)
+    if resonator is None:
+        coupling_factor = 1
+    else:
+        coupling_factor = np.trapz(resonator_profile*exc_profile,f)/np.trapz(exc_profile,f)
+
+    return (2*P_pump*P_obs + 2*P_obs**2 + 2*P_obs*P_none) * coupling_factor
 
 def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, respro=None, num_ref_pulses=2,n_pump_pulses=1, **kwargs):
     """
@@ -1346,7 +1394,7 @@ def calc_est_modulation_depth(Fieldsweep, pump_pulse, exc_pulse, ref_pulse, resp
     P_obs = np.trapz(exc_profile*fieldsweep_profile,f) / np.trapz(fieldsweep_profile,f)
     P_none = 1 - P_pump - P_obs
 
-    return (2*P_pump*P_obs)/(2*P_pump*P_obs + P_obs**2 + 2*P_obs*P_none)
+    return (2*P_pump*P_obs)/(2*P_pump*P_obs + 2*P_obs**2 + 2*P_obs*P_none)
 
 
 def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, filter=None, resonator=None, num_ref_pulses=2,n_pump_pulses=1, axs=None, fig=None,**kwargs):
@@ -1378,6 +1426,8 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, 
         The axes to plot on, by default None
     fig : matplotlib.figure, optional
         The figure to plot on, by default None
+    cmap : list, optional
+        The colormap to use for the pump and excitation profiles, by default primary_colors
     
     """
 
@@ -1408,6 +1458,8 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, 
     pump_profile[pump_profile <0] = 0
     exc_profile[exc_profile <0] = 0
 
+    cmap = kwargs.get('cmap',primary_colors[0])
+
     if axs is None and fig is None:
         fig, axs = plt.subplots(1,1,figsize=(5,5), layout='constrained')
     elif axs is None:
@@ -1416,8 +1468,8 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, 
     fieldsweep_profile /= np.abs(fieldsweep_profile).max()
     f -= spectrum_shift
     axs.plot(f*1e3,fieldsweep_profile, label = 'Fieldsweep', c='k')
-    axs.fill_between(f*1e3, pump_profile*fieldsweep_profile, label = 'Pump Profile',        alpha=0.5,  color=primary_colors[0])
-    axs.fill_between(f*1e3, exc_profile*fieldsweep_profile,  label = 'Observer Profile',    alpha=0.5,  color=primary_colors[1])
+    axs.fill_between(f*1e3, pump_profile*fieldsweep_profile, label = 'Pump Profile',        alpha=0.5,  color=cmap[0])
+    axs.fill_between(f*1e3, exc_profile*fieldsweep_profile,  label = 'Observer Profile',    alpha=0.5,  color=cmap[1])
 
     if resonator is not None:
         axs2 = axs.twinx()
