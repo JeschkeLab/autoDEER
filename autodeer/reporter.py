@@ -14,6 +14,7 @@ from matplotlib.ticker import FormatStrFormatter
 
 from autodeer.DEER_analysis import DEERanalysis_plot, plot_overlap, DEERanalysis_plot_pub
 from pyepr import plot_1Drelax
+from autodeer.colors import primary_colors
 
 from svglib.svglib import svg2rlg
 from io import BytesIO
@@ -243,7 +244,8 @@ def create_report(save_path, Results:dict, SpectrometerInfo:dict=None, UserInput
         report._build()
         pass
 
-def combo_figure(EDFS, respro, pulses:dict, relaxation:list, init_deer, long_deer ,title=None, fig=None):
+def combo_figure(EDFS, respro, pulses:dict, relaxation:list, init_deer, long_deer ,title=None, fig=None,
+                 cmap=None):
     """
     Creates a 2x2 summary figure. 
         - The top left plot is the EDFS and resonator profile, overlapped with the optimised pulses. 
@@ -270,6 +272,8 @@ def combo_figure(EDFS, respro, pulses:dict, relaxation:list, init_deer, long_dee
     
     
     """
+    if cmap is None:
+        cmap = primary_colors
     if fig is None:
         fig = plt.figure(figsize=(10, 10),constrained_layout=True)
     subfigs = fig.subfigures(2, 2, height_ratios=(4,6), width_ratios=(1,1),wspace=.0)
@@ -293,15 +297,15 @@ def combo_figure(EDFS, respro, pulses:dict, relaxation:list, init_deer, long_dee
         fig.suptitle(title,size=20)
     
     subfigs[0].suptitle('Pulse Setup',size=15)
-    plot_overlap(EDFS, pulses['pump_pulse'], pulses['exc_pulse'],pulses['ref_pulse'],respro=respro,axs=ax1,fig=subfigs[0]);
+    plot_overlap(EDFS, pulses['pump_pulse'], pulses['exc_pulse'],pulses['ref_pulse'],respro=respro,axs=ax1,fig=subfigs[0],cmap=cmap);
     subfigs[0].get_axes()[0].set_ylabel(' ',labelpad=8)
     subfigs[0].axes[0].set_xlim(-300,100)
     subfigs[1].suptitle('Relaxation',size=15)
-    plot_1Drelax(*relaxation,axs=ax2,fig=subfigs[1]);
+    plot_1Drelax(*relaxation,axs=ax2,fig=subfigs[1],cmap=cmap);
     subfigs[2].suptitle('Intial DEER',size=15)
-    DEERanalysis_plot_pub(init_deer[0],ROI=init_deer[0].ROI,axs=ax3,fig=subfigs[2]);
+    DEERanalysis_plot_pub(init_deer[0],ROI=init_deer[0].ROI,axs=ax3,fig=subfigs[2],cmap=cmap);
     subfigs[3].suptitle('Final DEER',size=15)
-    DEERanalysis_plot_pub(long_deer,axs=ax4,fig=subfigs[3]);
+    DEERanalysis_plot_pub(long_deer,axs=ax4,fig=subfigs[3],cmap=cmap);
 
     subfigs[0].get_axes()[0].set_ylabel(' ',labelpad=8)
     subfigs[0].get_axes()[0].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
