@@ -144,7 +144,10 @@ def create_pulses_rect(resonatorProfile, r_min=3.5, max_bandwidth=0.1, same_powe
     return pulses 
 
 
-def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3, test_pulse_shapes=None, n_pump_pulses=1,verbosity=0):
+def create_pulses_shape(
+        resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3, 
+        ExcPulseShape=None, RefPulseShape=None, test_pulse_shapes=None,
+        n_pump_pulses=1,verbosity=0):
     """
     Creates the optimal chirped shaped pulses for DEER using the resonator profile as a guide for the necessary power. r_max is used to set a maximum length.
 
@@ -169,7 +172,10 @@ def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3
         Maximum bandwidth of the pulse in GHz, by default 0.1
     test_pulse_shapes: list, optional
         List of pulse shapes to test, by default None. If None, the function will test RectPulse, HSPulse and ChirpPulse
-        
+    ExcPulseShape: pyepr.pulses.Pulse, optional
+        Excitation pulse shape to use, by default None. If None, RectPulse is used
+    RefPulseShape: pyepr.pulses.Pulse, optional
+        Refocusing pulse shape to use, by default None. If None, RectPulse is used
     """
 
     D = 52.04 # MHz nm^3
@@ -179,7 +185,10 @@ def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3
     if max_length > 256:
         max_length = 256 # Hard limit at 256ns
 
-    ExcPulseShape = RectPulse
+    if ExcPulseShape is None:
+        ExcPulseShape = RectPulse
+    if RefPulseShape is None:
+        RefPulseShape = RectPulse
     if test_pulse_shapes is None:
         test_pulse_shapes = [RectPulse,HSPulse,ChirpPulse]
 
@@ -211,7 +220,7 @@ def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3
     ModDepthResults = {}
     for pump_pulse_type in test_pulse_shapes:
         exc_pulse = ExcPulseShape(tp=exc_pulse_length,flipangle=np.pi/2,scale=None)
-        ref_pulse = ExcPulseShape(tp=exc_pulse_length,flipangle=np.pi,scale=None)
+        ref_pulse = RefPulseShape(tp=exc_pulse_length,flipangle=np.pi,scale=None)
 
         if pump_pulse_type == RectPulse:
             pump_pulse = pump_pulse_type(tp=exc_pulse_length,flipangle=np.pi,freq = -exc_bandwidth/2,scale=None)
@@ -236,3 +245,25 @@ def create_pulses_shape(resonatorProfile, spectrum, r_min=3.5, max_bandwidth=0.3
     det_event = Detection(tp=exc_pulse_length*2, freq=0)
     results['det_event'] = det_event
     return results
+
+
+def create_pulse_from_dict(pulse_dict):
+    """
+    Create pulses from a dictionary of pulse parameters.
+
+    Parameters
+    ----------
+    pulse_dict : dict
+        Dictionary containing the pulse parameters.
+
+    Returns
+    -------
+    dict
+        Dictionary containing the created pulses.
+    """
+    pulses = {}
+    for key, params in pulse_dict.items():
+        pulse_type = params.pop('type')
+        pulse_class = globals()[pulse_type]
+        pulses[key] = pulse_class(**params)
+    return pulses

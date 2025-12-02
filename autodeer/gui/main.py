@@ -1,7 +1,9 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog,QMessageBox, QDialog, QPushButton,QVBoxLayout, QLineEdit,QHBoxLayout, QLabel, QProgressDialog
+import PyQt6.QtWidgets as QtWidgets
 from PyQt6 import uic
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
+from PyQt6.QtSvgWidgets import QSvgWidget
 from qt_material import apply_stylesheet
 from pathlib import Path
 import sys, traceback, os
@@ -28,7 +30,7 @@ import logging
 from autodeer.Logging import setup_logs, change_log_level
 from deerlab import store_pickle
 import deerlab as dl
-
+import copy
 main_log = logging.getLogger('autoDEER')
 from queue import Queue
 
@@ -185,7 +187,8 @@ class autoDEERUI(QMainWindow):
 
         self.create_setup_figure()
         self.create_relax_figure()
-        self.advanced_mode_inputs()
+        # self.advanced_mode_inputs()
+        self.build_advanced_mode()
 
         self.threadpool = QtCore.QThreadPool()
         self.current_results = {}
@@ -243,6 +246,300 @@ class autoDEERUI(QMainWindow):
         self.correction_factor=1
         self.est_lambda = None
         self.pump_pulses = []
+
+    def build_advanced_mode(self):
+        
+        # Link Checkbox to enbaling group boxes
+        self.AdvSequenceCheck.stateChanged.connect(lambda state: self.SequenceGroupBox.setEnabled(state == QtCore.Qt.CheckState.Checked.value))
+        self.AdvPulsesCheck.stateChanged.connect(lambda state: self.PulsesGroupBox.setEnabled(state == QtCore.Qt.CheckState.Checked.value))
+        self.AdvSequenceCheck.setChecked(False)
+        self.AdvPulsesCheck.setChecked(False)
+        self.PulsesGroupBox.setEnabled(False)
+        self.SequenceGroupBox.setEnabled(False)
+
+        self.AdvModeSave.clicked.connect(self.save_advaced_options)
+        self.AdvModeLoad.clicked.connect(self.load_advanced_options)
+
+        # Populate Sequence Options
+        self.Exp_types.addItems(['auto', '5pDEER', '4pDEER', ]) # 'Ref2D'
+        self.bg_model_combo.addItems(list(BackgroundModels.keys()))
+        self.AdvSeqOptions = {}
+        self.Exp_types.currentIndexChanged.connect(self.update_advanced_sequence_options)
+        self.update_advanced_sequence_options()
+
+
+        # Populate Pulse Options Table
+        pulse_table:QtWidgets.QTableWidget  = self.PulseParamTable
+        # Make the columns expand to fill the space
+        pulse_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
+
+        self.AdvPulseSelect = {}
+        # Row 0: Headers
+        # Row 1: Type
+
+        self.AdvPulseSelect['ExcType'] = QtWidgets.QComboBox()
+        self.AdvPulseSelect['ExcType'].addItems(['Auto', 'Rect.', 'Gauss'])
+        pulse_table.setCellWidget(1,1,self.AdvPulseSelect['ExcType'])
+
+        self.AdvPulseSelect['RefType'] = QtWidgets.QComboBox()
+        self.AdvPulseSelect['RefType'].addItems(['Auto', 'Rect.', 'Gauss'])
+        pulse_table.setCellWidget(1,2,self.AdvPulseSelect['RefType'])
+        
+        self.AdvPulseSelect['PumpType'] = QtWidgets.QComboBox()
+        self.AdvPulseSelect['PumpType'].addItems(['Auto', 'Rect.', 'Chirp', 'HS', 'Gauss'])
+        pulse_table.setCellWidget(1,3,self.AdvPulseSelect['PumpType'])
+
+        # Row 2: Center Freq
+        self.AdvPulseSelect['ExcFreq'] = QtWidgets.QDoubleSpinBox()
+        self.AdvPulseSelect['ExcFreq'].setRange(-1000,1000)
+        self.AdvPulseSelect['ExcFreq'].setSuffix(' MHz')
+        pulse_table.setCellWidget(2,1,self.AdvPulseSelect['ExcFreq'])
+        
+        self.AdvPulseSelect['RefFreq'] = QtWidgets.QDoubleSpinBox()
+        self.AdvPulseSelect['RefFreq'].setRange(-1000,1000)
+        self.AdvPulseSelect['RefFreq'].setSuffix(' MHz')
+        pulse_table.setCellWidget(2,2,self.AdvPulseSelect['RefFreq'])
+        
+        self.AdvPulseSelect['PumpFreq'] = QtWidgets.QDoubleSpinBox()
+        self.AdvPulseSelect['PumpFreq'].setRange(-1000,1000)
+        self.AdvPulseSelect['PumpFreq'].setSuffix(' MHz')
+        pulse_table.setCellWidget(2,3,self.AdvPulseSelect['PumpFreq'])
+        # Row 3. Pulse Length
+        self.AdvPulseSelect['ExcLength'] = QtWidgets.QDoubleSpinBox()
+        self.AdvPulseSelect['ExcLength'].setRange(0,500)
+        self.AdvPulseSelect['ExcLength'].setSuffix(' ns')
+        pulse_table.setCellWidget(3,1,self.AdvPulseSelect['ExcLength'])
+        
+        self.AdvPulseSelect['RefLength'] = QtWidgets.QDoubleSpinBox()
+        self.AdvPulseSelect['RefLength'].setRange(0,500)
+        self.AdvPulseSelect['RefLength'].setSuffix(' ns')
+        pulse_table.setCellWidget(3,2,self.AdvPulseSelect['RefLength'])
+        self.AdvPulseSelect['PumpLength'] = QtWidgets.QDoubleSpinBox()
+        self.AdvPulseSelect['PumpLength'].setRange(0,500)
+        self.AdvPulseSelect['PumpLength'].setSuffix(' ns')
+        pulse_table.setCellWidget(3,3,self.AdvPulseSelect['PumpLength'])
+        
+        # Row 4. Bandwidth
+        self.AdvPulseSelect['ExcBandwidth'] = QtWidgets.QDoubleSpinBox()
+        self.AdvPulseSelect['ExcBandwidth'].setRange(0,1000)
+        self.AdvPulseSelect['ExcBandwidth'].setSuffix(' MHz')
+        pulse_table.setCellWidget(4,1,self.AdvPulseSelect['ExcBandwidth'])
+        
+        self.AdvPulseSelect['RefBandwidth'] = QtWidgets.QDoubleSpinBox()
+        self.AdvPulseSelect['RefBandwidth'].setRange(0,1000)
+        self.AdvPulseSelect['RefBandwidth'].setSuffix(' MHz')
+        pulse_table.setCellWidget(4,2,self.AdvPulseSelect['RefBandwidth'])
+        
+        self.AdvPulseSelect['PumpBandwidth'] = QtWidgets.QDoubleSpinBox()
+        self.AdvPulseSelect['PumpBandwidth'].setRange(0,1000)
+        self.AdvPulseSelect['PumpBandwidth'].setSuffix(' MHz')
+        pulse_table.setCellWidget(4,3,self.AdvPulseSelect['PumpBandwidth'])
+
+        # if type if 'Auto' disable other options when changed
+        self.AdvPulseSelect['ExcType'].currentIndexChanged.connect(lambda: self.update_advanced_pulse_options('Exc'))
+        self.AdvPulseSelect['RefType'].currentIndexChanged.connect(lambda: self.update_advanced_pulse_options('Ref'))
+        self.AdvPulseSelect['PumpType'].currentIndexChanged.connect(lambda: self.update_advanced_pulse_options('Pump'))
+        self.AdvPulseSelect['ExcType'].setCurrentIndex(0)
+        self.AdvPulseSelect['RefType'].setCurrentIndex(0)
+        self.AdvPulseSelect['PumpType'].setCurrentIndex(0)
+        self.update_advanced_pulse_options('Exc')
+        self.update_advanced_pulse_options('Ref')
+        self.update_advanced_pulse_options('Pump')
+
+    def update_advanced_pulse_options(self, pulse_key):
+        pulse_type = self.AdvPulseSelect[f'{pulse_key}Type'].currentText()
+        if pulse_type == 'Auto':
+            self.AdvPulseSelect[f'{pulse_key}Freq'].setEnabled(False)
+            self.AdvPulseSelect[f'{pulse_key}Length'].setEnabled(False)
+            self.AdvPulseSelect[f'{pulse_key}Bandwidth'].setEnabled(False)
+        else:
+            self.AdvPulseSelect[f'{pulse_key}Freq'].setEnabled(True)
+            self.AdvPulseSelect[f'{pulse_key}Length'].setEnabled(True)
+            if pulse_type in ['Chirp','HS']:
+                self.AdvPulseSelect[f'{pulse_key}Bandwidth'].setEnabled(True)
+            else:
+                self.AdvPulseSelect[f'{pulse_key}Bandwidth'].setEnabled(False)
+
+    def update_advanced_sequence_options(self):
+        
+        exp_type = self.Exp_types.currentText()
+        self.SequenceSVGWidget:QSvgWidget
+        # Clear previous widgets in SequenceParamRow
+        while self.SequenceParamRow.count():
+            item = self.SequenceParamRow.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+
+        if exp_type.lower() == 'auto':
+            self.SequenceSVGWidget.setEnabled(False)
+            # Clear SVG
+            self.SequenceSVGWidget.hide()
+           
+        elif exp_type.lower() == '4pdeer':
+            self.SequenceSVGWidget.setEnabled(True)
+            self.SequenceSVGWidget.load('icons:4pDEERSeq.svg')
+            self.SequenceSVGWidget.renderer().setAspectRatioMode(QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+            self.SequenceSVGWidget.show()
+            for w in ['tau1','tau2','dt']:
+                # Add QSpinBox to SequenceParamRow
+                spinbox = QtWidgets.QDoubleSpinBox()
+                spinbox.setRange(0,1000)
+                if w == 'dt':
+                    spinbox.setSuffix(' ns')
+                    spinbox.setDecimals(1)
+                    spinbox.setSingleStep(0.5)
+                else:
+                    spinbox.setSuffix(' us')
+                    spinbox.setDecimals(2)
+                    spinbox.setSingleStep(0.25)
+                if w in self.AdvSeqOptions: # Preserve previous value if exists
+                    spinbox.setValue(self.AdvSeqOptions[w])
+                label = QtWidgets.QLabel(w)
+                self.SequenceParamRow.addWidget(label)
+                self.SequenceParamRow.addWidget(spinbox)
+        elif exp_type.lower() == '5pdeer':
+            self.SequenceSVGWidget.setEnabled(True)
+            svg_path = QtCore.QDir.searchPaths('icons')[0] + '/5pDEERSeq.svg'
+            self.SequenceSVGWidget.load('icons:5pDEERSeq.svg')
+            self.SequenceSVGWidget.renderer().setAspectRatioMode(QtCore.Qt.AspectRatioMode.KeepAspectRatio)
+            self.SequenceSVGWidget.show()
+            for w in ['tau1','tau2','tau3','dt']:
+                # Add QSpinBox to SequenceParamRow
+                spinbox = QtWidgets.QDoubleSpinBox()
+                spinbox.setRange(0,1000)
+                if w == 'dt':
+                    spinbox.setSuffix(' ns')
+                    spinbox.setDecimals(1)
+                    spinbox.setSingleStep(0.5)
+                else:
+                    spinbox.setSuffix(' us')
+                    spinbox.setDecimals(2)
+                    spinbox.setSingleStep(0.25)
+                if w in self.AdvSeqOptions: # Preserve previous value if exists
+                    spinbox.setValue(self.AdvSeqOptions[w])
+                label = QtWidgets.QLabel(w)
+                self.SequenceParamRow.addWidget(label)
+                self.SequenceParamRow.addWidget(spinbox)
+        else:
+            raise NotImplementedError(f"Advanced sequence options for {exp_type} not implemented yet.")
+
+        self.read_advanced_sequence_options()
+
+    def read_advanced_sequence_options(self):
+        exp_type = self.Exp_types.currentText()
+        self.AdvSeqOptions = {}
+        self.AdvSeqOptions['ExpType'] = exp_type
+        if exp_type.lower() == 'auto':
+            return
+        elif exp_type == '4pDEER':
+            self.AdvSeqOptions['tau1'] = self.SequenceParamRow.itemAt(1).widget().value()
+            self.AdvSeqOptions['tau2'] = self.SequenceParamRow.itemAt(3).widget().value()
+            self.AdvSeqOptions['dt'] = self.SequenceParamRow.itemAt(5).widget().value()
+        elif exp_type == '5pDEER':
+            self.AdvSeqOptions['tau1'] = self.SequenceParamRow.itemAt(1).widget().value()
+            self.AdvSeqOptions['tau2'] = self.SequenceParamRow.itemAt(3).widget().value()
+            self.AdvSeqOptions['tau3'] = self.SequenceParamRow.itemAt(5).widget().value()
+            self.AdvSeqOptions['dt'] = self.SequenceParamRow.itemAt(7).widget().value()
+
+    def read_advanced_pulse_options(self):
+        self.AdvPulseOptions = {}
+        for key, widget in self.AdvPulseSelect.items():
+            if isinstance(widget, QtWidgets.QComboBox):
+                self.AdvPulseOptions[key] = widget.currentText()
+            elif isinstance(widget, QtWidgets.QDoubleSpinBox):
+                if widget.suffix() == ' ns':
+                    self.AdvPulseOptions[key] = widget.value()
+                elif widget.suffix() == ' MHz': # Convert to GHz
+                    self.AdvPulseOptions[key] = widget.value() / 1000.0
+                else:
+                    self.AdvPulseOptions[key] = widget.value()
+    
+    def validate_advanced_pulse_options(self):
+        """
+        Checks that if a pulse type is not 'Auto', and any parameter is non-zero then all other parameters must be non-zero. 
+        """ 
+        
+        errors = []
+
+        for pulse_key in ['Exc','Ref','Pump']:
+            pulse_type = self.AdvPulseSelect[f'{pulse_key}Type'].currentText()
+            if pulse_type != 'Auto':
+                freq = self.AdvPulseSelect[f'{pulse_key}Freq'].value()
+                length = self.AdvPulseSelect[f'{pulse_key}Length'].value()
+                bandwidth = self.AdvPulseSelect[f'{pulse_key}Bandwidth'].value()
+                params = [ length] # Frquency is allowed to be zero
+                if pulse_type in ['Chirp','HS']:
+                    params.append(bandwidth)
+                non_zero_params = [p for p in params if np.abs(p) > 0]
+                if 0 < len(non_zero_params) < len(params):
+                    errors.append(f"For {pulse_key} pulse of type {pulse_type}, all parameters must be set if any are non-zero.")
+        return errors
+
+
+    def save_advaced_options(self):
+        """
+        Save the advanced options to a .yaml file
+        """
+        # Read current advanced options
+        self.read_advanced_sequence_options()
+        self.read_advanced_pulse_options()
+
+        save_dict = {}
+        save_dict['autoDEER_Vesion'] = ad.__version__
+        save_dict['SequenceOptions'] = self.AdvSeqOptions
+        save_dict['PulseOptions'] = self.AdvPulseOptions
+
+        # Open a file dialog to save the options
+        filename, _= QFileDialog.getSaveFileName(
+            self,"Save Advanced Options", self.current_folder,"YAML (*.yaml)")
+        
+        if filename:
+            path = Path(filename)
+            filename_edit = str(path)
+            with open(filename_edit, 'w') as f:
+                yaml.dump(save_dict, f)
+
+    def load_advanced_options(self):
+        """
+        Load advanced options from a .yaml file
+        """
+        filename, _= QFileDialog.getOpenFileName(
+            self,"Load Advanced Options", self.current_folder,"YAML (*.yaml)")
+        
+        if filename:
+            path = Path(filename)
+            filename_edit = str(path)
+            with open(filename_edit, 'r') as f:
+                load_dict = yaml.safe_load(f)
+        
+        # Load Sequence Options
+        if 'SequenceOptions' in load_dict:
+            seq_options = load_dict['SequenceOptions']
+            self.Exp_types.setCurrentText(seq_options['ExpType'].capitalize())
+            self.update_advanced_sequence_options()
+            for key, value in seq_options.items():
+                if key == 'ExpType':
+                    continue
+                # Find the corresponding spinbox in SequenceParamRow
+                for i in range(self.SequenceParamRow.count()):
+                    item = self.SequenceParamRow.itemAt(i)
+                    widget = item.widget()
+                    if isinstance(widget, QtWidgets.QSpinBox):
+                        label = self.SequenceParamRow.itemAt(i-1).widget()
+                        if label.text() == key:
+                            widget.setValue(value)
+        
+        # Load Pulse Options
+        if 'PulseOptions' in load_dict:
+            pulse_options = load_dict['PulseOptions']
+            for key, value in pulse_options.items():
+                if key in self.AdvPulseSelect:
+                    widget = self.AdvPulseSelect[key]
+                    if isinstance(widget, QtWidgets.QComboBox):
+                        widget.setCurrentText(value)
+                    elif isinstance(widget, QtWidgets.QDoubleSpinBox):
+                        widget.setValue(value)
 
     def set_spectrometer_connected_light(self, state):
         if state == 0:
@@ -865,16 +1162,81 @@ class autoDEERUI(QMainWindow):
     def _optimise_pulses_in_background(self):
         resonator = self.current_results['respro']
         spectrum = self.current_results['fieldsweep']
-        if self.pulses == {}:  # No pulses have been created yet
+        AdvPulse_types = {}
+        skip_optimisation = False
+
+        if self.AdvPulseOptions != {}: # If advance pulse options exist
+            # If all pulse types are auto, then continue as normal
+            all_auto = True
+            all_zero = True
+            
+            for pulse_key in ['Exc','Ref','Pump']:
+                pulse_type = self.AdvPulseOptions.get(f'{pulse_key}Type','Auto')
+                # Remove any "." from pulse type
+                pulse_type = pulse_type.replace('.','')
+                pulse_tp = self.AdvPulseOptions.get(f'{pulse_key}Length',0)
+                if pulse_type.lower() != 'auto':
+                    all_auto = False
+                    if pulse_type.lower() == 'rect':
+                        AdvPulse_types[f"{pulse_key}PulseShape"] = epr.RectPulse
+                    elif pulse_type.lower() == 'chirp':
+                        AdvPulse_types[f"{pulse_key}PulseShape"] = epr.ChirpPulse
+                    elif pulse_type.lower() == 'hs':
+                        AdvPulse_types[f"{pulse_key}PulseShape"] = epr.HSPulse
+                    elif pulse_type.lower() == 'gaussian':
+                        AdvPulse_types[f"{pulse_key}PulseShape"] = epr.GaussianPulse
+                    else:
+                        raise ValueError(f"Unknown pulse type {pulse_type} for {pulse_key} pulse")
+                if pulse_tp > 0:
+                    all_zero = False
+
+            # Create all pulses:
+            if not all_auto and not all_zero:
+                pulses = {}
+                skip_optimisation = True
+                main_log.info(f"Creating pulses from user defined parameters")
+                for pulse_key in ['Exc','Ref','Pump']:
+                    pulse_params = {}
+                    pulse_type = AdvPulse_types[f"{pulse_key}PulseShape"]
+                    pulse_params['tp'] = self.AdvPulseOptions.get(f'{pulse_key}Length')
+                    pulse_params['freq'] = self.AdvPulseOptions.get(f'{pulse_key}Freq')
+                    if issubclass(pulse_type,epr.FrequencySweptPulse):
+                        pulse_params['BW'] = self.AdvPulseOptions.get(f'{pulse_key}Bandwidth')
+                    if pulse_key == 'Exc':
+                        pulse_params['flipangle'] = np.pi/2
+                    else:
+                        pulse_params['flipangle'] = np.pi
+                    pulses[pulse_key.lower()+'_pulse'] = pulse_type(**pulse_params)
+                pulses['det_event'] = epr.Detection(freq=pulses['exc_pulse'].freq, tp=2*pulses['exc_pulse'].tp.value)
+
+
+        if "PumpPulseShape" in AdvPulse_types:
+            self.pump_pulses = [AdvPulse_types.pop("PumpPulseShape")]
+        if skip_optimisation:
+            main_log.info(f"Creating pulses with user defined pulse types and lengths")
+            self.userinput['AdvUserPulses'] = True
+            self.userinput['AdvPulseShapes'] = False
+        elif (not skip_optimisation) and (self.pulses == {}):  # No pulses have been created yet
             # self.pulses = ad.build_default_pulses(self.AWG,tp = self.Min_tp)
-            pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum, test_pulse_shapes=self.pump_pulses)
-        else:  # Reoptimise pulses
+            if AdvPulse_types != {}:
+                main_log.info(f"Creating pulses with user defined pulse types")
+                self.userinput['AdvUserPulses'] = False
+                self.userinput['AdvPulseShapes'] = False
+            else:
+                main_log.info(f"Creating pulses with auto defined pulse types")
+                self.userinput['AdvUserPulses'] = False
+                self.userinput['AdvPulseShapes'] = True  
+            pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum, test_pulse_shapes=self.pump_pulses,**AdvPulse_types)
+        
+        elif (not skip_optimisation):  # Reoptimise pulses
+            self.userinput['AdvUserPulses'] = False
+            self.userinput['AdvPulseShapes'] = False
             if 'quickdeer' in self.current_results:
                 ROI = self.current_results['quickdeer'].ROI
                 r_min = ROI[0]
                 ROI_width = ROI[1] - ROI[0]
                 if (not ad.check_pulses_max_length(self.pulses.values(), r_min)) and (ROI_width < 4):
-                    pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum,r_min=r_min, test_pulse_shapes=self.pump_pulses)
+                    pulses = ad.create_pulses_shape(resonatorProfile=resonator,spectrum=spectrum,r_min=r_min, test_pulse_shapes=self.pump_pulses,**AdvPulse_types)
                     main_log.info(f"Pulse lenths adjusted, setting new pulses")
                 elif (not ad.check_pulses_max_length(self.pulses.values(), r_min)):
                     main_log.info(f"ROI is detected to be broad, not adjusting pulse lengths. Potentially not optimal")
@@ -1236,6 +1598,29 @@ class autoDEERUI(QMainWindow):
 
         EDFS_analysis = self.current_results['fieldsweep']
         ResProAnalysis = self.current_results['respro']
+
+        # Don't update pulses if they were manually set
+        if self.userinput.get('AdvUserPulses',False):
+            update_pulses = False
+        
+        # Check if the any pulses shapes were manually set
+        AdvPulse_types = {}
+        if self.userinput.get('AdvPulseShapes',False):
+            for pulse_key in ['Exc','Ref','Pump']:
+                pulse_type = self.AdvPulseOptions.get(f'{pulse_key}Type','Auto')
+                pulse_type = pulse_type.replace('.','')
+                if pulse_type.lower() != 'auto':
+                    if pulse_type.lower() == 'rect':
+                        AdvPulse_types[f"{pulse_key}PulseShape"] = epr.RectPulse
+                    elif pulse_type.lower() == 'chirp':
+                        AdvPulse_types[f"{pulse_key}PulseShape"] = epr.ChirpPulse
+                    elif pulse_type.lower() == 'hs':
+                        AdvPulse_types[f"{pulse_key}PulseShape"] = epr.HSPulse
+                    elif pulse_type.lower() == 'gaussian':
+                        AdvPulse_types[f"{pulse_key}PulseShape"] = epr.GaussianPulse
+                    else:
+                        raise ValueError(f"Unknown pulse type {pulse_type} for {pulse_key} pulse")
+
          
         #debug only, remove later
         store_pickle(relax_data,os.path.join(self.data_folder,'relax_data.pkl'))
@@ -1256,20 +1641,26 @@ class autoDEERUI(QMainWindow):
 
             if self.Exp_types.currentText() == 'auto' or self.Exp_types.currentText() == '5pDEER':
                 main_log.info("Advanced mode selected with fixed tau, overriding auto/5pDEER/4pDEER selection")
-                optimal_pulses_5p = ad.create_pulses_shape(ResProAnalysis,EDFS_analysis,n_pump_pulses=2,test_pulse_shapes=self.pump_pulses,verbosity=0,r_min=r_min)
+                if update_pulses:
+                    optimal_pulses_5p = ad.create_pulses_shape(ResProAnalysis,EDFS_analysis,n_pump_pulses=2,test_pulse_shapes=self.pump_pulses,verbosity=0,r_min=r_min,**AdvPulse_types)
+                else:
+                    optimal_pulses_5p = self.pulses
                 functional_5p = ad.calc_functional(EDFS_analysis,**optimal_pulses_5p,resonator=ResProAnalysis,n_pump_pulses=2)
                 mod_depth_5p = ad.calc_est_modulation_depth(EDFS_analysis,**optimal_pulses_5p,resonator=ResProAnalysis,n_pump_pulses=2)
                 SNR_target = MNR_target/(mod_depth_5p * mod_depth_correction)
                 deer_settings_5p = self.deer_settings
-                deer_settings_5p['exp']
                 deer_settings_4p = {}
                 tau2_4p=0
+                tau1_5p = deer_settings_5p['tau1']
                 functional_4p = 0
                 
                 main_log.debug(f"5p DEER:  F= {functional_5p:.3f} tau_evo={deer_settings_5p['tau1'] + deer_settings_5p['tau2']:.3f}")
             elif self.Exp_types.currentText() == '4pDEER':
                 main_log.info("Advanced mode selected with fixed tau, overriding auto/5pDEER/4pDEER selection")
-                optimal_pulses_4p = ad.create_pulses_shape(ResProAnalysis,EDFS_analysis,n_pump_pulses=1,test_pulse_shapes=self.pump_pulses,verbosity=0,r_min=r_min) 
+                if update_pulses:
+                    optimal_pulses_4p = ad.create_pulses_shape(ResProAnalysis,EDFS_analysis,n_pump_pulses=1,test_pulse_shapes=self.pump_pulses,verbosity=0,r_min=r_min,**AdvPulse_types) 
+                else:
+                    optimal_pulses_5p = self.pulses
                 functional_4p = ad.calc_functional(EDFS_analysis,**optimal_pulses_4p,resonator=ResProAnalysis,n_pump_pulses=1)
                 mod_depth_4p = ad.calc_est_modulation_depth(EDFS_analysis,**optimal_pulses_4p,resonator=ResProAnalysis,n_pump_pulses=1)
                 SNR_target = MNR_target/(mod_depth_4p * mod_depth_correction)
@@ -1285,7 +1676,7 @@ class autoDEERUI(QMainWindow):
             # Check 4p DEER with 1 pump vs 5p DEER with 2 pumps
             if exp == '4pDEER' or exp =='auto':
                 if update_pulses:
-                    optimal_pulses_4p = ad.create_pulses_shape(ResProAnalysis,EDFS_analysis,n_pump_pulses=1,test_pulse_shapes=self.pump_pulses,verbosity=0,r_min=r_min)
+                    optimal_pulses_4p = ad.create_pulses_shape(ResProAnalysis,EDFS_analysis,n_pump_pulses=1,test_pulse_shapes=self.pump_pulses,verbosity=0,r_min=r_min,**AdvPulse_types)
                 else:
                     optimal_pulses_4p = self.pulses
                 functional_4p = ad.calc_functional(EDFS_analysis,**optimal_pulses_4p,resonator=ResProAnalysis,n_pump_pulses=1)
@@ -1304,7 +1695,7 @@ class autoDEERUI(QMainWindow):
 
             if exp == '5pDEER' or exp == 'auto':
                 if update_pulses:
-                    optimal_pulses_5p = ad.create_pulses_shape(ResProAnalysis,EDFS_analysis,n_pump_pulses=2,test_pulse_shapes=self.pump_pulses,verbosity=0,r_min=r_min)
+                    optimal_pulses_5p = ad.create_pulses_shape(ResProAnalysis,EDFS_analysis,n_pump_pulses=2,test_pulse_shapes=self.pump_pulses,verbosity=0,r_min=r_min,**AdvPulse_types)
                 else:
                     optimal_pulses_5p = self.pulses
                 functional_5p = ad.calc_functional(EDFS_analysis,**optimal_pulses_5p,resonator=ResProAnalysis,n_pump_pulses=2)
@@ -1634,6 +2025,15 @@ class autoDEERUI(QMainWindow):
         self.fixed_tau = None
 
         self.starttime = time.time()
+
+        if advanced:
+            errors = self.validate_advanced_pulse_options()
+            if errors:
+                QMessageBox.about(self,'ERORR!', 'There are errors in the advanced pulse options:\n' + '\n'.join(errors))
+                main_log.error('Could not run autoDEER due to errors in the advanced pulse options:\n' + '\n'.join(errors))
+                return None
+
+            
         
 
         if self.spectromterInterface is None or self.connected is False:
@@ -1671,32 +2071,39 @@ class autoDEERUI(QMainWindow):
 
         if self.operating_mode == '4pDEER' and not self.config['autoDEER'].get('2D_Dec',True):
             self.operating_mode = '5pDEER'
+        
         if advanced:
-                        
-            if self.Tau1Value.value() > 0 or self.Tau2Value.value() > 0:
-                self.fixed_tau = {'tau1':self.Tau1Value.value(),'tau2':self.Tau2Value.value(),'tau3':self.Tau3Value.value()}
-                # Skip the relaxation data analysis and go straight to DEER
-                if self.Exp_types.currentText() == 'auto':
-                    self.deer_settings['ExpType'] = '5pDEER'
-                elif self.Exp_types.currentText() == 'Ref2D':
-                    print("ERROR: Ref2D not supported with fixed tau")
-                    return None
-                else:
-                    self.deer_settings['ExpType'] = self.Exp_types.currentText()
+            self.read_advanced_pulse_options()
+            self.read_advanced_sequence_options()
+            # Determine if sequence parameters are fixed:
+            if (self.AdvSeqOptions['ExpType'].lower() != 'auto') and (self.AdvSequenceCheck.isChecked()):
                 
-                self.deer_settings['tau1'] = self.Tau1Value.value()
-                self.deer_settings['tau2'] = self.Tau2Value.value()
-                self.deer_settings['tau3'] = self.Tau3Value.value()
+                self.deer_settings['ExpType'] = self.AdvSeqOptions['ExpType']
+                if self.AdvSeqOptions['tau1'] > 0 or self.AdvSeqOptions['tau2'] > 0:
+                    # Using Fixed taus
+                    self.fixed_tau = {}
+                    self.fixed_tau['tau1'] = self.AdvSeqOptions['tau1']
+                    self.fixed_tau['tau2'] = self.AdvSeqOptions['tau2']
+                    
+                    if 'tau3' in self.AdvSeqOptions:
+                        self.fixed_tau['tau3'] = self.AdvSeqOptions['tau3']
+                    self.deer_settings.update(self.fixed_tau)
+                    main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
+                    main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
+                    self.deer_settings['dt'] = self.AdvSeqOptions['dt']
+                else:
+                    # Only Setting the sequence
+                    self.fixed_tau = None
+                
                 self.deer_settings['criteria'] = self.priorties[self.userinput['priority']]
                 self.deer_settings['autoStop'] = self.Time_autoStop_checkbox.isChecked()
-                self.deer_settings = ad.calc_dt_from_tau(self.deer_settings)
+                main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")
                 main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
                 main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
                 main_log.info(f"DEER Sequence set to {self.deer_settings['ExpType']}")
             
-            else:
-                self.fixed_tau = None
-            
+            # else:
+            #     self.fixed_tau = None
 
         
         
