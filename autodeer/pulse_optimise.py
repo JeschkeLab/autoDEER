@@ -198,6 +198,7 @@ def create_pulses_shape(
     # Calculate the appropriate exc_pulse length
     max_nu = resonatorProfile.model.max()
     exc_pulse_length = 1/(2*max_nu*0.90)
+
     # Adjust the pulse length to be < 50% of availiable bandwidth
     bw_min_length = 1/(2*0.4*np.min([resonator_bandwidth,spectum_bandwidth]))
     if exc_pulse_length < bw_min_length:
@@ -205,7 +206,20 @@ def create_pulses_shape(
     
     if exc_pulse_length > max_length:
         exc_pulse_length = max_length
+    
+    ref_pulse_length = exc_pulse_length
 
+    # Extra kwargs for pulse shapes
+    exc_pulse_kwargs = {}
+    ref_pulse_kwargs = {}
+
+    if isinstance(ExcPulseShape,GaussianPulse):
+        exc_pulse_length = exc_pulse_length * (2*np.sqrt(2*np.log(2))) # FWHM to tp conversion
+        exc_pulse_kwargs = {'FWHM':exc_pulse_length}
+
+    if isinstance(RefPulseShape,GaussianPulse):
+        ref_pulse_length = ref_pulse_length * (2*np.sqrt(2*np.log(2))) # FWHM to tp conversion
+        ref_pulse_kwargs = {'FWHM':ref_pulse_length}
     
     
     exc_bandwidth = 1/exc_pulse_length # GHz
@@ -219,8 +233,8 @@ def create_pulses_shape(
     FunctionalResults = {}
     ModDepthResults = {}
     for pump_pulse_type in test_pulse_shapes:
-        exc_pulse = ExcPulseShape(tp=exc_pulse_length,flipangle=np.pi/2,scale=None)
-        ref_pulse = RefPulseShape(tp=exc_pulse_length,flipangle=np.pi,scale=None)
+        exc_pulse = ExcPulseShape(tp=exc_pulse_length,flipangle=np.pi/2,scale=None,**exc_pulse_kwargs)
+        ref_pulse = RefPulseShape(tp=ref_pulse_length,flipangle=np.pi,scale=None,**ref_pulse_kwargs)
 
         if pump_pulse_type == RectPulse:
             pump_pulse = pump_pulse_type(tp=exc_pulse_length,flipangle=np.pi,freq = -exc_bandwidth/2,scale=None)
