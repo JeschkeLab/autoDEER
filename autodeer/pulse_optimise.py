@@ -235,12 +235,18 @@ def create_pulses_shape(
     for pump_pulse_type in test_pulse_shapes:
         exc_pulse = ExcPulseShape(tp=exc_pulse_length,flipangle=np.pi/2,scale=None,**exc_pulse_kwargs)
         ref_pulse = RefPulseShape(tp=ref_pulse_length,flipangle=np.pi,scale=None,**ref_pulse_kwargs)
-
+        
+        pump_tp = np.max([1/pump_bandwidth,exc_pulse_length])  # ns
         if pump_pulse_type == RectPulse:
-            pump_pulse = pump_pulse_type(tp=exc_pulse_length,flipangle=np.pi,freq = -exc_bandwidth/2,scale=None)
-        else:
+            pump_pulse = pump_pulse_type(tp=pump_tp,flipangle=np.pi,freq = -exc_bandwidth/2,scale=None)
+        elif isinstance(pump_pulse_type,GaussianPulse):
+            pump_tp = pump_tp * (2*np.sqrt(2*np.log(2))) # FWHM to tp conversion
+            pump_pulse = pump_pulse_type(tp=pump_tp,flipangle=np.pi,freq=-exc_bandwidth/2,scale=None)
+        elif issubclass(pump_pulse_type,FrequencySweptPulse):
             pump_pulse = pump_pulse_type(tp=max_length,flipangle=np.pi,init_freq=(-exc_bandwidth/2-pump_bandwidth),final_freq=-exc_bandwidth/2,scale=None)
-            
+        else:
+            raise ValueError(f"Pulse type {pump_pulse_type} not recognised for pump pulse.")
+        
         if verbosity > 0:
             print(f"Optimising pulses for {pump_pulse_type.__name__} with exc pulse length {exc_pulse_length:.2f} ns and pump bandwidth {pump_bandwidth:.3f} GHz")
         optimised_pulses,_ = optimise_pulses2(spectrum,pump_pulse,exc_pulse,ref_pulse,resonator=resonatorProfile,method = 'spectrum_shift',verbosity=verbosity,n_pump_pulses=n_pump_pulses)
