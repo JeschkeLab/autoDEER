@@ -1183,7 +1183,7 @@ class autoDEERUI(QMainWindow):
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.ChirpPulse
                     elif pulse_type.lower() == 'hs':
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.HSPulse
-                    elif pulse_type.lower() == 'gaussian':
+                    elif pulse_type.lower() == 'gauss':
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.GaussianPulse
                     else:
                         raise ValueError(f"Unknown pulse type {pulse_type} for {pulse_key} pulse")
@@ -1299,21 +1299,32 @@ class autoDEERUI(QMainWindow):
         self.setup_figure_canvas.draw()
 
         # update the pulse parameter grid
-        type_to_pulse_hash = {epr.RectPulse:'Rect', epr.ChirpPulse:'Chirp', epr.HSPulse:'HS'}
+        type_to_pulse_hash = {epr.RectPulse:'Rect', epr.ChirpPulse:'Chirp', epr.HSPulse:'HS', epr.GaussianPulse:'Gauss'}
         if isinstance(exc_pulse, epr.RectPulse):
             self.ExcFreqBox.setValue(param_in_MHz(exc_pulse.freq))
-            est_BW = 1/(2*exc_pulse.tp.value) *1e3
+            est_BW = 1/(exc_pulse.tp.value) *1e3
             self.ExcBWBox.setValue(est_BW)
             # self.ExcBWBox.setSuffix(' ns')
             self.ExcLengthBox.setValue(exc_pulse.tp.value)
             self.ExcTypeLine.setText('Rect')
-        else:
+        elif isinstance(exc_pulse,epr.GaussianPulse):
+            self.ExcFreqBox.setValue(param_in_MHz(exc_pulse.freq))
+            tp = exc_pulse.FWHM.value # Use FWHM for Gaussian pulse
+            est_BW = 1/(tp) *1e3
+            self.ExcBWBox.setValue(est_BW)
+            # self.ExcBWBox.setSuffix(' MHz')
+            self.ExcLengthBox.setValue(tp)
+            self.ExcTypeLine.setText('Gauss')
+        elif issubclass(exc_pulse.__class__,epr.FrequencySweptPulse):
             center_freq = (param_in_MHz(exc_pulse.final_freq) + param_in_MHz(exc_pulse.init_freq))/2
             self.ExcFreqBox.setValue(center_freq)
             self.ExcBWBox.setValue(param_in_MHz(exc_pulse.bandwidth))
             # self.ExcBWBox.setSuffix(' MHz')
             self.ExcLengthBox.setValue(exc_pulse.tp.value)
             self.ExcTypeLine.setText(type_to_pulse_hash[type(exc_pulse)])
+        else:
+            main_log.error(f"Unknown pulse type for excitation pulse: {type(exc_pulse)}")
+            raise ValueError(f"Unknown pulse type for excitation pulse: {type(exc_pulse)}")
         
         if isinstance(ref_pulse, epr.RectPulse):
             self.RefFreqBox.setValue(param_in_MHz(ref_pulse.freq))
@@ -1322,13 +1333,24 @@ class autoDEERUI(QMainWindow):
             # self.RefBWBox.setSuffix(' ns')
             self.RefLengthBox.setValue(ref_pulse.tp.value)
             self.RefTypeLine.setText('Rect')
-        else:
+        elif isinstance(ref_pulse,epr.GaussianPulse):
+            self.RefFreqBox.setValue(param_in_MHz(ref_pulse.freq))
+            tp = ref_pulse.FWHM.value # Use FWHM for Gaussian pulse
+            est_BW = 1/(tp) *1e3
+            self.RefBWBox.setValue(est_BW)
+            # self.RefBWBox.setSuffix(' MHz')
+            self.RefLengthBox.setValue(tp)
+            self.RefTypeLine.setText('Gauss')
+        elif issubclass(ref_pulse.__class__,epr.FrequencySweptPulse):
             center_freq = (param_in_MHz(ref_pulse.final_freq) + param_in_MHz(ref_pulse.init_freq))/2
             self.RefFreqBox.setValue(center_freq)
             self.RefBWBox.setValue(param_in_MHz(ref_pulse.bandwidth))
             # self.RefBWBox.setSuffix(' MHz')
             self.RefLengthBox.setValue(ref_pulse.tp.value)
             self.RefTypeLine.setText(type_to_pulse_hash[type(ref_pulse)])
+        else:
+            main_log.error(f"Unknown pulse type for refocusing pulse: {type(ref_pulse)}")
+            raise ValueError(f"Unknown pulse type for refocusing pulse: {type(ref_pulse)}")
         
         if isinstance(pump_pulse, epr.RectPulse):
             self.PumpFreqBox.setValue(param_in_MHz(pump_pulse.freq))
@@ -1337,13 +1359,24 @@ class autoDEERUI(QMainWindow):
             # self.PumpBWBox.setSuffix(' ns')
             self.PumpLengthBox.setValue(pump_pulse.tp.value)
             self.PumpTypeLine.setText('Rect')
-        else:
+        elif isinstance(pump_pulse,epr.GaussianPulse):
+            self.PumpFreqBox.setValue(param_in_MHz(pump_pulse.freq))
+            tp = pump_pulse.FWHM.value # Use FWHM for Gaussian pulse
+            est_BW = 1/(tp) *1e3
+            self.PumpBWBox.setValue(est_BW)
+            # self.PumpBWBox.setSuffix(' MHz')
+            self.PumpLengthBox.setValue(tp)
+            self.PumpTypeLine.setText('Gauss')
+        elif issubclass(pump_pulse.__class__,epr.FrequencySweptPulse):
             center_freq = (param_in_MHz(pump_pulse.final_freq) + param_in_MHz(pump_pulse.init_freq))/2
             self.PumpFreqBox.setValue(center_freq)
             self.PumpBWBox.setValue(param_in_MHz(pump_pulse.bandwidth))
             # self.PumpBWBox.setSuffix(' MHz')
             self.PumpLengthBox.setValue(pump_pulse.tp.value)
             self.PumpTypeLine.setText(type_to_pulse_hash[type(pump_pulse)])
+        else:
+            main_log.error(f"Unknown pulse type for pump pulse: {type(pump_pulse)}")
+            raise ValueError(f"Unknown pulse type for pump pulse: {type(pump_pulse)}")
 
     def create_relax_figure(self,n_plots=3):
         # if hasattr(self,'relax_canvas'):
@@ -1616,7 +1649,7 @@ class autoDEERUI(QMainWindow):
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.ChirpPulse
                     elif pulse_type.lower() == 'hs':
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.HSPulse
-                    elif pulse_type.lower() == 'gaussian':
+                    elif pulse_type.lower() == 'gauss':
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.GaussianPulse
                     else:
                         raise ValueError(f"Unknown pulse type {pulse_type} for {pulse_key} pulse")
@@ -1624,7 +1657,7 @@ class autoDEERUI(QMainWindow):
          
         #debug only, remove later
         store_pickle(relax_data,os.path.join(self.data_folder,'relax_data.pkl'))
-
+        SNR_targets = {}
         if self.fixed_tau is not None:
             # Using advanced mode with fixed tau
             if remaining_time is None:
@@ -1638,7 +1671,6 @@ class autoDEERUI(QMainWindow):
             mod_depth_correction = self.label_eff
             r_min = 3.5
             rec_tau = None
-
             if self.Exp_types.currentText() == 'auto' or self.Exp_types.currentText() == '5pDEER':
                 main_log.info("Advanced mode selected with fixed tau, overriding auto/5pDEER/4pDEER selection")
                 if update_pulses:
@@ -1648,6 +1680,7 @@ class autoDEERUI(QMainWindow):
                 functional_5p = ad.calc_functional(EDFS_analysis,**optimal_pulses_5p,resonator=ResProAnalysis,n_pump_pulses=2)
                 mod_depth_5p = ad.calc_est_modulation_depth(EDFS_analysis,**optimal_pulses_5p,resonator=ResProAnalysis,n_pump_pulses=2)
                 SNR_target = MNR_target/(mod_depth_5p * mod_depth_correction)
+                SNR_targets['5pDEER'] = SNR_target
                 deer_settings_5p = self.deer_settings
                 deer_settings_4p = {}
                 tau2_4p=0
@@ -1664,6 +1697,7 @@ class autoDEERUI(QMainWindow):
                 functional_4p = ad.calc_functional(EDFS_analysis,**optimal_pulses_4p,resonator=ResProAnalysis,n_pump_pulses=1)
                 mod_depth_4p = ad.calc_est_modulation_depth(EDFS_analysis,**optimal_pulses_4p,resonator=ResProAnalysis,n_pump_pulses=1)
                 SNR_target = MNR_target/(mod_depth_4p * mod_depth_correction)
+                SNR_targets['4pDEER'] = SNR_target
                 deer_settings_4p = self.deer_settings
                 deer_settings_5p = {}
                 tau1_5p = 0
@@ -1683,6 +1717,7 @@ class autoDEERUI(QMainWindow):
                 mod_depth_4p = ad.calc_est_modulation_depth(EDFS_analysis,**optimal_pulses_4p,resonator=ResProAnalysis,n_pump_pulses=1)
 
                 SNR_target = MNR_target/(mod_depth_4p * mod_depth_correction)
+                SNR_targets['4pDEER'] = SNR_target
                 main_log.info(f"4p DEER, mod_depth = {mod_depth_4p:.2f}, SNR target {SNR_target:.2f}")
                 deer_settings_4p = ad.calc_DEER_settings(relax_data,'4pDEER',remaining_time,SNR_target,self.waveform_precision,corr_factor=self.correction_factor,rec_tau=rec_tau)
                 tau2_4p = deer_settings_4p['tau2']
@@ -1702,6 +1737,7 @@ class autoDEERUI(QMainWindow):
                 mod_depth_5p = ad.calc_est_modulation_depth(EDFS_analysis,**optimal_pulses_5p,resonator=ResProAnalysis,n_pump_pulses=2)
 
                 SNR_target = MNR_target/(mod_depth_5p * mod_depth_correction)
+                SNR_targets['5pDEER'] = SNR_target
                 main_log.info(f"5p DEER, mod_depth = {mod_depth_5p:.2f}, SNR target {SNR_target:.2f}")
                 deer_settings_5p = ad.calc_DEER_settings(relax_data,'5pDEER',remaining_time,SNR_target,self.waveform_precision,corr_factor=self.correction_factor,rec_tau=rec_tau)
                 tau1_5p = deer_settings_5p['tau1']
@@ -1729,10 +1765,14 @@ class autoDEERUI(QMainWindow):
             self.deer_settings = deer_settings_4p
             new_pulses = optimal_pulses_4p
             new_est_lambda = mod_depth_4p * mod_depth_correction
+            functional_used = functional_4p
+            lambda_used = mod_depth_4p
         elif autoDEERmode == '5pDEER':
             self.deer_settings = deer_settings_5p
             new_pulses = optimal_pulses_5p
             new_est_lambda = mod_depth_5p * mod_depth_correction
+            functional_used = functional_5p
+            lambda_used = mod_depth_5p
             
 
         # self.deer_settings = ad.calc_DEER_settings(relax_data,exp,remaining_time,SNR_target,self.waveform_precision,corr_factor=self.correction_factor,rec_tau=rec_tau)
@@ -1743,7 +1783,7 @@ class autoDEERUI(QMainWindow):
         self.deer_settings['autoStop'] = self.Time_autoStop_checkbox.isChecked()
         # self.worker.update_deersettings(self.deer_settings)
         self.worker.signals.update_deer_settings.emit(self.deer_settings)
-        self.update_tau_delays_figure([SNR_target],[remaining_time],labels=[f"MNR = {MNR_target}"])
+        self.update_tau_delays_figure(SNR_targets,[remaining_time],labels=[f"MNR = {MNR_target}"])
         
         main_log.info(f"tau1 set to {self.deer_settings['tau1']:.2f} us")
         main_log.info(f"tau2 set to {self.deer_settings['tau2']:.2f} us")
@@ -1760,20 +1800,27 @@ class autoDEERUI(QMainWindow):
         fig = self.relax_canvas.figure
         axs = self.relax_ax[-1]
         axs.cla()
+
+        SNR_values = {}
+        if isinstance(SNRs, list):
+            SNR_values = {'4pDEER': SNRs, '5pDEER': SNRs}
+        elif isinstance(SNRs, dict):
+            SNR_values = SNRs
+
         
         if 'CP-relax' in self.current_results:
             CP_analysis = self.current_results['CP-relax']
-            ad.plot_optimal_tau(CP_analysis,SNRs,MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[0]],corr_factor=self.correction_factor)
+            ad.plot_optimal_tau(CP_analysis,SNR_values['5pDEER'],MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[0]],corr_factor=self.correction_factor)
 
         if 'RefEcho2D' in self.current_results:
             main_log.debug('Using RefEcho2D for optimal tau calculation')
-            ad.plot_optimal_tau(self.current_results['RefEcho2D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
+            ad.plot_optimal_tau(self.current_results['RefEcho2D'],SNR_values['4pDEER'],MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
         elif 'RefEcho1D' in self.current_results:
             main_log.debug('Using RefEcho1D for optimal tau calculation')
-            ad.plot_optimal_tau(self.current_results['RefEcho1D'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
+            ad.plot_optimal_tau(self.current_results['RefEcho1D'],SNR_values['4pDEER'],MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
         elif 'Tm-relax' in self.current_results:
             main_log.debug('Using Tm-relax for optimal tau calculation')
-            ad.plot_optimal_tau(self.current_results['Tm-relax'],SNRs,MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
+            ad.plot_optimal_tau(self.current_results['Tm-relax'],SNR_values['4pDEER'],MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
 
         axs.set_title(labels[0])
 
