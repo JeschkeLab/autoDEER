@@ -328,8 +328,8 @@ class DEERplot(QWidget):
         settings['pathways'] = str_to_list_type(self.PathwayslineEdit.text(), int)
         settings['compactness'] = self.CompactnessradioButton.isChecked()
         settings['pulselength'] = self.PulseLengthdoubleSpinBox.value()
-        settings['regparam'] ='bic'
-        settings['nnlsSolver'] ='qp'
+        settings['regparam'] = self.DL_params.get('regparam','bic')
+        settings['nnlsSolver'] =self.DL_params.get('nnlsSolver','qp')
 
         settings['bg_model'] = background_model
 
@@ -361,7 +361,9 @@ class DEERplot(QWidget):
             settings['model'] = None
 
         settings['parametrization'] = 'delays'
-
+        
+        if 'bounds' in self.DL_params.keys():
+            settings['bounds'] = self.DL_params['bounds']
 
         worker = Worker(deeranalysis_process, dataset, settings, self.cores)
         worker.signals.result.connect(partial(self.refresh_deer, wait_condition=wait_condition,update_func=update_func))
