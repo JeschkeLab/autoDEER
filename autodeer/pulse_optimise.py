@@ -213,11 +213,11 @@ def create_pulses_shape(
     exc_pulse_kwargs = {}
     ref_pulse_kwargs = {}
 
-    if isinstance(ExcPulseShape,GaussianPulse):
+    if issubclass(ExcPulseShape,GaussianPulse):
         exc_pulse_length = exc_pulse_length * (2*np.sqrt(2*np.log(2))) # FWHM to tp conversion
         exc_pulse_kwargs = {'FWHM':exc_pulse_length}
 
-    if isinstance(RefPulseShape,GaussianPulse):
+    if issubclass(RefPulseShape,GaussianPulse):
         ref_pulse_length = ref_pulse_length * (2*np.sqrt(2*np.log(2))) # FWHM to tp conversion
         ref_pulse_kwargs = {'FWHM':ref_pulse_length}
     
@@ -239,7 +239,7 @@ def create_pulses_shape(
         pump_tp = np.max([1/pump_bandwidth,exc_pulse_length])  # ns
         if pump_pulse_type == RectPulse:
             pump_pulse = pump_pulse_type(tp=pump_tp,flipangle=np.pi,freq = -exc_bandwidth/2,scale=None)
-        elif isinstance(pump_pulse_type,GaussianPulse):
+        elif issubclass(pump_pulse_type,GaussianPulse):
             pump_tp = pump_tp * (2*np.sqrt(2*np.log(2))) # FWHM to tp conversion
             pump_pulse = pump_pulse_type(tp=pump_tp,flipangle=np.pi,freq=-exc_bandwidth/2,scale=None)
         elif issubclass(pump_pulse_type,FrequencySweptPulse):

@@ -1183,7 +1183,7 @@ class autoDEERUI(QMainWindow):
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.ChirpPulse
                     elif pulse_type.lower() == 'hs':
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.HSPulse
-                    elif pulse_type.lower() == 'gaussian':
+                    elif pulse_type.lower() == 'gauss':
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.GaussianPulse
                     else:
                         raise ValueError(f"Unknown pulse type {pulse_type} for {pulse_key} pulse")
@@ -1607,7 +1607,7 @@ class autoDEERUI(QMainWindow):
         AdvPulse_types = {}
         if self.userinput.get('AdvPulseShapes',False):
             for pulse_key in ['Exc','Ref','Pump']:
-                pulse_type = self.AdvPulseOptions.get(f'{pulse_key}Type','Auto')
+                pulse_type = self.AdvPulseOptions.get(f'{pulse_key}Type','auto')
                 pulse_type = pulse_type.replace('.','')
                 if pulse_type.lower() != 'auto':
                     if pulse_type.lower() == 'rect':
@@ -1616,7 +1616,7 @@ class autoDEERUI(QMainWindow):
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.ChirpPulse
                     elif pulse_type.lower() == 'hs':
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.HSPulse
-                    elif pulse_type.lower() == 'gaussian':
+                    elif pulse_type.lower() == 'gauss':
                         AdvPulse_types[f"{pulse_key}PulseShape"] = epr.GaussianPulse
                     else:
                         raise ValueError(f"Unknown pulse type {pulse_type} for {pulse_key} pulse")
