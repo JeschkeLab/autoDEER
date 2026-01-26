@@ -470,7 +470,7 @@ class autoDEERWorker(QtCore.QRunnable):
         ref_pulse = self.pulses['ref_pulse']
         exc_pulse = self.pulses['exc_pulse']
         det_event = self.pulses['det_event']
-        shots = np.max([int(10*self.noise_mode), 2])
+        shots = np.max([int(25*self.noise_mode), 10])
         self.signals.status.emit('Tuning pulses')
         exc_pulse = self.interface.tune_pulse(exc_pulse, mode="amp_nut", B=self.freq/self.gyro,freq=self.freq,reptime=self.reptime,shots=shots)
         ref_pulse = self.interface.tune_pulse(ref_pulse, mode="amp_nut", B=self.freq/self.gyro,freq=self.freq,reptime=self.reptime,shots=shots)
