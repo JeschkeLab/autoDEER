@@ -44,9 +44,9 @@ def setup_logs(folder: str):
 
     autoDEER_log = logging.getLogger('autoDEER')
     interface_log = logging.getLogger('interface')
-    # logHandler_core = handlers.TimedRotatingFileHandler(
-    #     os.path.join(folder,'autoDEER.log'), when='D', backupCount=4)
-    logHandler_core = handlers.FileHandler(os.path.join(folder,'autoDEER.log'))
+    logHandler_core = handlers.TimedRotatingFileHandler(
+        os.path.join(folder,'autoDEER.log'), when='D', backupCount=4)
+    # logHandler_core = handlers.FileHandler(os.path.join(folder,'autoDEER.log'))
     logHandler_core.setFormatter(formatter)
     autoDEER_log.setLevel(logging.INFO)
     autoDEER_log.addHandler(logHandler_core)
@@ -55,9 +55,9 @@ def setup_logs(folder: str):
     QTHandler.setFormatter(DictFormater())
     autoDEER_log.addHandler(QTHandler)
 
-    # logHandler_hardware = handlers.TimedRotatingFileHandler(
-    #     os.path.join(folder,'interface.log'), when='D', backupCount=4)
-    logHandler_hardware = handlers.FileHandler(os.path.join(folder,'interface.log'))
+    logHandler_hardware = handlers.TimedRotatingFileHandler(
+        os.path.join(folder,'interface.log'), when='D', backupCount=4)
+    # logHandler_hardware = handlers.FileHandler(os.path.join(folder,'interface.log'))
     logHandler_hardware.setFormatter(formatter)
     interface_log.setLevel(logging.INFO)
     interface_log.addHandler(logHandler_hardware)

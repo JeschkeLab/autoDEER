@@ -1458,7 +1458,7 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, 
     pump_profile[pump_profile <0] = 0
     exc_profile[exc_profile <0] = 0
 
-    cmap = kwargs.get('cmap',primary_colors[0])
+    cmap = kwargs.get('cmap',primary_colors)
 
     if axs is None and fig is None:
         fig, axs = plt.subplots(1,1,figsize=(5,5), layout='constrained')
@@ -1468,8 +1468,8 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, 
     fieldsweep_profile /= np.abs(fieldsweep_profile).max()
     f -= spectrum_shift
     axs.plot(f*1e3,fieldsweep_profile, label = 'Fieldsweep', c='k')
-    axs.fill_between(f*1e3, pump_profile*fieldsweep_profile, label = 'Pump Profile',        alpha=0.5,  color=cmap[0])
-    axs.fill_between(f*1e3, exc_profile*fieldsweep_profile,  label = 'Observer Profile',    alpha=0.5,  color=cmap[1])
+    axs.fill_between(f*1e3, pump_profile*fieldsweep_profile, label = 'Pump Profile', alpha=0.5,  color=cmap[0])
+    axs.fill_between(f*1e3, exc_profile*fieldsweep_profile,  label = 'Observer Profile', alpha=0.5,  color=cmap[1])
 
     if resonator is not None:
         axs2 = axs.twinx()

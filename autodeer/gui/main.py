@@ -40,6 +40,8 @@ QtCore.QDir.addSearchPath('icons', f"{package_directory}/resources")
 
 BackgroundModels = {'hom3D':dl.bg_hom3d, 'hom3d ex':dl.bg_hom3dex, 'hom3d frac':dl.bg_homfractal,'str exp':dl.bg_strexp}
 
+autoDEER_path = os.path.join(Path.home(), 'Documents', 'autoDEER')
+
 class WorkerSignals(QtCore.QObject):
     '''
     Defines the signals available from a running worker thread.
@@ -240,7 +242,7 @@ class autoDEERUI(QMainWindow):
         self.Min_tp=12
 
         self.deer_settings = {'ESEEM':None, 'ExpType':'5pDEER'}
-        self.priorties = {'Auto': 150, 'MNR':300, 'Distance': 80, 'Single':200}
+        self.priorties = {'Auto (150)': 150, 'MNR (300)':300, 'Distance (80)': 80, 'Single (200)':200}
 
         self.priotityComboBox.addItems(list(self.priorties.keys()))
         self.correction_factor=1
@@ -555,8 +557,11 @@ class autoDEERUI(QMainWindow):
     def load_folder(self,*args, folder_path=None):
         if folder_path is None:
             folder_path = str(QFileDialog.getExistingDirectory(self, "Select Directory",str(Path.home())))
-        self.pathLineEdit.setText(folder_path)
-        self.current_folder = folder_path
+        if folder_path:
+            self.pathLineEdit.setText(folder_path)
+            self.current_folder = folder_path
+        else:
+            return None
 
         setup_logs(self.current_folder)
         global main_log
@@ -590,7 +595,7 @@ class autoDEERUI(QMainWindow):
 
         if filename is None:
             filename, _= QFileDialog.getOpenFileName(
-                self,"Select a spectrometer configuration file", str(Path.home()),"Data (*.yaml)")
+                self,"Select a spectrometer configuration file", autoDEER_path ,"Data (*.yaml)")
         
         if filename:
             path = Path(filename)
@@ -638,7 +643,7 @@ class autoDEERUI(QMainWindow):
         try:
             if model == 'Dummy':
                 from pyepr.hardware.dummy import dummyInterface
-                self.spectromterInterface = dummyInterface(filename_edit)
+                self.spectromterInterface = dummyInterface(self.config)
                 self.spectromterInterface.savefolder = self.current_folder
                 self.Bruker=False
                 self.pump_pulses = [epr.RectPulse,epr.ChirpPulse,epr.HSPulse]
@@ -871,29 +876,6 @@ class autoDEERUI(QMainWindow):
 
 
 
-        # skip_list = []
-        # if EFDS_files != []:
-        #     self.update_fieldsweep(epr.eprload(os.path.join(self.current_folder,EFDS_files[-1])),threaded=False,skip_recalc_d0=True)
-        #     skip_list.append('run_fsweep')
-        # if Resonator_files != []:
-        #     self.update_respro(epr.eprload(os.path.join(self.current_folder,Resonator_files[-1])),threaded=False)
-        #     skip_list.append('run_respro')
-        # if SRT_scan_files != []:
-        #     self.update_reptime(epr.eprload(os.path.join(self.current_folder,SRT_scan_files[-1])),threaded=False)
-        #     skip_list.append('run_reptime_opt')
-        # if CP_data != []:
-        #     self.update_relax(epr.eprload(os.path.join(self.current_folder,CP_data[-1])),threaded=False)
-        #     skip_list.append('run_CP_relax')
-        # if Ref1D_data != []:
-        #     self.update_relax(epr.eprload(os.path.join(self.current_folder,Ref1D_data[-1])),threaded=False)
-        #     skip_list.append('run_1D_refocused_echo')
-        # if Tm_data != []:
-        #     self.update_relax(epr.eprload(os.path.join(self.current_folder,Tm_data[-1])),threaded=False)
-        #     skip_list.append('run_T2_relax')
-        # if worker is not None:
-        #     self.worker.update_skip_list(skip_list)
-
-         
 
 
     def select_resonator(self):
@@ -1965,7 +1947,7 @@ class autoDEERUI(QMainWindow):
                 return None
             elif x.MNR < 10:
                 main_log.warning(f"QuickDEER MNR is too low {x.MNR:.2f}, repeating initial DEER with a shorter tau")
-                self.self.label_eff /= 4
+                self.label_eff /= 4
                 # self.initialise_deer_settings()
                 self.update_deer_settings(update_pulses=False, threaded=False)
                 time = np.min([self.aim_time,self.remaining_time])
