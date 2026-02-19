@@ -243,6 +243,8 @@ class autoDEERUI(QMainWindow):
 
         self.deer_settings = {'ESEEM':None, 'ExpType':'5pDEER'}
         self.priorties = {'Auto (150)': 150, 'MNR (300)':300, 'Distance (80)': 80, 'Single (200)':200}
+        self.AdvPulseOptions = {}
+        self.AdvSeqOptions = {}
 
         self.priotityComboBox.addItems(list(self.priorties.keys()))
         self.correction_factor=1
@@ -1675,7 +1677,7 @@ class autoDEERUI(QMainWindow):
                 if update_pulses:
                     optimal_pulses_4p = ad.create_pulses_shape(ResProAnalysis,EDFS_analysis,n_pump_pulses=1,test_pulse_shapes=self.pump_pulses,verbosity=0,r_min=r_min,**AdvPulse_types) 
                 else:
-                    optimal_pulses_5p = self.pulses
+                    optimal_pulses_4p = self.pulses
                 functional_4p = ad.calc_functional(EDFS_analysis,**optimal_pulses_4p,resonator=ResProAnalysis,n_pump_pulses=1)
                 mod_depth_4p = ad.calc_est_modulation_depth(EDFS_analysis,**optimal_pulses_4p,resonator=ResProAnalysis,n_pump_pulses=1)
                 SNR_target = MNR_target/(mod_depth_4p * mod_depth_correction)
@@ -1790,17 +1792,17 @@ class autoDEERUI(QMainWindow):
             SNR_values = SNRs
 
         
-        if 'CP-relax' in self.current_results:
+        if 'CP-relax' in self.current_results and '5pDEER' in SNR_values:
             CP_analysis = self.current_results['CP-relax']
             ad.plot_optimal_tau(CP_analysis,SNR_values['5pDEER'],MeasTimes,MaxMeasTime=36, labels=['5pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[0]],corr_factor=self.correction_factor)
 
-        if 'RefEcho2D' in self.current_results:
+        if 'RefEcho2D' in self.current_results and '4pDEER' in SNR_values:
             main_log.debug('Using RefEcho2D for optimal tau calculation')
             ad.plot_optimal_tau(self.current_results['RefEcho2D'],SNR_values['4pDEER'],MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
-        elif 'RefEcho1D' in self.current_results:
+        elif 'RefEcho1D' in self.current_results and '4pDEER' in SNR_values:
             main_log.debug('Using RefEcho1D for optimal tau calculation')
             ad.plot_optimal_tau(self.current_results['RefEcho1D'],SNR_values['4pDEER'],MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
-        elif 'Tm-relax' in self.current_results:
+        elif 'Tm-relax' in self.current_results and '4pDEER' in SNR_values:
             main_log.debug('Using Tm-relax for optimal tau calculation')
             ad.plot_optimal_tau(self.current_results['Tm-relax'],SNR_values['4pDEER'],MeasTimes,MaxMeasTime=36, labels=['4pDEER'],fig=fig,axs=axs,cmap=[epr.primary_colors[1]],corr_factor=self.correction_factor)
 
