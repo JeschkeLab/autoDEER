@@ -5,6 +5,7 @@ Spectrometer:
   Local Name: F243_AWG
 
   AWG: True
+  
 
   Bridge:
     Min Freq: 33 #GHz
