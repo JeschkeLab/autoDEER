@@ -191,7 +191,7 @@ class autoDEERWorker(QtCore.QRunnable):
             
         RPseq = ResonatorProfileSequence(
             B=freq/gyro, freq=freq,reptime=reptime,averages=10,shots=shots,
-            pi2_pulse=p90, pi_pulse=p180, fwidth=fwidth, dtp=dtp,
+            pi2_pulse=p90, pi_pulse=p180, fwidth=fwidth, dtp=dtp,tp_dim=60
         )
 
         self.interface.launch(RPseq,savename=self.savename("ResPro"),)
@@ -453,8 +453,8 @@ class autoDEERWorker(QtCore.QRunnable):
         freq = self.freq
         p90, p180 = self.interface.tune_rectpulse(tp=self.tp, freq=freq, B=freq/self.gyro, reptime = reptime_guess,shots=int(100*self.noise_mode))
 
-        n_shots = int(np.max([int(50*self.noise_mode),10]))
-        scan = ReptimeScan(B=freq/self.gyro, freq=freq,reptime=reptime_guess, reptime_max=12e3, averages=10, shots=n_shots,
+        n_shots = int(np.max([int(50*self.noise_mode),25]))
+        scan = ReptimeScan(B=freq/self.gyro, freq=freq,reptime=reptime_guess, start=100,reptime_max=12e3, averages=10, shots=n_shots,
                            pi2_pulse=p90, pi_pulse=p180)
         self.interface.launch(scan,savename=f"{self.samplename}_reptimescan",)
         self.interface.terminate_at(SNRCriteria(30),verbosity=2,test_interval=self.test_interval)

@@ -350,11 +350,12 @@ class autoDEERUI(QMainWindow):
                 self.spectromterInterface = ETH_awg_interface(self.config)
                 self.spectromterInterface.savefolder = self.data_folder
                 self.Bruker=False
-                self.modeTuneDialog = ModeTune(self.spectromterInterface, gyro=self.gyro, threadpool=self.threadpool, current_folder=self.current_folder)
-                self.modeTuneDialog.dataUpdated.connect(self.update_resonator_info)
-                self.modeTuneButton = QPushButton('Mode Tune')
-                self.formLayout_2.addWidget(self.modeTuneButton)
-                self.modeTuneButton.clicked.connect(self.modeTuneDialog.show)
+                if self.config['Spectrometer'].get('ModeTune',False):
+                    self.modeTuneDialog = ModeTune(self.spectromterInterface, gyro=self.gyro, threadpool=self.threadpool, current_folder=self.current_folder)
+                    self.modeTuneDialog.dataUpdated.connect(self.update_resonator_info)
+                    self.modeTuneButton = QPushButton('Mode Tune')
+                    self.formLayout_2.addWidget(self.modeTuneButton)
+                    self.modeTuneButton.clicked.connect(self.modeTuneDialog.show)
                 self.pump_pulses = [epr.RectPulse,epr.ChirpPulse]
 
             elif model == 'Bruker_MPFU':

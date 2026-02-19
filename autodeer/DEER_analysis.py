@@ -1458,7 +1458,7 @@ def plot_overlap(Fieldsweep, pump_pulse, exc_pulse, ref_pulse,spectrum_shift=0, 
     pump_profile[pump_profile <0] = 0
     exc_profile[exc_profile <0] = 0
 
-    cmap = kwargs.get('cmap',primary_colors[0])
+    cmap = kwargs.get('cmap',primary_colors)
 
     if axs is None and fig is None:
         fig, axs = plt.subplots(1,1,figsize=(5,5), layout='constrained')
