@@ -118,7 +118,8 @@ def fieldsweep_fit(fsweep_analysis,fit):
 
 def respro_process(dataset,f_lims, fieldsweep=None,cores=1):
     respro = epr.ResonatorProfileAnalysis(
-        dataset,f_lims=f_lims
+        dataset,f_lims=f_lims,
+        R_limit=0.3
     )
     fc_guess = respro.freqs[respro.freqs.shape[0]//2]
     with threadpool_limits(limits=cores, user_api='blas'):
