@@ -439,14 +439,39 @@ class autoDEERUI(QMainWindow):
             return
         elif exp_type == '4pDEER':
             self.AdvSeqOptions['tau1'] = self.SequenceParamRow.itemAt(1).widget().value()
+            if self.AdvSeqOptions['tau1'] == 0:
+                self.AdvSeqOptions['tau1'] = 0.4
+                main_log.warning("tau1 cannot be zero, setting to default value of 0.4 us.")
+                print("Warning: tau1 cannot be zero, setting to default value of 0.4 us.")
             self.AdvSeqOptions['tau2'] = self.SequenceParamRow.itemAt(3).widget().value()
+            if self.AdvSeqOptions['tau2'] == 0:
+                self.AdvSeqOptions['tau2'] = 2
+                main_log.warning("tau2 cannot be zero, setting to default value of 2 us.")
+                print("Warning: tau2 cannot be zero, setting to default value of 2 us.")
             self.AdvSeqOptions['dt'] = self.SequenceParamRow.itemAt(5).widget().value()
         elif exp_type == '5pDEER':
             self.AdvSeqOptions['tau1'] = self.SequenceParamRow.itemAt(1).widget().value()
+            if self.AdvSeqOptions['tau1'] == 0:
+                self.AdvSeqOptions['tau1'] = 2
+                main_log.warning("tau1 cannot be zero, setting to default value of 1 us.")
+                print("Warning: tau1 cannot be zero, setting to default value of 1 us.")
             self.AdvSeqOptions['tau2'] = self.SequenceParamRow.itemAt(3).widget().value()
+            if self.AdvSeqOptions['tau2'] == 0:
+                self.AdvSeqOptions['tau2'] = 2
+                main_log.warning("tau2 cannot be zero, setting to default value of 2 us.")
+                print("Warning: tau2 cannot be zero, setting to default value of 2 us.")
             self.AdvSeqOptions['tau3'] = self.SequenceParamRow.itemAt(5).widget().value()
+            if self.AdvSeqOptions['tau3'] == 0:
+                self.AdvSeqOptions['tau3'] = 0.3
+                main_log.warning("tau3 cannot be zero, setting to default value of 0.3 us.")
+                print("Warning: tau3 cannot be zero, setting to default value of 0.3 us.")
             self.AdvSeqOptions['dt'] = self.SequenceParamRow.itemAt(7).widget().value()
 
+        
+        if self.AdvSeqOptions['dt'] ==0:
+            self.AdvSeqOptions['dt'] = 8 # Set default value for dt if zero to avoid errors in pulse generation
+            main_log.warning("dt cannot be zero, setting to default value of 8 ns.")
+            print("Warning: dt cannot be zero, setting to default value of 8 ns.")
     def read_advanced_pulse_options(self):
         self.AdvPulseOptions = {}
         for key, widget in self.AdvPulseSelect.items():
