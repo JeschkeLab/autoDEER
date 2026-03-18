@@ -7,7 +7,7 @@ license = "GPL3"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.13"
+python = ">=3.11,<3.15"
 deerlab = "^1.1.4"
 matplotlib = "^3.9.2"
 pyyaml = "^6.0.2"
@@ -18,7 +18,7 @@ h5netcdf = "^1.4.0"
 pyqt6 = "^6.7.1"
 threadpoolctl = "^3.5.0"
 quadprog = "^0.1.13"
-pyepr-esr = "^1.0"
+pyepr-esr ="^1.0"
 qt-material = "^2.14"
 
 
@@ -36,3 +36,4 @@ gui = "autodeer.gui.main:main"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+

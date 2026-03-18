@@ -426,6 +426,7 @@ def DEERanalysis(dataset, compactness=True, model=None, ROI=False, exp_type='5pD
 
     fit.Vmodel = Vmodel
     fit.Bmodel = bg_model
+    fit.Pmodel = model
     fit.dataset = dataset
     fit.r = r
     fit.Vexp = Vexp
