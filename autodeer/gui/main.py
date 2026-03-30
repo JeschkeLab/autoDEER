@@ -386,11 +386,13 @@ class autoDEERUI(QMainWindow):
             self.SequenceSVGWidget.load('icons:4pDEERSeq.svg')
             self.SequenceSVGWidget.renderer().setAspectRatioMode(QtCore.Qt.AspectRatioMode.KeepAspectRatio)
             self.SequenceSVGWidget.show()
-            for w in ['tau1','tau2','dt']:
+            parameters =dict(tau1=0.4,tau2=1,dt=8) # Key followed by default value for each parameter
+            for key,default in parameters.items():
                 # Add QSpinBox to SequenceParamRow
                 spinbox = QtWidgets.QDoubleSpinBox()
                 spinbox.setRange(0,1000)
-                if w == 'dt':
+                spinbox.setMaximumWidth(100)
+                if key == 'dt':
                     spinbox.setSuffix(' ns')
                     spinbox.setDecimals(1)
                     spinbox.setSingleStep(0.5)
@@ -398,22 +400,29 @@ class autoDEERUI(QMainWindow):
                     spinbox.setSuffix(' us')
                     spinbox.setDecimals(2)
                     spinbox.setSingleStep(0.25)
-                if w in self.AdvSeqOptions: # Preserve previous value if exists
-                    spinbox.setValue(self.AdvSeqOptions[w])
-                label = QtWidgets.QLabel(w)
+                if key in self.AdvSeqOptions: # Preserve previous value if exists
+                    spinbox.setValue(self.AdvSeqOptions[key])
+                else:
+                    spinbox.setValue(default)
+                label = QtWidgets.QLabel(f"{key}:")
+                label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
+                label.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
                 self.SequenceParamRow.addWidget(label)
                 self.SequenceParamRow.addWidget(spinbox)
+            self.SequenceParamRow.addStretch(1) # Add stretch at the end to push widgets to the left
         elif exp_type.lower() == '5pdeer':
             self.SequenceSVGWidget.setEnabled(True)
             svg_path = QtCore.QDir.searchPaths('icons')[0] + '/5pDEERSeq.svg'
             self.SequenceSVGWidget.load('icons:5pDEERSeq.svg')
             self.SequenceSVGWidget.renderer().setAspectRatioMode(QtCore.Qt.AspectRatioMode.KeepAspectRatio)
             self.SequenceSVGWidget.show()
-            for w in ['tau1','tau2','tau3','dt']:
+            parameters =dict(tau1=1,tau2=1,tau3=0.3,dt=8) # Key followed by default value for each parameter
+            for key,default in parameters.items():
                 # Add QSpinBox to SequenceParamRow
                 spinbox = QtWidgets.QDoubleSpinBox()
                 spinbox.setRange(0,1000)
-                if w == 'dt':
+                spinbox.setMaximumWidth(100)
+                if key == 'dt':
                     spinbox.setSuffix(' ns')
                     spinbox.setDecimals(1)
                     spinbox.setSingleStep(0.5)
@@ -421,11 +430,16 @@ class autoDEERUI(QMainWindow):
                     spinbox.setSuffix(' us')
                     spinbox.setDecimals(2)
                     spinbox.setSingleStep(0.25)
-                if w in self.AdvSeqOptions: # Preserve previous value if exists
-                    spinbox.setValue(self.AdvSeqOptions[w])
-                label = QtWidgets.QLabel(w)
+                if key in self.AdvSeqOptions: # Preserve previous value if exists
+                    spinbox.setValue(self.AdvSeqOptions[key])
+                else:
+                    spinbox.setValue(default)
+                label = QtWidgets.QLabel(f"{key}:")
+                label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
+                label.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
                 self.SequenceParamRow.addWidget(label)
                 self.SequenceParamRow.addWidget(spinbox)
+            self.SequenceParamRow.addStretch(1) # Add stretch at the end to push widgets to the left
         else:
             raise NotImplementedError(f"Advanced sequence options for {exp_type} not implemented yet.")
 
