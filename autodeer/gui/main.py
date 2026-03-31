@@ -2263,6 +2263,12 @@ class autoDEERUI(QMainWindow):
 
         if hasattr(self, 'worker') and self.worker is not None:
             self.worker.stop()
+        
+        # Reneable the autoDEER buttons
+        self.FullyAutoButton.setEnabled(True)
+        self.AdvancedAutoButton.setEnabled(True)
+        self.resonatorComboBox.setEnabled(True)
+        self.fcDoubleSpinBox.setEnabled(True)
 
     def create_report(self):
         save_path = QFileDialog.getSaveFileName(self, 'Save File', self.current_folder, ".pdf")
